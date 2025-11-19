@@ -87,7 +87,7 @@ function FeatureCard({ feature, index }) {
           p: 5,
           border: '1px solid',
           borderColor: 'grey.200',
-          borderRadius: 2,
+          borderRadius: 1,
           boxSizing: 'border-box',
           transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {

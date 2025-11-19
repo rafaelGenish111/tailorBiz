@@ -73,7 +73,7 @@ export const theme = createTheme({
     },
   },
   shape: {
-    borderRadius: 12,
+      borderRadius: 8,
   },
   shadows: [
     'none',
@@ -87,7 +87,7 @@ export const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 50,
+          borderRadius: 6,
           padding: '12px 32px',
           fontSize: '1rem',
           fontWeight: 600,
@@ -108,7 +108,7 @@ export const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
+          borderRadius: 8,
           boxShadow: '0px 4px 16px rgba(0,0,0,0.06)',
           transition: 'all 0.3s ease',
           '&:hover': {

@@ -77,7 +77,7 @@ function HeroSection() {
                 px: 3,
                 py: 1,
                 mb: 4,
-                borderRadius: 50,
+                borderRadius: 6,
                 bgcolor: 'rgba(0,188,212,0.08)',
                 border: '1px solid',
                 borderColor: 'rgba(0,188,212,0.2)',
@@ -104,7 +104,7 @@ function HeroSection() {
                 fontWeight: 800,
               }}
             >
-              TailorBiz – מערכת ניהול{' '}
+              תעשו את מה שאתם טובים בו{' '}
               <Box
                 component="span"
                 sx={{
@@ -114,10 +114,10 @@ function HeroSection() {
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                אוטומטית
+                –
               </Box>
               <br />
-              בהתאמה אישית
+              אנחנו נדאג לשאר
             </Typography>
           </motion.div>
 

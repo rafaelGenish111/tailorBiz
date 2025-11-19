@@ -86,7 +86,7 @@ function About() {
               sx={{
                 width: '100%',
                 height: 400,
-                borderRadius: 4,
+                      borderRadius: 1,
                 bgcolor: 'grey.200',
                 display: 'flex',
                 alignItems: 'center',
@@ -114,7 +114,7 @@ function About() {
                     textAlign: 'center',
                     border: '1px solid',
                     borderColor: 'grey.200',
-                    borderRadius: 3,
+                        borderRadius: 1,
                     height: '100%',
                   }}
                 >

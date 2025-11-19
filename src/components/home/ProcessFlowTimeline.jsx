@@ -87,7 +87,7 @@ function TimelineStep({ step, index }) {
           backdropFilter: 'blur(10px)',
           border: '1px solid',
           borderColor: step.highlight ? 'secondary.main' : 'rgba(255, 255, 255, 0.1)',
-          borderRadius: 2,
+          borderRadius: 1,
           cursor: 'pointer',
           transition: 'all 0.3s ease',
           boxShadow: step.highlight 
@@ -118,7 +118,7 @@ function TimelineStep({ step, index }) {
           sx={{
             width: 60,
             height: 60,
-            borderRadius: 2,
+            borderRadius: 1,
             bgcolor: step.highlight 
               ? 'linear-gradient(135deg, rgba(0, 188, 212, 0.2) 0%, rgba(0, 188, 212, 0.1) 100%)'
               : 'rgba(26, 35, 126, 0.08)',
@@ -200,7 +200,7 @@ function TimelineStep({ step, index }) {
             sx={{
               mt: 2,
               fontWeight: 700,
-              borderRadius: 1.5,
+                borderRadius: 1,
               boxShadow: '0 4px 16px rgba(0, 188, 212, 0.4)',
               '&:hover': {
                 boxShadow: '0 6px 24px rgba(0, 188, 212, 0.5)',

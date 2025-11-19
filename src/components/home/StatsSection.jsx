@@ -75,7 +75,7 @@ function StatCard({ stat, index }) {
           sx={{
             textAlign: 'center',
             p: 4,
-            borderRadius: 2,
+            borderRadius: 1,
             bgcolor: 'white',
             transition: 'transform 0.3s ease',
             '&:hover': {

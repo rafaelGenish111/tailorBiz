@@ -88,7 +88,7 @@ function Pricing() {
                   position: 'relative',
                   border: plan.recommended ? '2px solid' : '1px solid',
                   borderColor: plan.recommended ? 'secondary.main' : 'grey.200',
-                  borderRadius: 3,
+                        borderRadius: 1,
                 }}
               >
                 {plan.recommended && (
@@ -102,7 +102,7 @@ function Pricing() {
                       color: 'white',
                       px: 3,
                       py: 0.5,
-                      borderRadius: 50,
+                            borderRadius: 6,
                       display: 'flex',
                       alignItems: 'center',
                       gap: 0.5,
