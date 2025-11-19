@@ -1,0 +1,66 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light;
+  color: #213547;
+  background-color: #ffffff;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  direction: rtl;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* High Contrast Mode */
+body.high-contrast {
+  filter: contrast(1.5);
+}
+
+body.high-contrast * {
+  border-color: #000 !important;
+}
+
+/* Underline Links */
+body.underline-links a {
+  text-decoration: underline !important;
+}
+
+/* Focus visible for keyboard navigation */
+*:focus-visible {
+  outline: 3px solid #00B4D8;
+  outline-offset: 2px;
+}
+
+/* Skip to content link */
+.skip-to-content:focus {
+  clip: auto;
+  height: auto;
+  width: auto;
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+}
