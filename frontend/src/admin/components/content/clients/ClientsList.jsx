@@ -1,0 +1,365 @@
+import { useState } from 'react';
+import {
+  Box,
+  Paper,
+  Typography,
+  Button,
+  TextField,
+  MenuItem,
+  IconButton,
+  Chip,
+  Avatar,
+} from '@mui/material';
+import {
+  Add as AddIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Visibility as VisibilityIcon,
+  Phone as PhoneIcon,
+  Email as EmailIcon,
+} from '@mui/icons-material';
+import { DataGrid } from '@mui/x-data-grid';
+import { useClients, useDeleteClient, useClient } from '../../../hooks/useClients';
+import ConfirmDialog from '../../common/ConfirmDialog';
+import ClientForm from './ClientForm';
+import ClientDetail from './ClientDetail';
+
+const STATUS_LABELS = {
+  lead: { label: 'ליד חדש', color: 'info' },
+  contacted: { label: 'יצרנו קשר', color: 'primary' },
+  assessment_scheduled: { label: 'פגישת אפיון נקבעה', color: 'warning' },
+  assessment_completed: { label: 'אפיון הושלם', color: 'info' },
+  proposal_sent: { label: 'הצעת מחיר נשלחה', color: 'warning' },
+  negotiation: { label: 'משא ומתן', color: 'warning' },
+  won: { label: 'נסגר', color: 'success' },
+  lost: { label: 'הפסדנו', color: 'error' },
+  on_hold: { label: 'בהמתנה', color: 'default' },
+  active_client: { label: 'לקוח פעיל', color: 'success' },
+  in_development: { label: 'בפיתוח', color: 'info' },
+  completed: { label: 'הושלם', color: 'success' },
+  churned: { label: 'עזב', color: 'error' },
+};
+
+const LEAD_SOURCE_LABELS = {
+  whatsapp: 'WhatsApp',
+  website_form: 'טופס באתר',
+  referral: 'המלצה',
+  cold_call: 'פנייה יזומה',
+  social_media: 'רשתות חברתיות',
+  linkedin: 'LinkedIn',
+  facebook: 'Facebook',
+  google_ads: 'Google Ads',
+  other: 'אחר',
+};
+
+function ClientsList() {
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [formOpen, setFormOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [clientToView, setClientToView] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState(null);
+
+  // Queries
+  const { data, isLoading } = useClients({
+    page: page + 1,
+    limit: pageSize,
+    search,
+    status: statusFilter,
+  });
+
+  // Mutations
+  const deleteMutation = useDeleteClient();
+
+  // Load full client details when viewing
+  const { data: fullClientData } = useClient(clientToView);
+
+  // Handlers
+  const handleAdd = () => {
+    setSelectedClient(null);
+    setFormOpen(true);
+  };
+
+  const handleEdit = (client) => {
+    setSelectedClient(client);
+    setFormOpen(true);
+  };
+
+  const handleFormClose = () => {
+    setFormOpen(false);
+    setSelectedClient(null);
+  };
+
+  const handleView = (client) => {
+    setClientToView(client._id);
+    setDetailOpen(true);
+  };
+
+  const handleDetailClose = () => {
+    setDetailOpen(false);
+    setClientToView(null);
+  };
+
+  const handleDeleteClick = (client) => {
+    setClientToDelete(client);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    await deleteMutation.mutateAsync(clientToDelete._id);
+    setDeleteDialogOpen(false);
+    setClientToDelete(null);
+  };
+
+  // Columns
+  const columns = [
+    {
+      field: 'personalInfo',
+      headerName: 'לקוח',
+      flex: 1,
+      minWidth: 260,
+      renderCell: (params) => {
+        const client = params.row;
+        const fullName = client.personalInfo?.fullName || 'ללא שם';
+        const businessName = client.businessInfo?.businessName || 'ללא שם עסק';
+        const initials = fullName
+          ?.split(' ')
+          .map((n) => n[0])
+          .join('')
+          .toUpperCase() || '?';
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+            <Avatar sx={{ width: 40, height: 40, bgcolor: 'primary.main' }}>
+              {initials}
+            </Avatar>
+            <Typography
+              variant="body2"
+              fontWeight="bold"
+              sx={{
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {`${fullName} – ${businessName}`}
+            </Typography>
+          </Box>
+        );
+      },
+    },
+    {
+      field: 'phone',
+      headerName: 'טלפון',
+      width: 150,
+      renderCell: (params) => {
+        const phone = params.row.personalInfo?.phone;
+        return phone ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <PhoneIcon fontSize="small" color="action" />
+            <Typography variant="body2">{phone}</Typography>
+          </Box>
+        ) : null;
+      },
+    },
+    {
+      field: 'email',
+      headerName: 'אימייל',
+      width: 200,
+      renderCell: (params) => {
+        const email = params.row.personalInfo?.email;
+        return email ? (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <EmailIcon fontSize="small" color="action" />
+            <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {email}
+            </Typography>
+          </Box>
+        ) : null;
+      },
+    },
+    {
+      field: 'leadSource',
+      headerName: 'מקור ליד',
+      width: 150,
+      renderCell: (params) => (
+        <Chip 
+          label={LEAD_SOURCE_LABELS[params.value] || params.value} 
+          size="small" 
+          variant="outlined"
+        />
+      ),
+    },
+    {
+      field: 'status',
+      headerName: 'סטטוס',
+      width: 180,
+      renderCell: (params) => {
+        const status = STATUS_LABELS[params.value] || { label: params.value, color: 'default' };
+        return <Chip label={status.label} color={status.color} size="small" />;
+      },
+    },
+    {
+      field: 'leadScore',
+      headerName: 'ציון ליד',
+      width: 120,
+      renderCell: (params) => {
+        const score = params.value || 0;
+        const color = score >= 80 ? 'success' : score >= 60 ? 'warning' : 'default';
+        return (
+          <Chip 
+            label={score} 
+            color={color} 
+            size="small" 
+            variant="outlined"
+          />
+        );
+      },
+    },
+    {
+      field: 'createdAt',
+      headerName: 'תאריך יצירה',
+      width: 150,
+      valueFormatter: (params) => {
+        if (!params.value) return '';
+        return new Date(params.value).toLocaleDateString('he-IL');
+      },
+    },
+    {
+      field: 'actions',
+      headerName: 'פעולות',
+      width: 200,
+      renderCell: (params) => (
+        <Box>
+          <IconButton
+            size="small"
+            color="primary"
+            onClick={() => handleView(params.row)}
+            title="צפה"
+          >
+            <VisibilityIcon />
+          </IconButton>
+          <IconButton
+            size="small"
+            color="primary"
+            onClick={() => handleEdit(params.row)}
+            title="ערוך"
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            size="small"
+            color="error"
+            onClick={() => handleDeleteClick(params.row)}
+            title="מחק"
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Box>
+      ),
+    },
+  ];
+
+  return (
+    <Box>
+      {/* Header */}
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h4" component="h1">
+          ניהול לקוחות
+        </Typography>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={handleAdd}>
+          הוסף לקוח חדש
+        </Button>
+      </Box>
+
+      {/* Filters */}
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <TextField
+            label="חיפוש"
+            variant="outlined"
+            size="small"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            sx={{ flex: 1 }}
+            placeholder="חפש לפי שם, חברה, טלפון או אימייל..."
+          />
+          <TextField
+            select
+            label="סטטוס"
+            variant="outlined"
+            size="small"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            sx={{ minWidth: 200 }}
+          >
+            <MenuItem value="">הכל</MenuItem>
+            {Object.entries(STATUS_LABELS).map(([value, { label }]) => (
+              <MenuItem key={value} value={value}>
+                {label}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
+      </Paper>
+
+      {/* Table */}
+      <Paper sx={{ height: 600 }}>
+        <DataGrid
+          rows={data?.data || []}
+          columns={columns}
+          getRowId={(row) => row._id}
+          loading={isLoading}
+          pagination
+          paginationMode="server"
+          page={page}
+          pageSize={pageSize}
+          rowCount={data?.pagination?.totalItems || 0}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          rowsPerPageOptions={[5, 10, 25, 50]}
+          disableSelectionOnClick
+          onRowClick={(params) => handleView(params.row)}
+          sx={{
+            '& .MuiDataGrid-cell': {
+              display: 'flex',
+              alignItems: 'center',
+            },
+          }}
+        />
+      </Paper>
+
+      {/* Form Dialog */}
+      <ClientForm 
+        open={formOpen} 
+        onClose={handleFormClose} 
+        client={selectedClient} 
+      />
+
+      {/* Client Detail Dialog */}
+      <ClientDetail
+        open={detailOpen}
+        onClose={handleDetailClose}
+        client={fullClientData?.data || null}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        title="מחיקת לקוח"
+        content={`האם אתה בטוח שברצונך למחוק את הלקוח ${clientToDelete?.personalInfo?.fullName}?`}
+        confirmText="מחק"
+        confirmColor="error"
+      />
+    </Box>
+  );
+}
+
+export default ClientsList;
+
