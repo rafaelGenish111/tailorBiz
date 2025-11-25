@@ -375,39 +375,65 @@ exports.getTodayAgenda = async (req, res) => {
 // קבלת תצוגת קלנדר
 exports.getCalendarView = async (req, res) => {
   try {
-    if (!isValidObjectId(req.user.id)) {
-      return res.json({
-        success: true,
-        data: {
-          year: parseInt(req.query.year),
-          month: parseInt(req.query.month),
-          tasks: {},
-          totalTasks: 0
-        }
-      });
-    }
-
     const { year, month } = req.query;
     
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59, 999);
 
-    const tasks = await TaskManager.find({
-      assignedTo: req.user.id,
-      dueDate: { $gte: startDate, $lte: endDate }
-    })
-      .populate('relatedClient', 'personalInfo businessInfo')
-      .sort('dueDate');
-
-    // קיבוץ לפי ימים
+    // משימות לפי משתמש מחובר (אם ה-id תקין), אחרת החזר ללא משימות
+    let tasks = [];
     const tasksByDate = {};
-    
-    tasks.forEach(task => {
-      const dateKey = new Date(task.dueDate).toISOString().split('T')[0];
-      if (!tasksByDate[dateKey]) {
-        tasksByDate[dateKey] = [];
-      }
-      tasksByDate[dateKey].push(task);
+
+    if (isValidObjectId(req.user.id)) {
+      tasks = await TaskManager.find({
+        assignedTo: req.user.id,
+        dueDate: { $gte: startDate, $lte: endDate }
+      })
+        .populate('relatedClient', 'personalInfo businessInfo')
+        .sort('dueDate');
+
+      tasks.forEach(task => {
+        if (!task.dueDate) return;
+        const dateKey = new Date(task.dueDate).toISOString().split('T')[0];
+        if (!tasksByDate[dateKey]) {
+          tasksByDate[dateKey] = [];
+        }
+        tasksByDate[dateKey].push(task);
+      });
+    }
+
+    // אינטראקציות עם nextFollowUp בטווח התאריכים
+    const Client = require('../models/Client');
+
+    const clients = await Client.find({
+      'interactions.nextFollowUp': { $gte: startDate, $lte: endDate }
+    }).select('personalInfo businessInfo interactions');
+
+    const interactionsByDate = {};
+
+    clients.forEach(client => {
+      (client.interactions || []).forEach(interaction => {
+        if (!interaction.nextFollowUp) return;
+        const ts = new Date(interaction.nextFollowUp);
+        if (ts < startDate || ts > endDate) return;
+
+        const dateKey = ts.toISOString().split('T')[0];
+        if (!interactionsByDate[dateKey]) {
+          interactionsByDate[dateKey] = [];
+        }
+
+        interactionsByDate[dateKey].push({
+          _id: interaction._id,
+          type: interaction.type,
+          direction: interaction.direction,
+          subject: interaction.subject,
+          content: interaction.content,
+          nextFollowUp: interaction.nextFollowUp,
+          clientId: client._id,
+          clientName: client.personalInfo?.fullName,
+          clientBusiness: client.businessInfo?.businessName
+        });
+      });
     });
 
     res.json({
@@ -416,6 +442,7 @@ exports.getCalendarView = async (req, res) => {
         year: parseInt(year),
         month: parseInt(month),
         tasks: tasksByDate,
+        interactions: interactionsByDate,
         totalTasks: tasks.length
       }
     });

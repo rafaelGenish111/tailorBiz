@@ -28,6 +28,7 @@ import {
   useAddInteraction,
   useUpdateInteraction,
   useDeleteInteraction,
+  useClientNurturingInstances,
 } from '../../../hooks/useClients';
 import AssessmentTab from '../../../../components/clients/ClientCard/tabs/AssessmentTab';
 
@@ -99,6 +100,9 @@ function ClientDetail({ open, onClose, client }) {
   const { data: interactionsResponse, isLoading: interactionsLoading } =
     useClientInteractions(clientId);
   const interactions = interactionsResponse?.data || client?.interactions || [];
+
+  const { data: nurturingInstancesResponse } = useClientNurturingInstances(clientId);
+  const nurturingInstances = nurturingInstancesResponse?.data || [];
 
   const updateClient = useUpdateClient();
   const addInteraction = useAddInteraction();
@@ -253,6 +257,35 @@ function ClientDetail({ open, onClose, client }) {
             <Tab label="הצעת מחיר" />
           </Tabs>
         </Box>
+
+        {/* סטטוס רצפי טיפוח פעילים */}
+        {nurturingInstances.length > 0 && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle1" sx={{ mb: 1 }}>
+              רצפי טיפוח פעילים ללקוח זה
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {nurturingInstances.map((instance) => (
+                <Chip
+                  key={instance._id}
+                  label={
+                    instance.nurturingTemplate?.name
+                      ? `${instance.nurturingTemplate.name} • שלב ${instance.currentStep + 1}`
+                      : `רצף ללא שם • שלב ${instance.currentStep + 1}`
+                  }
+                  color={
+                    instance.status === 'active'
+                      ? 'primary'
+                      : instance.status === 'completed'
+                      ? 'success'
+                      : 'default'
+                  }
+                  variant={instance.status === 'active' ? 'filled' : 'outlined'}
+                />
+              ))}
+            </Box>
+          </Box>
+        )}
 
         {tabValue === 0 && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

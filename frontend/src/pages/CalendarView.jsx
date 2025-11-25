@@ -1,5 +1,5 @@
 // frontend/src/pages/CalendarView.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Card,
@@ -7,48 +7,135 @@ import {
   IconButton,
   Grid,
   Chip,
-  Badge,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
+  ButtonGroup,
   List,
   ListItem,
   ListItemText,
-  Avatar
+  useTheme,
+  Paper,
+  Divider,
+  Tooltip
 } from '@mui/material';
 import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
-  Today as TodayIcon
+  Today as TodayIcon,
+  AccessTime as AccessTimeIcon,
+  Event as EventIcon,
+  Add as AddIcon
 } from '@mui/icons-material';
-import { useCalendarView } from '../admin/hooks/useTasks';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isToday } from 'date-fns';
+import { useCalendarView, useCreateTask } from '../admin/hooks/useTasks';
+import TaskForm from '../admin/components/content/tasks/TaskForm';
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isToday,
+  startOfWeek,
+  addDays,
+  setHours,
+  setMinutes,
+  isSameDay,
+  getHours,
+  getMinutes,
+  differenceInMinutes,
+  addHours
+} from 'date-fns';
 import { he } from 'date-fns/locale';
 
+// --- Constants ---
+const START_HOUR = 6; // 06:00
+const END_HOUR = 22;   // 22:00
+const HOUR_HEIGHT = 60; // Pixels per hour
+
+const TimeGridEvent = ({ event, style, onClick }) => {
+  const theme = useTheme();
+  
+  const isTask = event.__kind === 'task';
+  const bgColor = isTask 
+    ? (event.color || (event.priority === 'high' ? theme.palette.warning.main : event.priority === 'urgent' ? theme.palette.error.main : theme.palette.primary.main))
+    : theme.palette.success.main;
+
+  return (
+    <Box
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick(event);
+      }}
+      sx={{
+        position: 'absolute',
+        ...style,
+        bgcolor: bgColor,
+        color: '#fff',
+        borderRadius: '4px',
+        padding: '2px 4px',
+        overflow: 'hidden',
+        cursor: 'pointer',
+        fontSize: '0.75rem',
+        borderLeft: '3px solid rgba(0,0,0,0.2)',
+        opacity: 0.9,
+        transition: 'all 0.2s',
+        zIndex: 10,
+        '&:hover': {
+          zIndex: 20,
+          opacity: 1,
+          boxShadow: 2
+        }
+      }}
+    >
+      <Typography variant="caption" display="block" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>
+        {format(new Date(event.startTime), 'HH:mm')}
+      </Typography>
+      <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        {isTask ? event.title : event.subject || 'Follow-up'}
+      </Typography>
+      {!isTask && event.clientName && (
+        <Typography variant="caption" display="block" sx={{ lineHeight: 1.1, opacity: 0.9, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {event.clientName}
+        </Typography>
+      )}
+    </Box>
+  );
+};
+
 const CalendarView = () => {
+  const theme = useTheme();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedTasks, setSelectedTasks] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState(null); // For detailed view
+  const [viewMode, setViewMode] = useState('week'); // 'day' | 'week' | 'month'
+  const [createTaskDialogOpen, setCreateTaskDialogOpen] = useState(false);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
 
   const { data: calendarResponse, isLoading } = useCalendarView(year, month);
+  const createTask = useCreateTask();
+
   const calendarData = calendarResponse?.data || {};
   const tasksByDate = calendarData.tasks || {};
+  const interactionsByDate = calendarData.interactions || {};
 
-  // מעבר לחודש הבא/קודם
-  const handlePrevMonth = () => {
+  // --- Navigation Handlers ---
+  const handlePrev = () => {
     const newDate = new Date(currentDate);
-    newDate.setMonth(newDate.getMonth() - 1);
+    if (viewMode === 'day') newDate.setDate(newDate.getDate() - 1);
+    else if (viewMode === 'week') newDate.setDate(newDate.getDate() - 7);
+    else newDate.setMonth(newDate.getMonth() - 1);
     setCurrentDate(newDate);
   };
 
-  const handleNextMonth = () => {
+  const handleNext = () => {
     const newDate = new Date(currentDate);
-    newDate.setMonth(newDate.getMonth() + 1);
+    if (viewMode === 'day') newDate.setDate(newDate.getDate() + 1);
+    else if (viewMode === 'week') newDate.setDate(newDate.getDate() + 7);
+    else newDate.setMonth(newDate.getMonth() + 1);
     setCurrentDate(newDate);
   };
 
@@ -56,259 +143,553 @@ const CalendarView = () => {
     setCurrentDate(new Date());
   };
 
-  // קבלת כל הימים בחודש
-  const monthStart = startOfMonth(currentDate);
-  const monthEnd = endOfMonth(currentDate);
-  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const handleCreateTask = (data) => {
+    createTask.mutate(data, {
+        onSuccess: () => {
+            setCreateTaskDialogOpen(false);
+        }
+    });
+  };
 
-  // הוסף ימים מהחודש הקודם להתחלה
-  const firstDayOfWeek = monthStart.getDay();
-  const daysFromPrevMonth = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
-  
-  const prevMonthDays = [];
-  for (let i = daysFromPrevMonth; i > 0; i--) {
-    const day = new Date(monthStart);
-    day.setDate(day.getDate() - i);
-    prevMonthDays.push(day);
-  }
-
-  // הוסף ימים מהחודש הבא לסיום
-  const lastDayOfWeek = monthEnd.getDay();
-  const daysFromNextMonth = lastDayOfWeek === 0 ? 0 : 7 - lastDayOfWeek;
-  
-  const nextMonthDays = [];
-  for (let i = 1; i <= daysFromNextMonth; i++) {
-    const day = new Date(monthEnd);
-    day.setDate(day.getDate() + i);
-    nextMonthDays.push(day);
-  }
-
-  const allDays = [...prevMonthDays, ...daysInMonth, ...nextMonthDays];
-
-  // לחיצה על יום
-  const handleDayClick = (day) => {
-    const dateKey = format(day, 'yyyy-MM-dd');
+  // --- Data Preparation ---
+  const getEventsForDate = (date) => {
+    const dateKey = format(date, 'yyyy-MM-dd');
     const tasks = tasksByDate[dateKey] || [];
-    setSelectedDate(day);
-    setSelectedTasks(tasks);
+    const interactions = interactionsByDate[dateKey] || [];
+
+    const allEvents = [
+      ...tasks.map(t => ({ 
+        ...t, 
+        __kind: 'task', 
+        startTime: new Date(t.dueDate),
+        endTime: addHours(new Date(t.dueDate), 1) // Default duration 1h
+      })),
+      ...interactions.map(i => ({ 
+        ...i, 
+        __kind: 'interaction',
+        startTime: new Date(i.nextFollowUp),
+        endTime: addHours(new Date(i.nextFollowUp), 1) // Default duration 1h
+      }))
+    ];
+
+    // Filter out invalid dates
+    return allEvents.filter(e => !isNaN(e.startTime.getTime()));
   };
 
-  const getPriorityColor = (priority) => {
-    const colors = {
-      urgent: '#f44336',
-      high: '#ff9800',
-      medium: '#2196f3',
-      low: '#9e9e9e'
-    };
-    return colors[priority] || '#9e9e9e';
+  // --- Render Methods ---
+
+  // 1. Month View
+  const renderMonthView = () => {
+    const monthStart = startOfMonth(currentDate);
+    const monthEnd = endOfMonth(currentDate);
+    
+    // Calculate start and end date of the calendar grid (including days from prev/next month)
+    const startDate = startOfWeek(monthStart, { weekStartsOn: 0 }); // Sunday start
+    const endDate = addDays(startOfWeek(monthEnd, { weekStartsOn: 0 }), 6); // End of last week
+    
+    const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
+    
+    return (
+      <Box sx={{ mt: 2, border: 1, borderColor: 'divider', borderRadius: 1, overflow: 'hidden' }}>
+        {/* Header */}
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(7, 1fr)', 
+          borderBottom: 1, 
+          borderColor: 'divider',
+          bgcolor: 'background.paper'
+        }}>
+          {['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'].map((day, index) => (
+            <Box 
+              key={day} 
+              sx={{ 
+                textAlign: 'center', 
+                py: 1,
+                borderRight: index < 6 ? 1 : 0,
+                borderColor: 'divider'
+              }}
+            >
+              <Typography variant="subtitle2" color="text.secondary" fontWeight="bold">
+                {day}
+              </Typography>
+            </Box>
+          ))}
+        </Box>
+
+        {/* Grid */}
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(7, 1fr)',
+          bgcolor: 'background.paper'
+        }}>
+          {calendarDays.map((day, index) => {
+            const events = getEventsForDate(day);
+            const isTodayDate = isToday(day);
+            const isCurrentMonth = day.getMonth() === currentDate.getMonth();
+            const isLastInRow = (index + 1) % 7 === 0;
+            const isLastRow = index >= calendarDays.length - 7;
+
+            return (
+              <Box 
+                key={day.toISOString()} 
+                sx={{ 
+                  minHeight: 120, 
+                  borderRight: isLastInRow ? 0 : 1, 
+                  borderBottom: isLastRow ? 0 : 1, 
+                  borderColor: 'divider',
+                  p: 0.5,
+                  bgcolor: isTodayDate 
+                    ? 'rgba(25, 118, 210, 0.04)' 
+                    : isCurrentMonth 
+                      ? 'white' 
+                      : '#f9f9f9',
+                  transition: 'background-color 0.2s',
+                  '&:hover': { bgcolor: isCurrentMonth ? '#f5f5f5' : '#f0f0f0' },
+                  cursor: 'pointer',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+                onClick={() => {
+                   setSelectedDate(day);
+                   setSelectedEvent(null); 
+                }}
+              >
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 0.5 }}>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontWeight: isTodayDate ? 'bold' : 'normal',
+                      width: 24,
+                      height: 24,
+                      borderRadius: '50%',
+                      bgcolor: isTodayDate ? 'primary.light' : 'transparent',
+                      color: isTodayDate ? 'white' : (isCurrentMonth ? 'text.primary' : 'text.disabled'),
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.85rem'
+                    }}
+                  >
+                    {format(day, 'd')}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                  {events.slice(0, 3).map(event => (
+                    <Box 
+                      key={event._id}
+                      sx={{ 
+                        bgcolor: event.__kind === 'task' ? (event.priority === 'urgent' ? theme.palette.error.main : theme.palette.primary.main) : theme.palette.success.main,
+                        color: 'white',
+                        borderRadius: 0.5,
+                        px: 0.5,
+                        fontSize: '0.7rem',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        opacity: isCurrentMonth ? 1 : 0.6,
+                        lineHeight: 1.5
+                      }}
+                    >
+                       {format(new Date(event.startTime), 'HH:mm')} {event.__kind === 'task' ? event.title : event.subject}
+                    </Box>
+                  ))}
+                  {events.length > 3 && (
+                    <Typography variant="caption" color="text.secondary" align="center" sx={{ fontSize: '0.7rem' }}>
+                      +{events.length - 3} נוספים
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+      </Box>
+    );
   };
+
+  // 2. Time Grid View (Week / Day)
+  const renderTimeGridView = () => {
+    // Determine days to show
+    let daysToShow = [];
+    if (viewMode === 'day') {
+      daysToShow = [currentDate];
+    } else {
+      const start = startOfWeek(currentDate, { weekStartsOn: 0 });
+      daysToShow = Array.from({ length: 7 }).map((_, i) => addDays(start, i));
+    }
+
+    const hours = Array.from({ length: END_HOUR - START_HOUR + 1 }).map((_, i) => START_HOUR + i);
+
+    return (
+      <Paper sx={{ mt: 2, overflow: 'hidden', display: 'flex', flexDirection: 'column' }} elevation={0} variant="outlined">
+        {/* Header Row (Dates) */}
+        <Box sx={{ display: 'flex', borderBottom: 1, borderColor: 'divider' }}>
+          {/* Time Column Header (Empty) */}
+          <Box sx={{ width: 60, flexShrink: 0, borderRight: 1, borderColor: 'divider' }} />
+          
+          {/* Days Headers */}
+          {daysToShow.map((day) => {
+             const isTodayDate = isToday(day);
+             return (
+              <Box 
+                key={day.toISOString()} 
+                sx={{ 
+                  flex: 1, 
+                  textAlign: 'center', 
+                  py: 1.5, 
+                  borderRight: 1, 
+                  borderColor: 'divider',
+                  bgcolor: isTodayDate ? 'rgba(25, 118, 210, 0.04)' : 'transparent'
+                }}
+              >
+                <Typography variant="subtitle2" color={isTodayDate ? 'primary' : 'text.secondary'}>
+                  {format(day, 'EEEE', { locale: he })}
+                </Typography>
+                <Typography variant="h6" color={isTodayDate ? 'primary' : 'text.primary'}>
+                  {format(day, 'd MMM', { locale: he })}
+                </Typography>
+              </Box>
+             );
+          })}
+        </Box>
+
+        {/* Scrollable Content */}
+        <Box sx={{ overflowY: 'auto', height: '600px', position: 'relative' }}>
+           {/* Time Labels Column */}
+           <Box sx={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 60, borderRight: 1, borderColor: 'divider', bgcolor: 'background.paper', zIndex: 5 }}>
+              {hours.map(hour => (
+                <Box key={hour} sx={{ height: HOUR_HEIGHT, borderBottom: 1, borderColor: 'divider', position: 'relative' }}>
+                  <Typography 
+                    variant="caption" 
+                    color="text.secondary" 
+                    sx={{ position: 'absolute', top: -10, right: 8, bgcolor: 'background.paper', px: 0.5 }}
+                  >
+                    {`${hour.toString().padStart(2, '0')}:00`}
+                  </Typography>
+                </Box>
+              ))}
+           </Box>
+
+           {/* Grid Body */}
+           <Box sx={{ ml: '60px', display: 'flex', minHeight: hours.length * HOUR_HEIGHT }}>
+              {daysToShow.map((day) => {
+                 const dayEvents = getEventsForDate(day);
+                 
+                 return (
+                   <Box 
+                    key={day.toISOString()} 
+                    sx={{ 
+                      flex: 1, 
+                      borderRight: 1, 
+                      borderColor: 'divider', 
+                      position: 'relative',
+                      bgcolor: isToday(day) ? 'rgba(25, 118, 210, 0.02)' : 'transparent'
+                    }}
+                  >
+                      {/* Hour Lines */}
+                      {hours.map(hour => (
+                        <Box key={`line-${hour}`} sx={{ height: HOUR_HEIGHT, borderBottom: 1, borderColor: 'divider' }} />
+                      ))}
+
+                      {/* Events */}
+                      {dayEvents.map(event => {
+                         const startH = getHours(event.startTime);
+                         const startM = getMinutes(event.startTime);
+                         
+                         // Check if event is within viewable hours
+                         if (startH < START_HOUR || startH > END_HOUR) return null; // Or handle overflow
+
+                         const top = ((startH - START_HOUR) * 60 + startM) * (HOUR_HEIGHT / 60);
+                         const duration = differenceInMinutes(event.endTime, event.startTime);
+                         const height = Math.max(duration * (HOUR_HEIGHT / 60), 25); // Min height 25px
+
+                         return (
+                           <TimeGridEvent 
+                             key={event._id} 
+                             event={event} 
+                             style={{ top, height, left: '2%', width: '96%' }}
+                             onClick={(e) => setSelectedEvent(e)}
+                           />
+                         );
+                      })}
+                   </Box>
+                 );
+              })}
+           </Box>
+           
+           {/* Current Time Indicator (if today is in view) */}
+           {daysToShow.some(d => isToday(d)) && (
+             <CurrentTimeIndicator viewMode={viewMode} daysToShow={daysToShow} />
+           )}
+        </Box>
+      </Paper>
+    );
+  };
+  
+  // Helper for current time line
+  const CurrentTimeIndicator = ({ viewMode, daysToShow }) => {
+     const [now, setNow] = useState(new Date());
+
+     useEffect(() => {
+       const interval = setInterval(() => setNow(new Date()), 60000);
+       return () => clearInterval(interval);
+     }, []);
+
+     const h = getHours(now);
+     const m = getMinutes(now);
+     
+     if (h < START_HOUR || h > END_HOUR) return null;
+
+     const top = ((h - START_HOUR) * 60 + m) * (HOUR_HEIGHT / 60);
+     
+     // Find column index for today
+     const todayIndex = daysToShow.findIndex(d => isToday(d));
+     if (todayIndex === -1) return null;
+     
+     // width calculation: 100% / number of days
+     const colWidth = 100 / daysToShow.length;
+     const left = todayIndex * colWidth;
+
+     return (
+       <Box
+         sx={{
+           position: 'absolute',
+           top,
+           left: `calc(60px + ${left}%)`, // 60px offset for time column
+           width: `${colWidth}%`,
+           height: '2px',
+           bgcolor: 'red',
+           zIndex: 20,
+           pointerEvents: 'none',
+           '&::before': {
+             content: '""',
+             position: 'absolute',
+             left: -4,
+             top: -3,
+             width: 8,
+             height: 8,
+             borderRadius: '50%',
+             bgcolor: 'red'
+           }
+         }}
+       />
+     );
+  };
+
 
   if (isLoading) {
     return (
-      <Box sx={{ p: 4 }}>
-        <Typography>טוען...</Typography>
+      <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}>
+        <Typography>טוען יומן...</Typography>
       </Box>
     );
   }
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Box>
-          <Typography variant="h4" gutterBottom>
-            📅 יומן משימות
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            תצוגה חודשית
-          </Typography>
+      {/* Top Toolbar */}
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+           <Typography variant="h4" fontWeight="bold">
+            {format(currentDate, 'MMMM yyyy', { locale: he })}
+           </Typography>
+           <Box sx={{ display: 'flex', gap: 1 }}>
+              <IconButton onClick={handlePrev} size="small" sx={{ border: 1, borderColor: 'divider' }}>
+                <ChevronRightIcon />
+              </IconButton>
+              <Button onClick={handleToday} variant="outlined" size="small" startIcon={<TodayIcon />}>
+                היום
+              </Button>
+              <IconButton onClick={handleNext} size="small" sx={{ border: 1, borderColor: 'divider' }}>
+                <ChevronLeftIcon />
+              </IconButton>
+           </Box>
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          <IconButton onClick={handlePrevMonth}>
-            <ChevronRightIcon />
-          </IconButton>
-          
-          <Typography variant="h6" sx={{ minWidth: 200, textAlign: 'center' }}>
-            {format(currentDate, 'MMMM yyyy', { locale: he })}
-          </Typography>
-          
-          <IconButton onClick={handleNextMonth}>
-            <ChevronLeftIcon />
-          </IconButton>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+           <Button 
+              variant="contained" 
+              color="primary" 
+              startIcon={<AddIcon />}
+              onClick={() => setCreateTaskDialogOpen(true)}
+           >
+              משימה חדשה
+           </Button>
 
-          <Button
-            startIcon={<TodayIcon />}
-            variant="outlined"
-            onClick={handleToday}
-          >
-            היום
-          </Button>
+           <ButtonGroup variant="contained" size="small" color="primary" sx={{ boxShadow: 0 }}>
+            <Button 
+                variant={viewMode === 'day' ? 'contained' : 'outlined'} 
+                onClick={() => setViewMode('day')}
+                sx={{ bgcolor: viewMode === 'day' ? 'primary.main' : 'white', color: viewMode === 'day' ? 'white' : 'primary.main' }}
+            >
+              יום
+            </Button>
+            <Button 
+                variant={viewMode === 'week' ? 'contained' : 'outlined'} 
+                onClick={() => setViewMode('week')}
+                sx={{ bgcolor: viewMode === 'week' ? 'primary.main' : 'white', color: viewMode === 'week' ? 'white' : 'primary.main' }}
+            >
+              שבוע
+            </Button>
+            <Button 
+                variant={viewMode === 'month' ? 'contained' : 'outlined'} 
+                onClick={() => setViewMode('month')}
+                sx={{ bgcolor: viewMode === 'month' ? 'primary.main' : 'white', color: viewMode === 'month' ? 'white' : 'primary.main' }}
+            >
+              חודש
+            </Button>
+          </ButtonGroup>
         </Box>
       </Box>
 
-      {/* Calendar Grid */}
-      <Card>
-        <Box sx={{ p: 2 }}>
-          {/* Days of Week Header */}
-          <Grid container spacing={1} sx={{ mb: 1 }}>
-            {['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'].map((day) => (
-              <Grid item xs={12 / 7} key={day}>
-                <Typography
-                  variant="subtitle2"
-                  align="center"
-                  color="text.secondary"
-                  fontWeight="bold"
-                >
-                  {day}
-                </Typography>
-              </Grid>
-            ))}
-          </Grid>
+      {/* Main Calendar Content */}
+      {viewMode === 'month' ? renderMonthView() : renderTimeGridView()}
 
-          {/* Calendar Days */}
-          <Grid container spacing={1}>
-            {allDays.map((day, index) => {
-              const dateKey = format(day, 'yyyy-MM-dd');
-              const tasksForDay = tasksByDate[dateKey] || [];
-              const isCurrentMonth = day.getMonth() === currentDate.getMonth();
-              const isTodayDate = isToday(day);
-
-              return (
-                <Grid item xs={12 / 7} key={index}>
-                  <Box
-                    sx={{
-                      minHeight: 120,
-                      border: '1px solid',
-                      borderColor: isTodayDate ? 'primary.main' : 'divider',
-                      borderRadius: 1,
-                      p: 1,
-                      cursor: 'pointer',
-                      bgcolor: isCurrentMonth ? 'background.paper' : 'action.hover',
-                      opacity: isCurrentMonth ? 1 : 0.5,
-                      transition: 'all 0.2s',
-                      '&:hover': {
-                        bgcolor: 'action.hover',
-                        transform: 'scale(1.02)'
-                      }
-                    }}
-                    onClick={() => handleDayClick(day)}
-                  >
-                    {/* Day Number */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography
-                        variant="body2"
-                        fontWeight={isTodayDate ? 'bold' : 'normal'}
-                        color={isTodayDate ? 'primary' : 'text.primary'}
-                      >
-                        {format(day, 'd')}
-                      </Typography>
-                      {tasksForDay.length > 0 && (
-                        <Badge badgeContent={tasksForDay.length} color="primary" />
-                      )}
-                    </Box>
-
-                    {/* Tasks */}
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                      {tasksForDay.slice(0, 3).map((task) => (
-                        <Box
-                          key={task._id}
-                          sx={{
-                            bgcolor: task.color || getPriorityColor(task.priority),
-                            color: 'white',
-                            px: 0.5,
-                            py: 0.25,
-                            borderRadius: 0.5,
-                            fontSize: '0.7rem',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {task.title}
-                        </Box>
-                      ))}
-                      {tasksForDay.length > 3 && (
-                        <Typography variant="caption" color="text.secondary">
-                          +{tasksForDay.length - 3} נוספות
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
-                </Grid>
-              );
-            })}
-          </Grid>
-        </Box>
-      </Card>
-
-      {/* Task Details Dialog */}
-      <Dialog
-        open={Boolean(selectedDate)}
-        onClose={() => setSelectedDate(null)}
-        maxWidth="sm"
+      {/* Event Details Dialog (Reused from logic) */}
+      <Dialog 
+        open={Boolean(selectedEvent)} 
+        onClose={() => setSelectedEvent(null)}
+        maxWidth="xs"
         fullWidth
       >
-        <DialogTitle>
-          {selectedDate && format(selectedDate, 'EEEE, d MMMM yyyy', { locale: he })}
-        </DialogTitle>
-        <DialogContent>
-          {selectedTasks.length > 0 ? (
-            <List>
-              {selectedTasks.map((task) => (
-                <ListItem
-                  key={task._id}
-                  sx={{
-                    border: '1px solid #e0e0e0',
-                    borderRadius: 1,
-                    mb: 1
-                  }}
-                >
-                  <ListItemText
-                    primary={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="subtitle1">{task.title}</Typography>
-                        <Chip
-                          label={task.priority}
-                          size="small"
-                          sx={{
-                            bgcolor: getPriorityColor(task.priority),
-                            color: 'white'
-                          }}
-                        />
-                      </Box>
-                    }
-                    secondary={
-                      <>
-                        {task.description && (
-                          <Typography variant="body2" gutterBottom>
-                            {task.description}
-                          </Typography>
-                        )}
-                        {task.relatedClient && (
-                          <Typography variant="caption" color="text.secondary">
-                            {task.relatedClient.personalInfo.fullName}
-                          </Typography>
-                        )}
-                      </>
-                    }
+        {selectedEvent && (
+          <>
+            <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+               {selectedEvent.__kind === 'task' ? <AccessTimeIcon color="primary" /> : <EventIcon color="success" />}
+               {selectedEvent.__kind === 'task' ? 'פרטי משימה' : 'פרטי אינטראקציה'}
+            </DialogTitle>
+            <DialogContent dividers>
+              <Typography variant="h6" gutterBottom>
+                {selectedEvent.__kind === 'task' ? selectedEvent.title : selectedEvent.subject}
+              </Typography>
+              
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  זמן: {format(selectedEvent.startTime, 'dd/MM/yyyy HH:mm')}
+                </Typography>
+                
+                {selectedEvent.__kind === 'task' && (
+                  <Chip 
+                    label={selectedEvent.priority} 
+                    size="small" 
+                    color={selectedEvent.priority === 'urgent' ? 'error' : selectedEvent.priority === 'high' ? 'warning' : 'primary'}
+                    sx={{ mr: 1 }}
                   />
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
-              אין משימות ליום זה
-            </Typography>
-          )}
+                )}
+                {selectedEvent.__kind === 'interaction' && (
+                  <Chip 
+                    label={selectedEvent.type} 
+                    size="small" 
+                    color="success"
+                    sx={{ mr: 1 }}
+                  />
+                )}
+              </Box>
+
+              {selectedEvent.description && (
+                <Typography variant="body1" sx={{ mt: 2, bgcolor: 'action.hover', p: 1, borderRadius: 1 }}>
+                  {selectedEvent.description}
+                </Typography>
+              )}
+              
+              {selectedEvent.content && (
+                <Typography variant="body1" sx={{ mt: 2, bgcolor: 'action.hover', p: 1, borderRadius: 1 }}>
+                  {selectedEvent.content}
+                </Typography>
+              )}
+
+              {selectedEvent.clientName && (
+                <Box sx={{ mt: 2, borderTop: 1, borderColor: 'divider', pt: 1 }}>
+                   <Typography variant="caption" color="text.secondary">לקוח מקושר:</Typography>
+                   <Typography variant="subtitle2">{selectedEvent.clientName}</Typography>
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setSelectedEvent(null)}>סגור</Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
+      
+      {/* Day Click List Dialog (Only for Month View selection) */}
+      <Dialog 
+         open={Boolean(selectedDate) && !selectedEvent && !createTaskDialogOpen} 
+         onClose={() => setSelectedDate(null)}
+         maxWidth="sm"
+         fullWidth
+      >
+         <DialogTitle>
+           אירועים ל-{selectedDate && format(selectedDate, 'd MMMM yyyy', { locale: he })}
+         </DialogTitle>
+         <DialogContent>
+           {selectedDate && getEventsForDate(selectedDate).length > 0 ? (
+             <List>
+               {getEventsForDate(selectedDate).map(event => (
+                 <ListItem 
+                   key={event._id} 
+                   button 
+                   onClick={() => setSelectedEvent(event)}
+                   sx={{ border: 1, borderColor: 'divider', borderRadius: 1, mb: 1 }}
+                 >
+                   <ListItemText 
+                     primary={event.__kind === 'task' ? event.title : event.subject || 'Follow-up'}
+                     secondary={`${format(event.startTime, 'HH:mm')} - ${event.clientName || ''}`}
+                   />
+                   <Chip 
+                     label={event.__kind === 'task' ? 'משימה' : 'אינטראקציה'} 
+                     size="small" 
+                     color={event.__kind === 'task' ? 'primary' : 'success'} 
+                   />
+                 </ListItem>
+               ))}
+             </List>
+           ) : (
+             <Typography sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>
+               אין אירועים ליום זה
+             </Typography>
+           )}
+         </DialogContent>
+         <DialogActions>
+            <Button onClick={() => setSelectedDate(null)}>סגור</Button>
+            <Button 
+              variant="contained" 
+              onClick={() => {
+                  // Close this dialog and open Create Task
+                  setCreateTaskDialogOpen(true);
+                  // Keep selectedDate so it can be used as default
+              }}
+            >
+                הוסף משימה
+            </Button>
+         </DialogActions>
+      </Dialog>
+
+      {/* Create Task Dialog */}
+      <Dialog
+        open={createTaskDialogOpen}
+        onClose={() => setCreateTaskDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>משימה חדשה</DialogTitle>
+        <DialogContent dividers>
+          <TaskForm 
+            initialData={{ 
+                dueDate: selectedDate 
+                    ? format(setHours(setMinutes(selectedDate, 0), 10), "yyyy-MM-dd'T'HH:mm") // Default to 10:00 on selected day
+                    : format(new Date(), "yyyy-MM-dd'T'HH:mm") 
+            }}
+            onSubmit={handleCreateTask}
+            onCancel={() => setCreateTaskDialogOpen(false)}
+            isLoading={createTask.isPending}
+          />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setSelectedDate(null)}>סגור</Button>
-        </DialogActions>
       </Dialog>
     </Box>
   );
 };
 
 export default CalendarView;
-
