@@ -168,7 +168,7 @@ const InvoiceSchema = new mongoose.Schema({
 });
 
 // אינדקסים
-InvoiceSchema.index({ invoiceNumber: 1 });
+// הערה: invoiceNumber כבר יש לו unique: true שיוצר אינדקס אוטומטית
 InvoiceSchema.index({ clientId: 1 });
 InvoiceSchema.index({ status: 1 });
 InvoiceSchema.index({ dueDate: 1 });
@@ -249,4 +249,5 @@ InvoiceSchema.pre('save', function(next) {
 });
 
 module.exports = mongoose.model('Invoice', InvoiceSchema);
+
 

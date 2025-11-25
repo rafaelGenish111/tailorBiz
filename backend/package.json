@@ -8,7 +8,8 @@
     "dev": "nodemon server.js",
     "seed": "node scripts/seed.js",
     "seed:nurturing": "node scripts/seedNurturing.js",
-    "fix:index": "node scripts/fixOrderNumberIndex.js"
+    "fix:index": "node scripts/fixOrderNumberIndex.js",
+    "fix:duplicate-indexes": "node scripts/fixDuplicateIndexes.js"
   },
   "keywords": [],
   "author": "",

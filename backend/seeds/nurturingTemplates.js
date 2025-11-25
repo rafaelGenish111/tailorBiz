@@ -383,6 +383,187 @@ const defaultTemplates = [
       }
     ],
     isActive: true
+  },
+  // ========== תבנית 7: שיחת סגירה נקבעה ==========
+  {
+    name: '📞 שיחת סגירה נקבעה',
+    description: 'עדכון ציון ויצירת משימה לקראת שיחת סגירה',
+    trigger: {
+      type: 'interaction',
+      conditions: {
+        interactionTypes: ['call', 'meeting'],
+        directions: ['outbound'],
+        subjectContains: 'סגירה',
+        statusIn: ['proposal_sent', 'negotiation']
+      }
+    },
+    sequence: [
+      // שלב 0: עדכון ציון
+      {
+        step: 0,
+        delayDays: 0,
+        actionType: 'update_lead_score',
+        content: {
+          scoreDelta: 10
+        },
+        stopIfResponse: false
+      },
+      // שלב 1: משימת היערכות לשיחת סגירה
+      {
+        step: 1,
+        delayDays: 0,
+        actionType: 'create_task',
+        content: {
+          taskTitle: 'היערכות לשיחת סגירה',
+          taskDescription: 'עבור על האפיון, ההצעה וההתנגדויות לפני שיחת הסגירה',
+          taskPriority: 'high'
+        },
+        stopIfResponse: false
+      }
+    ],
+    isActive: true
+  },
+  // ========== תבנית 8: סגירה מוצלחת ==========
+  {
+    name: '✅ סגירה מוצלחת ו-Onboarding',
+    description: 'רצף לאחר סגירה מוצלחת הכולל הודעת תודה ובדיקת upsell',
+    trigger: {
+      type: 'status_change',
+      conditions: {
+        statusIn: ['won']
+      }
+    },
+    sequence: [
+      // שלב 0: עדכון ציון
+      {
+        step: 0,
+        delayDays: 0,
+        actionType: 'update_lead_score',
+        content: {
+          scoreDelta: 30
+        },
+        stopIfResponse: false
+      },
+      // שלב 1: עדכון הסטטוס ללקוח פעיל
+      {
+        step: 1,
+        delayDays: 0,
+        actionType: 'update_client_status',
+        content: {
+          newStatus: 'active_client'
+        },
+        stopIfResponse: false
+      },
+      // שלב 2: הודעת תודה ושביעות רצון אחרי יומיים
+      {
+        step: 2,
+        delayDays: 2,
+        actionType: 'send_whatsapp',
+        content: {
+          message: `היי {name}! 🎉
+
+איזה כיף שיצאנו לדרך ביחד!
+
+אם יש משהו שלא ברור או צריך עזרה, אני כאן לכל שאלה.`
+        },
+        stopIfResponse: true
+      },
+      // שלב 3: בדיקת שביעות רצון ו-upsell אחרי חודש
+      {
+        step: 3,
+        delayDays: 30,
+        actionType: 'create_task',
+        content: {
+          taskTitle: 'בדיקת שביעות רצון ו-Up-sell',
+          taskDescription: 'בדיקת התקדמות, איסוף פידבק והצעת שדרוגים אפשריים',
+          taskPriority: 'medium'
+        },
+        stopIfResponse: false
+      }
+    ],
+    isActive: true
+  },
+  // ========== תבנית 9: ליד קפוא (7 ימים ללא קשר) ==========
+  {
+    name: '❄️ ליד קפוא - 7 ימים ללא קשר',
+    description: 'רצף החייאה לליד שלא היה איתו קשר מעל שבוע',
+    trigger: {
+      type: 'time_based',
+      conditions: {
+        daysSinceLastContact: 7,
+        statusIn: ['lead', 'contacted', 'proposal_sent']
+      }
+    },
+    sequence: [
+      // שלב 0: הודעת \"רק בודק\" לליד קר
+      {
+        step: 0,
+        delayDays: 0,
+        actionType: 'send_whatsapp',
+        content: {
+          message: `היי {name}! ❄️
+
+שמתי לב שלא דיברנו כבר זמן מה.
+
+רק רציתי לבדוק אם עדיין רלוונטי להמשיך את התהליך או שנכון לעצור כאן.`
+        },
+        stopIfResponse: true
+      },
+      // שלב 1: משימת שיחת רענון אם אין תגובה
+      {
+        step: 1,
+        delayDays: 2,
+        actionType: 'create_task',
+        content: {
+          taskTitle: 'שיחת רענון לליד קפוא',
+          taskDescription: 'לבדוק אם הלקוח עדיין רלוונטי ולהבין מה עצר את התהליך',
+          taskPriority: 'medium'
+        },
+        stopIfResponse: false
+      }
+    ],
+    isActive: true
+  },
+  // ========== תבנית 10: בדיקת לקוח פעיל (30 ימים ללא קשר) ==========
+  {
+    name: '🔁 בדיקת לקוח פעיל - 30 ימים ללא קשר',
+    description: 'רצף לבדיקה יזומה של לקוח פעיל לאחר תקופה ללא קשר',
+    trigger: {
+      type: 'time_based',
+      conditions: {
+        daysSinceLastContact: 30,
+        statusIn: ['active_client']
+      }
+    },
+    sequence: [
+      // שלב 0: משימת check-in
+      {
+        step: 0,
+        delayDays: 0,
+        actionType: 'create_task',
+        content: {
+          taskTitle: 'שיחת Check-in עם לקוח פעיל',
+          taskDescription: 'לשאול איך הולך, לזהות נקודות לשיפור ולבחון אפשרויות הרחבה',
+          taskPriority: 'medium'
+        },
+        stopIfResponse: false
+      },
+      // שלב 1: הודעת follow-up אוטומטית אם לא היה קשר
+      {
+        step: 1,
+        delayDays: 3,
+        actionType: 'send_whatsapp',
+        content: {
+          message: `היי {name}! 🙂
+
+רק רציתי לוודא שכל מה שבנינו ב-{business} עובד כמו שצריך.
+
+אם יש משהו שתרצה לשפר או להוסיף, אשמח לחשוב יחד.`
+        },
+        stopIfResponse: true
+      }
+    ],
+    isActive: true
   }
 ];
 
@@ -409,4 +590,5 @@ async function seedTemplates() {
 }
 
 module.exports = { seedTemplates, defaultTemplates };
+
 

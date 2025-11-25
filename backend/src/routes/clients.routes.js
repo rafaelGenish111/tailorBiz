@@ -40,7 +40,8 @@ router.route('/:id/interactions')
   .post(clientController.addInteraction);
 
 router.route('/:id/interactions/:interactionId')
-  .put(clientController.updateInteraction);
+  .put(clientController.updateInteraction)
+  .delete(clientController.deleteInteraction);
 
 // Routes להזמנות
 router.route('/:id/orders')

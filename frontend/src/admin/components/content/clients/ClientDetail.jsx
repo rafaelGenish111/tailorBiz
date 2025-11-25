@@ -20,12 +20,14 @@ import {
   InputLabel,
   Select,
 } from '@mui/material';
-import { Close as CloseIcon, Phone as PhoneIcon, Email as EmailIcon } from '@mui/icons-material';
+import { Close as CloseIcon, Phone as PhoneIcon, Email as EmailIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import {
   useUpdateClient,
   useClientInteractions,
   useAddInteraction,
+  useUpdateInteraction,
+  useDeleteInteraction,
 } from '../../../hooks/useClients';
 import AssessmentTab from '../../../../components/clients/ClientCard/tabs/AssessmentTab';
 
@@ -74,12 +76,15 @@ function ClientDetail({ open, onClose, client }) {
   const [tagsInput, setTagsInput] = useState('');
 
   const [interactionDialogOpen, setInteractionDialogOpen] = useState(false);
+  const [editInteractionDialogOpen, setEditInteractionDialogOpen] = useState(false);
+  const [editingInteraction, setEditingInteraction] = useState(null);
   const [newInteraction, setNewInteraction] = useState({
     type: 'call',
     direction: 'outbound',
     subject: '',
     content: '',
     nextFollowUp: '',
+    businessType: 'followup',
   });
 
   const [proposalForm, setProposalForm] = useState({
@@ -97,6 +102,8 @@ function ClientDetail({ open, onClose, client }) {
 
   const updateClient = useUpdateClient();
   const addInteraction = useAddInteraction();
+  const updateInteraction = useUpdateInteraction();
+  const deleteInteraction = useDeleteInteraction();
 
   useEffect(() => {
     if (client) {
@@ -170,9 +177,26 @@ function ClientDetail({ open, onClose, client }) {
   const handleAddInteraction = async () => {
     if (!clientId || !newInteraction.content) return;
 
+    const subject =
+      newInteraction.subject ||
+      (newInteraction.businessType === 'followup'
+        ? 'מעקב'
+        : newInteraction.businessType === 'deal_closing'
+        ? 'שיחת סגירה'
+        : newInteraction.businessType === 'proposal'
+        ? 'הצעת מחיר'
+        : newInteraction.businessType === 'pause'
+        ? 'הפסקת תהליך'
+        : newInteraction.businessType === 'end_contract'
+        ? 'סיום התקשרות'
+        : '');
+
     await addInteraction.mutateAsync({
       clientId,
-      data: newInteraction,
+      data: {
+        ...newInteraction,
+        subject,
+      },
     });
 
     setInteractionDialogOpen(false);
@@ -182,6 +206,7 @@ function ClientDetail({ open, onClose, client }) {
       subject: '',
       content: '',
       nextFollowUp: '',
+      businessType: 'followup',
     });
   };
 
@@ -459,10 +484,50 @@ function ClientDetail({ open, onClose, client }) {
                   <Paper key={interaction._id || index} variant="outlined" sx={{ p: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="subtitle2">{interaction.type}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {interaction.date &&
-                          new Date(interaction.date).toLocaleDateString('he-IL')}
-                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        <Typography variant="caption" color="text.secondary">
+                          {interaction.date &&
+                            new Date(interaction.date).toLocaleDateString('he-IL')}
+                        </Typography>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            // המרת nextFollowUp לתאריך בפורמט datetime-local
+                            let nextFollowUpFormatted = '';
+                            if (interaction.nextFollowUp) {
+                              const date = new Date(interaction.nextFollowUp);
+                              const year = date.getFullYear();
+                              const month = String(date.getMonth() + 1).padStart(2, '0');
+                              const day = String(date.getDate()).padStart(2, '0');
+                              const hours = String(date.getHours()).padStart(2, '0');
+                              const minutes = String(date.getMinutes()).padStart(2, '0');
+                              nextFollowUpFormatted = `${year}-${month}-${day}T${hours}:${minutes}`;
+                            }
+                            setEditingInteraction({
+                              ...interaction,
+                              nextFollowUp: nextFollowUpFormatted
+                            });
+                            setEditInteractionDialogOpen(true);
+                          }}
+                          color="primary"
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            if (window.confirm('האם אתה בטוח שברצונך למחוק את האינטראקציה הזו?')) {
+                              deleteInteraction.mutate({
+                                clientId,
+                                interactionId: interaction._id
+                              });
+                            }
+                          }}
+                          color="error"
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
                     </Box>
                     {interaction.subject && (
                       <Typography variant="subtitle2" gutterBottom>
@@ -477,7 +542,12 @@ function ClientDetail({ open, onClose, client }) {
                         <Chip
                           label={`Follow-up: ${new Date(
                             interaction.nextFollowUp
-                          ).toLocaleDateString('he-IL')}`}
+                          ).toLocaleDateString('he-IL')} ${new Date(
+                            interaction.nextFollowUp
+                          ).toLocaleTimeString('he-IL', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}`}
                           size="small"
                           color="warning"
                           variant="outlined"
@@ -659,10 +729,10 @@ function ClientDetail({ open, onClose, client }) {
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
             <FormControl fullWidth size="small">
-              <InputLabel>סוג</InputLabel>
+              <InputLabel>ערוץ</InputLabel>
               <Select
                 value={newInteraction.type}
-                label="סוג"
+                label="ערוץ"
                 onChange={(e) =>
                   setNewInteraction((prev) => ({ ...prev, type: e.target.value }))
                 }
@@ -673,6 +743,23 @@ function ClientDetail({ open, onClose, client }) {
                 <MenuItem value="meeting">פגישה</MenuItem>
                 <MenuItem value="note">הערה</MenuItem>
                 <MenuItem value="task">משימה</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth size="small">
+              <InputLabel>סוג אינטראקציה</InputLabel>
+              <Select
+                value={newInteraction.businessType}
+                label="סוג אינטראקציה"
+                onChange={(e) =>
+                  setNewInteraction((prev) => ({ ...prev, businessType: e.target.value }))
+                }
+              >
+                <MenuItem value="followup">מעקב</MenuItem>
+                <MenuItem value="deal_closing">סגירת עסקה</MenuItem>
+                <MenuItem value="proposal">הצעת מחיר</MenuItem>
+                <MenuItem value="pause">הפסקה</MenuItem>
+                <MenuItem value="end_contract">סיום התקשרות</MenuItem>
               </Select>
             </FormControl>
 
@@ -713,8 +800,8 @@ function ClientDetail({ open, onClose, client }) {
             />
 
             <TextField
-              label="Follow-up הבא"
-              type="date"
+              label="Follow-up הבא (תאריך ושעה)"
+              type="datetime-local"
               fullWidth
               size="small"
               value={newInteraction.nextFollowUp}
@@ -733,6 +820,114 @@ function ClientDetail({ open, onClose, client }) {
             disabled={!newInteraction.content}
           >
             הוסף
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Interaction Dialog */}
+      <Dialog
+        open={editInteractionDialogOpen}
+        onClose={() => {
+          setEditInteractionDialogOpen(false);
+          setEditingInteraction(null);
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>ערוך אינטראקציה</DialogTitle>
+        <DialogContent>
+          {editingInteraction && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>סוג</InputLabel>
+                <Select
+                  value={editingInteraction.type}
+                  onChange={(e) =>
+                    setEditingInteraction({ ...editingInteraction, type: e.target.value })
+                  }
+                  label="סוג"
+                >
+                  <MenuItem value="call">שיחה</MenuItem>
+                  <MenuItem value="email">אימייל</MenuItem>
+                  <MenuItem value="whatsapp">WhatsApp</MenuItem>
+                  <MenuItem value="meeting">פגישה</MenuItem>
+                  <MenuItem value="note">הערה</MenuItem>
+                  <MenuItem value="task">משימה</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth size="small">
+                <InputLabel>כיוון</InputLabel>
+                <Select
+                  value={editingInteraction.direction}
+                  onChange={(e) =>
+                    setEditingInteraction({ ...editingInteraction, direction: e.target.value })
+                  }
+                  label="כיוון"
+                >
+                  <MenuItem value="outbound">יוצא</MenuItem>
+                  <MenuItem value="inbound">נכנס</MenuItem>
+                </Select>
+              </FormControl>
+
+              <TextField
+                label="נושא"
+                fullWidth
+                size="small"
+                value={editingInteraction.subject || ''}
+                onChange={(e) =>
+                  setEditingInteraction({ ...editingInteraction, subject: e.target.value })
+                }
+              />
+
+              <TextField
+                label="תוכן"
+                fullWidth
+                multiline
+                rows={4}
+                size="small"
+                value={editingInteraction.content || editingInteraction.notes || ''}
+                onChange={(e) =>
+                  setEditingInteraction({ ...editingInteraction, content: e.target.value })
+                }
+                required
+              />
+
+              <TextField
+                label="Follow-up הבא (תאריך ושעה)"
+                type="datetime-local"
+                fullWidth
+                size="small"
+                value={editingInteraction.nextFollowUp || ''}
+                onChange={(e) =>
+                  setEditingInteraction({ ...editingInteraction, nextFollowUp: e.target.value })
+                }
+                InputLabelProps={{ shrink: true }}
+              />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setEditInteractionDialogOpen(false);
+            setEditingInteraction(null);
+          }}>
+            ביטול
+          </Button>
+          <Button
+            variant="contained"
+            onClick={async () => {
+              await updateInteraction.mutateAsync({
+                clientId,
+                interactionId: editingInteraction._id,
+                data: editingInteraction
+              });
+              setEditInteractionDialogOpen(false);
+              setEditingInteraction(null);
+            }}
+            disabled={!editingInteraction?.content && !editingInteraction?.notes}
+          >
+            שמור שינויים
           </Button>
         </DialogActions>
       </Dialog>

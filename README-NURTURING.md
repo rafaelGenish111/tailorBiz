@@ -380,3 +380,4 @@ curl http://localhost:5000/api/automation/status
 
 **🎉 המערכת מוכנה! כל ליד חדש יטופל אוטומטית!**
 
+

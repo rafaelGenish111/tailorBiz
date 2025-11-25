@@ -76,6 +76,8 @@ export const clientAPI = {
   getInteractions: (id) => api.get(`/clients/${id}/interactions`),
   updateInteraction: (id, interactionId, data) => 
     api.put(`/clients/${id}/interactions/${interactionId}`, data),
+  deleteInteraction: (id, interactionId) => 
+    api.delete(`/clients/${id}/interactions/${interactionId}`),
 
   // הזמנות
   createOrder: (id, data) => api.post(`/clients/${id}/orders`, data),
