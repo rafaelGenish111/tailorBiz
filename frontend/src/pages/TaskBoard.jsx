@@ -11,24 +11,27 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
-  TextField,
-  MenuItem,
   Avatar,
-  Badge
+  Badge,
+  Paper
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  DragIndicator as DragIcon
+  Assignment as AssignmentIcon,
+  CheckCircle as CheckCircleIcon,
+  Pending as PendingIcon,
+  Schedule as ScheduleIcon
 } from '@mui/icons-material';
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from '../admin/hooks/useTasks';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
+import TaskForm from '../admin/components/content/tasks/TaskForm';
 
 const TaskBoard = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editTask, setEditTask] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState('todo');
 
   const { data: tasksResponse } = useTasks();
@@ -47,10 +50,10 @@ const TaskBoard = () => {
   };
 
   const columns = [
-    { id: 'todo', title: 'לעשות', color: '#9e9e9e', icon: '📋' },
-    { id: 'in_progress', title: 'בביצוע', color: '#2196f3', icon: '🔄' },
-    { id: 'waiting', title: 'ממתין', color: '#ff9800', icon: '⏸️' },
-    { id: 'completed', title: 'הושלם', color: '#4caf50', icon: '✅' }
+    { id: 'todo', title: 'לעשות', color: '#607d8b', icon: <AssignmentIcon /> },
+    { id: 'in_progress', title: 'בביצוע', color: '#2196f3', icon: <ScheduleIcon /> },
+    { id: 'waiting', title: 'ממתין', color: '#ff9800', icon: <PendingIcon /> },
+    { id: 'completed', title: 'הושלם', color: '#4caf50', icon: <CheckCircleIcon /> }
   ];
 
   const getPriorityColor = (priority) => {
@@ -76,22 +79,35 @@ const TaskBoard = () => {
     }
   };
 
+  const handleCreate = (data) => {
+    createTask.mutate(data, {
+      onSuccess: () => setCreateDialogOpen(false)
+    });
+  };
+
+  const handleUpdate = (data) => {
+    updateTask.mutate({ id: editTask._id, data }, {
+      onSuccess: () => setEditTask(null)
+    });
+  };
+
   return (
-    <Box>
+    <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h4" gutterBottom fontWeight="bold">
             📊 לוח משימות
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            תצוגת Kanban
+            ניהול משימות ומעקב ביצוע
           </Typography>
         </Box>
 
         <Button
           startIcon={<AddIcon />}
           variant="contained"
+          size="large"
           onClick={() => {
             setSelectedStatus('todo');
             setCreateDialogOpen(true);
@@ -102,151 +118,182 @@ const TaskBoard = () => {
       </Box>
 
       {/* Kanban Board */}
-      <Grid container spacing={2}>
+      <Grid container spacing={3}>
         {columns.map((column) => (
-          <Grid item xs={12} md={3} key={column.id}>
-            <Card sx={{ height: '100%', minHeight: '70vh' }}>
+          <Grid item xs={12} md={6} lg={3} key={column.id}>
+            <Paper 
+              elevation={0}
+              sx={{ 
+                height: '100%', 
+                minHeight: '75vh', 
+                bgcolor: '#f5f5f5',
+                display: 'flex', 
+                flexDirection: 'column',
+                borderRadius: 2,
+                overflow: 'hidden'
+              }}
+            >
               {/* Column Header */}
               <Box
                 sx={{
                   p: 2,
-                  bgcolor: column.color,
-                  color: 'white',
+                  borderTop: `4px solid ${column.color}`,
+                  bgcolor: 'white',
                   display: 'flex',
                   justifyContent: 'space-between',
-                  alignItems: 'center'
+                  alignItems: 'center',
+                  boxShadow: 1
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="h6">
-                    {column.icon} {column.title}
+                  <Box sx={{ color: column.color, display: 'flex' }}>
+                    {column.icon}
+                  </Box>
+                  <Typography variant="h6" fontWeight="bold">
+                    {column.title}
                   </Typography>
                 </Box>
-                <Badge badgeContent={tasksByStatus[column.id].length} color="error" />
+                <Chip 
+                  label={tasksByStatus[column.id].length} 
+                  size="small" 
+                  sx={{ bgcolor: column.color, color: 'white', fontWeight: 'bold' }}
+                />
               </Box>
 
               {/* Tasks */}
-              <Box sx={{ p: 2 }}>
+              <Box sx={{ p: 2, flexGrow: 1, overflowY: 'auto' }}>
                 {tasksByStatus[column.id].length > 0 ? (
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {tasksByStatus[column.id].map((task) => (
                       <Card
                         key={task._id}
+                        elevation={2}
                         sx={{
                           p: 2,
-                          cursor: 'grab',
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s, box-shadow 0.2s',
                           '&:hover': {
-                            boxShadow: 3
+                            transform: 'translateY(-2px)',
+                            boxShadow: 4
                           },
-                          borderLeft: `4px solid ${task.color || column.color}`
+                          position: 'relative'
                         }}
                       >
+                        {/* Priority Stripe */}
+                        <Box 
+                          sx={{ 
+                            position: 'absolute', 
+                            left: 0, 
+                            top: 0, 
+                            bottom: 0, 
+                            width: 4, 
+                            bgcolor: task.priority === 'urgent' ? 'error.main' : 
+                                    task.priority === 'high' ? 'warning.main' : 
+                                    task.priority === 'medium' ? 'info.main' : 'grey.300'
+                          }} 
+                        />
+
                         {/* Task Header */}
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Box sx={{ pl: 1, display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                           <Chip
-                            label={task.priority}
+                            label={task.priority === 'urgent' ? 'דחוף' : 
+                                   task.priority === 'high' ? 'גבוה' : 
+                                   task.priority === 'medium' ? 'בינוני' : 'נמוך'}
                             size="small"
                             color={getPriorityColor(task.priority)}
+                            variant="outlined"
                           />
                           <Box>
-                            <IconButton size="small">
+                            <IconButton 
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditTask(task);
+                              }}
+                            >
                               <EditIcon fontSize="small" />
                             </IconButton>
                             <IconButton
                               size="small"
-                              onClick={() => handleDeleteTask(task._id)}
+                              color="error"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteTask(task._id);
+                              }}
                             >
                               <DeleteIcon fontSize="small" />
                             </IconButton>
                           </Box>
                         </Box>
 
-                        {/* Task Title */}
-                        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                          {task.title}
-                        </Typography>
-
-                        {/* Task Description */}
-                        {task.description && (
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            gutterBottom
-                            sx={{
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical'
-                            }}
-                          >
-                            {task.description}
+                        {/* Task Content */}
+                        <Box sx={{ pl: 1 }}>
+                          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                            {task.title}
                           </Typography>
-                        )}
 
-                        {/* Related Client */}
-                        {task.relatedClient && (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                            <Avatar sx={{ width: 24, height: 24, fontSize: '0.8rem' }}>
-                              {task.relatedClient.personalInfo.fullName?.charAt(0)}
-                            </Avatar>
-                            <Typography variant="caption" color="text.secondary">
-                              {task.relatedClient.personalInfo.fullName}
+                          {task.description && (
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              gutterBottom
+                              sx={{
+                                mb: 2,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical'
+                              }}
+                            >
+                              {task.description}
                             </Typography>
-                          </Box>
-                        )}
+                          )}
 
-                        {/* Due Date */}
-                        {task.dueDate && (
-                          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                            📅 {format(new Date(task.dueDate), 'dd/MM/yyyy HH:mm')}
-                          </Typography>
-                        )}
+                          {/* Footer Info */}
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 'auto' }}>
+                             {task.relatedClient ? (
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Avatar 
+                                  sx={{ width: 24, height: 24, fontSize: '0.75rem', bgcolor: 'primary.main' }}
+                                >
+                                  {task.relatedClient.personalInfo.fullName?.charAt(0)}
+                                </Avatar>
+                                <Typography variant="caption" color="text.secondary" sx={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {task.relatedClient.personalInfo.fullName}
+                                </Typography>
+                              </Box>
+                            ) : <Box />}
 
-                        {/* Status Change Buttons */}
-                        {task.status !== 'completed' && (
-                          <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-                            {task.status === 'todo' && (
-                              <Button
+                            {task.dueDate && (
+                              <Chip 
+                                icon={<ScheduleIcon sx={{ fontSize: '1rem !important' }} />}
+                                label={format(new Date(task.dueDate), 'dd/MM HH:mm')}
                                 size="small"
-                                variant="outlined"
-                                fullWidth
-                                onClick={() => handleStatusChange(task._id, 'in_progress')}
-                              >
-                                התחל
+                                sx={{ fontSize: '0.75rem', height: 24 }}
+                              />
+                            )}
+                          </Box>
+                        </Box>
+
+                        {/* Actions */}
+                        <Box sx={{ mt: 2, pt: 1, borderTop: 1, borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                            {task.status === 'todo' && (
+                              <Button size="small" onClick={() => handleStatusChange(task._id, 'in_progress')}>
+                                התחל טיפול
                               </Button>
                             )}
                             {task.status === 'in_progress' && (
-                              <>
-                                <Button
-                                  size="small"
-                                  variant="outlined"
-                                  onClick={() => handleStatusChange(task._id, 'waiting')}
-                                >
-                                  המתן
-                                </Button>
-                                <Button
-                                  size="small"
-                                  variant="contained"
-                                  color="success"
-                                  onClick={() => handleStatusChange(task._id, 'completed')}
-                                >
-                                  סיים
-                                </Button>
-                              </>
-                            )}
-                            {task.status === 'waiting' && (
-                              <Button
-                                size="small"
-                                variant="outlined"
-                                fullWidth
-                                onClick={() => handleStatusChange(task._id, 'in_progress')}
-                              >
-                                המשך
+                              <Button size="small" color="success" onClick={() => handleStatusChange(task._id, 'completed')}>
+                                סיים משימה
                               </Button>
                             )}
-                          </Box>
-                        )}
+                            {task.status === 'completed' && (
+                               <Typography variant="caption" color="success.main" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                 <CheckCircleIcon fontSize="small" /> הושלם
+                               </Typography>
+                            )}
+                        </Box>
                       </Card>
                     ))}
                   </Box>
@@ -254,20 +301,20 @@ const TaskBoard = () => {
                   <Box
                     sx={{
                       textAlign: 'center',
-                      py: 4,
-                      color: 'text.secondary'
+                      py: 8,
+                      opacity: 0.5
                     }}
                   >
                     <Typography variant="body2">אין משימות</Typography>
                   </Box>
                 )}
 
-                {/* Add Task Button */}
+                {/* Add Task Button (Bottom of column) */}
                 <Button
                   fullWidth
-                  variant="outlined"
+                  variant="dashed"
                   startIcon={<AddIcon />}
-                  sx={{ mt: 2 }}
+                  sx={{ mt: 2, border: '1px dashed', borderColor: 'divider' }}
                   onClick={() => {
                     setSelectedStatus(column.id);
                     setCreateDialogOpen(true);
@@ -276,33 +323,48 @@ const TaskBoard = () => {
                   הוסף משימה
                 </Button>
               </Box>
-            </Card>
+            </Paper>
           </Grid>
         ))}
       </Grid>
 
-      {/* Create Task Dialog - נוסיף בהמשך */}
+      {/* Create Task Dialog */}
       <Dialog
         open={createDialogOpen}
         onClose={() => setCreateDialogOpen(false)}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
       >
         <DialogTitle>משימה חדשה</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary">
-            טופס יצירת משימה יתווסף בהמשך...
-          </Typography>
+        <DialogContent dividers>
+          <TaskForm 
+            initialData={{ status: selectedStatus }}
+            onSubmit={handleCreate}
+            onCancel={() => setCreateDialogOpen(false)}
+            isLoading={createTask.isPending}
+          />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCreateDialogOpen(false)}>ביטול</Button>
-          <Button variant="contained">צור משימה</Button>
-        </DialogActions>
+      </Dialog>
+
+      {/* Edit Task Dialog */}
+      <Dialog
+        open={Boolean(editTask)}
+        onClose={() => setEditTask(null)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>עריכת משימה</DialogTitle>
+        <DialogContent dividers>
+          <TaskForm 
+            initialData={editTask}
+            onSubmit={handleUpdate}
+            onCancel={() => setEditTask(null)}
+            isLoading={updateTask.isPending}
+          />
+        </DialogContent>
       </Dialog>
     </Box>
   );
 };
 
 export default TaskBoard;
-
-

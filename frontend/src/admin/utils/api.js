@@ -140,6 +140,11 @@ export const tasksAPI = {
   getStats: () => api.get('/tasks/stats/overview')
 };
 
+// ========== Lead Nurturing API ==========
+export const leadNurturingAPI = {
+  getActiveInstances: (params) => api.get('/lead-nurturing/instances', { params })
+};
+
 // ========== Notifications API ==========
 export const notificationsAPI = {
   getAll: (params) => api.get('/notifications', { params }),
