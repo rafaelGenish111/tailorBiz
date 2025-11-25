@@ -24,17 +24,30 @@ const LeadNurturingSchema = new mongoose.Schema({
         'status_change',         // שינוי סטטוס
         'assessment_completed',  // אפיון הושלם
         'proposal_sent',         // הצעה נשלחה
+        'interaction',           // אינטראקציה חדשה (שיחה, וואטסאפ, פגישה וכו')
+        'time_based',            // טריגר זמן כללי (ימים מאז קשר אחרון וכו')
         'manual'                 // ידני
       ],
       required: true
     },
     // תנאים נוספים
     conditions: {
-      daysWithoutContact: Number,      // ימים ללא קשר
+      // תנאי זמן כללי / לידים ללא קשר
+      daysWithoutContact: Number,      // ימים ללא קשר (קיים היסטורית)
+      daysSinceLastContact: Number,    // אלטרנטיבה ברורה יותר לשם
+
+      // תנאים על הליד
       leadSource: [String],            // מקורות ליד ספציפיים
       minLeadScore: Number,            // ציון מינימלי
       statuses: [String],              // סטטוסים רלוונטיים
-      tags: [String]                   // תגיות
+      statusIn: [String],              // שם נוסף/אלטרנטיבי לסטטוסים
+      tags: [String],                  // תגיות
+
+      // תנאים על אינטראקציה
+      interactionTypes: [String],      // סוגי אינטראקציה רלוונטיים (call/email/whatsapp/meeting/note/task)
+      directions: [String],            // inbound / outbound
+      subjectContains: String,         // מחרוזת שמופיעה בנושא
+      hasNextFollowUp: Boolean         // האם נדרש שתהיה אינטראקציה עם nextFollowUp
     }
   },
 
@@ -53,7 +66,10 @@ const LeadNurturingSchema = new mongoose.Schema({
         'send_whatsapp',         // שלח WhatsApp
         'create_task',           // צור משימה
         'send_email',            // שלח אימייל
-        'change_status',         // שנה סטטוס
+        'change_status',         // שנה סטטוס (שם היסטורי)
+        'update_lead_score',     // עדכון ציון ליד
+        'update_client_status',  // עדכון סטטוס לקוח
+        'schedule_followup',     // יצירת אינטראקציית follow-up עתידית
         'add_tag',               // הוסף תג
         'create_notification'    // צור התראה
       ],
@@ -73,6 +89,15 @@ const LeadNurturingSchema = new mongoose.Schema({
       
       // לשינוי סטטוס
       newStatus: String,
+
+      // לעדכון ציון
+      scoreDelta: Number,        // שינוי יחסי (לדוגמה +10, -5)
+      newScore: Number,          // קיבוע ציון חדש מוחלט
+
+      // ליצירת follow-up מתוזמן
+      followupType: String,      // call / whatsapp / note / task
+      followupSubject: String,
+      followupContent: String,
       
       // לתג
       tagName: String,
@@ -120,4 +145,5 @@ const LeadNurturingSchema = new mongoose.Schema({
 LeadNurturingSchema.index({ 'trigger.type': 1, isActive: 1 });
 
 module.exports = mongoose.model('LeadNurturing', LeadNurturingSchema);
+
 

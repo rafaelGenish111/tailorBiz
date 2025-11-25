@@ -87,6 +87,40 @@ export const useAddInteraction = () => {
   });
 };
 
+export const useUpdateInteraction = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ clientId, interactionId, data }) => 
+      clientAPI.updateInteraction(clientId, interactionId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(['client-interactions', variables.clientId]);
+      queryClient.invalidateQueries(['client', variables.clientId]);
+      toast.success('אינטראקציה עודכנה בהצלחה!');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'שגיאה בעדכון האינטראקציה');
+    }
+  });
+};
+
+export const useDeleteInteraction = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ clientId, interactionId }) => 
+      clientAPI.deleteInteraction(clientId, interactionId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(['client-interactions', variables.clientId]);
+      queryClient.invalidateQueries(['client', variables.clientId]);
+      toast.success('אינטראקציה נמחקה בהצלחה!');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'שגיאה במחיקת האינטראקציה');
+    }
+  });
+};
+
 export const useClientTasks = (clientId, filters) => {
   return useQuery({
     queryKey: ['client-tasks', clientId, filters],
@@ -141,4 +175,5 @@ export const usePipelineStats = () => {
     queryFn: () => clientAPI.getPipelineStats().then(res => res.data)
   });
 };
+
 

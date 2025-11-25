@@ -26,3 +26,4 @@ const PaymentsTab = ({ client }) => {
 
 export default PaymentsTab;
 
+

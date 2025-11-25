@@ -451,7 +451,7 @@ const ClientSchema = new mongoose.Schema({
 });
 
 // אינדקסים לחיפוש מהיר
-ClientSchema.index({ 'personalInfo.phone': 1 });
+// הערה: personalInfo.phone כבר יש לו unique: true שיוצר אינדקס אוטומטית
 ClientSchema.index({ 'personalInfo.email': 1 });
 ClientSchema.index({ 'personalInfo.whatsappPhone': 1 });
 ClientSchema.index({ 'businessInfo.businessName': 'text', 'personalInfo.fullName': 'text' });

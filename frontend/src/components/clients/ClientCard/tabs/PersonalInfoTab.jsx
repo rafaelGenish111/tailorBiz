@@ -50,3 +50,4 @@ const PersonalInfoTab = ({ client }) => {
 
 export default PersonalInfoTab;
 
+

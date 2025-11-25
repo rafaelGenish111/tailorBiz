@@ -2,6 +2,7 @@ const Client = require('../models/Client');
 const Invoice = require('../models/Invoice');
 const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
+const leadNurturingService = require('../services/leadNurturingService');
 
 // Helper function to check if string is valid ObjectId
 const isValidObjectId = (id) => {
@@ -135,6 +136,11 @@ exports.createClient = async (req, res) => {
     const client = new Client(clientData);
     await client.save();
 
+    // הפעל אוטומציות טיפוח לליד חדש (אסינכרוני - לא מחכה)
+    leadNurturingService.checkTriggersForNewLead(client._id).catch(err => {
+      console.error('Error triggering nurturing for new lead:', err);
+    });
+
     res.status(201).json({
       success: true,
       message: 'לקוח נוצר בהצלחה',
@@ -171,6 +177,8 @@ exports.updateClient = async (req, res) => {
       });
     }
 
+    const oldStatus = client.status;
+
     // עדכון שדות
     Object.keys(req.body).forEach(key => {
       if (key !== '_id' && key !== '__v') {
@@ -179,6 +187,18 @@ exports.updateClient = async (req, res) => {
     });
 
     await client.save();
+
+    // בדיקת טריגרים לשינוי סטטוס
+    if (
+      process.env.ENABLE_LEAD_NURTURING === 'true' &&
+      typeof oldStatus === 'string' &&
+      typeof client.status === 'string' &&
+      oldStatus !== client.status
+    ) {
+      leadNurturingService.checkTriggersForStatusChange(client._id, oldStatus, client.status).catch(err => {
+        console.error('Error checking status-change triggers:', err);
+      });
+    }
 
     res.json({
       success: true,
@@ -340,6 +360,17 @@ exports.addInteraction = async (req, res) => {
     client.interactions.push(interaction);
     await client.save();
 
+    // בדוק אם צריך לעדכן/לעצור רצפי טיפוח פעילים או לפתוח רצפים חדשים
+    if (process.env.ENABLE_LEAD_NURTURING === 'true') {
+      const savedInteraction = client.interactions[client.interactions.length - 1];
+      leadNurturingService.checkInteractionForActiveNurturing(client._id, savedInteraction).catch(err => {
+        console.error('Error checking interaction for active nurturing:', err);
+      });
+      leadNurturingService.checkTriggersForInteraction(client._id, savedInteraction).catch(err => {
+        console.error('Error checking interaction-based triggers:', err);
+      });
+    }
+
     res.status(201).json({
       success: true,
       message: 'אינטראקציה נוספה בהצלחה',
@@ -432,6 +463,45 @@ exports.updateInteraction = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון האינטראקציה',
+      error: error.message
+    });
+  }
+};
+
+// מחיקת אינטראקציה
+exports.deleteInteraction = async (req, res) => {
+  try {
+    const client = await Client.findById(req.params.id);
+
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: 'לקוח לא נמצא'
+      });
+    }
+
+    const interaction = client.interactions.id(req.params.interactionId);
+
+    if (!interaction) {
+      return res.status(404).json({
+        success: false,
+        message: 'אינטראקציה לא נמצאה'
+      });
+    }
+
+    interaction.deleteOne();
+    await client.save();
+
+    res.json({
+      success: true,
+      message: 'אינטראקציה נמחקה בהצלחה'
+    });
+
+  } catch (error) {
+    console.error('Error in deleteInteraction:', error);
+    res.status(500).json({
+      success: false,
+      message: 'שגיאה במחיקת האינטראקציה',
       error: error.message
     });
   }

@@ -16,3 +16,4 @@ const InvoicesTab = ({ clientId }) => {
 
 export default InvoicesTab;
 
+

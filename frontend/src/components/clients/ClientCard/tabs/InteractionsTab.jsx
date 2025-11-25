@@ -35,29 +35,52 @@ import {
   Event as MeetingIcon,
   Note as NoteIcon,
   Task as TaskIcon,
-  Edit as EditIcon
+  Edit as EditIcon,
+  Delete as DeleteIcon
 } from '@mui/icons-material';
-import { useClientInteractions, useAddInteraction } from '../../../../admin/hooks/useClients';
+import { useClientInteractions, useAddInteraction, useUpdateInteraction, useDeleteInteraction } from '../../../../admin/hooks/useClients';
 
 const InteractionsTab = ({ clientId }) => {
   const [openDialog, setOpenDialog] = useState(false);
+  const [editDialog, setEditDialog] = useState(false);
+  const [editingInteraction, setEditingInteraction] = useState(null);
   const [newInteraction, setNewInteraction] = useState({
     type: 'call',
     direction: 'outbound',
     subject: '',
     content: '',
-    nextFollowUp: ''
+    nextFollowUp: '',
+    businessType: 'followup'
   });
 
   const { data: response, isLoading } = useClientInteractions(clientId);
   const addInteraction = useAddInteraction();
+  const updateInteraction = useUpdateInteraction();
+  const deleteInteraction = useDeleteInteraction();
 
   const interactions = response?.data || [];
 
   const handleAddInteraction = async () => {
+    const subject =
+      newInteraction.subject ||
+      (newInteraction.businessType === 'followup'
+        ? 'מעקב'
+        : newInteraction.businessType === 'deal_closing'
+        ? 'שיחת סגירה'
+        : newInteraction.businessType === 'proposal'
+        ? 'הצעת מחיר'
+        : newInteraction.businessType === 'pause'
+        ? 'הפסקת תהליך'
+        : newInteraction.businessType === 'end_contract'
+        ? 'סיום התקשרות'
+        : '');
+
     await addInteraction.mutateAsync({
       clientId,
-      data: newInteraction
+      data: {
+        ...newInteraction,
+        subject
+      }
     });
     setOpenDialog(false);
     setNewInteraction({
@@ -65,8 +88,48 @@ const InteractionsTab = ({ clientId }) => {
       direction: 'outbound',
       subject: '',
       content: '',
-      nextFollowUp: ''
+      nextFollowUp: '',
+      businessType: 'followup'
     });
+  };
+
+  const handleEditClick = (interaction) => {
+    // המרת nextFollowUp לתאריך בפורמט datetime-local
+    let nextFollowUpFormatted = '';
+    if (interaction.nextFollowUp) {
+      const date = new Date(interaction.nextFollowUp);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      nextFollowUpFormatted = `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
+    setEditingInteraction({
+      ...interaction,
+      nextFollowUp: nextFollowUpFormatted
+    });
+    setEditDialog(true);
+  };
+
+  const handleUpdateInteraction = async () => {
+    await updateInteraction.mutateAsync({
+      clientId,
+      interactionId: editingInteraction._id,
+      data: editingInteraction
+    });
+    setEditDialog(false);
+    setEditingInteraction(null);
+  };
+
+  const handleDeleteClick = (interaction) => {
+    if (window.confirm('האם אתה בטוח שברצונך למחוק את האינטראקציה הזו?')) {
+      deleteInteraction.mutate({
+        clientId,
+        interactionId: interaction._id
+      });
+    }
   };
 
   const getInteractionIcon = (type) => {
@@ -159,11 +222,28 @@ const InteractionsTab = ({ clientId }) => {
                         variant="outlined"
                       />
                     </Box>
-                    {interaction.createdBy && (
-                      <Typography variant="caption" color="text.secondary">
-                        {typeof interaction.createdBy === 'object' ? interaction.createdBy.name : interaction.createdBy}
-                      </Typography>
-                    )}
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                      {interaction.createdBy && (
+                        <Typography variant="caption" color="text.secondary">
+                          {typeof interaction.createdBy === 'object' ? interaction.createdBy.name : interaction.createdBy}
+                        </Typography>
+                      )}
+                      <IconButton
+                        size="small"
+                        onClick={() => handleEditClick(interaction)}
+                        sx={{ ml: 1 }}
+                        color="primary"
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDeleteClick(interaction)}
+                        color="error"
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
                   </Box>
 
                   {interaction.subject && (
@@ -179,7 +259,10 @@ const InteractionsTab = ({ clientId }) => {
                   {interaction.nextFollowUp && (
                     <Box sx={{ mt: 2, p: 1, bgcolor: 'warning.light', borderRadius: 1 }}>
                       <Typography variant="caption" fontWeight="bold">
-                        Follow-up: {new Date(interaction.nextFollowUp).toLocaleDateString('he-IL')}
+                        Follow-up: {new Date(interaction.nextFollowUp).toLocaleDateString('he-IL')} {new Date(interaction.nextFollowUp).toLocaleTimeString('he-IL', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </Typography>
                     </Box>
                   )}
@@ -207,13 +290,13 @@ const InteractionsTab = ({ clientId }) => {
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
             <FormControl fullWidth>
-              <InputLabel>סוג</InputLabel>
+              <InputLabel>ערוץ</InputLabel>
               <Select
                 value={newInteraction.type}
                 onChange={(e) =>
                   setNewInteraction({ ...newInteraction, type: e.target.value })
                 }
-                label="סוג"
+                label="ערוץ"
               >
                 <MenuItem value="call">שיחה</MenuItem>
                 <MenuItem value="email">אימייל</MenuItem>
@@ -221,6 +304,23 @@ const InteractionsTab = ({ clientId }) => {
                 <MenuItem value="meeting">פגישה</MenuItem>
                 <MenuItem value="note">הערה</MenuItem>
                 <MenuItem value="task">משימה</MenuItem>
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel>סוג אינטראקציה</InputLabel>
+              <Select
+                value={newInteraction.businessType}
+                onChange={(e) =>
+                  setNewInteraction({ ...newInteraction, businessType: e.target.value })
+                }
+                label="סוג אינטראקציה"
+              >
+                <MenuItem value="followup">מעקב</MenuItem>
+                <MenuItem value="deal_closing">סגירת עסקה</MenuItem>
+                <MenuItem value="proposal">הצעת מחיר</MenuItem>
+                <MenuItem value="pause">הפסקה</MenuItem>
+                <MenuItem value="end_contract">סיום התקשרות</MenuItem>
               </Select>
             </FormControl>
 
@@ -260,8 +360,8 @@ const InteractionsTab = ({ clientId }) => {
             />
 
             <TextField
-              label="Follow-up הבא"
-              type="date"
+              label="Follow-up הבא (תאריך ושעה)"
+              type="datetime-local"
               value={newInteraction.nextFollowUp}
               onChange={(e) =>
                 setNewInteraction({ ...newInteraction, nextFollowUp: e.target.value })
@@ -279,6 +379,103 @@ const InteractionsTab = ({ clientId }) => {
             disabled={!newInteraction.content}
           >
             הוסף
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Interaction Dialog */}
+      <Dialog
+        open={editDialog}
+        onClose={() => {
+          setEditDialog(false);
+          setEditingInteraction(null);
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>ערוך אינטראקציה</DialogTitle>
+        <DialogContent>
+          {editingInteraction && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+              <FormControl fullWidth>
+                <InputLabel>סוג</InputLabel>
+                <Select
+                  value={editingInteraction.type}
+                  onChange={(e) =>
+                    setEditingInteraction({ ...editingInteraction, type: e.target.value })
+                  }
+                  label="סוג"
+                >
+                  <MenuItem value="call">שיחה</MenuItem>
+                  <MenuItem value="email">אימייל</MenuItem>
+                  <MenuItem value="whatsapp">WhatsApp</MenuItem>
+                  <MenuItem value="meeting">פגישה</MenuItem>
+                  <MenuItem value="note">הערה</MenuItem>
+                  <MenuItem value="task">משימה</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth>
+                <InputLabel>כיוון</InputLabel>
+                <Select
+                  value={editingInteraction.direction}
+                  onChange={(e) =>
+                    setEditingInteraction({ ...editingInteraction, direction: e.target.value })
+                  }
+                  label="כיוון"
+                >
+                  <MenuItem value="outbound">יוצא</MenuItem>
+                  <MenuItem value="inbound">נכנס</MenuItem>
+                </Select>
+              </FormControl>
+
+              <TextField
+                label="נושא"
+                value={editingInteraction.subject || ''}
+                onChange={(e) =>
+                  setEditingInteraction({ ...editingInteraction, subject: e.target.value })
+                }
+                fullWidth
+              />
+
+              <TextField
+                label="תוכן"
+                value={editingInteraction.content || editingInteraction.notes || ''}
+                onChange={(e) =>
+                  setEditingInteraction({ ...editingInteraction, content: e.target.value })
+                }
+                multiline
+                rows={4}
+                fullWidth
+                required
+              />
+
+              <TextField
+                label="Follow-up הבא (תאריך ושעה)"
+                type="datetime-local"
+                value={editingInteraction.nextFollowUp || ''}
+                onChange={(e) =>
+                  setEditingInteraction({ ...editingInteraction, nextFollowUp: e.target.value })
+                }
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+              />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setEditDialog(false);
+            setEditingInteraction(null);
+          }}>
+            ביטול
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleUpdateInteraction}
+            disabled={!editingInteraction?.content && !editingInteraction?.notes}
+          >
+            שמור שינויים
           </Button>
         </DialogActions>
       </Dialog>

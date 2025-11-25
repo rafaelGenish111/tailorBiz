@@ -3,7 +3,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
-const reminderService = require('./services/reminderService');
 
 // Import routes
 const testimonialRoutes = require('./routes/testimonials.routes');
@@ -13,13 +12,31 @@ const whatsappRoutes = require('./routes/whatsapp.routes');
 const taskManagerRoutes = require('./routes/taskManagerRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const leadNurturingRoutes = require('./routes/leadNurturingRoutes');
+const testRoutes = require('./routes/testRoutes');
 
 const app = express();
 
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: function (origin, callback) {
+    // בפיתוח, אפשר כל localhost ports
+    if (process.env.NODE_ENV === 'development') {
+      if (!origin || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+        callback(null, true);
+      } else {
+        callback(null, true); // בפיתוח, אפשר הכל
+      }
+    } else {
+      // ב-production, השתמש ב-CLIENT_URL
+      const allowedOrigins = process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : [];
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
   credentials: true
 }));
 
@@ -46,42 +63,37 @@ app.use('/api/tasks', taskManagerRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/lead-nurturing', leadNurturingRoutes);
 
-// נתיב לבדיקה ידנית של אוטומציות
-app.get('/api/test/run-reminders', async (req, res) => {
-  try {
-    console.log('🧪 Running manual reminder check...');
-    await reminderService.runManualCheck();
-    res.json({
-      success: true,
-      message: 'Manual check completed. Check server logs for details.',
-    });
-  } catch (error) {
-    console.error('Error running manual reminder check:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-});
-
-// סטטוס אוטומציות
-app.get('/api/automation/status', (req, res) => {
-  const jobs = reminderService.jobs || [];
-
-  res.json({
-    success: true,
-    data: {
-      active: jobs.length > 0,
-      jobCount: jobs.length,
-      jobs: [
-        { name: 'Daily Checks', schedule: '9:00 AM daily', active: true },
-        { name: 'Payment Reminders', schedule: '8:00 AM daily', active: true },
-        { name: 'Urgent Tasks Check', schedule: 'Every hour', active: true },
-        { name: 'Daily Summary', schedule: '6:00 PM daily', active: true },
-      ],
-    },
+// Test routes (רק ב-development)
+if (process.env.NODE_ENV === 'development') {
+  app.use('/api/test', testRoutes);
+  
+  // נתיב נוסף לסטטוס אוטומציות (גם ב-production)
+  app.get('/api/automation/status', async (req, res) => {
+    try {
+      const reminderService = require('./services/reminderService');
+      const leadNurturingService = require('./services/leadNurturingService');
+      
+      res.json({
+        success: true,
+        data: {
+          reminderService: {
+            active: reminderService.jobs && reminderService.jobs.length > 0,
+            jobCount: reminderService.jobs ? reminderService.jobs.length : 0
+          },
+          leadNurturingService: {
+            active: leadNurturingService.jobs && leadNurturingService.jobs.length > 0,
+            jobCount: leadNurturingService.jobs ? leadNurturingService.jobs.length : 0
+          }
+        }
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
   });
-});
+}
 
 // Health check
 app.get('/health', (req, res) => {

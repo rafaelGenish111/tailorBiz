@@ -1,5 +1,6 @@
 const Client = require('../models/Client');
 const whatsappService = require('../services/whatsappService');
+const leadNurturingService = require('../services/leadNurturingService');
 const mongoose = require('mongoose');
 
 // Helper function to check if string is valid ObjectId
@@ -67,6 +68,16 @@ exports.handleWebhook = async (req, res) => {
         content: body,
         timestamp: new Date(timestamp)
       });
+
+      await client.save();
+
+      // בדוק אם צריך לעצור רצפי טיפוח פעילים (רק עבור אינטראקציות inbound)
+      if (process.env.ENABLE_LEAD_NURTURING === 'true') {
+        const savedInteraction = client.interactions[client.interactions.length - 1];
+        leadNurturingService.checkInteractionForActiveNurturing(client._id, savedInteraction).catch(err => {
+          console.error('Error checking interaction for active nurturing:', err);
+        });
+      }
 
       // עדכון שיחה
       const conversation = client.whatsappConversations.find(
