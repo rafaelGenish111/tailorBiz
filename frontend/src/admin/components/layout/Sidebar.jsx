@@ -8,6 +8,7 @@ import {
   ListItemText,
   Divider,
   Typography,
+  Collapse,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -22,10 +23,18 @@ import {
   ViewKanban as KanbanIcon,
   AutoAwesome as NurturingIcon,
   Timeline as TimelineIcon,
+  Campaign as CampaignIcon,
+  Analytics as AnalyticsIcon,
+  SettingsInputAntenna as ChannelsIcon,
+  SmartToy as AutomationsIcon,
+  ExpandLess,
+  ExpandMore,
+  Circle as CircleIcon,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
+import { useState } from 'react';
 
-const DRAWER_WIDTH = 280;
+const DRAWER_WIDTH = 260;
 
 const menuItems = [
   { text: 'דשבורד', icon: <DashboardIcon />, path: '/admin' },
@@ -34,22 +43,125 @@ const menuItems = [
   { text: 'יומן', icon: <CalendarIcon />, path: '/admin/calendar' },
   { text: 'לוח משימות', icon: <KanbanIcon />, path: '/admin/tasks' },
   { divider: true, label: 'אוטומציות טיפוח' },
-  { text: 'אוטומציות טיפוח', icon: <NurturingIcon />, path: '/admin/nurturing' },
-  { text: 'רצפים פעילים', icon: <TimelineIcon />, path: '/admin/nurturing/active' },
+  { 
+    text: 'טיפוח לידים', 
+    icon: <NurturingIcon />, 
+    children: [
+      { text: 'אוטומציות', path: '/admin/nurturing' },
+      { text: 'רצפים פעילים', path: '/admin/nurturing/active' },
+    ]
+  },
+  { divider: true, label: 'מרכז שיווק' },
+  { 
+    text: 'מרכז שיווק', 
+    icon: <CampaignIcon />, 
+    children: [
+      { text: 'דשבורד', path: '/admin/marketing' },
+      { text: 'קמפיינים', path: '/admin/marketing/campaigns' },
+      { text: 'ערוצים', path: '/admin/marketing/channels' },
+      { text: 'אוטומציות', path: '/admin/marketing/automations' },
+      { text: 'אנליטיקה', path: '/admin/marketing/analytics' },
+    ]
+  },
   { divider: true, label: 'ניהול תוכן' },
   { text: 'המלצות', icon: <TestimonialsIcon />, path: '/admin/testimonials' },
   { text: 'מאמרים', icon: <BlogIcon />, path: '/admin/blog' },
   { text: 'תיק עבודות', icon: <PortfolioIcon />, path: '/admin/portfolio' },
   { text: 'מוצרים', icon: <ProductsIcon />, path: '/admin/products' },
-  { divider: true, label: 'ניהול לקוחות' },
-  { text: 'לקוחות', icon: <ClientsIcon />, path: '/admin/clients' },
+  { divider: true, label: 'ניהול לידים ולקוחות' },
+  { text: 'לידים', icon: <ClientsIcon />, path: '/admin/leads' },
+  { text: 'לקוחות', icon: <ClientsIcon />, path: '/admin/customers' },
   { divider: true, label: 'הגדרות' },
   { text: 'הגדרות', icon: <SettingsIcon />, path: '/admin/settings' },
 ];
 
-function Sidebar() {
+function SidebarItem({ item, depth = 0 }) {
   const location = useLocation();
+  const [open, setOpen] = useState(false);
+  const hasChildren = item.children && item.children.length > 0;
+  
+  // Check if any child is active
+  const isChildActive = hasChildren && item.children.some(child => location.pathname === child.path);
+  const isActive = location.pathname === item.path || isChildActive;
 
+  const handleClick = () => {
+    if (hasChildren) {
+      setOpen(!open);
+    }
+  };
+
+  const Component = hasChildren ? Box : Link;
+  const linkProps = hasChildren ? { onClick: handleClick, sx: { cursor: 'pointer' } } : { to: item.path, component: Link };
+
+  return (
+    <>
+      <ListItem disablePadding sx={{ display: 'block' }}>
+        <ListItemButton
+          {...linkProps}
+          selected={!hasChildren && isActive}
+          sx={{
+            minHeight: 40,
+            px: 2.5,
+            pl: depth * 2 + 2.5,
+          }}
+        >
+          <ListItemIcon
+            sx={{
+              minWidth: 0,
+              mr: 2,
+              justifyContent: 'center',
+              color: isActive ? 'secondary.main' : 'text.secondary',
+            }}
+          >
+            {item.icon}
+          </ListItemIcon>
+          <ListItemText 
+            primary={item.text} 
+            primaryTypographyProps={{ 
+              fontSize: '0.9rem', 
+              fontWeight: isActive ? 600 : 400,
+              color: isActive ? 'text.primary' : 'text.secondary'
+            }} 
+          />
+          {hasChildren ? (open ? <ExpandLess sx={{ fontSize: '1rem', color: 'text.secondary' }} /> : <ExpandMore sx={{ fontSize: '1rem', color: 'text.secondary' }} />) : null}
+        </ListItemButton>
+      </ListItem>
+      
+      {hasChildren && (
+        <Collapse in={open || isChildActive} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {item.children.map((child, index) => (
+              <ListItemButton
+                key={index}
+                component={Link}
+                to={child.path}
+                selected={location.pathname === child.path}
+                sx={{
+                  pl: depth * 2 + 6,
+                  py: 0.5,
+                  minHeight: 32,
+                }}
+              >
+                 <ListItemIcon sx={{ minWidth: 20 }}>
+                    <CircleIcon sx={{ fontSize: 6, color: location.pathname === child.path ? 'secondary.main' : 'text.disabled' }} />
+                 </ListItemIcon>
+                <ListItemText 
+                  primary={child.text} 
+                  primaryTypographyProps={{ 
+                    fontSize: '0.85rem',
+                    color: location.pathname === child.path ? 'text.primary' : 'text.secondary'
+                  }} 
+                />
+              </ListItemButton>
+            ))}
+          </List>
+        </Collapse>
+      )}
+    </>
+  );
+}
+
+function Sidebar() {
   return (
     <Drawer
       variant="permanent"
@@ -59,54 +171,24 @@ function Sidebar() {
         '& .MuiDrawer-paper': {
           width: DRAWER_WIDTH,
           boxSizing: 'border-box',
-          borderRight: 'none',
-          bgcolor: 'primary.main',
-          color: 'white',
+          top: 64, // Height of AppBar
+          height: 'calc(100% - 64px)',
+          bgcolor: 'background.paper',
         },
       }}
     >
-      {/* Logo */}
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography variant="h5" fontWeight="bold">
-          TailorBiz Admin
-        </Typography>
-      </Box>
-
-      <Divider sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
-
-      {/* Menu */}
-      <List sx={{ px: 2, py: 2 }}>
+      <List sx={{ py: 1 }}>
         {menuItems.map((item, index) => {
           if (item.divider) {
             return (
-              <Box key={index} sx={{ my: 2 }}>
-                <Typography variant="caption" sx={{ px: 2, color: 'rgba(255,255,255,0.5)' }}>
+              <Box key={index} sx={{ mt: 2, mb: 1, px: 3 }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>
                   {item.label}
                 </Typography>
               </Box>
             );
           }
-
-          const isActive = location.pathname === item.path;
-
-          return (
-            <ListItem key={index} disablePadding sx={{ mb: 0.5 }}>
-              <ListItemButton
-                component={Link}
-                to={item.path}
-                sx={{
-                  borderRadius: 2,
-                  bgcolor: isActive ? 'rgba(255,255,255,0.15)' : 'transparent',
-                  '&:hover': {
-                    bgcolor: 'rgba(255,255,255,0.1)',
-                  },
-                }}
-              >
-                <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
-          );
+          return <SidebarItem key={index} item={item} />;
         })}
       </List>
     </Drawer>
@@ -114,4 +196,3 @@ function Sidebar() {
 }
 
 export default Sidebar;
-
