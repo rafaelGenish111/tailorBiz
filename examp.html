@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת ניהול - מפעל אלומיניום</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .active-nav { background-color: #e5e7eb; border-right: 4px solid #2563eb; color: #1e3a8a; font-weight: bold; }
+        .hidden-section { display: none; }
+        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        /* Mobile Simulator for Installers */
+        .mobile-frame { width: 375px; height: 667px; border: 12px solid #333; border-radius: 30px; margin: 0 auto; overflow: hidden; background: white; position: relative; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <aside class="w-64 bg-white border-l shadow-lg flex flex-col z-10">
+        <div class="p-6 border-b flex items-center gap-3">
+            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">A</div>
+            <div>
+                <h1 class="font-bold text-gray-800">Alu-Spain</h1>
+                <p class="text-xs text-gray-500">מערכת ניהול ייצור</p>
+            </div>
+        </div>
+        
+        <nav class="flex-1 overflow-y-auto py-4">
+            <a href="#" onclick="showSection('dashboard', this)" class="active-nav flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition">
+                <i class="fa-solid fa-chart-line w-5"></i> דשבורד מנהלים
+            </a>
+            <a href="#" onclick="showSection('orders', this)" class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition">
+                <i class="fa-solid fa-file-invoice w-5"></i> הזמנות ו-CRM
+            </a>
+            <a href="#" onclick="showSection('production', this)" class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition">
+                <i class="fa-solid fa-industry w-5"></i> רצפת ייצור
+            </a>
+            <a href="#" onclick="showSection('installers', this)" class="flex items-center gap-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition">
+                <i class="fa-solid fa-truck w-5"></i> אפליקציית מתקין
+            </a>
+        </nav>
+
+        <div class="p-4 border-t bg-gray-50">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Maria+G&background=random" class="w-8 h-8 rounded-full">
+                <div>
+                    <p class="text-sm font-medium">Maria Garcia</p>
+                    <p class="text-xs text-green-600">מחוברת (Admin)</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-8 relative">
+        
+        <div id="dashboard" class="section-view">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">מבט על (Dashboard)</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-blue-500">
+                    <p class="text-gray-500 text-sm">לידים חדשים</p>
+                    <h3 class="text-3xl font-bold text-gray-800">12</h3>
+                    <p class="text-green-500 text-xs mt-1">+2 מהשבוע שעבר</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-orange-500">
+                    <p class="text-gray-500 text-sm">בייצור כרגע</p>
+                    <h3 class="text-3xl font-bold text-gray-800">8</h3>
+                    <p class="text-gray-400 text-xs mt-1">הזמנות פתוחות</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-green-500">
+                    <p class="text-gray-500 text-sm">התקנות להיום</p>
+                    <h3 class="text-3xl font-bold text-gray-800">3</h3>
+                    <p class="text-blue-500 text-xs mt-1">2 צוותים בשטח</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-purple-500">
+                    <p class="text-gray-500 text-sm">הכנסות החודש</p>
+                    <h3 class="text-3xl font-bold text-gray-800">€45,200</h3>
+                    <p class="text-green-500 text-xs mt-1">105% מהיעד</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl card-shadow overflow-hidden">
+                <div class="p-6 border-b flex justify-between items-center">
+                    <h3 class="font-bold text-gray-700">הזמנות אחרונות בטיפול</h3>
+                    <button class="text-sm text-blue-600 hover:underline">צפה בהכל</button>
+                </div>
+                <table class="w-full text-sm text-right">
+                    <thead class="bg-gray-50 text-gray-500">
+                        <tr>
+                            <th class="p-4"># הזמנה</th>
+                            <th class="p-4">לקוח</th>
+                            <th class="p-4">סטטוס</th>
+                            <th class="p-4">שלב נוכחי</th>
+                            <th class="p-4">תאריך יעד</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <tr>
+                            <td class="p-4 font-bold">1024</td>
+                            <td class="p-4">וילה ברצלונה (Juan)</td>
+                            <td class="p-4"><span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs">בייצור</span></td>
+                            <td class="p-4 text-gray-600">חיתוך פרופילים</td>
+                            <td class="p-4">25/11/2025</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 font-bold">1025</td>
+                            <td class="p-4">מלון מדריד</td>
+                            <td class="p-4"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">הצעת מחיר</span></td>
+                            <td class="p-4 text-gray-600">ממתין לאישור</td>
+                            <td class="p-4">-</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 font-bold">1023</td>
+                            <td class="p-4">יוסי כהן (רילוקיישן)</td>
+                            <td class="p-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">מוכן להתקנה</span></td>
+                            <td class="p-4 text-gray-600">שובץ למחר</td>
+                            <td class="p-4">26/11/2025</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="orders" class="section-view hidden-section">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">ניהול הזמנה #1024</h2>
+            
+            <div class="flex gap-6">
+                <div class="w-2/3 bg-white rounded-xl card-shadow p-6">
+                    <div class="flex justify-between items-start mb-6 border-b pb-4">
+                        <div>
+                            <h3 class="text-xl font-bold">וילה ברצלונה</h3>
+                            <p class="text-gray-500">לקוח: חואן קרלוס | טלפון: +34-555-1234</p>
+                        </div>
+                        <div class="text-left">
+                            <span class="block text-sm text-gray-400">סטטוס:</span>
+                            <span class="text-lg font-bold text-orange-500">בייצור</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-blue-800"><i class="fa-solid fa-robot"></i> אוטומציה חכמה</p>
+                            <p class="text-sm text-blue-600">ייבא נתונים טכניים מקובץ הייצור</p>
+                        </div>
+                        <button onclick="alert('במערכת האמיתית: כאן Node.js יסרוק את הקובץ ויזין את המידות אוטומטית ל-DB')" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition">
+                            <i class="fa-solid fa-upload"></i> ייבא קובץ XML/PDF
+                        </button>
+                    </div>
+
+                    <h4 class="font-bold mb-3">פריטים בהזמנה (נשאב אוטומטית):</h4>
+                    <div class="space-y-3">
+                        <div class="border p-3 rounded flex justify-between items-center bg-gray-50">
+                            <div>
+                                <p class="font-bold">חלון הזזה דגם 7000</p>
+                                <p class="text-sm text-gray-600">מידות: 200x150 | צבע: אפור אנטרציט | זכוכית: בידודית</p>
+                            </div>
+                            <span class="text-xs bg-gray-200 px-2 py-1 rounded">יחידות: 2</span>
+                        </div>
+                        <div class="border p-3 rounded flex justify-between items-center bg-gray-50">
+                            <div>
+                                <p class="font-bold">דלת כניסה דגם "ספרד"</p>
+                                <p class="text-sm text-gray-600">מידות: 90x210 | צבע: שחור מט</p>
+                            </div>
+                            <span class="text-xs bg-gray-200 px-2 py-1 rounded">יחידות: 1</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-1/3 space-y-6">
+                    <div class="bg-white rounded-xl card-shadow p-6">
+                        <h4 class="font-bold mb-4">מסמכים</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-center gap-2 text-blue-600 cursor-pointer"><i class="fa-regular fa-file-pdf"></i> הצעת מחיר חתומה</li>
+                            <li class="flex items-center gap-2 text-blue-600 cursor-pointer"><i class="fa-regular fa-image"></i> תוכנית אדריכלית</li>
+                            <li class="flex items-center gap-2 text-gray-400"><i class="fa-solid fa-plus"></i> הוסף מסמך סרוק</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white rounded-xl card-shadow p-6">
+                        <h4 class="font-bold mb-4">תהליך</h4>
+                        <div class="border-r-2 border-gray-200 pr-4 space-y-6 relative">
+                            <div class="relative">
+                                <div class="absolute -right-[21px] top-1 w-3 h-3 bg-green-500 rounded-full"></div>
+                                <p class="text-xs text-gray-400">10/11/2025</p>
+                                <p class="text-sm">הזמנה אושרה</p>
+                            </div>
+                            <div class="relative">
+                                <div class="absolute -right-[21px] top-1 w-3 h-3 bg-orange-500 rounded-full"></div>
+                                <p class="text-xs text-gray-400">12/11/2025</p>
+                                <p class="text-sm font-bold">ירד לייצור</p>
+                            </div>
+                            <div class="relative opacity-50">
+                                <div class="absolute -right-[21px] top-1 w-3 h-3 bg-gray-300 rounded-full"></div>
+                                <p class="text-sm">התקנה (מתוכנן)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="production" class="section-view hidden-section">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">מסך רצפת ייצור (טאבלט)</h2>
+                <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-bold">משמרת בוקר</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-lg border-2 border-blue-500 overflow-hidden">
+                    <div class="bg-blue-600 text-white p-4 flex justify-between">
+                        <h3 class="font-bold text-lg">הזמנה #1024 - וילה ברצלונה</h3>
+                        <span class="bg-white text-blue-600 px-2 rounded text-sm font-bold">פריט 1 מתוך 3</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="text-center mb-6">
+                            <p class="text-gray-500 mb-1">סוג מוצר</p>
+                            <p class="text-3xl font-bold text-gray-800">חלון הזזה 7000</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4 text-center mb-6 bg-gray-50 p-4 rounded-lg">
+                            <div>
+                                <p class="text-xs text-gray-500">רוחב</p>
+                                <p class="text-xl font-bold">200 ס"מ</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">גובה</p>
+                                <p class="text-xl font-bold">150 ס"מ</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">צבע</p>
+                                <p class="text-xl font-bold">אנטרציט</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-yellow-50 border border-yellow-200 p-3 rounded text-sm text-yellow-800 mb-6">
+                            <i class="fa-solid fa-triangle-exclamation"></i> <strong>הערה:</strong> ידית צד שמאל בגובה 100!
+                        </div>
+
+                        <div class="flex gap-4">
+                            <button class="flex-1 bg-gray-200 text-gray-700 py-4 rounded-lg font-bold text-lg"><i class="fa-regular fa-file-pdf"></i> שרטוט</button>
+                            <button onclick="this.innerHTML='<i class=\'fa-solid fa-check\'></i> הושלם!'; this.className='flex-1 bg-green-600 text-white py-4 rounded-lg font-bold text-lg transition'" class="flex-1 bg-blue-600 text-white py-4 rounded-lg font-bold text-lg">סיימתי לייצר</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow opacity-60">
+                    <div class="bg-gray-100 p-4 border-b">
+                        <h3 class="font-bold text-gray-500">הזמנה #1025 - ממתין</h3>
+                    </div>
+                    <div class="p-6 flex items-center justify-center h-48">
+                        <p class="text-gray-400">הבא בתור...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="installers" class="section-view hidden-section text-center bg-gray-800 p-4 -m-8 h-[calc(100%+4rem)] flex items-center justify-center">
+            
+            <div class="mobile-frame text-right relative">
+                <div class="bg-blue-600 h-14 flex items-center justify-between px-4 text-white pt-4">
+                    <span>09:41</span>
+                    <span class="font-bold">Installer App</span>
+                    <i class="fa-solid fa-battery-full"></i>
+                </div>
+
+                <div class="p-4 bg-gray-100 h-full overflow-y-auto pb-20">
+                    <div class="mb-4">
+                        <h2 class="text-lg font-bold text-gray-800">שלום, פבלו 👋</h2>
+                        <p class="text-sm text-gray-500">יש לך 2 התקנות היום</p>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl shadow-sm mb-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold">וילה ברצלונה</h3>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">09:00 - 12:00</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-3"><i class="fa-solid fa-location-dot"></i> Calle Gran Via 45, Madrid</p>
+                        
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <button class="bg-blue-50 text-blue-600 py-2 rounded text-sm font-medium"><i class="fa-brands fa-waze"></i> נווט</button>
+                            <button class="bg-green-50 text-green-600 py-2 rounded text-sm font-medium"><i class="fa-solid fa-phone"></i> חייג ללקוח</button>
+                        </div>
+
+                        <div class="border-t pt-3 mt-3">
+                            <p class="text-xs font-bold text-gray-400 mb-2">קבצים להתקנה:</p>
+                            <div class="flex gap-2 overflow-x-auto">
+                                <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
+                                    שרטוט ידני
+                                </div>
+                                <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-500 text-xs flex-shrink-0">
+                                    תוכנית
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl shadow-sm">
+                        <h4 class="font-bold text-sm mb-2">סיום התקנה</h4>
+                        <div class="h-20 bg-gray-50 border-2 border-dashed border-gray-300 rounded mb-3 flex items-center justify-center text-gray-400 text-sm">
+                            חתימת לקוח כאן
+                        </div>
+                        <button class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold shadow-lg shadow-blue-200">
+                            סיים ושלח דוח ללקוח
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="absolute top-10 left-10 text-white text-left hidden md:block">
+                <h3 class="text-xl font-bold">תצוגת מובייל למתקינים</h3>
+                <p class="opacity-80">כך המתקין יראה את האפליקציה בשטח.</p>
+                <ul class="list-disc pl-5 mt-2 text-sm opacity-70">
+                    <li>גישה מהירה לניווט וטלפון</li>
+                    <li>צפייה במסמכים סרוקים</li>
+                    <li>חתימה דיגיטלית בסיום</li>
+                </ul>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function showSection(sectionId, element) {
+            // Hide all sections
+            document.querySelectorAll('.section-view').forEach(el => el.classList.add('hidden-section'));
+            // Show selected section
+            document.getElementById(sectionId).classList.remove('hidden-section');
+            
+            // Update Nav visual state
+            document.querySelectorAll('nav a').forEach(el => el.classList.remove('active-nav'));
+            element.classList.add('active-nav');
+        }
+    </script>
+</body>
+</html>

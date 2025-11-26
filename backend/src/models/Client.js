@@ -112,6 +112,21 @@ const ClientSchema = new mongoose.Schema({
         priority: { type: Number, min: 1, max: 5 },
         notes: String 
       },
+      production: { 
+        needed: Boolean,
+        priority: { type: Number, min: 1, max: 5 },
+        notes: String 
+      },
+      fieldTeams: { 
+        needed: Boolean,
+        priority: { type: Number, min: 1, max: 5 },
+        notes: String 
+      },
+      documents: { 
+        needed: Boolean,
+        priority: { type: Number, min: 1, max: 5 },
+        notes: String 
+      },
       mostUrgent: String // מה הכי דחוף לפתור
     },
     
@@ -338,6 +353,14 @@ const ClientSchema = new mongoose.Schema({
     signedAt: Date          // תאריך חתימת ההסכם (אם יש)
   },
 
+  // חוזה
+  contract: {
+    signed: { type: Boolean, default: false },
+    signedAt: Date,
+    fileUrl: String, // URL לקובץ החוזה
+    notes: String
+  },
+
   // חשבוניות
   invoices: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -466,6 +489,17 @@ ClientSchema.index({ 'metadata.lastContactedAt': -1 });
 ClientSchema.virtual('fullDisplayName').get(function() {
   return `${this.personalInfo.fullName} - ${this.businessInfo.businessName}`;
 });
+
+// Helper methods לבדיקת סוג הלקוח
+ClientSchema.methods.isLead = function() {
+  const leadStatuses = ['lead', 'contacted', 'assessment_scheduled', 'assessment_completed', 'proposal_sent', 'negotiation', 'on_hold', 'lost', 'churned'];
+  return leadStatuses.includes(this.status);
+};
+
+ClientSchema.methods.isActiveClient = function() {
+  const clientStatuses = ['won', 'active_client', 'in_development', 'completed'];
+  return clientStatuses.includes(this.status);
+};
 
 // פונקציה לחישוב Lead Score אוטומטית
 ClientSchema.methods.calculateLeadScore = function() {

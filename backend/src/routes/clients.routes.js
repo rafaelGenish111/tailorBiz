@@ -3,6 +3,7 @@ const router = express.Router();
 const clientController = require('../controllers/clientController');
 const { protect, authorize } = require('../middleware/auth.middleware');
 const { body } = require('express-validator');
+const uploadContract = require('../middleware/contractUpload.middleware');
 
 // Validation middleware
 const validateClient = [
@@ -28,6 +29,9 @@ router.route('/:id')
   .get(clientController.getClientById)
   .put(clientController.updateClient)
   .delete(clientController.deleteClient);
+
+// המרת ליד ללקוח (סגירת עסקה)
+router.post('/:id/convert', uploadContract.single('contract'), clientController.convertLeadToClient);
 
 // Routes לשאלון אפיון
 router.route('/:id/assessment')

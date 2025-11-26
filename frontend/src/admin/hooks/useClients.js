@@ -63,6 +63,22 @@ export const useDeleteClient = () => {
   });
 };
 
+export const useConvertLead = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ clientId, data }) => clientAPI.convertLeadToClient(clientId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(['clients']);
+      queryClient.invalidateQueries(['client', variables.clientId]);
+      toast.success('הליד הומר ללקוח בהצלחה! 🥂');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'שגיאה בהמרת הליד');
+    }
+  });
+};
+
 export const useClientInteractions = (clientId) => {
   return useQuery({
     queryKey: ['client-interactions', clientId],

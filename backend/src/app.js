@@ -12,6 +12,7 @@ const whatsappRoutes = require('./routes/whatsapp.routes');
 const taskManagerRoutes = require('./routes/taskManagerRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const leadNurturingRoutes = require('./routes/leadNurturingRoutes');
+const marketingRoutes = require('./routes/marketing');
 const testRoutes = require('./routes/testRoutes');
 
 const app = express();
@@ -62,6 +63,7 @@ app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/tasks', taskManagerRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/lead-nurturing', leadNurturingRoutes);
+app.use('/api/marketing', marketingRoutes);
 
 // Test routes (רק ב-development)
 if (process.env.NODE_ENV === 'development') {

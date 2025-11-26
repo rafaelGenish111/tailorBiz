@@ -10,6 +10,9 @@ import TaskBoard from '../../pages/TaskBoard';
 import NotificationsCenter from '../../pages/NotificationsCenter';
 import NurturingDashboard from '../../pages/NurturingDashboard';
 import ActiveNurturing from '../../pages/ActiveNurturing';
+import MarketingDashboard from '../../pages/admin/marketing/MarketingDashboard';
+import CampaignsPage from '../../pages/admin/marketing/CampaignsPage';
+import CampaignForm from '../../pages/admin/marketing/CampaignForm';
 import { Box, Typography } from '@mui/material';
 
 function Placeholder({ title }) {
@@ -34,12 +37,23 @@ function AdminPanel() {
         {/* Lead Nurturing */}
         <Route path="nurturing" element={<NurturingDashboard />} />
         <Route path="nurturing/active" element={<ActiveNurturing />} />
+        {/* Marketing Hub */}
+        <Route path="marketing" element={<MarketingDashboard />} />
+        <Route path="marketing/campaigns" element={<CampaignsPage />} />
+        <Route path="marketing/campaigns/new" element={<CampaignForm />} />
+        <Route path="marketing/campaigns/:id/edit" element={<CampaignForm />} />
+        <Route path="marketing/campaigns/:id" element={<Placeholder title="פרטי קמפיין" />} />
+        <Route path="marketing/channels" element={<Placeholder title="ערוצי שיווק" />} />
+        <Route path="marketing/automations" element={<Placeholder title="אוטומציות שיווק" />} />
+        <Route path="marketing/analytics" element={<Placeholder title="אנליטיקה" />} />
         {/* Content Management */}
         <Route path="testimonials" element={<TestimonialsList />} />
         <Route path="blog" element={<Placeholder title="מאמרים" />} />
         <Route path="portfolio" element={<Placeholder title="תיק עבודות" />} />
         <Route path="products" element={<Placeholder title="מוצרים" />} />
-        {/* Clients */}
+        {/* Clients & Leads */}
+        <Route path="leads" element={<ClientsList viewMode="leads" />} />
+        <Route path="customers" element={<ClientsList viewMode="clients" />} />
         <Route path="clients" element={<ClientsList />} />
         <Route path="clients/:id" element={<ClientCard />} />
         {/* Settings */}

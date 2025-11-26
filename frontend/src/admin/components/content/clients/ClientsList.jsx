@@ -52,7 +52,10 @@ const LEAD_SOURCE_LABELS = {
   other: 'אחר',
 };
 
-function ClientsList() {
+const LEAD_STATUSES = ['lead', 'contacted', 'assessment_scheduled', 'assessment_completed', 'proposal_sent', 'negotiation', 'on_hold', 'lost'];
+const CLIENT_STATUSES = ['won', 'active_client', 'in_development', 'completed', 'churned'];
+
+function ClientsList({ viewMode }) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
@@ -64,12 +67,14 @@ function ClientsList() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clientToDelete, setClientToDelete] = useState(null);
 
+  const effectiveStatusFilter = statusFilter || (viewMode === 'leads' ? LEAD_STATUSES.join(',') : viewMode === 'clients' ? CLIENT_STATUSES.join(',') : '');
+
   // Queries
   const { data, isLoading } = useClients({
     page: page + 1,
     limit: pageSize,
     search,
-    status: statusFilter,
+    status: effectiveStatusFilter,
   });
 
   // Mutations
@@ -113,6 +118,14 @@ function ClientsList() {
     await deleteMutation.mutateAsync(clientToDelete._id);
     setDeleteDialogOpen(false);
     setClientToDelete(null);
+  };
+
+  const allowedStatuses = viewMode === 'leads' ? LEAD_STATUSES : viewMode === 'clients' ? CLIENT_STATUSES : Object.keys(STATUS_LABELS);
+
+  const getPageTitle = () => {
+    if (viewMode === 'leads') return 'ניהול לידים';
+    if (viewMode === 'clients') return 'ניהול לקוחות';
+    return 'ניהול לקוחות ולידים';
   };
 
   // Columns
@@ -269,10 +282,10 @@ function ClientsList() {
       {/* Header */}
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h4" component="h1">
-          ניהול לקוחות
+          {getPageTitle()}
         </Typography>
         <Button variant="contained" startIcon={<AddIcon />} onClick={handleAdd}>
-          הוסף לקוח חדש
+          הוסף {viewMode === 'clients' ? 'לקוח' : 'ליד'} חדש
         </Button>
       </Box>
 
@@ -298,11 +311,15 @@ function ClientsList() {
             sx={{ minWidth: 200 }}
           >
             <MenuItem value="">הכל</MenuItem>
-            {Object.entries(STATUS_LABELS).map(([value, { label }]) => (
-              <MenuItem key={value} value={value}>
-                {label}
-              </MenuItem>
-            ))}
+            {allowedStatuses.map((value) => {
+              const labelInfo = STATUS_LABELS[value];
+              if (!labelInfo) return null;
+              return (
+                <MenuItem key={value} value={value}>
+                  {labelInfo.label}
+                </MenuItem>
+              );
+            })}
           </TextField>
         </Box>
       </Paper>
