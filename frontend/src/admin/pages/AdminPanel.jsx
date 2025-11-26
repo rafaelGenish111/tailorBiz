@@ -13,6 +13,9 @@ import ActiveNurturing from '../../pages/ActiveNurturing';
 import MarketingDashboard from '../../pages/admin/marketing/MarketingDashboard';
 import CampaignsPage from '../../pages/admin/marketing/CampaignsPage';
 import CampaignForm from '../../pages/admin/marketing/CampaignForm';
+import ChannelsPage from '../../pages/admin/marketing/ChannelsPage';
+import AnalyticsPage from '../../pages/admin/marketing/AnalyticsPage';
+import AutomationsPage from '../../pages/admin/marketing/AutomationsPage';
 import { Box, Typography } from '@mui/material';
 
 function Placeholder({ title }) {
@@ -43,9 +46,9 @@ function AdminPanel() {
         <Route path="marketing/campaigns/new" element={<CampaignForm />} />
         <Route path="marketing/campaigns/:id/edit" element={<CampaignForm />} />
         <Route path="marketing/campaigns/:id" element={<Placeholder title="פרטי קמפיין" />} />
-        <Route path="marketing/channels" element={<Placeholder title="ערוצי שיווק" />} />
-        <Route path="marketing/automations" element={<Placeholder title="אוטומציות שיווק" />} />
-        <Route path="marketing/analytics" element={<Placeholder title="אנליטיקה" />} />
+        <Route path="marketing/channels" element={<ChannelsPage />} />
+        <Route path="marketing/automations" element={<AutomationsPage />} />
+        <Route path="marketing/analytics" element={<AnalyticsPage />} />
         {/* Content Management */}
         <Route path="testimonials" element={<TestimonialsList />} />
         <Route path="blog" element={<Placeholder title="מאמרים" />} />
