@@ -20,7 +20,15 @@ import {
   InputLabel,
   Select,
 } from '@mui/material';
-import { Close as CloseIcon, Phone as PhoneIcon, Email as EmailIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { 
+  Close as CloseIcon, 
+  Phone as PhoneIcon, 
+  Email as EmailIcon, 
+  Edit as EditIcon, 
+  Delete as DeleteIcon,
+  Upload as UploadIcon,
+  CheckCircle as CheckCircleIcon
+} from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import {
   useUpdateClient,
@@ -29,8 +37,10 @@ import {
   useUpdateInteraction,
   useDeleteInteraction,
   useClientNurturingInstances,
+  useConvertLead
 } from '../../../hooks/useClients';
 import AssessmentTab from '../../../../components/clients/ClientCard/tabs/AssessmentTab';
+import SmartSequenceProgress from '../../../../components/clients/SmartSequenceProgress';
 
 const STATUS_LABELS = {
   lead: { label: 'ליד חדש', color: 'info' },
@@ -108,6 +118,10 @@ function ClientDetail({ open, onClose, client }) {
   const addInteraction = useAddInteraction();
   const updateInteraction = useUpdateInteraction();
   const deleteInteraction = useDeleteInteraction();
+  const convertLead = useConvertLead();
+
+  const [closeDealOpen, setCloseDealOpen] = useState(false);
+  const [dealData, setDealData] = useState({ finalPrice: '', notes: '', file: null });
 
   useEffect(() => {
     if (client) {
@@ -214,6 +228,18 @@ function ClientDetail({ open, onClose, client }) {
     });
   };
 
+  const handleConvertLead = async () => {
+    const formData = new FormData();
+    if (dealData.finalPrice) formData.append('finalPrice', dealData.finalPrice);
+    if (dealData.notes) formData.append('notes', dealData.notes);
+    if (dealData.file) formData.append('contract', dealData.file);
+    
+    await convertLead.mutateAsync({ clientId: client._id, data: formData });
+    setCloseDealOpen(false);
+  };
+
+  const isLead = ['lead', 'contacted', 'assessment_scheduled', 'assessment_completed', 'proposal_sent', 'negotiation'].includes(client.status);
+
   return (
     <Dialog 
       open={open} 
@@ -239,9 +265,27 @@ function ClientDetail({ open, onClose, client }) {
               </Typography>
             </Box>
           </Box>
-          <IconButton onClick={onClose}>
-            <CloseIcon />
-          </IconButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {isLead && (
+              <Button 
+                variant="contained" 
+                color="success" 
+                onClick={() => {
+                   setDealData({ 
+                     finalPrice: client.proposal?.finalPrice || client.proposal?.initialPrice || '', 
+                     notes: '', 
+                     file: null 
+                   });
+                   setCloseDealOpen(true);
+                }}
+              >
+                סגור עסקה
+              </Button>
+            )}
+            <IconButton onClick={onClose}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
         </Box>
       </DialogTitle>
 
@@ -262,26 +306,11 @@ function ClientDetail({ open, onClose, client }) {
         {nurturingInstances.length > 0 && (
           <Box sx={{ mb: 2 }}>
             <Typography variant="subtitle1" sx={{ mb: 1 }}>
-              רצפי טיפוח פעילים ללקוח זה
+              רצפי טיפוח פעילים
             </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {nurturingInstances.map((instance) => (
-                <Chip
-                  key={instance._id}
-                  label={
-                    instance.nurturingTemplate?.name
-                      ? `${instance.nurturingTemplate.name} • שלב ${instance.currentStep + 1}`
-                      : `רצף ללא שם • שלב ${instance.currentStep + 1}`
-                  }
-                  color={
-                    instance.status === 'active'
-                      ? 'primary'
-                      : instance.status === 'completed'
-                      ? 'success'
-                      : 'default'
-                  }
-                  variant={instance.status === 'active' ? 'filled' : 'outlined'}
-                />
+                <SmartSequenceProgress key={instance._id} instance={instance} />
               ))}
             </Box>
           </Box>
@@ -968,6 +997,72 @@ function ClientDetail({ open, onClose, client }) {
       <DialogActions>
         <Button onClick={onClose}>סגור</Button>
       </DialogActions>
+
+      {/* Close Deal Dialog */}
+      <Dialog
+        open={closeDealOpen}
+        onClose={() => setCloseDealOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>🎉 סגירת עסקה</DialogTitle>
+        <DialogContent>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+                <Typography variant="body1">
+                    מזל טוב! בוא נעדכן את פרטי העסקה והחוזה.
+                </Typography>
+                
+                <TextField
+                    label="סכום סגירה סופי"
+                    type="number"
+                    fullWidth
+                    value={dealData.finalPrice}
+                    onChange={(e) => setDealData({ ...dealData, finalPrice: e.target.value })}
+                    InputProps={{
+                        startAdornment: <Typography sx={{ mr: 1 }}>₪</Typography>
+                    }}
+                />
+
+                <TextField
+                    label="הערות לחוזה / סגירה"
+                    multiline
+                    rows={3}
+                    fullWidth
+                    value={dealData.notes}
+                    onChange={(e) => setDealData({ ...dealData, notes: e.target.value })}
+                />
+
+                <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={dealData.file ? <CheckCircleIcon color="success" /> : <UploadIcon />}
+                >
+                    {dealData.file ? dealData.file.name : 'העלה קובץ חוזה חתום (PDF/תמונה)'}
+                    <input
+                        type="file"
+                        hidden
+                        accept="application/pdf,image/*,.doc,.docx"
+                        onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                                setDealData({ ...dealData, file: e.target.files[0] });
+                            }
+                        }}
+                    />
+                </Button>
+            </Box>
+        </DialogContent>
+        <DialogActions>
+            <Button onClick={() => setCloseDealOpen(false)}>ביטול</Button>
+            <Button 
+                variant="contained" 
+                color="success" 
+                onClick={handleConvertLead}
+                disabled={!dealData.finalPrice}
+            >
+                אישור וסגירת עסקה
+            </Button>
+        </DialogActions>
+      </Dialog>
     </Dialog>
   );
 }

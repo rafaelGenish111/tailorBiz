@@ -67,6 +67,11 @@ export const clientAPI = {
   // מחיקת לקוח
   delete: (id) => api.delete(`/clients/${id}`),
 
+  // המרת ליד ללקוח
+  convertLeadToClient: (id, data) => api.post(`/clients/${id}/convert`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+
   // שאלון אפיון
   fillAssessment: (id, data) => api.post(`/clients/${id}/assessment`, data),
   getAssessment: (id) => api.get(`/clients/${id}/assessment`),

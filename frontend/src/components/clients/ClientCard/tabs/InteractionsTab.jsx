@@ -38,7 +38,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
-import { useClientInteractions, useAddInteraction, useUpdateInteraction, useDeleteInteraction } from '../../../../admin/hooks/useClients';
+import { useClientInteractions, useAddInteraction, useUpdateInteraction, useDeleteInteraction, useClient } from '../../../../admin/hooks/useClients';
 
 const InteractionsTab = ({ clientId }) => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -54,26 +54,31 @@ const InteractionsTab = ({ clientId }) => {
   });
 
   const { data: response, isLoading } = useClientInteractions(clientId);
+  const { data: clientData } = useClient(clientId);
+  const client = clientData?.data;
+  
   const addInteraction = useAddInteraction();
   const updateInteraction = useUpdateInteraction();
   const deleteInteraction = useDeleteInteraction();
 
   const interactions = response?.data || [];
+  const isLead = ['lead', 'contacted', 'assessment_scheduled', 'assessment_completed', 'proposal_sent', 'negotiation', 'on_hold', 'lost', 'churned'].includes(client?.status);
 
   const handleAddInteraction = async () => {
-    const subject =
-      newInteraction.subject ||
-      (newInteraction.businessType === 'followup'
-        ? 'מעקב'
-        : newInteraction.businessType === 'deal_closing'
-        ? 'שיחת סגירה'
-        : newInteraction.businessType === 'proposal'
-        ? 'הצעת מחיר'
-        : newInteraction.businessType === 'pause'
-        ? 'הפסקת תהליך'
-        : newInteraction.businessType === 'end_contract'
-        ? 'סיום התקשרות'
-        : '');
+    let defaultSubject = '';
+    switch (newInteraction.businessType) {
+      case 'followup': defaultSubject = 'מעקב'; break;
+      case 'deal_closing': defaultSubject = 'שיחת סגירה'; break;
+      case 'proposal': defaultSubject = 'הצעת מחיר'; break;
+      case 'pause': defaultSubject = 'הפסקת תהליך'; break;
+      case 'end_contract': defaultSubject = 'סיום התקשרות'; break;
+      case 'project_update': defaultSubject = 'עדכון פרויקט'; break;
+      case 'support': defaultSubject = 'תמיכה'; break;
+      case 'invoice': defaultSubject = 'חשבונית/תשלום'; break;
+      default: defaultSubject = '';
+    }
+
+    const subject = newInteraction.subject || defaultSubject;
 
     await addInteraction.mutateAsync({
       clientId,
@@ -317,10 +322,17 @@ const InteractionsTab = ({ clientId }) => {
                 label="סוג אינטראקציה"
               >
                 <MenuItem value="followup">מעקב</MenuItem>
-                <MenuItem value="deal_closing">סגירת עסקה</MenuItem>
-                <MenuItem value="proposal">הצעת מחיר</MenuItem>
+                {isLead ? [
+                  <MenuItem key="proposal" value="proposal">הצעת מחיר</MenuItem>,
+                  <MenuItem key="deal_closing" value="deal_closing">שיחת סגירה</MenuItem>
+                ] : [
+                  <MenuItem key="project_update" value="project_update">עדכון פרויקט</MenuItem>,
+                  <MenuItem key="support" value="support">תמיכה</MenuItem>,
+                  <MenuItem key="invoice" value="invoice">חשבונית/תשלום</MenuItem>,
+                  <MenuItem key="end_contract" value="end_contract">סיום התקשרות</MenuItem>
+                ]}
                 <MenuItem value="pause">הפסקה</MenuItem>
-                <MenuItem value="end_contract">סיום התקשרות</MenuItem>
+                <MenuItem value="other">אחר</MenuItem>
               </Select>
             </FormControl>
 

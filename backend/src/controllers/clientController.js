@@ -28,7 +28,12 @@ exports.getAllClients = async (req, res) => {
     let query = {};
 
     if (status) {
-      query.status = status;
+      const statuses = status.split(',');
+      if (statuses.length > 1) {
+        query.status = { $in: statuses };
+      } else {
+        query.status = status;
+      }
     }
 
     if (leadSource) {
@@ -211,6 +216,89 @@ exports.updateClient = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון הלקוח',
+      error: error.message
+    });
+  }
+};
+
+// המרת ליד ללקוח (סגירת עסקה)
+exports.convertLeadToClient = async (req, res) => {
+  try {
+    const client = await Client.findById(req.params.id);
+    if (!client) {
+      return res.status(404).json({ success: false, message: 'לקוח לא נמצא' });
+    }
+
+    const { finalPrice, notes, signedAt } = req.body;
+    const contractFile = req.file;
+
+    const oldStatus = client.status;
+    
+    // עדכון סטטוס ל-won (מעבר ללקוח)
+    client.status = 'won'; 
+    
+    // עדכון פרטי הצעה וחוזה
+    if (finalPrice) client.proposal.finalPrice = Number(finalPrice);
+    
+    client.contract = {
+      signed: true,
+      signedAt: signedAt ? new Date(signedAt) : new Date(),
+      notes: notes,
+      fileUrl: contractFile ? `/uploads/contracts/${contractFile.filename}` : undefined
+    };
+
+    // הוספת אינטראקציה של סגירה
+    const interaction = {
+      type: 'note', // או 'deal_won' אם נוסיף סוג כזה
+      direction: 'inbound', // נחשב כפעולה חיובית מצד הלקוח
+      subject: '🎯 עסקה נסגרה - חוזה נחתם',
+      content: `העסקה נסגרה בהצלחה! סכום סופי: ${finalPrice || client.proposal.finalPrice || 0} ₪.\n${notes ? 'הערות: ' + notes : ''}`,
+      timestamp: new Date(),
+      createdBy: isValidObjectId(req.user?.id) ? req.user.id : null,
+      completed: true,
+      attachments: contractFile ? [{
+        filename: contractFile.originalname,
+        url: `/uploads/contracts/${contractFile.filename}`,
+        fileType: contractFile.mimetype,
+        uploadedAt: new Date()
+      }] : []
+    };
+    
+    client.interactions.push(interaction);
+
+    await client.save();
+
+    // בדיקת טריגרים ואוטומציות
+    if (process.env.ENABLE_LEAD_NURTURING === 'true') {
+      // 1. עצירת רצפי לידים פעילים (בגלל שהסטטוס השתנה והייתה אינטראקציה inbound)
+      // זה יקרה אוטומטית ב-checkInteractionForActiveNurturing אם נקרא לו, אבל כאן שינינו סטטוס אז ה-Status Change יתפוס
+      
+      const savedInteraction = client.interactions[client.interactions.length - 1];
+
+      // בדיקת טריגרים לשינוי סטטוס (למשל הפעלת רצף "סגירה מוצלחת")
+      if (oldStatus !== client.status) {
+        leadNurturingService.checkTriggersForStatusChange(client._id, oldStatus, client.status).catch(err => {
+          console.error('Error checking status-change triggers:', err);
+        });
+      }
+      
+      // בדיקת טריגרים לאינטראקציה (למשל אם יש רצף שמבוסס על "עסקה נסגרה")
+       leadNurturingService.checkTriggersForInteraction(client._id, savedInteraction).catch(err => {
+        console.error('Error checking interaction-based triggers:', err);
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'הליד הומר ללקוח בהצלחה',
+      data: client
+    });
+
+  } catch (error) {
+    console.error('Error in convertLeadToClient:', error);
+    res.status(500).json({
+      success: false,
+      message: 'שגיאה בהמרת הליד ללקוח',
       error: error.message
     });
   }

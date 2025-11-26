@@ -1,5 +1,3 @@
-// frontend/src/components/clients/ClientCard/tabs/AssessmentTab.jsx
-
 import React, { useState } from 'react';
 import {
   Box,
@@ -18,7 +16,7 @@ import {
   Slider,
   Chip
 } from '@mui/material';
-import { Save as SaveIcon } from '@mui/icons-material';
+import { Save as SaveIcon, Download as DownloadIcon, AutoAwesome as AiIcon } from '@mui/icons-material';
 import { useUpdateClient } from '../../../../admin/hooks/useClients';
 
 const AssessmentTab = ({ client }) => {
@@ -38,6 +36,63 @@ const AssessmentTab = ({ client }) => {
     });
   };
 
+  const handleExport = () => {
+    const lines = [
+      `דוח אפיון לקוח: ${client.personalInfo?.fullName || ''} - ${client.businessInfo?.businessName || ''}`,
+      `תאריך הפקה: ${new Date().toLocaleDateString('he-IL')}`,
+      '-------------------------------------------',
+      '',
+      '1. היכרות בסיסית',
+      `תיאור העסק: ${formData.basicInfo?.businessDescription || '-'}`,
+      `מספר עובדים: ${formData.basicInfo?.numberOfEmployees || '-'}`,
+      '',
+      '2. מצב קיים',
+      `שיטת ניהול נוכחית: ${formData.currentSystems?.managementMethod || '-'}`,
+      `מערכת קיימת: ${formData.currentSystems?.existingSystem || '-'}`,
+      `מה עובד טוב: ${formData.currentSystems?.whatWorksWell || '-'}`,
+      `מה לא עובד: ${formData.currentSystems?.whatDoesntWork || '-'}`,
+      '',
+      '3. נקודות כאב',
+      `בזבוזי זמן: ${formData.painPoints?.timeWasters?.join(', ') || '-'}`,
+      `אובדן לקוחות: ${formData.painPoints?.customerLoss || '-'}`,
+      `תהליכים לאוטומציה: ${formData.painPoints?.processesToAutomate?.join(', ') || '-'}`,
+      '',
+      '4. תהליכים לשיפור',
+      ...processes
+        .filter(p => formData.processesToImprove?.[p.key]?.needed)
+        .map(p => `- ${p.label} (עדיפות: ${formData.processesToImprove?.[p.key]?.priority || 1}): ${formData.processesToImprove?.[p.key]?.notes || ''}`),
+      `הכי דחוף: ${formData.processesToImprove?.mostUrgent || '-'}`,
+      '',
+      '5. מטרות ויעדים',
+      `תוצאות רצויות: ${formData.goalsAndObjectives?.desiredOutcomes?.join(', ') || '-'}`,
+      `קריטריוני הצלחה: ${formData.goalsAndObjectives?.successCriteria?.join(', ') || '-'}`,
+      '',
+      '6. דרישות מיוחדות',
+      `אינטגרציות: ${formData.specialRequirements?.externalIntegrations?.join(', ') || '-'}`,
+      `תהליכים ייחודיים: ${formData.specialRequirements?.uniqueProcesses?.join(', ') || '-'}`,
+      '',
+      '7. תקציב וזמנים',
+      `תקציב: ${formData.budgetAndTimeline?.budgetRange || '-'}`,
+      `תאריך יעד: ${formData.budgetAndTimeline?.desiredImplementationDate ? new Date(formData.budgetAndTimeline.desiredImplementationDate).toLocaleDateString('he-IL') : '-'}`,
+      `דחיפות: ${formData.budgetAndTimeline?.urgencyLevel || '-'}`,
+      '',
+      '8. סיכום',
+      `הערות נוספות: ${formData.nextSteps?.additionalNotes || '-'}`
+    ];
+
+    if (aiSummary) {
+      lines.push('', '--- המלצת AI ---', aiSummary);
+    }
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `assessment_${client.businessInfo?.businessName || 'client'}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleProcessChange = (processKey, field, value) => {
     setFormData({
       ...formData,
@@ -52,97 +107,89 @@ const AssessmentTab = ({ client }) => {
   };
 
   const processes = [
-    { key: 'queueManagement', label: 'ניהול תורים' },
-    { key: 'customerTracking', label: 'מעקב לקוחות' },
-    { key: 'billingPayments', label: 'גביה ותשלומים' },
-    { key: 'inventory', label: 'מלאי' },
-    { key: 'communication', label: 'תקשורת מול לקוחות' }
+    { key: 'queueManagement', label: 'ניהול תורים ויומן' },
+    { key: 'customerTracking', label: 'מעקב לקוחות (CRM)' },
+    { key: 'billingPayments', label: 'גביה, חשבוניות ותשלומים' },
+    { key: 'inventory', label: 'ניהול מלאי ולוגיסטיקה' },
+    { key: 'production', label: 'ניהול רצפת ייצור (Production)' },
+    { key: 'fieldTeams', label: 'ניהול צוותי שטח ומתקינים' },
+    { key: 'documents', label: 'ניהול מסמכים, שרטוטים ותוכניות' },
+    { key: 'communication', label: 'תקשורת ורב-ערוציות (WhatsApp/SMS)' }
   ];
 
   const buildAiRecommendation = () => {
     const lines = [];
 
-    // Pain points
+    // Pain points analysis
     const pain = formData.painPoints || {};
     if (pain.timeWasters?.length) {
       lines.push(
-        `• בזבוזי זמן מרכזיים: ${pain.timeWasters.join(', ')}. מומלץ לאפיין אוטומציות ותבניות פעולה קבועות סביב נקודות אלו.`
+        `• זוהו מוקדי בזבוז זמן: ${pain.timeWasters.join(', ')}. מומלץ ליישם אוטומציה שתחליף פעולות ידניות אלו.`
       );
     }
-    if (pain.customerLoss) {
+    
+    // Process specific recommendations
+    const toImprove = formData.processesToImprove || {};
+    
+    if (toImprove.production?.needed) {
       lines.push(
-        `• אובדן לקוחות: ${pain.customerLoss}. כדאי להגדיר סטטוסי ליד ברורים ותהליכי Follow-up אוטומטיים.`
+        '• עבור ניהול הייצור: מומלץ להטמיע "מסך רצפת ייצור" (Tablet View) לעובדים, המציג שרטוטים וסטטוס הזמנה בזמן אמת.'
       );
     }
 
-    // Processes to improve
-    const toImprove = formData.processesToImprove || {};
+    if (toImprove.fieldTeams?.needed) {
+      lines.push(
+        '• עבור צוותי השטח: מומלץ לפתח אפליקציית מתקינים (Installer App) הכוללת ניווט, חיוג ללקוח וחתימה דיגיטלית על טופס התקנה.'
+      );
+    }
+
+    if (toImprove.documents?.needed) {
+      lines.push(
+        '• נדרש ניהול מסמכים מתקדם: מערכת לקליטת שרטוטים ותוכניות (PDF/Images) ושיוך אוטומטי לכרטיס הלקוח/הזמנה.'
+      );
+    }
+
+    if (toImprove.queueManagement?.needed) {
+      lines.push('• מומלץ לשלב מודול יומן חכם וזימון תורים אוטומטי למניעת "חורים" בלו"ז.');
+    }
+
+    // Urgency & Implementation
     const enabledProcesses = processes
       .filter((p) => toImprove[p.key]?.needed)
       .sort(
         (a, b) =>
           (toImprove[b.key]?.priority || 0) - (toImprove[a.key]?.priority || 0)
       );
+      
     if (enabledProcesses.length) {
       const top = enabledProcesses[0];
       lines.push(
-        `• התהליך הדחוף ביותר לשיפור הוא \"${top.label}\" (עדיפות ${
-          toImprove[top.key]?.priority || 1
-        }). מומלץ להתחיל בו את האפיון והפיתוח.`
+        `• המיקוד הראשוני צריך להיות ב"${top.label}" (דחיפות ${toImprove[top.key]?.priority || 1}). זהו ה-Quick Win של הפרויקט.`
       );
     }
 
-    // Goals
-    const goals = formData.goalsAndObjectives || {};
-    if (goals.desiredOutcomes?.length) {
-      lines.push(
-        `• יעדים מרכזיים מהמערכת: ${goals.desiredOutcomes.join(', ')}. נתרגם אותם למדדי הצלחה ותצוגות ניהוליות (דשבורדים).`
-      );
-    }
-    if (goals.successCriteria?.length) {
-      lines.push(
-        `• קריטריוני הצלחה: ${goals.successCriteria.join(
-          ', '
-        )}. נגדיר מדדים ברורים ונעקוב אחריהם לאחר ההטמעה.`
-      );
-    }
-
-    // Budget & timeline
+    // Budget check
     const bt = formData.budgetAndTimeline || {};
-    if (bt.budgetRange) {
-      lines.push(
-        `• טווח תקציב מוערך: ${bt.budgetRange}. נבנה פתרון הדרגתי שמתאים למסגרת הזו.`
-      );
-    }
-    if (bt.desiredImplementationDate) {
-      lines.push(
-        `• יעד זמנים: הטמעה עד ${new Date(
-          bt.desiredImplementationDate
-        ).toLocaleDateString('he-IL')}. נבנה גאנט פיתוח בהתאם.`
-      );
-    }
-
-    // Next steps
-    const nextSteps = formData.nextSteps || {};
-    if (nextSteps.proposalPresentation) {
-      lines.push(
-        '• מומלץ להכין דמו קצר + מצגת תועלות ממוקדת לפגישת הצגת הפתרון.'
-      );
+    if (bt.budgetRange === 'עד 10,000' && (toImprove.production?.needed || toImprove.fieldTeams?.needed)) {
+       lines.push(
+         '• שים לב: התקציב שהוגדר (עד 10,000 ₪) עשוי להיות נמוך עבור פיתוח אפליקציות שטח/ייצור. מומלץ לשקול פיתוח בשלבים או הגדלת תקציב.'
+       );
     }
 
     if (!lines.length) {
       lines.push(
-        'כדי לקבל המלצה אוטומטית, מלא לפחות חלק מנקודות הכאב, התהליכים לשיפור והמטרות העסקיות.'
+        'ה-AI זקוק למידע נוסף. אנא מלא את התהליכים לשיפור ונקודות הכאב כדי לקבל המלצה.'
       );
     }
 
     setAiSummary(
       [
-        'תוכנית מומלצת לאפיון המערכת (AI):',
-        '',
+        '🤖 דוח ניתוח מערכת (AI Generated):',
+        '----------------------------------',
         ...lines,
         '',
-        'תצוגה מקדימה של התוצר: דשבורד ניהול לקוחות, תצוגת ציר תהליכים (Pipeline), תזכורות אוטומטיות ותיעוד מלא של אינטראקציות.'
+        'סיכום ארכיטקטורה מומלצת:',
+        'CRM מרכזי + ' + (toImprove.fieldTeams?.needed ? 'אפליקציית שטח + ' : '') + (toImprove.production?.needed ? 'מסך ייצור + ' : '') + 'אוטומציות WhatsApp.'
       ].join('\n')
     );
   };
@@ -150,20 +197,30 @@ const AssessmentTab = ({ client }) => {
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-        <Typography variant="h6">שאלון אפיון טלפוני</Typography>
-        <Button
-          variant="contained"
-          startIcon={<SaveIcon />}
-          onClick={handleSave}
-        >
-          שמור
-        </Button>
+        <Typography variant="h6">שאלון אפיון מערכת</Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            startIcon={<DownloadIcon />}
+            onClick={handleExport}
+          >
+            ייצוא דוח
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<SaveIcon />}
+            onClick={handleSave}
+          >
+            שמור שינויים
+          </Button>
+        </Box>
       </Box>
 
       {formData.filledAt && (
         <Chip
-          label={`מולא ב-${new Date(formData.filledAt).toLocaleDateString('he-IL')}`}
+          label={`עודכן לאחרונה ב-${new Date(formData.filledAt).toLocaleDateString('he-IL')}`}
           color="success"
+          variant="outlined"
           sx={{ mb: 3 }}
         />
       )}
@@ -171,7 +228,7 @@ const AssessmentTab = ({ client }) => {
       {/* טופס מרוכז – כל השאלון בתוך כרטיס אחד */}
       <Paper sx={{ p: 3, mb: 3 }}>
         {/* 1. היכרות בסיסית */}
-        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+        <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ color: 'primary.main' }}>
           1. היכרות בסיסית
         </Typography>
         <Grid container spacing={2} direction="column">
@@ -191,6 +248,7 @@ const AssessmentTab = ({ client }) => {
               fullWidth
               multiline
               rows={3}
+              placeholder="לדוגמה: מפעל אלומיניום המייצר חלונות ודלתות, עובד מול קבלנים ופרטיים..."
             />
           </Grid>
           <Grid item xs={12}>
@@ -215,7 +273,7 @@ const AssessmentTab = ({ client }) => {
         <Divider sx={{ my: 3 }} />
 
         {/* 2. הבנה של המצב הקיים */}
-        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+        <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ color: 'primary.main' }}>
           2. הבנה של המצב הקיים
         </Typography>
         <Grid container spacing={2} direction="column">
@@ -234,7 +292,7 @@ const AssessmentTab = ({ client }) => {
               }
               fullWidth
               multiline
-              rows={3}
+              rows={2}
             />
           </Grid>
           <Grid item xs={12}>
@@ -255,7 +313,7 @@ const AssessmentTab = ({ client }) => {
           </Grid>
           <Grid item xs={12}>
             <TextField
-              label="מה עובד טוב?"
+              label="מה עובד טוב בתהליך הנוכחי?"
               value={formData.currentSystems?.whatWorksWell || ''}
               onChange={(e) =>
                 setFormData({
@@ -273,7 +331,7 @@ const AssessmentTab = ({ client }) => {
           </Grid>
           <Grid item xs={12}>
             <TextField
-              label="מה לא עובד?"
+              label="מה לא עובד / תוקע את העסק?"
               value={formData.currentSystems?.whatDoesntWork || ''}
               onChange={(e) =>
                 setFormData({
@@ -294,13 +352,13 @@ const AssessmentTab = ({ client }) => {
         <Divider sx={{ my: 3 }} />
 
         {/* 3. זיהוי נקודות כאב */}
-        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+        <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ color: 'primary.main' }}>
           3. זיהוי נקודות כאב
         </Typography>
         <Grid container spacing={2} direction="column">
           <Grid item xs={12}>
             <TextField
-              label="איפה נוצר בזבוז זמן בעסק?"
+              label="איפה נוצר בזבוז זמן עיקרי?"
               value={formData.painPoints?.timeWasters?.join(', ') || ''}
               onChange={(e) =>
                 setFormData({
@@ -314,7 +372,7 @@ const AssessmentTab = ({ client }) => {
               fullWidth
               multiline
               rows={2}
-              helperText="הפרד עם פסיקים"
+              helperText="הפרד עם פסיקים (לדוגמה: מענה טלפוני, תיאום, חיפוש ניירת)"
             />
           </Grid>
           <Grid item xs={12}>
@@ -337,7 +395,7 @@ const AssessmentTab = ({ client }) => {
           </Grid>
           <Grid item xs={12}>
             <TextField
-              label="תהליכים לאוטומציה"
+              label="תהליכים שהיית רוצה להפוך לאוטומטיים"
               value={formData.painPoints?.processesToAutomate?.join(', ') || ''}
               onChange={(e) =>
                 setFormData({
@@ -354,7 +412,7 @@ const AssessmentTab = ({ client }) => {
               fullWidth
               multiline
               rows={2}
-              helperText="הפרד עם פסיקים"
+              helperText="הפרד עם פסיקים (לדוגמה: שליחת הצעת מחיר, תזכורת לפגישה, קליטת ליד)"
             />
           </Grid>
         </Grid>
@@ -362,12 +420,15 @@ const AssessmentTab = ({ client }) => {
         <Divider sx={{ my: 3 }} />
 
         {/* 4. תהליכים שצריך לשפר */}
-        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-          4. תהליכים שצריך לשפר
+        <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ color: 'primary.main' }}>
+          4. מודולים ותהליכים נדרשים
+        </Typography>
+        <Typography variant="body2" color="text.secondary" paragraph>
+          סמן את המודולים הרלוונטיים עבור העסק ודרג את רמת הדחיפות שלהם.
         </Typography>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {processes.map((process) => (
-            <Box key={process.key}>
+            <Paper key={process.key} variant="outlined" sx={{ p: 2, bgcolor: formData.processesToImprove?.[process.key]?.needed ? 'action.selected' : 'transparent' }}>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -377,12 +438,12 @@ const AssessmentTab = ({ client }) => {
                     }
                   />
                 }
-                label={process.label}
+                label={<Typography fontWeight={formData.processesToImprove?.[process.key]?.needed ? 'bold' : 'normal'}>{process.label}</Typography>}
               />
               {formData.processesToImprove?.[process.key]?.needed && (
                 <Box sx={{ ml: 4, mt: 1 }}>
-                  <Typography gutterBottom>
-                    עדיפות: {formData.processesToImprove?.[process.key]?.priority || 1}
+                  <Typography variant="caption" gutterBottom>
+                    עדיפות (1 - נמוך, 5 - דחוף): {formData.processesToImprove?.[process.key]?.priority || 1}
                   </Typography>
                   <Slider
                     value={formData.processesToImprove?.[process.key]?.priority || 1}
@@ -392,25 +453,25 @@ const AssessmentTab = ({ client }) => {
                     min={1}
                     max={5}
                     marks
-                    valueLabelDisplay="auto"
+                    step={1}
+                    sx={{ maxWidth: 300, display: 'block', mb: 2 }}
                   />
                   <TextField
-                    label="הערות"
+                    label="הערות ספציפיות למודול זה"
                     value={formData.processesToImprove?.[process.key]?.notes || ''}
                     onChange={(e) =>
                       handleProcessChange(process.key, 'notes', e.target.value)
                     }
                     fullWidth
-                    multiline
-                    rows={2}
-                    sx={{ mt: 1 }}
+                    size="small"
+                    variant="filled"
                   />
                 </Box>
               )}
-            </Box>
+            </Paper>
           ))}
           <TextField
-            label="מה הכי דחוף לפתור?"
+            label="מה הדבר הכי דחוף (ה-Pain Point הגדול ביותר)?"
             value={formData.processesToImprove?.mostUrgent || ''}
             onChange={(e) =>
               setFormData({
@@ -424,19 +485,20 @@ const AssessmentTab = ({ client }) => {
             fullWidth
             multiline
             rows={2}
+            sx={{ mt: 2 }}
           />
         </Box>
 
         <Divider sx={{ my: 3 }} />
 
         {/* 5. מטרות ויעדים */}
-        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+        <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ color: 'primary.main' }}>
           5. מטרות ויעדים
         </Typography>
         <Grid container spacing={2} direction="column">
           <Grid item xs={12}>
             <TextField
-              label="מה היית רוצה שיקרה?"
+              label="מה היית רוצה שיקרה בעסק בעקבות המערכת?"
               value={formData.goalsAndObjectives?.desiredOutcomes?.join(', ') || ''}
               onChange={(e) =>
                 setFormData({
@@ -458,7 +520,7 @@ const AssessmentTab = ({ client }) => {
           </Grid>
           <Grid item xs={12}>
             <TextField
-              label="קריטריוני הצלחה"
+              label="איך נמדוד הצלחה? (Success Criteria)"
               value={formData.goalsAndObjectives?.successCriteria?.join(', ') || ''}
               onChange={(e) =>
                 setFormData({
@@ -475,7 +537,7 @@ const AssessmentTab = ({ client }) => {
               fullWidth
               multiline
               rows={2}
-              helperText="הפרד עם פסיקים"
+              helperText="לדוגמה: חיסכון של 10 שעות שבועיות, גידול של 20% במכירות"
             />
           </Grid>
         </Grid>
@@ -483,8 +545,8 @@ const AssessmentTab = ({ client }) => {
         <Divider sx={{ my: 3 }} />
 
         {/* 6. דרישות מיוחדות */}
-        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-          6. דרישות מיוחדות
+        <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ color: 'primary.main' }}>
+          6. דרישות מיוחדות ואינטגרציות
         </Typography>
         <Grid container spacing={2} direction="column">
           <Grid item xs={12}>
@@ -504,12 +566,12 @@ const AssessmentTab = ({ client }) => {
                 })
               }
               fullWidth
-              helperText="לדוגמה: WhatsApp, חשבוניות, תשלום..."
+              helperText="לדוגמה: WhatsApp, חשבונית ירוקה, סליקת אשראי, יומן Google"
             />
           </Grid>
           <Grid item xs={12}>
             <TextField
-              label="תהליכים ייחודיים לעסק"
+              label="תהליכים ייחודיים או מורכבים במיוחד"
               value={formData.specialRequirements?.uniqueProcesses?.join(', ') || ''}
               onChange={(e) =>
                 setFormData({
@@ -533,14 +595,15 @@ const AssessmentTab = ({ client }) => {
         <Divider sx={{ my: 3 }} />
 
         {/* 7. תקציב וזמנים */}
-        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-          7. תקציב וזמנים
+        <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ color: 'primary.main' }}>
+          7. תקציב ולוחות זמנים
         </Typography>
         <Grid container spacing={2} direction="column">
           <Grid item xs={12}>
             <FormControl fullWidth>
-              <FormLabel>טווח תקציב</FormLabel>
+              <FormLabel>טווח תקציב מוערך</FormLabel>
               <RadioGroup
+                row
                 value={formData.budgetAndTimeline?.budgetRange || ''}
                 onChange={(e) =>
                   setFormData({
@@ -552,18 +615,18 @@ const AssessmentTab = ({ client }) => {
                   })
                 }
               >
-                <FormControlLabel value="עד 10,000" control={<Radio />} label="עד ₪10,000" />
-                <FormControlLabel value="10,000-20,000" control={<Radio />} label="₪10,000-20,000" />
-                <FormControlLabel value="20,000-40,000" control={<Radio />} label="₪20,000-40,000" />
-                <FormControlLabel value="40,000-60,000" control={<Radio />} label="₪40,000-60,000" />
-                <FormControlLabel value="60,000+" control={<Radio />} label="₪60,000+" />
-                <FormControlLabel value="לא בטוח" control={<Radio />} label="לא בטוח" />
+                <FormControlLabel value="עד 10,000" control={<Radio />} label="עד 10k" />
+                <FormControlLabel value="10,000-20,000" control={<Radio />} label="10k-20k" />
+                <FormControlLabel value="20,000-40,000" control={<Radio />} label="20k-40k" />
+                <FormControlLabel value="40,000-60,000" control={<Radio />} label="40k-60k" />
+                <FormControlLabel value="60,000+" control={<Radio />} label="60k+" />
+                <FormControlLabel value="לא בטוח" control={<Radio />} label="לא יודע" />
               </RadioGroup>
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} md={6}>
             <TextField
-              label="תאריך יעד להטמעה"
+              label="תאריך יעד רצוי להטמעה"
               type="date"
               value={formData.budgetAndTimeline?.desiredImplementationDate?.split('T')[0] || ''}
               onChange={(e) =>
@@ -578,33 +641,13 @@ const AssessmentTab = ({ client }) => {
               InputLabelProps={{ shrink: true }}
               fullWidth
             />
-            <FormControl fullWidth sx={{ mt: 2 }}>
-              <FormLabel>רמת דחיפות</FormLabel>
-              <RadioGroup
-                value={formData.budgetAndTimeline?.urgencyLevel || 'medium'}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    budgetAndTimeline: {
-                      ...formData.budgetAndTimeline,
-                      urgencyLevel: e.target.value
-                    }
-                  })
-                }
-              >
-                <FormControlLabel value="low" control={<Radio />} label="נמוכה" />
-                <FormControlLabel value="medium" control={<Radio />} label="בינונית" />
-                <FormControlLabel value="high" control={<Radio />} label="גבוהה" />
-                <FormControlLabel value="urgent" control={<Radio />} label="דחופה" />
-              </RadioGroup>
-            </FormControl>
           </Grid>
         </Grid>
 
         <Divider sx={{ my: 3 }} />
 
         {/* 8. סיכום והמשך */}
-        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+        <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ color: 'primary.main' }}>
           8. סיכום והמשך תהליך
         </Typography>
         <Grid container spacing={2} direction="column">
@@ -624,32 +667,12 @@ const AssessmentTab = ({ client }) => {
                   }
                 />
               }
-              label="לקבוע פגישת הצגת פתרון"
+              label="לקבוע פגישת הצגת פתרון ואפיון טכני"
             />
           </Grid>
-          {formData.nextSteps?.proposalPresentation && (
-            <Grid item xs={12} md={6}>
-              <TextField
-                label="תאריך פגישה מועדף"
-                type="date"
-                value={formData.nextSteps?.preferredMeetingDate?.split('T')[0] || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    nextSteps: {
-                      ...formData.nextSteps,
-                      preferredMeetingDate: e.target.value
-                    }
-                  })
-                }
-                InputLabelProps={{ shrink: true }}
-                fullWidth
-              />
-            </Grid>
-          )}
           <Grid item xs={12}>
             <TextField
-              label="הערות נוספות"
+              label="הערות נוספות לסיכום"
               value={formData.nextSteps?.additionalNotes || ''}
               onChange={(e) =>
                 setFormData({
@@ -669,30 +692,22 @@ const AssessmentTab = ({ client }) => {
       </Paper>
 
       {/* AI Recommendation */}
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="h6">ניתוח אוטומטי (AI) והמלצות</Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button variant="outlined" onClick={buildAiRecommendation}>
-              הפעל ניתוח
-            </Button>
-            <Button
-              variant="contained"
-              size="large"
-              startIcon={<SaveIcon />}
-              onClick={handleSave}
-            >
-              שמור שאלון אפיון
-            </Button>
+      <Paper sx={{ p: 3, mb: 3, bgcolor: '#f0f7ff', border: '1px solid #cce5ff' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <AiIcon color="primary" />
+            <Typography variant="h6" color="primary">ניתוח אוטומטי (BizFlow AI)</Typography>
           </Box>
+          <Button variant="contained" onClick={buildAiRecommendation} size="small">
+            נתח נתונים והפק המלצות
+          </Button>
         </Box>
         <Typography
-          variant="body2"
-          color={aiSummary ? 'text.primary' : 'text.secondary'}
-          sx={{ whiteSpace: 'pre-wrap' }}
+          variant="body1"
+          sx={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '0.9rem' }}
         >
           {aiSummary ||
-            'מלא את השאלון ולחץ על \"הפעל ניתוח\" כדי לקבל המלצה אוטומטית ותצוגה מקדימה של מערכת מומלצת לעסק.'}
+            'מלא את השאלון ולחץ על "נתח נתונים" כדי לקבל אפיון ראשוני, המלצות לשיפור והערכת ארכיטקטורת מערכת.'}
         </Typography>
       </Paper>
     </Box>
@@ -700,4 +715,3 @@ const AssessmentTab = ({ client }) => {
 };
 
 export default AssessmentTab;
-
