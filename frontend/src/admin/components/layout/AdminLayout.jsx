@@ -1,23 +1,41 @@
-import { Box, Container } from '@mui/material';
+import { Box, Toolbar } from '@mui/material';
 import AdminHeader from './AdminHeader';
 import Sidebar from './Sidebar';
 import QuickAddFAB from '../../../components/common/QuickAddFAB';
 
 function AdminLayout({ children }) {
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'grey.50' }}>
-      {/* Sidebar */}
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+      {/* Header - Fixed at top */}
+      <AdminHeader />
+
+      {/* Sidebar - Fixed at left (rtl: right), pushed down by header */}
       <Sidebar />
 
       {/* Main Content */}
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        {/* Header */}
-        <AdminHeader />
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
+          overflow: 'auto',
+          width: '100%', // Ensure it takes remaining width
+        }}
+      >
+        {/* Spacer for fixed header */}
+        <Toolbar />
 
-        {/* Page Content */}
-        <Container maxWidth="xl" sx={{ mt: 4, mb: 4, flex: 1 }}>
+        <Box 
+          sx={{ 
+            flex: 1,
+            p: 4,
+            width: '100%'
+          }}
+        >
           {children}
-        </Container>
+        </Box>
       </Box>
 
       {/* Quick Add FAB */}
@@ -27,4 +45,3 @@ function AdminLayout({ children }) {
 }
 
 export default AdminLayout;
-
