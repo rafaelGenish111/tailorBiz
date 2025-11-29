@@ -88,3 +88,4 @@ const fixDuplicateIndexes = async () => {
 
 fixDuplicateIndexes();
 
+

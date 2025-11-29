@@ -105,3 +105,4 @@ const InsightsPanel = ({ insights = [] }) => {
 
 export default InsightsPanel;
 
+
