@@ -24,3 +24,4 @@ router.get('/status', whatsappController.getConnectionStatus);
 module.exports = router;
 
 
+

@@ -99,3 +99,4 @@ const SmartSequenceProgress = ({ instance }) => {
 
 export default SmartSequenceProgress;
 
+

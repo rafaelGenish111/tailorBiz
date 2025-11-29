@@ -65,3 +65,4 @@ LeadNurturingInstanceSchema.index({ nurturingTemplate: 1 });
 module.exports = mongoose.model('LeadNurturingInstance', LeadNurturingInstanceSchema);
 
 
+
