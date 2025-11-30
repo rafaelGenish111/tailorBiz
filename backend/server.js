@@ -2,11 +2,6 @@ require('dotenv').config();
 const app = require('./src/app');
 const connectDB = require('./src/config/database');
 
-// שירותים שרצים רק בשרת רגיל
-const reminderService = require('./src/services/reminderService');
-const leadNurturingService = require('./src/services/leadNurturingService');
-const { initializeAutomationEngine } = require('./src/services/marketing/automationEngine');
-
 const PORT = process.env.PORT || 5000;
 const IS_VERCEL = process.env.VERCEL === '1';
 
@@ -14,6 +9,11 @@ console.log(`[System] Starting... VERCEL=${IS_VERCEL}, NODE_ENV=${process.env.NO
 
 if (!IS_VERCEL) {
   // --- מצב פיתוח מקומי ---
+  // טוענים את השירותים רק כאן, לא ב-Vercel
+  const reminderService = require('./src/services/reminderService');
+  const leadNurturingService = require('./src/services/leadNurturingService');
+  const { initializeAutomationEngine } = require('./src/services/marketing/automationEngine');
+
   connectDB().then(() => {
     app.listen(PORT, () => {
       console.log(`🚀 Server running locally on port ${PORT}`);
@@ -31,16 +31,12 @@ module.exports = async (req, res) => {
   console.log(`[Vercel] Incoming request: ${req.method} ${req.url}`);
   
   try {
-    // בדיקת משתני סביבה קריטיים
     const hasMongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
     if (!hasMongoUri) {
       throw new Error('CRITICAL: MONGO_URI / MONGODB_URI is missing!');
     }
 
-    console.log('[Vercel] Connecting to DB...');
     await connectDB();
-    console.log('[Vercel] DB Connected. Passing to Express app...');
-    
     return app(req, res);
     
   } catch (error) {
@@ -52,4 +48,3 @@ module.exports = async (req, res) => {
     });
   }
 };
-
