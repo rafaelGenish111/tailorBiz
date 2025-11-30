@@ -89,15 +89,26 @@ function TestimonialsList() {
       field: 'image',
       headerName: 'תמונה',
       width: 80,
-      renderCell: (params) => (
-        <Avatar
-          src={params.value ? `http://localhost:5000${params.value}` : undefined}
-          alt={params.row.clientName}
-          sx={{ width: 50, height: 50 }}
-        >
-          {params.row.clientName?.charAt(0)}
-        </Avatar>
-      ),
+      renderCell: (params) => {
+        let imageSrc;
+        if (params.value) {
+          if (params.value.startsWith('http://') || params.value.startsWith('https://')) {
+            imageSrc = params.value;
+          } else {
+            imageSrc = `${window.location.origin}${params.value.startsWith('/') ? params.value : `/${params.value}`}`;
+          }
+        }
+
+        return (
+          <Avatar
+            src={imageSrc}
+            alt={params.row.clientName}
+            sx={{ width: 50, height: 50 }}
+          >
+            {params.row.clientName?.charAt(0)}
+          </Avatar>
+        );
+      },
     },
     {
       field: 'clientName',

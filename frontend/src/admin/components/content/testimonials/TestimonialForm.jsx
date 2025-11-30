@@ -88,7 +88,12 @@ function TestimonialForm({ open, onClose, testimonial }) {
         isVisible: testimonial.isVisible,
       });
       if (testimonial.image) {
-        setImagePreview(`http://localhost:5000${testimonial.image}`);
+        // אם קיבלנו URL מלא (למשל Cloudinary) – נשתמש בו כמו שהוא, אחרת נתבסס על הדומיין הנוכחי
+        if (testimonial.image.startsWith('http://') || testimonial.image.startsWith('https://')) {
+          setImagePreview(testimonial.image);
+        } else {
+          setImagePreview(`${window.location.origin}${testimonial.image.startsWith('/') ? testimonial.image : `/${testimonial.image}`}`);
+        }
       }
     } else {
       reset({

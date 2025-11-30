@@ -63,7 +63,8 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchMorningFocus = async () => {
       try {
-        const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        // ב-Production נשתמש ב-/api, בלוקאל נגדיר VITE_API_URL=http://localhost:5000/api
+        const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
         const token = localStorage.getItem('token');
         const res = await axios.get(`${API_BASE_URL}/clients/stats/morning-focus`, {
           headers: {
