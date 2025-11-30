@@ -32,8 +32,9 @@ module.exports = async (req, res) => {
   
   try {
     // בדיקת משתני סביבה קריטיים
-    if (!process.env.MONGO_URI) {
-      throw new Error('CRITICAL: MONGO_URI is missing!');
+    const hasMongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+    if (!hasMongoUri) {
+      throw new Error('CRITICAL: MONGO_URI / MONGODB_URI is missing!');
     }
 
     console.log('[Vercel] Connecting to DB...');
@@ -51,5 +52,4 @@ module.exports = async (req, res) => {
     });
   }
 };
-
 
