@@ -6,6 +6,12 @@
       "destination": "/backend/server.js"
     }
   ],
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/index.html"
+    }
+  ],
   "builds": [
     {
       "src": "backend/server.js",
