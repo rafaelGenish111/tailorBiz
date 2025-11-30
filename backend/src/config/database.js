@@ -16,16 +16,16 @@ const connectDB = async () => {
       bufferCommands: false, // חשוב: מונע המתנה אינסופית אם אין חיבור
     };
 
-    // נבחר URI עם fallback: קודם MONGO_URI ואז MONGODB_URI (כמו שהיה לפני)
+    // נשתמש ב-MONGO_URI ואם לא קיים – ניפול ל-MONGODB_URI (כמו שהיה במקור)
     const uri = process.env.MONGO_URI || process.env.MONGODB_URI;
 
     if (!uri) {
       throw new Error('MONGO_URI or MONGODB_URI is missing in environment variables');
     }
 
-    cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(uri, opts).then((mongooseInstance) => {
       console.log('✅ MongoDB Connected');
-      return mongoose;
+      return mongooseInstance;
     });
   }
 
@@ -41,4 +41,3 @@ const connectDB = async () => {
 };
 
 module.exports = connectDB;
-
