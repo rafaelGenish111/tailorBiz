@@ -8,7 +8,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'robots.txt', 'apple-touch-icon.png'],
+      // קבצים סטטיים שייכנסו לבילד
+      includeAssets: [
+        'favicon.svg',
+        'robots.txt',
+        // נשתמש באותו אייקון גם כ-icon וכ-apple-touch-icon
+        'assets/images/image-removebg-preview.png'
+      ],
       // FIX: Increase the file size limit for caching (set to 4MB)
       workbox: {
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
@@ -21,20 +27,23 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
+        // מאיפה האפליקציה תיפתח כשמתקינים אותה
         start_url: '/admin/dashboard',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            // האייקונים חייבים להתאים לקבצים שקיימים ב-public
+            // כאן אנחנו משתמשים באייקון שנמצא ב-public/assets/images
+            src: 'assets/images/image-removebg-preview.png',
             sizes: '192x192',
             type: 'image/png',
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'assets/images/image-removebg-preview.png',
             sizes: '512x512',
             type: 'image/png',
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'assets/images/image-removebg-preview.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable',
