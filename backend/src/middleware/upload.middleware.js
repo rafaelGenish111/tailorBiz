@@ -1,16 +1,31 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
-// Configure storage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/images');
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'testimonial-' + uniqueSuffix + path.extname(file.originalname));
+const IS_VERCEL = process.env.VERCEL === '1';
+
+let storage;
+
+if (IS_VERCEL) {
+  // Memory storage for Vercel (serverless - no filesystem write access)
+  storage = multer.memoryStorage();
+} else {
+  // Disk storage for local development
+  const uploadDir = 'uploads/images';
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
   }
-});
+  
+  storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, 'testimonial-' + uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+}
 
 // File filter
 const fileFilter = (req, file, cb) => {
@@ -35,7 +50,3 @@ const upload = multer({
 });
 
 module.exports = upload;
-
-
-
-
