@@ -9,6 +9,12 @@ import {
   IconButton,
   Chip,
   Avatar,
+  useTheme,
+  useMediaQuery,
+  Card,
+  CardContent,
+  Stack,
+  Divider,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -56,6 +62,8 @@ const LEAD_STATUSES = ['lead', 'contacted', 'assessment_scheduled', 'assessment_
 const CLIENT_STATUSES = ['won', 'active_client', 'in_development', 'completed', 'churned'];
 
 function ClientsList({ viewMode }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
@@ -128,7 +136,7 @@ function ClientsList({ viewMode }) {
     return 'ניהול לקוחות ולידים';
   };
 
-  // Columns
+  // Columns (לטבלה בדסקטופ)
   const columns = [
     {
       field: 'personalInfo',
@@ -277,6 +285,8 @@ function ClientsList({ viewMode }) {
     },
   ];
 
+  const rows = data?.data || [];
+
   return (
     <Box sx={{ width: '100%' }}>
       {/* Header */}
@@ -346,31 +356,145 @@ function ClientsList({ viewMode }) {
         </Box>
       </Paper>
 
-      {/* Table */}
-      <Paper sx={{ height: { xs: 500, md: 600 }, width: '100%', overflowX: 'auto' }}>
-        <DataGrid
-          rows={data?.data || []}
-          columns={columns}
-          getRowId={(row) => row._id}
-          loading={isLoading}
-          pagination
-          paginationMode="server"
-          page={page}
-          pageSize={pageSize}
-          rowCount={data?.pagination?.totalItems || 0}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
-          rowsPerPageOptions={[5, 10, 25, 50]}
-          disableSelectionOnClick
-          onRowClick={(params) => handleView(params.row)}
-          sx={{
-            '& .MuiDataGrid-cell': {
-              display: 'flex',
-              alignItems: 'center',
-            },
-          }}
-        />
-      </Paper>
+      {/* Table / Mobile Cards */}
+      {isMobile ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {isLoading ? (
+            <Typography variant="body2" color="text.secondary">
+              טוען...
+            </Typography>
+          ) : rows.length === 0 ? (
+            <Paper sx={{ p: 3, textAlign: 'center' }}>
+              <Typography variant="body2" color="text.secondary">
+                אין נתונים להצגה.
+              </Typography>
+            </Paper>
+          ) : (
+            rows.map((client) => {
+              const fullName = client.personalInfo?.fullName || 'ללא שם';
+              const businessName = client.businessInfo?.businessName || 'ללא שם עסק';
+              const phone = client.personalInfo?.phone;
+              const email = client.personalInfo?.email;
+              const statusInfo = STATUS_LABELS[client.status] || { label: client.status, color: 'default' };
+              const leadSourceLabel = LEAD_SOURCE_LABELS[client.leadSource] || client.leadSource;
+
+              return (
+                <Card key={client._id} variant="outlined">
+                  <CardContent sx={{ p: 2 }}>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      <Avatar sx={{ bgcolor: 'primary.main' }}>
+                        {fullName.charAt(0) || '?'}
+                      </Avatar>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="subtitle1" fontWeight="bold" noWrap>
+                          {fullName}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" noWrap>
+                          {businessName}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <IconButton size="small" color="primary" onClick={() => handleView(client)}>
+                          <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </Stack>
+
+                    <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1 }}>
+                      {statusInfo.label && (
+                        <Chip label={statusInfo.label} color={statusInfo.color} size="small" />
+                      )}
+                      {typeof client.leadScore === 'number' && (
+                        <Chip
+                          label={`ציון: ${client.leadScore}`}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                      {leadSourceLabel && (
+                        <Chip
+                          label={`מקור: ${leadSourceLabel}`}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                    </Stack>
+
+                    {(phone || email) && (
+                      <>
+                        <Divider sx={{ my: 1.5 }} />
+                        <Stack spacing={0.5}>
+                          {phone && (
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <PhoneIcon fontSize="small" color="action" />
+                              <Typography variant="body2">{phone}</Typography>
+                            </Stack>
+                          )}
+                          {email && (
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <EmailIcon fontSize="small" color="action" />
+                              <Typography
+                                variant="body2"
+                                sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+                              >
+                                {email}
+                              </Typography>
+                            </Stack>
+                          )}
+                        </Stack>
+                      </>
+                    )}
+
+                    <Box sx={{ mt: 1.5, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => handleEdit(client)}
+                        aria-label="ערוך"
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => handleDeleteClick(client)}
+                        aria-label="מחק"
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
+        </Box>
+      ) : (
+        <Paper sx={{ height: 600, width: '100%', overflowX: 'auto' }}>
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            getRowId={(row) => row._id}
+            loading={isLoading}
+            pagination
+            paginationMode="server"
+            page={page}
+            pageSize={pageSize}
+            rowCount={data?.pagination?.totalItems || 0}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            disableSelectionOnClick
+            onRowClick={(params) => handleView(params.row)}
+            sx={{
+              '& .MuiDataGrid-cell': {
+                display: 'flex',
+                alignItems: 'center',
+              },
+            }}
+          />
+        </Paper>
+      )}
 
       {/* Form Dialog */}
       <ClientForm 
