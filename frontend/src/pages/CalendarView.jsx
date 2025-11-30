@@ -492,7 +492,7 @@ const CalendarView = () => {
   }
 
   return (
-    <Box>
+    <Box sx={{ width: '100%' }}>
       {/* Top Toolbar */}
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -549,7 +549,9 @@ const CalendarView = () => {
       </Box>
 
       {/* Main Calendar Content */}
-      {viewMode === 'month' ? renderMonthView() : renderTimeGridView()}
+      <Box sx={{ width: '100%', overflowX: 'auto' }}>
+        {viewMode === 'month' ? renderMonthView() : renderTimeGridView()}
+      </Box>
 
       {/* Event Details Dialog (Reused from logic) */}
       <Dialog 

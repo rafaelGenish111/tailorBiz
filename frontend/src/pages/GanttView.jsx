@@ -45,8 +45,17 @@ const GanttView = () => {
   }, []);
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Box sx={{ p: { xs: 2, md: 3 } }}>
+      <Box
+        sx={{
+          mb: 3,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: { xs: 'flex-start', md: 'center' },
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 2,
+        }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <TimelineIcon color="primary" />
           <Typography variant="h4" fontWeight="bold">
@@ -55,13 +64,20 @@ const GanttView = () => {
         </Box>
       </Box>
 
-      <Stack direction="row" spacing={2} sx={{ mb: 3 }} alignItems="center">
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        spacing={2}
+        sx={{ mb: 3 }}
+        alignItems={{ xs: 'stretch', md: 'center' }}
+      >
         <TextField
           type="date"
           label="מתאריך"
           value={range.from}
           onChange={(e) => setRange((prev) => ({ ...prev, from: e.target.value }))}
           InputLabelProps={{ shrink: true }}
+          fullWidth
+          sx={{ minWidth: { xs: '100%', md: 180 } }}
         />
         <TextField
           type="date"
@@ -69,13 +85,16 @@ const GanttView = () => {
           value={range.to}
           onChange={(e) => setRange((prev) => ({ ...prev, to: e.target.value }))}
           InputLabelProps={{ shrink: true }}
+          fullWidth
+          sx={{ minWidth: { xs: '100%', md: 180 } }}
         />
         <TextField
           select
           label="פרויקט"
           value={projectId}
           onChange={(e) => setProjectId(e.target.value)}
-          sx={{ minWidth: 220 }}
+          fullWidth
+          sx={{ minWidth: { xs: '100%', md: 220 } }}
         >
           <MenuItem value="">כל הפרויקטים</MenuItem>
           {projects.map((p) => (
@@ -93,10 +112,16 @@ const GanttView = () => {
               to: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
             })
           }
+          sx={{ width: { xs: '100%', md: 'auto' } }}
         >
           30 יום קדימה
         </Button>
-        <Button variant="contained" onClick={loadData} disabled={loading}>
+        <Button
+          variant="contained"
+          onClick={loadData}
+          disabled={loading}
+          sx={{ width: { xs: '100%', md: 'auto' } }}
+        >
           {loading ? <CircularProgress size={22} /> : 'רענן'}
         </Button>
       </Stack>

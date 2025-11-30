@@ -52,10 +52,13 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting
+// Rate limiting - יותר מקל בסביבת פיתוח
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: isDev ? 1000 : 100, // בסביבת פיתוח: 1000 בקשות, ב-production: 100
+  message: 'יותר מדי בקשות, נסה שוב מאוחר יותר',
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 app.use('/api/', limiter);
 

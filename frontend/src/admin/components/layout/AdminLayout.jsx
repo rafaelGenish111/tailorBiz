@@ -1,39 +1,74 @@
-import { Box, Toolbar } from '@mui/material';
-import AdminHeader from './AdminHeader';
+import React, { useState } from 'react';
+import { Box, CssBaseline, useMediaQuery, useTheme, IconButton, AppBar, Toolbar, Typography } from '@mui/material';
+import { Menu as MenuIcon } from '@mui/icons-material';
 import Sidebar from './Sidebar';
+import AdminHeader from './AdminHeader';
 import QuickAddFAB from '../../../components/common/QuickAddFAB';
 
-function AdminLayout({ children }) {
-  return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
-      {/* Header - Fixed at top */}
-      <AdminHeader />
+const DRAWER_WIDTH = 260;
 
-      {/* Sidebar - Fixed at left (rtl: right), pushed down by header */}
-      <Sidebar />
+const AdminLayout = ({ children }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  return (
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f4f6f8' }}>
+      <CssBaseline />
+      
+      {/* Mobile Header Toggle */}
+      {isMobile && (
+        <AppBar position="fixed" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap component="div">
+              TailorBiz
+            </Typography>
+          </Toolbar>
+        </AppBar>
+      )}
+
+      {/* Desktop Header */}
+      {!isMobile && <AdminHeader />}
+
+      {/* Sidebar Component */}
+      <Sidebar 
+        mobileOpen={mobileOpen} 
+        onClose={handleDrawerToggle} 
+        drawerWidth={DRAWER_WIDTH}
+        variant={isMobile ? 'temporary' : 'permanent'}
+      />
 
       {/* Main Content */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: '100vh',
-          overflow: 'auto',
-          width: '100%', // Ensure it takes remaining width
+          p: 3,
+          width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
+          mt: isMobile ? 8 : 0, // Add margin top on mobile for the AppBar
+          transition: theme.transitions.create(['margin', 'width'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+          }),
         }}
       >
-        {/* Spacer for fixed header */}
-        <Toolbar />
-
-        <Box 
-          sx={{ 
-            flex: 1,
-            p: 4,
-            width: '100%'
-          }}
-        >
+        {/* Spacer for fixed header on desktop */}
+        {!isMobile && <Toolbar />}
+        
+        <Box sx={{ flex: 1 }}>
           {children}
         </Box>
       </Box>
@@ -42,6 +77,6 @@ function AdminLayout({ children }) {
       <QuickAddFAB />
     </Box>
   );
-}
+};
 
 export default AdminLayout;

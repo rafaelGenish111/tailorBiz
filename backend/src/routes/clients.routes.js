@@ -20,6 +20,7 @@ router.use(protect);
 // Routes כלליים
 router.get('/stats/overview', clientController.getOverviewStats);
 router.get('/stats/pipeline', clientController.getPipelineStats);
+router.get('/stats/morning-focus', clientController.getMorningFocus);
 
 router.route('/')
   .get(clientController.getAllClients)
