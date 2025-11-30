@@ -4,28 +4,30 @@ import {
   Box,
   Grid,
   Card,
+  CardContent,
   Typography,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemAvatar,
-  Avatar,
-  Chip,
   IconButton,
-  Badge,
   Button,
+  Chip,
   Divider,
-  Alert,
-  LinearProgress
+  Avatar,
+  Tooltip,
+  Paper,
+  Stack,
+  LinearProgress,
+  useTheme
 } from '@mui/material';
 import {
   CheckCircle as CheckIcon,
-  RadioButtonUnchecked as UncheckedIcon,
   Warning as WarningIcon,
-  Event as EventIcon,
-  Notifications as NotificationIcon,
-  Add as AddIcon,
-  TrendingUp as TrendingUpIcon
+  AccessTime as TimeIcon,
+  Phone as PhoneIcon,
+  Email as EmailIcon,
+  WhatsApp as WhatsAppIcon,
+  Business as BusinessIcon,
+  Person as PersonIcon,
+  CalendarToday as CalendarIcon,
+  Assignment as TaskIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTodayAgenda, useUpdateTask, useTaskStats } from '../admin/hooks/useTasks';
@@ -34,6 +36,7 @@ import { he } from 'date-fns/locale';
 
 const TodayAgenda = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
   const { data: agendaResponse, isLoading } = useTodayAgenda();
   const { data: statsResponse } = useTaskStats();
   const updateTask = useUpdateTask();
@@ -48,386 +51,248 @@ const TodayAgenda = () => {
     });
   };
 
-  const getPriorityColor = (priority) => {
-    const colors = {
-      urgent: 'error',
-      high: 'warning',
-      medium: 'info',
-      low: 'default'
-    };
-    return colors[priority] || 'default';
+  // --- פונקציות עזר לפעולות ---
+  const handleWhatsApp = (phone) => {
+    const cleanPhone = phone?.replace(/\D/g, '').replace(/^0/, '972');
+    if (cleanPhone) window.open(`https://wa.me/${cleanPhone}`, '_blank');
   };
 
-  const getPriorityLabel = (priority) => {
-    const labels = {
-      urgent: 'דחוף',
-      high: 'גבוה',
-      medium: 'בינוני',
-      low: 'נמוך'
-    };
+  const handleCall = (phone) => window.location.href = `tel:${phone}`;
+  const handleEmail = (email) => window.location.href = `mailto:${email}`;
+
+  const getTaskColor = (priority) => {
+    switch (priority) {
+      case 'urgent': return theme.palette.error.main;
+      case 'high': return theme.palette.warning.main;
+      case 'medium': return theme.palette.info.main;
+      default: return theme.palette.success.main; // low
+    }
+  };
+
+  const getTaskPriorityLabel = (priority) => {
+    const labels = { urgent: 'דחוף', high: 'גבוה', medium: 'בינוני', low: 'רגיל' };
     return labels[priority] || priority;
   };
 
   if (isLoading) {
-    return (
-      <Box sx={{ p: 4 }}>
-        <Typography>טוען...</Typography>
-      </Box>
-    );
+    return <LinearProgress />;
   }
 
+  // חישוב סטטיסטיקות לבר העליון
   const totalTasks = (agenda.today?.length || 0) + (agenda.overdue?.length || 0);
   const completedToday = stats.completedToday || 0;
-  const progressPercentage = totalTasks > 0 ? Math.round((completedToday / totalTasks) * 100) : 0;
+  const progress = totalTasks > 0 ? Math.round((completedToday / (totalTasks + completedToday)) * 100) : 100;
+
+  // --- קומפוננטת כרטיס משימה ---
+  const TaskCard = ({ task, isOverdue }) => {
+    const client = task.relatedClient;
+    const phone = client?.personalInfo?.phone || client?.businessInfo?.phone;
+    const email = client?.personalInfo?.email || client?.businessInfo?.email;
+    const borderColor = getTaskColor(task.priority);
+
+    return (
+      <Grid item xs={12} md={6}>
+        <Card 
+          elevation={3}
+          sx={{
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            borderRight: `6px solid ${borderColor}`, // פס צבע מימין המעיד על דחיפות
+            bgcolor: isOverdue ? '#fff5f5' : 'white',
+            transition: 'transform 0.2s',
+            '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 }
+          }}
+        >
+          <CardContent sx={{ flexGrow: 1, pb: 1 }}>
+            {/* כותרת ושבב עדיפות */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+              <Typography variant="h6" component="div" fontWeight="bold" sx={{ lineHeight: 1.2 }}>
+                {task.title}
+              </Typography>
+              <Chip 
+                label={getTaskPriorityLabel(task.priority)} 
+                size="small" 
+                sx={{ 
+                  bgcolor: `${borderColor}22`, 
+                  color: borderColor,
+                  fontWeight: 'bold',
+                  height: 24 
+                }} 
+              />
+            </Box>
+
+            {/* פרטי לקוח */}
+            {client && (
+              <Box sx={{ mb: 2, p: 1.5, bgcolor: 'grey.50', borderRadius: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                  <PersonIcon fontSize="small" color="action" />
+                  <Typography variant="body2" fontWeight={500}>
+                    {client.personalInfo?.fullName}
+                  </Typography>
+                </Box>
+                {client.businessInfo?.businessName && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <BusinessIcon fontSize="small" color="action" />
+                    <Typography variant="body2" color="text.secondary">
+                      {client.businessInfo.businessName}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            )}
+
+            {/* זמן יעד */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: isOverdue ? 'error.main' : 'text.secondary' }}>
+              <TimeIcon fontSize="small" />
+              <Typography variant="body2" fontWeight={isOverdue ? 'bold' : 'regular'}>
+                {isOverdue ? 'באיחור! ' : ''}
+                {format(new Date(task.dueDate), 'HH:mm')} 
+                <Typography component="span" variant="caption" sx={{ mx: 1, color: 'grey.500' }}>
+                  ({format(new Date(task.dueDate), 'dd/MM')})
+                </Typography>
+              </Typography>
+            </Box>
+          </CardContent>
+
+          <Divider />
+
+          {/* איזור פעולות תחתון */}
+          <Box sx={{ p: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', bgcolor: 'grey.50' }}>
+            <Stack direction="row" spacing={1}>
+              {phone && (
+                <Tooltip title="שלח וואטסאפ">
+                  <IconButton 
+                    size="small" 
+                    sx={{ bgcolor: '#e8f5e9', color: '#2e7d32', border: '1px solid #c8e6c9' }}
+                    onClick={() => handleWhatsApp(phone)}
+                  >
+                    <WhatsAppIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {phone && task.type === 'call' && (
+                <Tooltip title={`חייג: ${phone}`}>
+                  <IconButton 
+                    size="small" 
+                    sx={{ bgcolor: '#e3f2fd', color: '#1565c0', border: '1px solid #bbdefb' }}
+                    onClick={() => handleCall(phone)}
+                  >
+                    <PhoneIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {email && task.type === 'email' && (
+                <Tooltip title="שלח אימייל">
+                  <IconButton 
+                    size="small" 
+                    sx={{ bgcolor: '#fff3e0', color: '#ef6c00', border: '1px solid #ffe0b2' }}
+                    onClick={() => handleEmail(email)}
+                  >
+                    <EmailIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Stack>
+
+            <Button 
+              variant="contained" 
+              size="small" 
+              color="success"
+              startIcon={<CheckIcon />}
+              onClick={() => handleCompleteTask(task._id)}
+              sx={{ borderRadius: 4, textTransform: 'none', px: 2 }}
+            >
+              בוצע
+            </Button>
+          </Box>
+        </Card>
+      </Grid>
+    );
+  };
 
   return (
-    <Box>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          ☀️ בוקר טוב! סדר היום שלך
+    <Box sx={{ maxWidth: 1200, margin: '0 auto', p: { xs: 1, md: 3 } }}>
+      {/* --- כותרת ראשית --- */}
+      <Paper elevation={0} sx={{ p: 3, mb: 4, bgcolor: 'transparent' }}>
+        <Grid container alignItems="center" spacing={2}>
+          <Grid item xs={12} md={8}>
+            <Typography variant="h4" fontWeight="800" gutterBottom sx={{ color: '#1a237e' }}>
+              סדר היום שלך ☀️
+            </Typography>
+            <Typography variant="subtitle1" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CalendarIcon fontSize="small" />
+              {format(new Date(), 'EEEE, d בMMMM yyyy', { locale: he })}
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={4} sx={{ textAlign: 'left' }}>
+            <Button 
+              variant="contained" 
+              size="large" 
+              startIcon={<TaskIcon />}
+              onClick={() => navigate('/admin/tasks/new')}
+              sx={{ borderRadius: 3, px: 4, py: 1, boxShadow: 4 }}
+            >
+              משימה חדשה
+            </Button>
+          </Grid>
+        </Grid>
+
+        {/* בר התקדמות */}
+        <Box sx={{ mt: 3, width: '100%', maxWidth: 600 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+            <Typography variant="caption" fontWeight="bold">התקדמות יומית</Typography>
+            <Typography variant="caption">{progress}%</Typography>
+          </Box>
+          <LinearProgress 
+            variant="determinate" 
+            value={progress} 
+            sx={{ height: 10, borderRadius: 5, bgcolor: '#e0e0e0', '& .MuiLinearProgress-bar': { borderRadius: 5 } }} 
+          />
+        </Box>
+      </Paper>
+
+      {/* --- משימות באיחור --- */}
+      {agenda.overdue?.length > 0 && (
+        <Box sx={{ mb: 5 }}>
+          <Typography variant="h6" sx={{ mb: 2, color: 'error.main', display: 'flex', alignItems: 'center', gap: 1, fontWeight: 'bold' }}>
+            <WarningIcon />
+            דורש טיפול מיידי ({agenda.overdue.length})
+          </Typography>
+          <Grid container spacing={3}>
+            {agenda.overdue.map(task => (
+              <TaskCard key={task._id} task={task} isOverdue={true} />
+            ))}
+          </Grid>
+        </Box>
+      )}
+
+      {/* --- משימות להיום --- */}
+      <Box>
+        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1, fontWeight: 'bold', color: 'text.primary' }}>
+          <TimeIcon color="primary" />
+          המשימות להיום ({agenda.today?.length || 0})
         </Typography>
-        <Typography variant="body1" color="text.secondary">
-          {format(new Date(), 'EEEE, d MMMM yyyy', { locale: he })}
-        </Typography>
+        
+        {agenda.today && agenda.today.length > 0 ? (
+          <Grid container spacing={3}>
+            {agenda.today.map(task => (
+              <TaskCard key={task._id} task={task} isOverdue={false} />
+            ))}
+          </Grid>
+        ) : (
+          <Paper sx={{ p: 6, textAlign: 'center', bgcolor: '#f5f5f5', borderStyle: 'dashed', borderColor: '#bdbdbd' }}>
+            <Typography variant="h6" color="text.secondary">
+              אין משימות נוספות להיום 🎉
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              זמן מצוין לעבור על ה-Pipeline או לקחת הפסקה.
+            </Typography>
+          </Paper>
+        )}
       </Box>
-
-      {/* Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {/* Today's Progress */}
-        <Grid item xs={12} md={3}>
-          <Card sx={{ p: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <TrendingUpIcon color="primary" />
-              <Typography variant="h6">התקדמות היום</Typography>
-            </Box>
-            <Typography variant="h3" gutterBottom>
-              {progressPercentage}%
-            </Typography>
-            <LinearProgress
-              variant="determinate"
-              value={progressPercentage}
-              sx={{ height: 8, borderRadius: 1, mb: 1 }}
-            />
-            <Typography variant="caption" color="text.secondary">
-              {completedToday} מתוך {totalTasks} משימות הושלמו
-            </Typography>
-          </Card>
-        </Grid>
-
-        {/* Today's Tasks */}
-        <Grid item xs={12} md={3}>
-          <Card sx={{ p: 3, bgcolor: '#e3f2fd' }}>
-            <Typography variant="h6" gutterBottom>
-              📋 משימות להיום
-            </Typography>
-            <Typography variant="h3">
-              {agenda.today?.length || 0}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              משימות מתוכננות
-            </Typography>
-          </Card>
-        </Grid>
-
-        {/* Overdue */}
-        <Grid item xs={12} md={3}>
-          <Card sx={{ p: 3, bgcolor: agenda.overdue?.length > 0 ? '#ffebee' : '#f5f5f5' }}>
-            <Typography variant="h6" gutterBottom>
-              ⚠️ באיחור
-            </Typography>
-            <Typography variant="h3" color={agenda.overdue?.length > 0 ? 'error' : 'text.secondary'}>
-              {agenda.overdue?.length || 0}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              דורשות טיפול מיידי
-            </Typography>
-          </Card>
-        </Grid>
-
-        {/* Notifications */}
-        <Grid item xs={12} md={3}>
-          <Card sx={{ p: 3, bgcolor: '#fff3e0' }}>
-            <Typography variant="h6" gutterBottom>
-              🔔 התראות
-            </Typography>
-            <Typography variant="h3">
-              {agenda.summary?.unreadCount || 0}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              התראות לא נקראו
-            </Typography>
-          </Card>
-        </Grid>
-      </Grid>
-
-      <Grid container spacing={3}>
-        {/* Left Column - Tasks */}
-        <Grid item xs={12} md={8}>
-          {/* Overdue Tasks */}
-          {agenda.overdue && agenda.overdue.length > 0 && (
-            <Card sx={{ mb: 3, borderLeft: '4px solid #f44336' }}>
-              <Box sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                  <WarningIcon color="error" />
-                  <Typography variant="h6">
-                    משימות באיחור ({agenda.overdue.length})
-                  </Typography>
-                </Box>
-                <Alert severity="error" sx={{ mb: 2 }}>
-                  יש לך {agenda.overdue.length} משימות שעברו את מועד היעד!
-                </Alert>
-                <List>
-                  {agenda.overdue.map((task) => (
-                    <ListItem
-                      key={task._id}
-                      sx={{
-                        border: '1px solid #ffcdd2',
-                        borderRadius: 1,
-                        mb: 1,
-                        bgcolor: '#ffebee'
-                      }}
-                      secondaryAction={
-                        <IconButton
-                          edge="end"
-                          onClick={() => handleCompleteTask(task._id)}
-                        >
-                          <UncheckedIcon />
-                        </IconButton>
-                      }
-                    >
-                      <ListItemAvatar>
-                        <Avatar sx={{ bgcolor: 'error.main' }}>
-                          {task.relatedClient?.personalInfo?.fullName?.charAt(0) || '!'}
-                        </Avatar>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="subtitle1" fontWeight="bold">
-                              {task.title}
-                            </Typography>
-                            <Chip
-                              label={getPriorityLabel(task.priority)}
-                              color={getPriorityColor(task.priority)}
-                              size="small"
-                            />
-                          </Box>
-                        }
-                        secondary={
-                          <>
-                            {task.relatedClient && (
-                              <Typography component="span" variant="body2">
-                                {task.relatedClient.personalInfo.fullName} -{' '}
-                                {task.relatedClient.businessInfo.businessName}
-                                <br />
-                              </Typography>
-                            )}
-                            <Typography component="span" variant="caption" color="error">
-                              יעד: {format(new Date(task.dueDate), 'dd/MM/yyyy HH:mm')}
-                            </Typography>
-                          </>
-                        }
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Box>
-            </Card>
-          )}
-
-          {/* Today's Tasks */}
-          <Card>
-            <Box sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <EventIcon color="primary" />
-                  <Typography variant="h6">
-                    משימות להיום ({agenda.today?.length || 0})
-                  </Typography>
-                </Box>
-                <Button
-                  startIcon={<AddIcon />}
-                  variant="contained"
-                  size="small"
-                  onClick={() => navigate('/admin/tasks/new')}
-                >
-                  משימה חדשה
-                </Button>
-              </Box>
-
-              {agenda.today && agenda.today.length > 0 ? (
-                <List>
-                  {agenda.today.map((task, index) => (
-                    <React.Fragment key={task._id}>
-                      <ListItem
-                        sx={{
-                          border: '1px solid #e0e0e0',
-                          borderRadius: 1,
-                          mb: 1,
-                          cursor: 'pointer',
-                          '&:hover': {
-                            bgcolor: 'action.hover'
-                          }
-                        }}
-                        onClick={() => navigate(`/admin/tasks/${task._id}`)}
-                        secondaryAction={
-                          <IconButton
-                            edge="end"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCompleteTask(task._id);
-                            }}
-                          >
-                            <UncheckedIcon />
-                          </IconButton>
-                        }
-                      >
-                        <ListItemAvatar>
-                          <Avatar sx={{ bgcolor: task.color || 'primary.main' }}>
-                            {task.relatedClient?.personalInfo?.fullName?.charAt(0) ||
-                             task.title.charAt(0)}
-                          </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Typography variant="subtitle1">
-                                {task.title}
-                              </Typography>
-                              <Chip
-                                label={getPriorityLabel(task.priority)}
-                                color={getPriorityColor(task.priority)}
-                                size="small"
-                              />
-                            </Box>
-                          }
-                          secondary={
-                            <>
-                              {task.relatedClient && (
-                                <Typography component="span" variant="body2">
-                                  {task.relatedClient.personalInfo.fullName}
-                                  <br />
-                                </Typography>
-                              )}
-                              {task.dueDate && (
-                                <Typography component="span" variant="caption" color="text.secondary">
-                                  {format(new Date(task.dueDate), 'HH:mm')}
-                                </Typography>
-                              )}
-                            </>
-                          }
-                        />
-                      </ListItem>
-                      {index < agenda.today.length - 1 && <Divider />}
-                    </React.Fragment>
-                  ))}
-                </List>
-              ) : (
-                <Box sx={{ textAlign: 'center', py: 8 }}>
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
-                    🎉 אין משימות להיום!
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    יום פנוי או שכבר סיימת הכל?
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          </Card>
-        </Grid>
-
-        {/* Right Column - Notifications & Urgent */}
-        <Grid item xs={12} md={4}>
-          {/* Urgent Tasks */}
-          {agenda.urgent && agenda.urgent.length > 0 && (
-            <Card sx={{ mb: 3 }}>
-              <Box sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  🔥 משימות דחופות
-                </Typography>
-                <List dense>
-                  {agenda.urgent.map((task) => (
-                    <ListItem
-                      key={task._id}
-                      sx={{
-                        border: '1px solid #ff9800',
-                        borderRadius: 1,
-                        mb: 1,
-                        cursor: 'pointer',
-                        '&:hover': { bgcolor: 'action.hover' }
-                      }}
-                      onClick={() => navigate(`/admin/tasks/${task._id}`)}
-                    >
-                      <ListItemText
-                        primary={task.title}
-                        secondary={task.relatedClient?.personalInfo?.fullName}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Box>
-            </Card>
-          )}
-
-          {/* Recent Notifications */}
-          <Card>
-            <Box sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Badge badgeContent={agenda.summary?.unreadCount} color="error">
-                    <NotificationIcon />
-                  </Badge>
-                  התראות אחרונות
-                </Typography>
-                <Button size="small" onClick={() => navigate('/admin/notifications')}>
-                  הכל
-                </Button>
-              </Box>
-
-              {agenda.notifications && agenda.notifications.length > 0 ? (
-                <List dense>
-                  {agenda.notifications.slice(0, 5).map((notif) => (
-                    <ListItem
-                      key={notif._id}
-                      sx={{
-                        border: '1px solid #e0e0e0',
-                        borderRadius: 1,
-                        mb: 1,
-                        bgcolor: notif.read ? 'transparent' : 'action.hover'
-                      }}
-                    >
-                      <ListItemText
-                        primary={
-                          <Typography variant="subtitle2" fontWeight={notif.read ? 'normal' : 'bold'}>
-                            {notif.title}
-                          </Typography>
-                        }
-                        secondary={
-                          <Typography variant="caption" color="text.secondary">
-                            {notif.message}
-                          </Typography>
-                        }
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              ) : (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    אין התראות חדשות
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          </Card>
-        </Grid>
-      </Grid>
     </Box>
   );
 };
 
 export default TodayAgenda;
-
-
-

@@ -158,12 +158,16 @@ const CalendarView = () => {
     const interactions = interactionsByDate[dateKey] || [];
 
     const allEvents = [
-      ...tasks.map(t => ({ 
-        ...t, 
-        __kind: 'task', 
-        startTime: new Date(t.dueDate),
-        endTime: addHours(new Date(t.dueDate), 1) // Default duration 1h
-      })),
+      ...tasks.map(t => { 
+        const baseStart = t.startDate ? new Date(t.startDate) : new Date(t.dueDate);
+        const baseEnd = t.endDate ? new Date(t.endDate) : addHours(baseStart, 1);
+        return {
+          ...t, 
+          __kind: 'task', 
+          startTime: baseStart,
+          endTime: baseEnd
+        };
+      }),
       ...interactions.map(i => ({ 
         ...i, 
         __kind: 'interaction',

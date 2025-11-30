@@ -19,6 +19,9 @@ exports.getAllTasks = async (req, res) => {
       assignedTo,
       date, // today, tomorrow, this_week, overdue
       tags,
+      projectId,
+      from,
+      to,
       sortBy = '-dueDate'
     } = req.query;
 
@@ -46,17 +49,15 @@ exports.getAllTasks = async (req, res) => {
     if (assignedTo) {
       query.assignedTo = assignedTo;
     } else {
-      // ברירת מחדל: רק משימות שלי
-      if (isValidObjectId(req.user.id)) {
+      // ברירת מחדל: אם יש userId תקין – רק משימות שלי, אחרת לא מסננים לפי משתמש
+      if (isValidObjectId(req.user?.id || req.user?._id)) {
         query.assignedTo = req.user.id;
-      } else {
-        // אם userId לא תקין, נחזיר רשימה ריקה
-        return res.json({
-          success: true,
-          count: 0,
-          data: []
-        });
       }
+    }
+
+    // פילטר לפי פרויקט
+    if (projectId && isValidObjectId(projectId)) {
+      query.projectId = projectId;
     }
 
     // פילטר לפי תאריך
@@ -91,15 +92,26 @@ exports.getAllTasks = async (req, res) => {
       }
     }
 
+    // פילטר לפי טווח תאריכים מפורש (from/to)
+    if (from || to) {
+      const range = {};
+      if (from) {
+        range.$gte = new Date(from);
+      }
+      if (to) {
+        range.$lte = new Date(to);
+      }
+      query.dueDate = range;
+    }
+
     // פילטר לפי תגיות
     if (tags) {
       query.tags = { $in: tags.split(',') };
     }
 
     const tasks = await TaskManager.find(query)
-      .populate('assignedTo', 'name email')
-      .populate('createdBy', 'name email')
       .populate('relatedClient', 'personalInfo businessInfo')
+      .populate('projectId', 'name status color')
       .sort(sortBy);
 
     res.json({
@@ -122,10 +134,8 @@ exports.getAllTasks = async (req, res) => {
 exports.getTaskById = async (req, res) => {
   try {
     const task = await TaskManager.findById(req.params.id)
-      .populate('assignedTo', 'name email')
-      .populate('createdBy', 'name email')
       .populate('relatedClient', 'personalInfo businessInfo')
-      .populate('updates.updatedBy', 'name');
+      .populate('projectId', 'name status color');
 
     if (!task) {
       return res.status(404).json({
@@ -157,17 +167,13 @@ exports.getTaskById = async (req, res) => {
 // יצירת משימה חדשה
 exports.createTask = async (req, res) => {
   try {
-    if (!isValidObjectId(req.user.id)) {
-      return res.status(400).json({
-        success: false,
-        message: 'משתמש לא תקין'
-      });
-    }
+    const rawUserId = req.user?.id || req.user?._id;
+    const safeUserId = isValidObjectId(rawUserId) ? rawUserId : null;
 
     const taskData = {
       ...req.body,
-      createdBy: req.user.id,
-      assignedTo: req.body.assignedTo || req.user.id
+      createdBy: safeUserId,
+      assignedTo: req.body.assignedTo || safeUserId
     };
 
     const task = new TaskManager(taskData);
@@ -288,63 +294,74 @@ exports.deleteTask = async (req, res) => {
 // קבלת "Today's Agenda"
 exports.getTodayAgenda = async (req, res) => {
   try {
-    if (!isValidObjectId(req.user.id)) {
-      return res.json({
-        success: true,
-        data: {
-          today: [],
-          overdue: [],
-          urgent: [],
-          notifications: [],
-          summary: {
-            todayCount: 0,
-            overdueCount: 0,
-            urgentCount: 0,
-            unreadCount: 0
-          }
-        }
-      });
-    }
+    const hasValidUser = isValidObjectId(req.user?.id || req.user?._id);
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const endOfToday = new Date(today);
     endOfToday.setHours(23, 59, 59, 999);
 
-    // משימות להיום
-    const todayTasks = await TaskManager.find({
-      assignedTo: req.user.id,
-      dueDate: { $gte: today, $lte: endOfToday },
-      status: { $nin: ['completed', 'cancelled'] }
-    })
+    // משימות להיום:
+    // 1. כאלה שה-dueDate שלהן היום
+    // 2. כאלה ללא dueDate אבל נוצרו היום (metadata.createdAt)
+    const todayBaseFilter = {
+      status: { $nin: ['completed', 'cancelled'] },
+      ...(hasValidUser ? { assignedTo: req.user.id } : {}),
+      $or: [
+        {
+          dueDate: { $gte: today, $lte: endOfToday }
+        },
+        {
+          $and: [
+            {
+              $or: [
+                { dueDate: { $exists: false } },
+                { dueDate: null }
+              ]
+            },
+            { 'metadata.createdAt': { $gte: today, $lte: endOfToday } }
+          ]
+        }
+      ]
+    };
+
+    const todayTasks = await TaskManager.find(todayBaseFilter)
       .populate('relatedClient', 'personalInfo businessInfo')
+      .populate('projectId', 'name color status')
       .sort('dueDate priority');
 
     // משימות באיחור
-    const overdueTasks = await TaskManager.find({
-      assignedTo: req.user.id,
+    const overdueFilter = {
       dueDate: { $lt: today },
-      status: { $nin: ['completed', 'cancelled'] }
-    })
+      status: { $nin: ['completed', 'cancelled'] },
+      ...(hasValidUser ? { assignedTo: req.user.id } : {})
+    };
+
+    const overdueTasks = await TaskManager.find(overdueFilter)
       .populate('relatedClient', 'personalInfo businessInfo')
+      .populate('projectId', 'name color status')
       .sort('dueDate');
 
     // משימות דחופות (בלי תאריך או היום)
-    const urgentTasks = await TaskManager.find({
-      assignedTo: req.user.id,
+    const urgentFilter = {
       priority: 'urgent',
-      status: { $nin: ['completed', 'cancelled'] }
-    })
+      status: { $nin: ['completed', 'cancelled'] },
+      ...(hasValidUser ? { assignedTo: req.user.id } : {})
+    };
+
+    const urgentTasks = await TaskManager.find(urgentFilter)
       .populate('relatedClient', 'personalInfo businessInfo')
       .limit(5);
 
     // התראות לא נקראו
-    const unreadNotifications = await Notification.find({
-      userId: req.user.id,
-      read: false
-    })
-      .sort('-createdAt')
-      .limit(10);
+    const unreadNotifications = hasValidUser
+      ? await Notification.find({
+          userId: req.user.id,
+          read: false
+        })
+          .sort('-createdAt')
+          .limit(10)
+      : [];
 
     res.json({
       success: true,
@@ -376,31 +393,46 @@ exports.getTodayAgenda = async (req, res) => {
 exports.getCalendarView = async (req, res) => {
   try {
     const { year, month } = req.query;
-    
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+    const hasValidUser = isValidObjectId(req.user?.id || req.user?._id);
 
-    // משימות לפי משתמש מחובר (אם ה-id תקין), אחרת החזר ללא משימות
+    // טווח בסיס של החודש הנבחר
+    const monthStart = new Date(year, month - 1, 1);
+    monthStart.setHours(0, 0, 0, 0);
+    const monthEnd = new Date(year, month, 0, 23, 59, 59, 999);
+
+    // הוספת buffer של שבוע לפני ואחרי החודש
+    const startDate = new Date(monthStart);
+    startDate.setDate(startDate.getDate() - 7);
+    const endDate = new Date(monthEnd);
+    endDate.setDate(endDate.getDate() + 7);
+
+    // משימות לפי משתמש מחובר (אם ה-id תקין), אחרת ללא סינון לפי assignedTo
+    // כולל משימות שה-dueDate או ה-startDate שלהן בתוך טווח החודש
     let tasks = [];
     const tasksByDate = {};
 
-    if (isValidObjectId(req.user.id)) {
-      tasks = await TaskManager.find({
-        assignedTo: req.user.id,
-        dueDate: { $gte: startDate, $lte: endDate }
-      })
-        .populate('relatedClient', 'personalInfo businessInfo')
-        .sort('dueDate');
+    const taskFilter = {
+      $or: [
+        { dueDate: { $gte: startDate, $lte: endDate } },
+        { startDate: { $gte: startDate, $lte: endDate } }
+      ],
+      ...(hasValidUser ? { assignedTo: req.user.id } : {})
+    };
 
-      tasks.forEach(task => {
-        if (!task.dueDate) return;
-        const dateKey = new Date(task.dueDate).toISOString().split('T')[0];
-        if (!tasksByDate[dateKey]) {
-          tasksByDate[dateKey] = [];
-        }
-        tasksByDate[dateKey].push(task);
-      });
-    }
+    tasks = await TaskManager.find(taskFilter)
+      .populate('relatedClient', 'personalInfo businessInfo')
+      .populate('projectId', 'name color status')
+      .sort('dueDate');
+
+    tasks.forEach(task => {
+      const baseDate = task.startDate || task.dueDate;
+      if (!baseDate) return;
+      const dateKey = new Date(baseDate).toISOString().split('T')[0];
+      if (!tasksByDate[dateKey]) {
+        tasksByDate[dateKey] = [];
+      }
+      tasksByDate[dateKey].push(task);
+    });
 
     // אינטראקציות עם nextFollowUp בטווח התאריכים
     const Client = require('../models/Client');
@@ -452,6 +484,157 @@ exports.getCalendarView = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת היומן',
+      error: error.message
+    });
+  }
+};
+
+// משימות לפי יום (לקבוצת Today / by-day)
+exports.getTasksByDay = async (req, res) => {
+  try {
+    const { date, projectId } = req.query;
+
+    if (!isValidObjectId(req.user.id)) {
+      return res.json({
+        success: true,
+        data: {
+          tasks: [],
+          groupedByProject: {}
+        }
+      });
+    }
+
+    const baseDate = date ? new Date(date) : new Date();
+    baseDate.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(baseDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const query = {
+      assignedTo: req.user.id,
+      status: { $nin: ['completed', 'cancelled'] },
+      dueDate: { $gte: baseDate, $lte: endOfDay }
+    };
+
+    if (projectId && isValidObjectId(projectId)) {
+      query.projectId = projectId;
+    }
+
+    const tasks = await TaskManager.find(query)
+      .populate('projectId', 'name color status')
+      .populate('relatedClient', 'personalInfo businessInfo')
+      .sort('dueDate priority');
+
+    const groupedByProject = {};
+    tasks.forEach(task => {
+      const key = task.projectId ? String(task.projectId._id) : 'no_project';
+      if (!groupedByProject[key]) {
+        groupedByProject[key] = {
+          project: task.projectId || null,
+          tasks: []
+        };
+      }
+      groupedByProject[key].tasks.push(task);
+    });
+
+    res.json({
+      success: true,
+      data: {
+        date: baseDate.toISOString(),
+        tasks,
+        groupedByProject
+      }
+    });
+  } catch (error) {
+    console.error('Error in getTasksByDay:', error);
+    res.status(500).json({
+      success: false,
+      message: 'שגיאה בטעינת משימות ליום',
+      error: error.message
+    });
+  }
+};
+
+// תצוגת Gantt – משימות עם טווחי תאריכים לפי פרויקטים
+exports.getGanttView = async (req, res) => {
+  try {
+    const { from, to, projectId } = req.query;
+
+    if (!isValidObjectId(req.user.id)) {
+      return res.json({
+        success: true,
+        data: {
+          range: { from, to },
+          projects: []
+        }
+      });
+    }
+
+    const start = from ? new Date(from) : new Date();
+    const end = to ? new Date(to) : new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000); // +30 יום
+
+    const query = {
+      assignedTo: req.user.id,
+      status: { $nin: ['cancelled'] },
+      $or: [
+        { startDate: { $lte: end, $gte: start } },
+        { dueDate: { $lte: end, $gte: start } }
+      ]
+    };
+
+    if (projectId && isValidObjectId(projectId)) {
+      query.projectId = projectId;
+    }
+
+    const tasks = await TaskManager.find(query)
+      .populate('projectId', 'name color status')
+      .sort('startDate dueDate');
+
+    const projectsMap = {};
+
+    tasks.forEach(task => {
+      const projectKey = task.projectId ? String(task.projectId._id) : 'no_project';
+      if (!projectsMap[projectKey]) {
+        projectsMap[projectKey] = {
+          project: task.projectId || {
+            _id: 'no_project',
+            name: 'ללא פרויקט',
+            color: '#9e9e9e',
+            status: 'active'
+          },
+          tasks: []
+        };
+      }
+
+      const startTime = task.startDate || task.dueDate || start;
+      const endTime = task.endDate || task.dueDate || startTime;
+
+      projectsMap[projectKey].tasks.push({
+        _id: task._id,
+        title: task.title,
+        startDate: startTime,
+        endDate: endTime,
+        status: task.status,
+        priority: task.priority,
+        color: task.color,
+        projectId: task.projectId ? task.projectId._id : null
+      });
+    });
+
+    res.json({
+      success: true,
+      data: {
+        range: {
+          from: start.toISOString(),
+          to: end.toISOString()
+        },
+        projects: Object.values(projectsMap)
+      }
+    });
+  } catch (error) {
+    console.error('Error in getGanttView:', error);
+    res.status(500).json({
+      success: false,
+      message: 'שגיאה בטעינת לוח גאנט',
       error: error.message
     });
   }
