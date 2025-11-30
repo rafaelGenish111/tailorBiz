@@ -20,26 +20,27 @@ if (!isVercel) {
         console.log(`🚀 Server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
         console.log(`📱 Access from network: http://192.168.150.117:${PORT}`);
 
-      // הפעלת שירות התזכורות (אם מופעל ב-.env)
-      if (process.env.ENABLE_REMINDERS === 'true') {
-        reminderService.startAllReminders();
-      }
+        // הפעלת שירות התזכורות (אם מופעל ב-.env)
+        if (process.env.ENABLE_REMINDERS === 'true') {
+          reminderService.startAllReminders();
+        }
 
-      // הפעלת שירות טיפוח לידים (אם מופעל ב-.env)
-      if (process.env.ENABLE_LEAD_NURTURING === 'true') {
-        leadNurturingService.start();
-      }
+        // הפעלת שירות טיפוח לידים (אם מופעל ב-.env)
+        if (process.env.ENABLE_LEAD_NURTURING === 'true') {
+          leadNurturingService.start();
+        }
 
-      // הפעלת מנוע האוטומציה השיווקית (אם מופעל ב-.env)
-      if (process.env.ENABLE_MARKETING_AUTOMATION === 'true' || process.env.ENABLE_MARKETING_AUTOMATION !== 'false') {
-        initializeAutomationEngine()
-          .then(() => {
-            console.log('✅ Marketing automation engine initialized');
-          })
-          .catch((err) => {
-            console.error('❌ Failed to initialize marketing automation engine:', err);
-          });
-      }
+        // הפעלת מנוע האוטומציה השיווקית (אם מופעל ב-.env)
+        if (process.env.ENABLE_MARKETING_AUTOMATION === 'true' || process.env.ENABLE_MARKETING_AUTOMATION !== 'false') {
+          initializeAutomationEngine()
+            .then(() => {
+              console.log('✅ Marketing automation engine initialized');
+            })
+            .catch((err) => {
+              console.error('❌ Failed to initialize marketing automation engine:', err);
+            });
+        }
+      });
 
       // Graceful shutdown - SIGTERM
       process.on('SIGTERM', () => {
