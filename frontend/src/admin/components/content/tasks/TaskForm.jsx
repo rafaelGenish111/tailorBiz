@@ -10,6 +10,7 @@ import {
   Autocomplete
 } from '@mui/material';
 import { useClients } from '../../../hooks/useClients';
+import { useProjects } from '../../../hooks/useTasks';
 
 const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
   const { register, handleSubmit, control, reset } = useForm({
@@ -18,20 +19,28 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
       description: '',
       priority: 'medium',
       status: 'todo',
-      dueDate: '',
+      // ברירת מחדל: יעד להיום בשעה נוכחית
+      dueDate: new Date().toISOString().slice(0, 16),
+      startDate: '',
+      endDate: '',
+      projectId: null,
       relatedClient: null,
       ...initialData
     }
   });
 
   const { data: clientsResponse, isLoading: isLoadingClients } = useClients();
+  const { data: projectsResponse } = useProjects();
   const clients = clientsResponse?.data || [];
+  const projects = projectsResponse?.data || [];
 
   useEffect(() => {
     if (initialData) {
       reset({
         ...initialData,
         dueDate: initialData.dueDate ? new Date(initialData.dueDate).toISOString().slice(0, 16) : '',
+        startDate: initialData.startDate ? new Date(initialData.startDate).toISOString().slice(0, 16) : '',
+        endDate: initialData.endDate ? new Date(initialData.endDate).toISOString().slice(0, 16) : '',
         relatedClient: initialData.relatedClient || null
       });
     }
@@ -41,7 +50,8 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
       // Transform relatedClient to ID if it's an object
       const formattedData = {
           ...data,
-          relatedClient: data.relatedClient?._id || data.relatedClient
+          relatedClient: data.relatedClient?._id || data.relatedClient,
+          projectId: data.projectId?._id || data.projectId
       };
       onSubmit(formattedData);
   };
@@ -98,6 +108,47 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
           />
         </Grid>
         
+        <Grid item xs={12} md={6}>
+          <TextField
+            fullWidth
+            type="datetime-local"
+            label="תאריך התחלה"
+            InputLabelProps={{ shrink: true }}
+            {...register('startDate')}
+          />
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <TextField
+            fullWidth
+            type="datetime-local"
+            label="תאריך סיום"
+            InputLabelProps={{ shrink: true }}
+            {...register('endDate')}
+          />
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Controller
+            name="projectId"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <Autocomplete
+                options={projects}
+                getOptionLabel={(option) => option.name || ''}
+                value={value && typeof value === 'string' ? projects.find(p => p._id === value) : value}
+                onChange={(_, newValue) => onChange(newValue)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="פרויקט"
+                  />
+                )}
+              />
+            )}
+          />
+        </Grid>
+
         <Grid item xs={12} md={6}>
            <Controller
             name="relatedClient"
