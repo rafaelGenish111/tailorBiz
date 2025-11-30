@@ -20,14 +20,17 @@ import {
   InputLabel,
   Select,
 } from '@mui/material';
-import { 
-  Close as CloseIcon, 
-  Phone as PhoneIcon, 
-  Email as EmailIcon, 
-  Edit as EditIcon, 
+import {
+  Close as CloseIcon,
+  Phone as PhoneIcon,
+  Email as EmailIcon,
+  Edit as EditIcon,
   Delete as DeleteIcon,
   Upload as UploadIcon,
-  CheckCircle as CheckCircleIcon
+  CheckCircle as CheckCircleIcon,
+  Timer as TimerIcon,
+  Folder as FolderIcon,
+  Receipt as ReceiptIcon,
 } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import {
@@ -40,7 +43,12 @@ import {
   useConvertLead
 } from '../../../hooks/useClients';
 import AssessmentTab from '../../../../components/clients/ClientCard/tabs/AssessmentTab';
+import ContractTab from '../../../../components/clients/ClientCard/tabs/ContractTab';
 import SmartSequenceProgress from '../../../../components/clients/SmartSequenceProgress';
+import ClientTimer from '../../../../components/timer/ClientTimer';
+import TimeEntriesTab from '../../../../components/timer/TimeEntriesTab';
+import DocumentsTab from '../../../../components/documents/DocumentsTab';
+import QuotesTab from '../../../../components/quotes/QuotesTab';
 
 const STATUS_LABELS = {
   lead: { label: 'ליד חדש', color: 'info' },
@@ -78,6 +86,17 @@ function ClientDetail({ open, onClose, client }) {
     email: '',
     whatsappPhone: '',
     preferredContactMethod: 'whatsapp',
+  });
+  const [businessForm, setBusinessForm] = useState({
+    businessName: '',
+    businessType: '',
+    industry: '',
+    website: '',
+    address: '',
+    numberOfEmployees: '',
+    description: '',
+    yearsInBusiness: '',
+    revenueRange: '',
   });
   const [statusForm, setStatusForm] = useState({
     status: '',
@@ -132,6 +151,28 @@ function ClientDetail({ open, onClose, client }) {
         whatsappPhone: client.personalInfo?.whatsappPhone || '',
         preferredContactMethod: client.personalInfo?.preferredContactMethod || 'whatsapp',
       });
+      setBusinessForm({
+        businessName: client.businessInfo?.businessName || '',
+        businessType: client.businessInfo?.businessType || '',
+        industry: client.businessInfo?.industry || '',
+        website: client.businessInfo?.website || '',
+        address: client.businessInfo?.address || '',
+        numberOfEmployees:
+          client.businessInfo?.numberOfEmployees !== undefined &&
+          client.businessInfo?.numberOfEmployees !== null
+            ? String(client.businessInfo.numberOfEmployees)
+            : '',
+        description:
+          client.businessInfo?.description ||
+          client.assessmentForm?.basicInfo?.businessDescription ||
+          '',
+        yearsInBusiness:
+          client.businessInfo?.yearsInBusiness !== undefined &&
+          client.businessInfo?.yearsInBusiness !== null
+            ? String(client.businessInfo.yearsInBusiness)
+            : '',
+        revenueRange: client.businessInfo?.revenueRange || '',
+      });
       setStatusForm({
         status: client.status || '',
         leadSource: client.leadSource || '',
@@ -173,6 +214,30 @@ function ClientDetail({ open, onClose, client }) {
         leadSource: statusForm.leadSource,
         leadScore: statusForm.leadScore,
         tags,
+      },
+    });
+  };
+
+  const handleSaveBusiness = async () => {
+    await updateClient.mutateAsync({
+      id: client._id,
+      data: {
+        businessInfo: {
+          ...client.businessInfo,
+          businessName: businessForm.businessName,
+          businessType: businessForm.businessType || undefined,
+          industry: businessForm.industry || undefined,
+          website: businessForm.website || undefined,
+          address: businessForm.address || undefined,
+          numberOfEmployees: businessForm.numberOfEmployees
+            ? Number(businessForm.numberOfEmployees)
+            : undefined,
+          description: businessForm.description || undefined,
+          yearsInBusiness: businessForm.yearsInBusiness
+            ? Number(businessForm.yearsInBusiness)
+            : undefined,
+          revenueRange: businessForm.revenueRange || undefined,
+        },
       },
     });
   };
@@ -240,6 +305,30 @@ function ClientDetail({ open, onClose, client }) {
 
   const isLead = ['lead', 'contacted', 'assessment_scheduled', 'assessment_completed', 'proposal_sent', 'negotiation'].includes(client.status);
 
+  const tabsConfig = isLead
+    ? [
+        { key: 'personal', label: 'פרטים אישיים' },
+        { key: 'business', label: 'מידע עסקי' },
+        { key: 'interactions', label: 'אינטראקציות' },
+        { key: 'quotes', label: 'הצעות מחיר', icon: <ReceiptIcon />, iconPosition: 'start' },
+        { key: 'documents', label: 'מסמכים', icon: <FolderIcon />, iconPosition: 'start' },
+        { key: 'assessment', label: 'אפיון מוצר' },
+        { key: 'contract', label: 'חוזה' },
+      ]
+    : [
+        { key: 'personal', label: 'פרטים אישיים' },
+        { key: 'business', label: 'מידע עסקי' },
+        { key: 'interactions', label: 'אינטראקציות' },
+        { key: 'quotes', label: 'הצעות מחיר', icon: <ReceiptIcon />, iconPosition: 'start' },
+        { key: 'documents', label: 'מסמכים', icon: <FolderIcon />, iconPosition: 'start' },
+        { key: 'assessment', label: 'אפיון מוצר' },
+        { key: 'contract', label: 'חוזה' },
+        { key: 'time', label: 'זמנים', icon: <TimerIcon />, iconPosition: 'start' },
+        { key: 'tasks', label: 'משימות' },
+      ];
+
+  const currentTabKey = tabsConfig[tabValue]?.key || 'personal';
+
   return (
     <Dialog 
       open={open} 
@@ -290,15 +379,24 @@ function ClientDetail({ open, onClose, client }) {
       </DialogTitle>
 
       <DialogContent dividers>
+        {/* Timer */}
+        <Box sx={{ mb: 3 }}>
+          <ClientTimer
+            clientId={client._id}
+            clientName={client.personalInfo?.fullName || client.businessInfo?.businessName}
+          />
+        </Box>
+
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
           <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
-            <Tab label="פרטים אישיים" />
-            <Tab label="מידע עסקי" />
-            <Tab label="אינטראקציות" />
-            <Tab label="משימות" />
-            <Tab label="חשבוניות" />
-            <Tab label="אפיון מוצר" />
-            <Tab label="הצעת מחיר" />
+            {tabsConfig.map((tab) => (
+              <Tab
+                key={tab.key}
+                label={tab.label}
+                icon={tab.icon}
+                iconPosition={tab.iconPosition}
+              />
+            ))}
           </Tabs>
         </Box>
 
@@ -316,7 +414,7 @@ function ClientDetail({ open, onClose, client }) {
           </Box>
         )}
 
-        {tabValue === 0 && (
+        {currentTabKey === 'personal' && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Typography variant="h6">פרטים אישיים</Typography>
             <Grid container spacing={2}>
@@ -476,60 +574,133 @@ function ClientDetail({ open, onClose, client }) {
           </Box>
         )}
 
-        {tabValue === 1 && (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Paper sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom>מידע עסקי</Typography>
-                <Divider sx={{ mb: 2 }} />
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="caption" color="text.secondary">שם העסק</Typography>
-                    <Typography variant="body1">{client.businessInfo?.businessName || '-'}</Typography>
-                  </Grid>
-                  {client.businessInfo?.industry && (
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="caption" color="text.secondary">תחום עיסוק</Typography>
-                      <Typography variant="body1">{client.businessInfo.industry}</Typography>
-                    </Grid>
-                  )}
-                  {client.businessInfo?.website && (
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="caption" color="text.secondary">אתר אינטרנט</Typography>
-                      <Typography variant="body1">
-                        <a href={client.businessInfo.website} target="_blank" rel="noopener noreferrer">
-                          {client.businessInfo.website}
-                        </a>
-                      </Typography>
-                    </Grid>
-                  )}
-                  {client.businessInfo?.numberOfEmployees && (
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="caption" color="text.secondary">מספר עובדים</Typography>
-                      <Typography variant="body1">{client.businessInfo.numberOfEmployees}</Typography>
-                    </Grid>
-                  )}
-                  {client.businessInfo?.annualRevenue && (
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="caption" color="text.secondary">הכנסה שנתית</Typography>
-                      <Typography variant="body1">{client.businessInfo.annualRevenue}</Typography>
-                    </Grid>
-                  )}
-                  {client.businessInfo?.description && (
-                    <Grid item xs={12}>
-                      <Typography variant="caption" color="text.secondary">תיאור העסק</Typography>
-                      <Typography variant="body1" sx={{ mt: 1, whiteSpace: 'pre-wrap' }}>
-                        {client.businessInfo.description}
-                      </Typography>
-                    </Grid>
-                  )}
-                </Grid>
-              </Paper>
+        {currentTabKey === 'business' && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Typography variant="h6">מידע עסקי</Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  label="שם העסק"
+                  fullWidth
+                  size="small"
+                  value={businessForm.businessName}
+                  onChange={(e) =>
+                    setBusinessForm((prev) => ({ ...prev, businessName: e.target.value }))
+                  }
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  label="תחום פעילות / נישה"
+                  fullWidth
+                  size="small"
+                  value={businessForm.industry}
+                  onChange={(e) =>
+                    setBusinessForm((prev) => ({ ...prev, industry: e.target.value }))
+                  }
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  label="סוג עסק"
+                  fullWidth
+                  size="small"
+                  value={businessForm.businessType}
+                  onChange={(e) =>
+                    setBusinessForm((prev) => ({ ...prev, businessType: e.target.value }))
+                  }
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <TextField
+                  label="וותק העסק (שנים)"
+                  type="number"
+                  fullWidth
+                  size="small"
+                  value={businessForm.yearsInBusiness}
+                  onChange={(e) =>
+                    setBusinessForm((prev) => ({ ...prev, yearsInBusiness: e.target.value }))
+                  }
+                  inputProps={{ min: 0 }}
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  label="מספר עובדים"
+                  type="number"
+                  fullWidth
+                  size="small"
+                  value={businessForm.numberOfEmployees}
+                  onChange={(e) =>
+                    setBusinessForm((prev) => ({
+                      ...prev,
+                      numberOfEmployees: e.target.value,
+                    }))
+                  }
+                  inputProps={{ min: 0 }}
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  label="טווח מחזור חודשי משוער"
+                  fullWidth
+                  size="small"
+                  placeholder="לדוגמה: 0-50K, 50-100K..."
+                  value={businessForm.revenueRange}
+                  onChange={(e) =>
+                    setBusinessForm((prev) => ({ ...prev, revenueRange: e.target.value }))
+                  }
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="אתר / דומיין"
+                  fullWidth
+                  size="small"
+                  value={businessForm.website}
+                  onChange={(e) =>
+                    setBusinessForm((prev) => ({ ...prev, website: e.target.value }))
+                  }
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="כתובת העסק"
+                  fullWidth
+                  size="small"
+                  value={businessForm.address}
+                  onChange={(e) =>
+                    setBusinessForm((prev) => ({ ...prev, address: e.target.value }))
+                  }
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  label="תיאור העסק / מה העסק עושה"
+                  fullWidth
+                  multiline
+                  rows={3}
+                  size="small"
+                  value={businessForm.description}
+                  onChange={(e) =>
+                    setBusinessForm((prev) => ({ ...prev, description: e.target.value }))
+                  }
+                />
+              </Grid>
             </Grid>
-          </Grid>
+
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+              <Button variant="contained" onClick={handleSaveBusiness}>
+                שמור מידע עסקי
+              </Button>
+            </Box>
+          </Box>
         )}
 
-        {tabValue === 2 && (
+        {currentTabKey === 'interactions' && (
           <Paper sx={{ p: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
               <Typography variant="h6">אינטראקציות</Typography>
@@ -627,7 +798,7 @@ function ClientDetail({ open, onClose, client }) {
           </Paper>
         )}
 
-        {tabValue === 3 && (
+        {currentTabKey === 'tasks' && (
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>משימות</Typography>
             <Divider sx={{ mb: 2 }} />
@@ -664,119 +835,20 @@ function ClientDetail({ open, onClose, client }) {
           </Paper>
         )}
 
-        {tabValue === 4 && (
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              חשבוניות
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            {client.invoices && client.invoices.length > 0 ? (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {client.invoices.map((invoice, index) => (
-                  <Paper key={index} variant="outlined" sx={{ p: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="subtitle2">
-                        {typeof invoice === 'object' ? invoice.invoiceNumber : invoice}
-                      </Typography>
-                      {typeof invoice === 'object' && invoice.status && (
-                        <Chip
-                          label={invoice.status}
-                          size="small"
-                          color={invoice.status === 'paid' ? 'success' : 'default'}
-                        />
-                      )}
-                    </Box>
-                    {typeof invoice === 'object' && invoice.totalAmount && (
-                      <Typography variant="body2" color="text.secondary">
-                        סכום: ₪{invoice.totalAmount.toLocaleString()}
-                      </Typography>
-                    )}
-                  </Paper>
-                ))}
-              </Box>
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                אין חשבוניות
-              </Typography>
-            )}
-          </Paper>
+        {currentTabKey === 'assessment' && <AssessmentTab client={client} />}
+
+        {currentTabKey === 'quotes' && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <QuotesTab clientId={clientId} clientName={client.personalInfo?.fullName} />
+          </Box>
         )}
 
-        {tabValue === 5 && <AssessmentTab client={client} />}
+        {currentTabKey === 'time' && <TimeEntriesTab clientId={clientId} />}
 
-        {tabValue === 6 && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Typography variant="h6">הצעת מחיר</Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={4}>
-                <TextField
-                  label="סכום הצעת מחיר"
-                  type="number"
-                  fullWidth
-                  size="small"
-                  value={proposalForm.initialPrice}
-                  onChange={(e) =>
-                    setProposalForm((prev) => ({ ...prev, initialPrice: e.target.value }))
-                  }
-                />
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <TextField
-                  label="סכום נסגר בפועל"
-                  type="number"
-                  fullWidth
-                  size="small"
-                  value={proposalForm.finalPrice}
-                  onChange={(e) =>
-                    setProposalForm((prev) => ({ ...prev, finalPrice: e.target.value }))
-                  }
-                />
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <TextField
-                  label="מטבע"
-                  fullWidth
-                  size="small"
-                  value={proposalForm.currency}
-                  onChange={(e) =>
-                    setProposalForm((prev) => ({ ...prev, currency: e.target.value }))
-                  }
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  label="תנאי תשלום"
-                  fullWidth
-                  size="small"
-                  multiline
-                  rows={3}
-                  value={proposalForm.paymentTerms}
-                  onChange={(e) =>
-                    setProposalForm((prev) => ({ ...prev, paymentTerms: e.target.value }))
-                  }
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  label="הערות / תנאי חוזה"
-                  fullWidth
-                  size="small"
-                  multiline
-                  rows={3}
-                  value={proposalForm.contractNotes}
-                  onChange={(e) =>
-                    setProposalForm((prev) => ({ ...prev, contractNotes: e.target.value }))
-                  }
-                />
-              </Grid>
-            </Grid>
+        {currentTabKey === 'documents' && <DocumentsTab clientId={clientId} />}
 
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Button variant="contained" onClick={handleProposalSave}>
-                שמור הצעה
-              </Button>
-            </Box>
-          </Box>
+        {currentTabKey === 'contract' && (
+          <ContractTab clientId={clientId} contract={client.contract} />
         )}
       </DialogContent>
 

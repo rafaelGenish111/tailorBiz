@@ -7,6 +7,8 @@ import Dashboard from '../../pages/Dashboard';
 import TodayAgenda from '../../pages/TodayAgenda';
 import CalendarView from '../../pages/CalendarView';
 import TaskBoard from '../../pages/TaskBoard';
+import Projects from '../../pages/admin/Projects';
+import GanttView from '../../pages/GanttView';
 import NotificationsCenter from '../../pages/NotificationsCenter';
 import NurturingDashboard from '../../pages/NurturingDashboard';
 import ActiveNurturing from '../../pages/ActiveNurturing';
@@ -36,6 +38,8 @@ function AdminPanel() {
         <Route path="today" element={<TodayAgenda />} />
         <Route path="calendar" element={<CalendarView />} />
         <Route path="tasks" element={<TaskBoard />} />
+        <Route path="gantt" element={<GanttView />} />
+        <Route path="projects" element={<Projects />} />
         <Route path="notifications" element={<NotificationsCenter />} />
         {/* Lead Nurturing */}
         <Route path="nurturing" element={<NurturingDashboard />} />

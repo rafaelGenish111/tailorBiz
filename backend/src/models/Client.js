@@ -57,6 +57,19 @@ const ClientSchema = new mongoose.Schema({
     address: { 
       type: String,
       trim: true
+    },
+    // שדות מידע עסקי מורחבים
+    description: {
+      type: String,
+      trim: true
+    },
+    yearsInBusiness: {
+      type: Number,
+      min: 0
+    },
+    revenueRange: {
+      type: String,
+      trim: true
     }
   },
 

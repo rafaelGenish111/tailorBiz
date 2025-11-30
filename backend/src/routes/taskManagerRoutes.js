@@ -17,11 +17,14 @@ router.delete('/:id', taskManagerController.deleteTask);
 // תצוגות מיוחדות
 router.get('/views/today-agenda', taskManagerController.getTodayAgenda);
 router.get('/views/calendar', taskManagerController.getCalendarView);
+router.get('/views/by-day', taskManagerController.getTasksByDay);
+router.get('/views/gantt', taskManagerController.getGanttView);
 
 // סטטיסטיקות
 router.get('/stats/overview', taskManagerController.getTaskStats);
 
 module.exports = router;
+
 
 
 

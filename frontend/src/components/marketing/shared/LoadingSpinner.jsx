@@ -24,3 +24,4 @@ const LoadingSpinner = ({ message = 'טוען...' }) => {
 export default LoadingSpinner;
 
 
+

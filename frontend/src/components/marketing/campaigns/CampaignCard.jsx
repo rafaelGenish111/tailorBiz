@@ -281,3 +281,4 @@ const CampaignCard = ({ campaign, index, view, onMenuClick, onClick }) => {
 export default CampaignCard;
 
 
+

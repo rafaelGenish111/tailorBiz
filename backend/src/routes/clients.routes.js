@@ -33,6 +33,12 @@ router.route('/:id')
 // המרת ליד ללקוח (סגירת עסקה)
 router.post('/:id/convert', uploadContract.single('contract'), clientController.convertLeadToClient);
 
+// חוזה ללקוח/ליד
+router
+  .route('/:id/contract')
+  .get(clientController.getContract)
+  .post(uploadContract.single('contract'), clientController.uploadContract);
+
 // Routes לשאלון אפיון
 router.route('/:id/assessment')
   .get(clientController.getAssessmentForm)

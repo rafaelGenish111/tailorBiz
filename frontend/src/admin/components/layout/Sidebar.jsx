@@ -21,6 +21,8 @@ import {
   Today as TodayIcon,
   CalendarMonth as CalendarIcon,
   ViewKanban as KanbanIcon,
+  Timeline as ProjectsIcon,
+  Timeline as GanttIcon,
   AutoAwesome as NurturingIcon,
   Timeline as TimelineIcon,
   Campaign as CampaignIcon,
@@ -42,6 +44,8 @@ const menuItems = [
   { text: 'סדר היום שלי', icon: <TodayIcon />, path: '/admin/today' },
   { text: 'יומן', icon: <CalendarIcon />, path: '/admin/calendar' },
   { text: 'לוח משימות', icon: <KanbanIcon />, path: '/admin/tasks' },
+  { text: 'פרויקטים', icon: <ProjectsIcon />, path: '/admin/projects' },
+  { text: 'לוח גאנט', icon: <GanttIcon />, path: '/admin/gantt' },
   { divider: true, label: 'אוטומציות טיפוח' },
   { 
     text: 'טיפוח לידים', 
