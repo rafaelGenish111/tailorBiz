@@ -35,7 +35,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import QuoteEditor from './QuoteEditor';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// ב-Production (Vercel) נשתמש ב-/api, בלוקאל נגדיר VITE_API_URL=http://localhost:5000/api
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const statusConfig = {
   draft: { label: 'טיוטה', color: 'default' },
