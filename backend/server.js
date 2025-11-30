@@ -8,16 +8,15 @@ const leadNurturingService = require('./src/services/leadNurturingService');
 const { initializeAutomationEngine } = require('./src/services/marketing/automationEngine');
 
 const PORT = process.env.PORT || 5000;
-// Vercel מגדיר אוטומטית את process.env.VERCEL ל-'1'
 const IS_VERCEL = process.env.VERCEL === '1';
 
+console.log(`[System] Starting... VERCEL=${IS_VERCEL}, NODE_ENV=${process.env.NODE_ENV}`);
+
 if (!IS_VERCEL) {
-  // --- מצב פיתוח מקומי / שרת רגיל ---
+  // --- מצב פיתוח מקומי ---
   connectDB().then(() => {
     app.listen(PORT, () => {
       console.log(`🚀 Server running locally on port ${PORT}`);
-      
-      // הפעלת שירותי רקע
       if (process.env.ENABLE_REMINDERS === 'true') reminderService.startAllReminders();
       if (process.env.ENABLE_LEAD_NURTURING === 'true') leadNurturingService.start();
       initializeAutomationEngine().catch(console.error);
@@ -28,20 +27,29 @@ if (!IS_VERCEL) {
 }
 
 // --- מצב Vercel Serverless ---
-// אנחנו מייצאים פונקציה עוטפת שמבטיחה חיבור ל-DB לפני הטיפול בבקשה
 module.exports = async (req, res) => {
+  console.log(`[Vercel] Incoming request: ${req.method} ${req.url}`);
+  
   try {
-    // 1. חיבור ל-DB (משתמש ב-cache, אז זה מהיר בבקשות חוזרות)
+    // בדיקת משתני סביבה קריטיים
+    if (!process.env.MONGO_URI) {
+      throw new Error('CRITICAL: MONGO_URI is missing!');
+    }
+
+    console.log('[Vercel] Connecting to DB...');
     await connectDB();
+    console.log('[Vercel] DB Connected. Passing to Express app...');
     
-    // 2. העברת הטיפול ל-Express
     return app(req, res);
+    
   } catch (error) {
-    console.error('❌ Vercel Function Error:', error);
+    console.error('❌ [Vercel] Critical Error:', error);
     res.status(500).json({ 
       error: 'Internal Server Error', 
-      message: 'Database connection failed' 
+      message: error.message,
+      stage: 'DB Connection or Init'
     });
   }
 };
+
 

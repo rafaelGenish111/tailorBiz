@@ -4,14 +4,18 @@
     {
       "source": "/api/(.*)",
       "destination": "/backend/server.js"
-    }
-  ],
-  "routes": [
+    },
     {
-      "src": "/",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/frontend/index.html"
     }
   ],
+  "functions": {
+    "backend/server.js": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  },
   "builds": [
     {
       "src": "backend/server.js",
