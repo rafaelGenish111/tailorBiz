@@ -115,9 +115,18 @@ const NurturingDashboard = () => {
   }
 
   return (
-    <Box>
+    <Box sx={{ width: '100%' }}>
       {/* Header */}
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box
+        sx={{
+          mb: 4,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: { xs: 'flex-start', md: 'center' },
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 2,
+        }}
+      >
         <Box>
           <Typography variant="h4" gutterBottom>
             🤖 ניהול אוטומציות טיפוח
@@ -133,6 +142,7 @@ const NurturingDashboard = () => {
           onClick={() => {
             toast.info('יצירת תבנית חדשה - יתווסף בהמשך');
           }}
+          sx={{ width: { xs: '100%', md: 'auto' } }}
         >
           תבנית חדשה
         </Button>

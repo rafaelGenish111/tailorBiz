@@ -13,10 +13,10 @@ const isValidObjectId = (id) => {
 // קבלת כל הלקוחות עם פילטרים וסינון
 exports.getAllClients = async (req, res) => {
   try {
-    const { 
-      status, 
-      leadSource, 
-      search, 
+    const {
+      status,
+      leadSource,
+      search,
       tags,
       minScore,
       sortBy = '-metadata.createdAt',
@@ -132,8 +132,8 @@ exports.createClient = async (req, res) => {
       ...req.body,
       metadata: {
         createdBy: isValidObjectId(req.user?.id) ? req.user.id : null,
-        assignedTo: isValidObjectId(req.body.assignedTo) 
-          ? req.body.assignedTo 
+        assignedTo: isValidObjectId(req.body.assignedTo)
+          ? req.body.assignedTo
           : (isValidObjectId(req.user?.id) ? req.user.id : null)
       }
     };
@@ -154,7 +154,7 @@ exports.createClient = async (req, res) => {
 
   } catch (error) {
     console.error('Error in createClient:', error);
-    
+
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
@@ -233,13 +233,13 @@ exports.convertLeadToClient = async (req, res) => {
     const contractFile = req.file;
 
     const oldStatus = client.status;
-    
+
     // עדכון סטטוס ל-won (מעבר ללקוח)
-    client.status = 'won'; 
-    
+    client.status = 'won';
+
     // עדכון פרטי הצעה וחוזה
     if (finalPrice) client.proposal.finalPrice = Number(finalPrice);
-    
+
     client.contract = {
       signed: true,
       signedAt: signedAt ? new Date(signedAt) : new Date(),
@@ -263,7 +263,7 @@ exports.convertLeadToClient = async (req, res) => {
         uploadedAt: new Date()
       }] : []
     };
-    
+
     client.interactions.push(interaction);
 
     await client.save();
@@ -272,7 +272,7 @@ exports.convertLeadToClient = async (req, res) => {
     if (process.env.ENABLE_LEAD_NURTURING === 'true') {
       // 1. עצירת רצפי לידים פעילים (בגלל שהסטטוס השתנה והייתה אינטראקציה inbound)
       // זה יקרה אוטומטית ב-checkInteractionForActiveNurturing אם נקרא לו, אבל כאן שינינו סטטוס אז ה-Status Change יתפוס
-      
+
       const savedInteraction = client.interactions[client.interactions.length - 1];
 
       // בדיקת טריגרים לשינוי סטטוס (למשל הפעלת רצף "סגירה מוצלחת")
@@ -281,9 +281,9 @@ exports.convertLeadToClient = async (req, res) => {
           console.error('Error checking status-change triggers:', err);
         });
       }
-      
+
       // בדיקת טריגרים לאינטראקציה (למשל אם יש רצף שמבוסס על "עסקה נסגרה")
-       leadNurturingService.checkTriggersForInteraction(client._id, savedInteraction).catch(err => {
+      leadNurturingService.checkTriggersForInteraction(client._id, savedInteraction).catch(err => {
         console.error('Error checking interaction-based triggers:', err);
       });
     }
@@ -1009,8 +1009,8 @@ exports.createTask = async (req, res) => {
     const task = {
       ...req.body,
       createdBy: isValidObjectId(req.user?.id) ? req.user.id : null,
-      assignedTo: isValidObjectId(req.body.assignedTo) 
-        ? req.body.assignedTo 
+      assignedTo: isValidObjectId(req.body.assignedTo)
+        ? req.body.assignedTo
         : (isValidObjectId(req.user?.id) ? req.user.id : null)
     };
 
@@ -1037,7 +1037,7 @@ exports.createTask = async (req, res) => {
 exports.getTasks = async (req, res) => {
   try {
     const { status, priority } = req.query;
-    
+
     const client = await Client.findById(req.params.id)
       .select('tasks');
 
@@ -1137,39 +1137,39 @@ exports.getOverviewStats = async (req, res) => {
     const stats = {
       // ספירות בסיסיות
       totalClients: await Client.countDocuments(),
-      activeLeads: await Client.countDocuments({ 
-        status: { $in: ['lead', 'contacted', 'assessment_scheduled', 'assessment_completed'] } 
+      activeLeads: await Client.countDocuments({
+        status: { $in: ['lead', 'contacted', 'assessment_scheduled', 'assessment_completed'] }
       }),
-      activeDeals: await Client.countDocuments({ 
-        status: { $in: ['proposal_sent', 'negotiation'] } 
+      activeDeals: await Client.countDocuments({
+        status: { $in: ['proposal_sent', 'negotiation'] }
       }),
       wonDeals: await Client.countDocuments({ status: 'won' }),
-      activeClients: await Client.countDocuments({ 
-        status: { $in: ['active_client', 'in_development'] } 
+      activeClients: await Client.countDocuments({
+        status: { $in: ['active_client', 'in_development'] }
       }),
-      
+
       // הכנסות
       totalRevenue: 0,
       paidAmount: 0,
       outstandingAmount: 0,
-      
+
       // פילוח לפי מקור
       leadsBySource: await Client.aggregate([
         { $group: { _id: '$leadSource', count: { $sum: 1 } } },
         { $sort: { count: -1 } }
       ]),
-      
+
       // פילוח לפי סטטוס
       clientsByStatus: await Client.aggregate([
         { $group: { _id: '$status', count: { $sum: 1 } } },
         { $sort: { count: -1 } }
       ]),
-      
+
       // ממוצע Lead Score
       averageLeadScore: await Client.aggregate([
         { $group: { _id: null, avgScore: { $avg: '$leadScore' } } }
       ]),
-      
+
       // פעילות אחרונה
       recentActivity: await Client.find()
         .sort({ 'metadata.lastContactedAt': -1 })
@@ -1180,12 +1180,14 @@ exports.getOverviewStats = async (req, res) => {
     // חישוב הכנסות
     const revenueData = await Client.aggregate([
       { $match: { status: { $in: ['won', 'active_client', 'in_development', 'completed'] } } },
-      { $group: {
-        _id: null,
-        totalRevenue: { $sum: '$metadata.stats.totalRevenue' },
-        totalPaid: { $sum: '$metadata.stats.totalPaid' },
-        outstanding: { $sum: '$metadata.stats.outstandingBalance' }
-      }}
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: '$metadata.stats.totalRevenue' },
+          totalPaid: { $sum: '$metadata.stats.totalPaid' },
+          outstanding: { $sum: '$metadata.stats.outstandingBalance' }
+        }
+      }
     ]);
 
     if (revenueData.length > 0) {
@@ -1230,8 +1232,8 @@ exports.getPipelineStats = async (req, res) => {
       {
         stage: 'assessment',
         name: 'אפיון',
-        count: await Client.countDocuments({ 
-          status: { $in: ['assessment_scheduled', 'assessment_completed'] } 
+        count: await Client.countDocuments({
+          status: { $in: ['assessment_scheduled', 'assessment_completed'] }
         }),
         value: 0
       },
@@ -1258,7 +1260,7 @@ exports.getPipelineStats = async (req, res) => {
     // חישוב ערך פוטנציאלי לכל שלב
     for (const stage of pipeline) {
       let statusFilter = {};
-      
+
       if (stage.stage === 'assessment') {
         statusFilter = { status: { $in: ['assessment_scheduled', 'assessment_completed'] } };
       } else {
@@ -1269,7 +1271,7 @@ exports.getPipelineStats = async (req, res) => {
         .select('paymentPlan.totalAmount orders.totalAmount');
 
       stage.value = clients.reduce((sum, client) => {
-        const orderValue = client.orders.reduce((orderSum, order) => 
+        const orderValue = client.orders.reduce((orderSum, order) =>
           orderSum + (order.totalAmount || 0), 0);
         const planValue = client.paymentPlan?.totalAmount || 0;
         return sum + Math.max(orderValue, planValue);
@@ -1299,6 +1301,41 @@ exports.getPipelineStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת סטטיסטיקות Pipeline',
+      error: error.message
+    });
+  }
+};
+
+// קבלת 3 הלידים החמים ביותר שלא נוצר איתם קשר ב-24 השעות האחרונות
+exports.getMorningFocus = async (req, res) => {
+  try {
+    const yesterday = new Date();
+    yesterday.setHours(yesterday.getHours() - 24);
+
+    const leads = await Client.find({
+      // רק לידים פעילים שעדיין לא לקוחות ולא אבודים
+      status: { $in: ['lead', 'contacted', 'assessment_scheduled', 'proposal_sent'] },
+      // לוגיקה: או שלא יצרו איתם קשר מעולם, או שהקשר האחרון היה לפני יותר מ-24 שעות
+      $or: [
+        { 'metadata.lastContactedAt': { $lt: yesterday } },
+        { 'metadata.lastContactedAt': { $exists: false } },
+        { 'metadata.lastContactedAt': null }
+      ]
+    })
+      .sort({ leadScore: -1, 'metadata.createdAt': -1 }) // קודם בעלי הניקוד הגבוה, ואז החדשים ביותר
+      .limit(3)
+      .select('personalInfo businessInfo leadScore status metadata.lastContactedAt interactions');
+
+    res.json({
+      success: true,
+      data: leads
+    });
+
+  } catch (error) {
+    console.error('Error in getMorningFocus:', error);
+    res.status(500).json({
+      success: false,
+      message: 'שגיאה בטעינת נתוני מיקוד בוקר',
       error: error.message
     });
   }

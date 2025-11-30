@@ -278,27 +278,48 @@ function ClientsList({ viewMode }) {
   ];
 
   return (
-    <Box>
+    <Box sx={{ width: '100%' }}>
       {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box
+        sx={{
+          mb: 3,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: { xs: 'flex-start', md: 'center' },
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 2,
+        }}
+      >
         <Typography variant="h4" component="h1">
           {getPageTitle()}
         </Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleAdd}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleAdd}
+          sx={{ width: { xs: '100%', md: 'auto' } }}
+        >
           הוסף {viewMode === 'clients' ? 'לקוח' : 'ליד'} חדש
         </Button>
       </Box>
 
       {/* Filters */}
       <Paper sx={{ p: 2, mb: 3 }}>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 2,
+          }}
+        >
           <TextField
             label="חיפוש"
             variant="outlined"
             size="small"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            sx={{ flex: 1 }}
+            fullWidth
+            sx={{ flex: 1, minWidth: { xs: '100%', sm: 200 } }}
             placeholder="חפש לפי שם, חברה, טלפון או אימייל..."
           />
           <TextField
@@ -308,7 +329,8 @@ function ClientsList({ viewMode }) {
             size="small"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            sx={{ minWidth: 200 }}
+            fullWidth
+            sx={{ minWidth: { xs: '100%', sm: 220 } }}
           >
             <MenuItem value="">הכל</MenuItem>
             {allowedStatuses.map((value) => {
@@ -325,7 +347,7 @@ function ClientsList({ viewMode }) {
       </Paper>
 
       {/* Table */}
-      <Paper sx={{ height: 600 }}>
+      <Paper sx={{ height: { xs: 500, md: 600 }, width: '100%', overflowX: 'auto' }}>
         <DataGrid
           rows={data?.data || []}
           columns={columns}

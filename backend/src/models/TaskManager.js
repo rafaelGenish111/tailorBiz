@@ -73,13 +73,13 @@ const TaskManagerSchema = new mongoose.Schema({
 
   // הקצאה
   assignedTo: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    type: mongoose.Schema.Types.ObjectId
+    // ref: 'User' - מודל User לא קיים במערכת
   },
 
   createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    type: mongoose.Schema.Types.ObjectId
+    // ref: 'User' - מודל User לא קיים במערכת
   },
 
   // תגיות
@@ -102,7 +102,8 @@ const TaskManagerSchema = new mongoose.Schema({
   updates: [{
     content: String,
     timestamp: { type: Date, default: Date.now },
-    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+    updatedBy: { type: mongoose.Schema.Types.ObjectId }
+    // ref: 'User' - מודל User לא קיים במערכת
   }],
 
   // קבצים מצורפים

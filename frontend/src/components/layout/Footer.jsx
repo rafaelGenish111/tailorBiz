@@ -99,7 +99,8 @@ function Footer() {
                 תנאי שימוש
               </Link>
               <Link
-                href="#"
+                component={RouterLink}
+                to="/privacy"
                 color="text.primary"
                 underline="hover"
                 sx={{ 
@@ -209,9 +210,14 @@ function Footer() {
 
         <Divider sx={{ my: 4, bgcolor: 'grey.200' }} />
 
-        <Typography variant="body2" align="center" color="text.secondary">
-          © {currentYear} {COMPANY_INFO.name}. כל הזכויות שמורות.
-        </Typography>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            האתר מונגש לפי תקן 5568 ברמה AA.
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            © {currentYear} {COMPANY_INFO.name}. כל הזכויות שמורות.
+          </Typography>
+        </Box>
       </Container>
     </Box>
   );

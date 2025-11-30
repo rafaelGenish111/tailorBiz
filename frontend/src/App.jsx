@@ -14,14 +14,18 @@ import Home from './pages/Home';
 import About from './pages/About';
 import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import AdminPanel from './admin/pages/AdminPanel';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
+      refetchOnMount: false, // לא לעשות refetch אוטומטי בעת טעינה מחדש
+      refetchOnReconnect: false, // לא לעשות refetch בעת חיבור מחדש
       retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000, // 5 minutes - נתונים נשארים "טריים" למשך 5 דקות
+      gcTime: 10 * 60 * 1000, // 10 minutes - cache נשמר למשך 10 דקות (לשעבר cacheTime)
     },
   },
 });
@@ -42,6 +46,7 @@ function App() {
                   <Route path="/about" element={<About />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/contact" element={<Contact />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
                 </Routes>
               </Layout>
             </ThemeProvider>

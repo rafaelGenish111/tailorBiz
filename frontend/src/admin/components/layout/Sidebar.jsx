@@ -79,7 +79,7 @@ const menuItems = [
   { text: 'הגדרות', icon: <SettingsIcon />, path: '/admin/settings' },
 ];
 
-function SidebarItem({ item, depth = 0 }) {
+function SidebarItem({ item, depth = 0, onItemClick }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const hasChildren = item.children && item.children.length > 0;
@@ -91,11 +91,13 @@ function SidebarItem({ item, depth = 0 }) {
   const handleClick = () => {
     if (hasChildren) {
       setOpen(!open);
+    } else {
+      if (onItemClick) onItemClick();
     }
   };
 
   const Component = hasChildren ? Box : Link;
-  const linkProps = hasChildren ? { onClick: handleClick, sx: { cursor: 'pointer' } } : { to: item.path, component: Link };
+  const linkProps = hasChildren ? { onClick: handleClick, sx: { cursor: 'pointer' } } : { to: item.path, component: Link, onClick: handleClick };
 
   return (
     <>
@@ -165,37 +167,50 @@ function SidebarItem({ item, depth = 0 }) {
   );
 }
 
-function Sidebar() {
+function Sidebar({ mobileOpen, onClose, drawerWidth = DRAWER_WIDTH, variant = 'permanent' }) {
+  const location = useLocation();
+  
+  const handleItemClick = () => {
+    if (variant === 'temporary' && onClose) {
+      onClose(); // Close drawer on mobile click
+    }
+  };
+
   return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: DRAWER_WIDTH,
-        flexShrink: 0,
-        '& .MuiDrawer-paper': {
-          width: DRAWER_WIDTH,
-          boxSizing: 'border-box',
-          top: 64, // Height of AppBar
-          height: 'calc(100% - 64px)',
-          bgcolor: 'background.paper',
-        },
-      }}
-    >
-      <List sx={{ py: 1 }}>
-        {menuItems.map((item, index) => {
-          if (item.divider) {
-            return (
-              <Box key={index} sx={{ mt: 2, mb: 1, px: 3 }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>
-                  {item.label}
-                </Typography>
-              </Box>
-            );
-          }
-          return <SidebarItem key={index} item={item} />;
-        })}
-      </List>
-    </Drawer>
+    <Box component="nav" sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}>
+      <Drawer
+        variant={variant}
+        open={variant === 'temporary' ? mobileOpen : true}
+        onClose={onClose}
+        ModalProps={{ keepMounted: true }} // Better open performance on mobile
+        sx={{
+          '& .MuiDrawer-paper': { 
+            boxSizing: 'border-box', 
+            width: drawerWidth,
+            top: variant === 'permanent' ? 64 : 0, // Height of AppBar on desktop
+            height: variant === 'permanent' ? 'calc(100% - 64px)' : '100%',
+            borderRight: '1px solid rgba(0,0,0,0.08)', // RTL - border on the right side
+            backgroundColor: '#fff',
+          },
+        }}
+        anchor="left" // RTL support - left means right side in RTL
+      >
+        <List sx={{ py: 1 }}>
+          {menuItems.map((item, index) => {
+            if (item.divider) {
+              return (
+                <Box key={index} sx={{ mt: 2, mb: 1, px: 3 }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                    {item.label}
+                  </Typography>
+                </Box>
+              );
+            }
+            return <SidebarItem key={index} item={item} onItemClick={handleItemClick} />;
+          })}
+        </List>
+      </Drawer>
+    </Box>
   );
 }
 

@@ -92,7 +92,7 @@ const TodayAgenda = () => {
 
     return (
       <Grid item xs={12} md={6}>
-        <Card 
+        <Card
           elevation={3}
           sx={{
             height: '100%',
@@ -110,15 +110,15 @@ const TodayAgenda = () => {
               <Typography variant="h6" component="div" fontWeight="bold" sx={{ lineHeight: 1.2 }}>
                 {task.title}
               </Typography>
-              <Chip 
-                label={getTaskPriorityLabel(task.priority)} 
-                size="small" 
-                sx={{ 
-                  bgcolor: `${borderColor}22`, 
+              <Chip
+                label={getTaskPriorityLabel(task.priority)}
+                size="small"
+                sx={{
+                  bgcolor: `${borderColor}22`,
                   color: borderColor,
                   fontWeight: 'bold',
-                  height: 24 
-                }} 
+                  height: 24
+                }}
               />
             </Box>
 
@@ -147,7 +147,7 @@ const TodayAgenda = () => {
               <TimeIcon fontSize="small" />
               <Typography variant="body2" fontWeight={isOverdue ? 'bold' : 'regular'}>
                 {isOverdue ? 'באיחור! ' : ''}
-                {format(new Date(task.dueDate), 'HH:mm')} 
+                {format(new Date(task.dueDate), 'HH:mm')}
                 <Typography component="span" variant="caption" sx={{ mx: 1, color: 'grey.500' }}>
                   ({format(new Date(task.dueDate), 'dd/MM')})
                 </Typography>
@@ -162,8 +162,8 @@ const TodayAgenda = () => {
             <Stack direction="row" spacing={1}>
               {phone && (
                 <Tooltip title="שלח וואטסאפ">
-                  <IconButton 
-                    size="small" 
+                  <IconButton
+                    size="small"
                     sx={{ bgcolor: '#e8f5e9', color: '#2e7d32', border: '1px solid #c8e6c9' }}
                     onClick={() => handleWhatsApp(phone)}
                   >
@@ -173,8 +173,8 @@ const TodayAgenda = () => {
               )}
               {phone && task.type === 'call' && (
                 <Tooltip title={`חייג: ${phone}`}>
-                  <IconButton 
-                    size="small" 
+                  <IconButton
+                    size="small"
                     sx={{ bgcolor: '#e3f2fd', color: '#1565c0', border: '1px solid #bbdefb' }}
                     onClick={() => handleCall(phone)}
                   >
@@ -184,8 +184,8 @@ const TodayAgenda = () => {
               )}
               {email && task.type === 'email' && (
                 <Tooltip title="שלח אימייל">
-                  <IconButton 
-                    size="small" 
+                  <IconButton
+                    size="small"
                     sx={{ bgcolor: '#fff3e0', color: '#ef6c00', border: '1px solid #ffe0b2' }}
                     onClick={() => handleEmail(email)}
                   >
@@ -195,9 +195,9 @@ const TodayAgenda = () => {
               )}
             </Stack>
 
-            <Button 
-              variant="contained" 
-              size="small" 
+            <Button
+              variant="contained"
+              size="small"
               color="success"
               startIcon={<CheckIcon />}
               onClick={() => handleCompleteTask(task._id)}
@@ -212,10 +212,10 @@ const TodayAgenda = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, margin: '0 auto', p: { xs: 1, md: 3 } }}>
+    <Box sx={{ maxWidth: 1200, margin: '0 auto', p: { xs: 1.5, md: 3 } }}>
       {/* --- כותרת ראשית --- */}
       <Paper elevation={0} sx={{ p: 3, mb: 4, bgcolor: 'transparent' }}>
-        <Grid container alignItems="center" spacing={2}>
+        <Grid container alignItems={{ xs: 'flex-start', md: 'center' }} spacing={2}>
           <Grid item xs={12} md={8}>
             <Typography variant="h4" fontWeight="800" gutterBottom sx={{ color: '#1a237e' }}>
               סדר היום שלך ☀️
@@ -225,13 +225,27 @@ const TodayAgenda = () => {
               {format(new Date(), 'EEEE, d בMMMM yyyy', { locale: he })}
             </Typography>
           </Grid>
-          <Grid item xs={12} md={4} sx={{ textAlign: 'left' }}>
-            <Button 
-              variant="contained" 
-              size="large" 
+          <Grid
+            item
+            xs={12}
+            md={4}
+            sx={{
+              textAlign: { xs: 'center', md: 'left' },
+              mt: { xs: 2, md: 0 },
+            }}
+          >
+            <Button
+              variant="contained"
+              size="large"
               startIcon={<TaskIcon />}
               onClick={() => navigate('/admin/tasks/new')}
-              sx={{ borderRadius: 3, px: 4, py: 1, boxShadow: 4 }}
+              sx={{
+                borderRadius: 3,
+                px: 4,
+                py: 1,
+                boxShadow: 4,
+                width: { xs: '100%', md: 'auto' },
+              }}
             >
               משימה חדשה
             </Button>
@@ -244,10 +258,10 @@ const TodayAgenda = () => {
             <Typography variant="caption" fontWeight="bold">התקדמות יומית</Typography>
             <Typography variant="caption">{progress}%</Typography>
           </Box>
-          <LinearProgress 
-            variant="determinate" 
-            value={progress} 
-            sx={{ height: 10, borderRadius: 5, bgcolor: '#e0e0e0', '& .MuiLinearProgress-bar': { borderRadius: 5 } }} 
+          <LinearProgress
+            variant="determinate"
+            value={progress}
+            sx={{ height: 10, borderRadius: 5, bgcolor: '#e0e0e0', '& .MuiLinearProgress-bar': { borderRadius: 5 } }}
           />
         </Box>
       </Paper>
@@ -273,7 +287,7 @@ const TodayAgenda = () => {
           <TimeIcon color="primary" />
           המשימות להיום ({agenda.today?.length || 0})
         </Typography>
-        
+
         {agenda.today && agenda.today.length > 0 ? (
           <Grid container spacing={3}>
             {agenda.today.map(task => (

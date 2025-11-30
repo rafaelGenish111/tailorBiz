@@ -96,18 +96,40 @@ const ClientCard = () => {
   };
 
   return (
-    <Box>
+    <Box sx={{ width: '100%', p: { xs: 1.5, md: 0 } }}>
       {/* Header Card */}
-      <Card sx={{ p: 3, mb: 3 }}>
+      <Card sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
         <Grid container spacing={3}>
           {/* Left - Client Info */}
           <Grid item xs={12} md={8}>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Avatar sx={{ width: 80, height: 80, fontSize: '2rem' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 2,
+                flexDirection: { xs: 'column', sm: 'row' },
+                alignItems: { xs: 'center', sm: 'flex-start' },
+              }}
+            >
+              <Avatar
+                sx={{
+                  width: 80,
+                  height: 80,
+                  fontSize: '2rem',
+                  mx: { xs: 'auto', sm: 0 },
+                }}
+              >
                 {client.personalInfo?.fullName?.charAt(0) || '?'}
               </Avatar>
-              <Box sx={{ flex: 1 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Box sx={{ flex: 1, textAlign: { xs: 'center', sm: 'right' } }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    mb: 1,
+                    justifyContent: { xs: 'center', sm: 'flex-start' },
+                  }}
+                >
                   <Typography variant="h4">
                     {client.personalInfo?.fullName || 'ללא שם'}
                   </Typography>
@@ -121,7 +143,15 @@ const ClientCard = () => {
                 </Typography>
 
                 {/* Contact Info */}
-                <Box sx={{ display: 'flex', gap: 2, mt: 2, flexWrap: 'wrap' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    gap: 2,
+                    mt: 2,
+                    flexWrap: 'wrap',
+                    justifyContent: { xs: 'center', sm: 'flex-start' },
+                  }}
+                >
                   {client.personalInfo?.phone && (
                     <Button
                       size="small"
@@ -154,7 +184,15 @@ const ClientCard = () => {
                 </Box>
 
                 {/* Tags */}
-                <Box sx={{ display: 'flex', gap: 1, mt: 2, flexWrap: 'wrap' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    gap: 1,
+                    mt: 2,
+                    flexWrap: 'wrap',
+                    justifyContent: { xs: 'center', sm: 'flex-start' },
+                  }}
+                >
                   <Chip
                     label={getStatusLabel(client.status)}
                     color={getStatusColor(client.status)}

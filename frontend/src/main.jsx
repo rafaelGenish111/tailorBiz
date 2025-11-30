@@ -7,6 +7,17 @@ import { prefixer } from 'stylis'
 import rtlPlugin from 'stylis-plugin-rtl'
 import App from './App'
 
+// פונקציה לאתחול בדיקות נגישות בסביבת פיתוח
+const initAxe = () => {
+  if (import.meta.env.DEV) {
+    import('@axe-core/react').then((axe) => {
+      axe.default(React, ReactDOM, 1000);
+    });
+  }
+};
+
+initAxe();
+
 const cacheRtl = createCache({
   key: 'muirtl',
   stylisPlugins: [prefixer, rtlPlugin],
