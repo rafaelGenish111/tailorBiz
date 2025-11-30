@@ -6,7 +6,10 @@ import {
   TextField,
   MenuItem,
   Stack,
-  CircularProgress
+  CircularProgress,
+  useTheme,
+  useMediaQuery,
+  Paper,
 } from '@mui/material';
 import { Timeline as TimelineIcon, Today as TodayIcon } from '@mui/icons-material';
 import { useProjects } from '../admin/hooks/useTasks';
@@ -14,6 +17,8 @@ import { tasksAPI } from '../admin/utils/api';
 import ProjectGantt from '../components/tasks/ProjectGantt';
 
 const GanttView = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [range, setRange] = useState({
     from: new Date().toISOString().slice(0, 10),
     to: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
@@ -129,6 +134,63 @@ const GanttView = () => {
       {loading && !data ? (
         <Box sx={{ p: 4, textAlign: 'center' }}>
           <CircularProgress />
+        </Box>
+      ) : isMobile ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {(data?.projects || []).length === 0 ? (
+            <Paper sx={{ p: 3, textAlign: 'center' }}>
+              <Typography variant="body2" color="text.secondary">
+                אין משימות לתצוגה בטווח התאריכים הנבחר.
+              </Typography>
+            </Paper>
+          ) : (
+            data.projects.map(({ project, tasks }) => (
+              <Paper key={project._id} sx={{ p: 2 }}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  {project.name}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {tasks.length} משימות
+                </Typography>
+                <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                  {tasks.slice(0, 4).map((task) => (
+                    <Box
+                      key={task._id}
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        p: 1,
+                        borderRadius: 1,
+                        bgcolor: 'grey.50',
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{ mr: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                      >
+                        {task.title}
+                      </Typography>
+                      <Box
+                        sx={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: '50%',
+                          bgcolor: task.color || project.color || 'primary.main',
+                          flexShrink: 0,
+                        }}
+                      />
+                    </Box>
+                  ))}
+                  {tasks.length > 4 && (
+                    <Typography variant="caption" color="text.secondary">
+                      ועוד {tasks.length - 4} משימות...
+                    </Typography>
+                  )}
+                </Box>
+              </Paper>
+            ))
+          )}
         </Box>
       ) : (
         <ProjectGantt projects={data?.projects || []} range={data?.range} />
