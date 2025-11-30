@@ -30,24 +30,35 @@ app.use(
     frameguard: isDev ? false : undefined
   })
 );
+// CORS configuration
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  process.env.CLIENT_URL
+].filter(Boolean);
+
+console.log('[CORS] Allowed origins:', allowedOrigins);
+
 app.use(cors({
   origin: function (origin, callback) {
-    // בפיתוח, אפשר כל localhost ports
-    if (process.env.NODE_ENV === 'development') {
-      if (!origin || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
-        callback(null, true);
-      } else {
-        callback(null, true); // בפיתוח, אפשר הכל
-      }
-    } else {
-      // ב-production, השתמש ב-CLIENT_URL
-      const allowedOrigins = process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : [];
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
+    // אפשר בקשות ללא origin (כמו Postman, curl, health checks)
+    if (!origin) {
+      return callback(null, true);
     }
+    
+    // בדוק אם ה-origin מותר
+    if (allowedOrigins.some(allowed => origin === allowed || origin.startsWith('http://localhost:'))) {
+      return callback(null, true);
+    }
+    
+    // אם יש .vercel.app בדומיין - אפשר (לפריסות preview)
+    if (origin.includes('.vercel.app')) {
+      return callback(null, true);
+    }
+    
+    console.log('[CORS] Blocked origin:', origin);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true
 }));
