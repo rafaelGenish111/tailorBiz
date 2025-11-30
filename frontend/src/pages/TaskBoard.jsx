@@ -13,7 +13,9 @@ import {
   DialogContent,
   Avatar,
   Badge,
-  Paper
+  Paper,
+  TextField,
+  MenuItem
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -24,7 +26,7 @@ import {
   Pending as PendingIcon,
   Schedule as ScheduleIcon
 } from '@mui/icons-material';
-import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from '../admin/hooks/useTasks';
+import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useProjects } from '../admin/hooks/useTasks';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import TaskForm from '../admin/components/content/tasks/TaskForm';
@@ -33,13 +35,18 @@ const TaskBoard = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editTask, setEditTask] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState('todo');
+  const [selectedProjectId, setSelectedProjectId] = useState('');
 
-  const { data: tasksResponse } = useTasks();
+  const { data: tasksResponse } = useTasks(
+    selectedProjectId ? { projectId: selectedProjectId } : undefined
+  );
+  const { data: projectsResponse } = useProjects();
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
 
   const tasks = tasksResponse?.data || [];
+  const projects = projectsResponse?.data || [];
 
   // קיבוץ משימות לפי סטטוס
   const tasksByStatus = {
@@ -94,8 +101,8 @@ const TaskBoard = () => {
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Box>
+      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+        <Box sx={{ minWidth: 220 }}>
           <Typography variant="h4" gutterBottom fontWeight="bold">
             📊 לוח משימות
           </Typography>
@@ -104,17 +111,37 @@ const TaskBoard = () => {
           </Typography>
         </Box>
 
-        <Button
-          startIcon={<AddIcon />}
-          variant="contained"
-          size="large"
-          onClick={() => {
-            setSelectedStatus('todo');
-            setCreateDialogOpen(true);
-          }}
-        >
-          משימה חדשה
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          {projects.length > 0 && (
+            <TextField
+              select
+              size="small"
+              label="סינון לפי פרויקט"
+              value={selectedProjectId}
+              onChange={(e) => setSelectedProjectId(e.target.value)}
+              sx={{ minWidth: 220 }}
+            >
+              <MenuItem value="">כל הפרויקטים</MenuItem>
+              {projects.map((p) => (
+                <MenuItem key={p._id} value={p._id}>
+                  {p.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
+
+          <Button
+            startIcon={<AddIcon />}
+            variant="contained"
+            size="large"
+            onClick={() => {
+              setSelectedStatus('todo');
+              setCreateDialogOpen(true);
+            }}
+          >
+            משימה חדשה
+          </Button>
+        </Box>
       </Box>
 
       {/* Kanban Board */}
@@ -265,14 +292,29 @@ const TaskBoard = () => {
                               </Box>
                             ) : <Box />}
 
-                            {task.dueDate && (
-                              <Chip 
-                                icon={<ScheduleIcon sx={{ fontSize: '1rem !important' }} />}
-                                label={format(new Date(task.dueDate), 'dd/MM HH:mm')}
-                                size="small"
-                                sx={{ fontSize: '0.75rem', height: 24 }}
-                              />
-                            )}
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
+                              {task.projectId && (
+                                <Chip
+                                  label={task.projectId.name}
+                                  size="small"
+                                  sx={{
+                                    bgcolor: task.projectId.color || 'grey.300',
+                                    color: 'white',
+                                    maxWidth: 120,
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis'
+                                  }}
+                                />
+                              )}
+                              {task.dueDate && (
+                                <Chip 
+                                  icon={<ScheduleIcon sx={{ fontSize: '1rem !important' }} />}
+                                  label={format(new Date(task.dueDate), 'dd/MM HH:mm')}
+                                  size="small"
+                                  sx={{ fontSize: '0.75rem', height: 24 }}
+                                />
+                              )}
+                            </Box>
                           </Box>
                         </Box>
 

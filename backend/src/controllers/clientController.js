@@ -304,6 +304,95 @@ exports.convertLeadToClient = async (req, res) => {
   }
 };
 
+// עדכון / העלאת חוזה ללקוח/ליד קיים
+exports.uploadContract = async (req, res) => {
+  try {
+    const client = await Client.findById(req.params.id);
+
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: 'לקוח לא נמצא'
+      });
+    }
+
+    const contractFile = req.file;
+    const { signed, signedAt, notes } = req.body;
+
+    if (!contractFile && signed === undefined && signedAt === undefined && !notes) {
+      return res.status(400).json({
+        success: false,
+        message: 'לא סופקו נתונים לעדכון החוזה'
+      });
+    }
+
+    const currentContract = client.contract || {};
+
+    // עדכון שדות חוזה
+    if (contractFile) {
+      currentContract.fileUrl = `/uploads/contracts/${contractFile.filename}`;
+      currentContract.signed = true;
+      if (!currentContract.signedAt) {
+        currentContract.signedAt = new Date();
+      }
+    }
+
+    if (signed !== undefined) {
+      currentContract.signed = signed === 'true' || signed === true;
+    }
+
+    if (signedAt) {
+      currentContract.signedAt = new Date(signedAt);
+    }
+
+    if (typeof notes === 'string') {
+      currentContract.notes = notes;
+    }
+
+    client.contract = currentContract;
+    await client.save();
+
+    res.json({
+      success: true,
+      message: 'החוזה עודכן בהצלחה',
+      data: client.contract
+    });
+  } catch (error) {
+    console.error('Error in uploadContract:', error);
+    res.status(500).json({
+      success: false,
+      message: 'שגיאה בעדכון החוזה',
+      error: error.message
+    });
+  }
+};
+
+// קבלת פרטי החוזה עבור לקוח/ליד
+exports.getContract = async (req, res) => {
+  try {
+    const client = await Client.findById(req.params.id).select('contract');
+
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: 'לקוח לא נמצא'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: client.contract || null
+    });
+  } catch (error) {
+    console.error('Error in getContract:', error);
+    res.status(500).json({
+      success: false,
+      message: 'שגיאה בטעינת החוזה',
+      error: error.message
+    });
+  }
+};
+
 // מחיקת לקוח
 exports.deleteClient = async (req, res) => {
   try {

@@ -52,6 +52,7 @@ const TaskManagerSchema = new mongoose.Schema({
   // תאריכים
   dueDate: Date,
   startDate: Date,
+  endDate: Date,
   completedAt: Date,
 
   // זמן משוער/בפועל (בדקות)
@@ -62,6 +63,12 @@ const TaskManagerSchema = new mongoose.Schema({
   relatedClient: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Client'
+  },
+
+  // קישור לפרויקט (אופציונלי)
+  projectId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Project'
   },
 
   // הקצאה
@@ -183,6 +190,7 @@ TaskManagerSchema.pre('save', function(next) {
 });
 
 module.exports = mongoose.model('TaskManager', TaskManagerSchema);
+
 
 
 

@@ -105,6 +105,13 @@ export const clientAPI = {
   updateTask: (id, taskId, data) => 
     api.put(`/clients/${id}/tasks/${taskId}`, data),
 
+  // חוזה
+  uploadContract: (id, data) =>
+    api.post(`/clients/${id}/contract`, data, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+  getContract: (id) => api.get(`/clients/${id}/contract`),
+
   // סטטיסטיקות
   getOverviewStats: () => api.get('/clients/stats/overview'),
   getPipelineStats: () => api.get('/clients/stats/pipeline')
@@ -141,8 +148,21 @@ export const tasksAPI = {
   update: (id, data) => api.put(`/tasks/${id}`, data),
   delete: (id) => api.delete(`/tasks/${id}`),
   getTodayAgenda: () => api.get('/tasks/views/today-agenda'),
-  getCalendarView: (year, month) => api.get('/tasks/views/calendar', { params: { year, month } }),
+  getByDay: (date, projectId) =>
+    api.get('/tasks/views/by-day', { params: { date, projectId } }),
+  getCalendarView: (year, month) =>
+    api.get('/tasks/views/calendar', { params: { year, month } }),
+  getGanttView: (params) => api.get('/tasks/views/gantt', { params }),
   getStats: () => api.get('/tasks/stats/overview')
+};
+
+// ========== Projects API ==========
+export const projectsAPI = {
+  getAll: (params) => api.get('/projects', { params }),
+  getById: (id) => api.get(`/projects/${id}`),
+  create: (data) => api.post('/projects', data),
+  update: (id, data) => api.put(`/projects/${id}`, data),
+  delete: (id) => api.delete(`/projects/${id}`)
 };
 
 // ========== Lead Nurturing API ==========

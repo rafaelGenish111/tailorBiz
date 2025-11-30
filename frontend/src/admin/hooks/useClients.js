@@ -204,4 +204,21 @@ export const usePipelineStats = () => {
   });
 };
 
+// חוזה לקוח/ליד
+export const useUploadContract = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }) => clientAPI.uploadContract(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(['client', variables.id]);
+      queryClient.invalidateQueries(['clients']);
+      toast.success('החוזה עודכן בהצלחה!');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'שגיאה בעדכון החוזה');
+    }
+  });
+};
+
 

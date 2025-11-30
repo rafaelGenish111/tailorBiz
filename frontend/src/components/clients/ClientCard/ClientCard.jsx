@@ -34,11 +34,18 @@ import InteractionsTab from './tabs/InteractionsTab';
 import OrdersTab from './tabs/OrdersTab';
 import PaymentsTab from './tabs/PaymentsTab';
 import InvoicesTab from './tabs/InvoicesTab';
+import ClientTimer from '../../timer/ClientTimer';
+import TimeEntriesTab from '../../timer/TimeEntriesTab';
+import DocumentsTab from '../../documents/DocumentsTab';
+import QuotesTab from '../../quotes/QuotesTab';
+import TimerIcon from '@mui/icons-material/Timer';
+import FolderIcon from '@mui/icons-material/Folder';
+import ReceiptIcon from '@mui/icons-material/Receipt';
 
 const ClientCard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState('personal');
 
   const { data: response, isLoading } = useClient(id);
   const client = response?.data;
@@ -211,6 +218,14 @@ const ClientCard = () => {
         </Grid>
       </Card>
 
+      {/* Timer */}
+      <Box sx={{ mb: 3 }}>
+        <ClientTimer 
+          clientId={client._id} 
+          clientName={client.personalInfo?.fullName || client.businessInfo?.businessName}
+        />
+      </Box>
+
       {/* Tabs */}
       <Card>
         <Tabs
@@ -219,25 +234,31 @@ const ClientCard = () => {
           variant="scrollable"
           scrollButtons="auto"
         >
-          <Tab label="פרטים אישיים" />
-          <Tab label="פרטי העסק" />
-          <Tab label="שאלון אפיון" />
-          <Tab label="אינטראקציות" />
-          <Tab label="הזמנות" />
-          <Tab label="תשלומים" />
-          <Tab label="חשבוניות" />
+          <Tab label="פרטים אישיים" value="personal" />
+          <Tab label="פרטי העסק" value="business" />
+          <Tab label="שאלון אפיון" value="assessment" />
+          <Tab label="אינטראקציות" value="interactions" />
+          <Tab label="הזמנות" value="orders" />
+          <Tab label="תשלומים" value="payments" />
+          <Tab label="חשבוניות" value="invoices" />
+          <Tab label="זמנים" value="time" icon={<TimerIcon />} iconPosition="start" />
+          <Tab label="מסמכים" value="documents" icon={<FolderIcon />} iconPosition="start" />
+          <Tab label="הצעות מחיר" value="quotes" icon={<ReceiptIcon />} iconPosition="start" />
         </Tabs>
 
         <Divider />
 
         <Box sx={{ p: 3 }}>
-          {activeTab === 0 && <PersonalInfoTab client={client} />}
-          {activeTab === 1 && <BusinessInfoTab client={client} />}
-          {activeTab === 2 && <AssessmentTab client={client} />}
-          {activeTab === 3 && <InteractionsTab clientId={id} />}
-          {activeTab === 4 && <OrdersTab clientId={id} />}
-          {activeTab === 5 && <PaymentsTab client={client} />}
-          {activeTab === 6 && <InvoicesTab clientId={id} />}
+          {activeTab === 'personal' && <PersonalInfoTab client={client} />}
+          {activeTab === 'business' && <BusinessInfoTab client={client} />}
+          {activeTab === 'assessment' && <AssessmentTab client={client} />}
+          {activeTab === 'interactions' && <InteractionsTab clientId={id} />}
+          {activeTab === 'orders' && <OrdersTab clientId={id} />}
+          {activeTab === 'payments' && <PaymentsTab client={client} />}
+          {activeTab === 'invoices' && <InvoicesTab clientId={id} />}
+          {activeTab === 'time' && <TimeEntriesTab clientId={id} />}
+          {activeTab === 'documents' && <DocumentsTab clientId={id} />}
+          {activeTab === 'quotes' && <QuotesTab clientId={id} clientName={client.personalInfo?.fullName} />}
         </Box>
       </Card>
     </Box>

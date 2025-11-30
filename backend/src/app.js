@@ -10,15 +10,26 @@ const clientRoutes = require('./routes/clients.routes');
 const invoiceRoutes = require('./routes/invoices.routes');
 const whatsappRoutes = require('./routes/whatsapp.routes');
 const taskManagerRoutes = require('./routes/taskManagerRoutes');
+const projectRoutes = require('./routes/projectRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const leadNurturingRoutes = require('./routes/leadNurturingRoutes');
 const marketingRoutes = require('./routes/marketing');
 const testRoutes = require('./routes/testRoutes');
+const timeEntryRoutes = require('./routes/timeEntryRoutes');
+const documentRoutes = require('./routes/documentRoutes');
+const quoteRoutes = require('./routes/quoteRoutes');
 
 const app = express();
+const isDev = process.env.NODE_ENV === 'development';
 
 // Security middleware
-app.use(helmet());
+app.use(
+  helmet({
+    // בסביבת פיתוח נבטל CSP וגם X-Frame-Options כדי לאפשר iframe מ-5174 (Vite)
+    contentSecurityPolicy: isDev ? false : undefined,
+    frameguard: isDev ? false : undefined
+  })
+);
 app.use(cors({
   origin: function (origin, callback) {
     // בפיתוח, אפשר כל localhost ports
@@ -61,9 +72,13 @@ app.use('/api/clients', clientRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/tasks', taskManagerRoutes);
+app.use('/api/projects', projectRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/lead-nurturing', leadNurturingRoutes);
 app.use('/api/marketing', marketingRoutes);
+app.use('/api/time-entries', timeEntryRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/quotes', quoteRoutes);
 
 // Test routes (רק ב-development)
 if (process.env.NODE_ENV === 'development') {
