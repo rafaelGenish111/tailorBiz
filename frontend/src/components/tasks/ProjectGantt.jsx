@@ -120,3 +120,4 @@ const ProjectGantt = ({ projects = [], range }) => {
 export default ProjectGantt;
 
 
+
