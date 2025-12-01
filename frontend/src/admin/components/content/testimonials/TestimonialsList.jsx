@@ -203,27 +203,47 @@ function TestimonialsList() {
   ];
 
   return (
-    <Box>
+    <Box sx={{ p: { xs: 1.5, md: 3 } }}>
       {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box
+        sx={{
+          mb: 3,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 2
+        }}
+      >
         <Typography variant="h4" component="h1">
           ניהול המלצות
         </Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleAdd}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={handleAdd}
+          sx={{ width: { xs: '100%', md: 'auto' } }}
+        >
           הוסף המלצה
         </Button>
       </Box>
 
       {/* Filters */}
       <Paper sx={{ p: 2, mb: 3 }}>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            flexWrap: 'wrap'
+          }}
+        >
           <TextField
             label="חיפוש"
             variant="outlined"
             size="small"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            sx={{ flex: 1 }}
+            sx={{ flex: { xs: '1 1 100%', md: 1 } }}
             placeholder="חפש לפי שם, חברה או תוכן..."
           />
           <TextField
@@ -233,7 +253,7 @@ function TestimonialsList() {
             size="small"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            sx={{ minWidth: 200 }}
+            sx={{ minWidth: { xs: '100%', sm: 200 } }}
           >
             <MenuItem value="">הכל</MenuItem>
             <MenuItem value="pending">ממתין לאישור</MenuItem>
@@ -244,7 +264,7 @@ function TestimonialsList() {
       </Paper>
 
       {/* Table */}
-      <Paper sx={{ height: 600 }}>
+      <Paper sx={{ height: 600, width: '100%' }}>
         <DataGrid
           rows={data?.data || []}
           columns={columns}
@@ -260,6 +280,7 @@ function TestimonialsList() {
           rowsPerPageOptions={[5, 10, 25, 50]}
           disableSelectionOnClick
           sx={{
+            width: '100%',
             '& .MuiDataGrid-cell': {
               display: 'flex',
               alignItems: 'center',

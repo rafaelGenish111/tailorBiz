@@ -388,7 +388,12 @@ function ClientDetail({ open, onClose, client }) {
         </Box>
 
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
-          <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
+          <Tabs
+            value={tabValue}
+            onChange={(e, newValue) => setTabValue(newValue)}
+            variant="scrollable"
+            scrollButtons="auto"
+          >
             {tabsConfig.map((tab) => (
               <Tab
                 key={tab.key}

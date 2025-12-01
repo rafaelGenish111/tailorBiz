@@ -1,5 +1,5 @@
-import { AppBar, Toolbar, Typography, IconButton, Avatar, Box, Badge, InputBase, alpha, useTheme } from '@mui/material';
-import { Notifications as NotificationsIcon, Search as SearchIcon, Menu as MenuIcon, HelpOutline as HelpIcon } from '@mui/icons-material';
+import { AppBar, Toolbar, Typography, IconButton, Avatar, Box, Badge, InputBase, alpha, useTheme, Button } from '@mui/material';
+import { Notifications as NotificationsIcon, Search as SearchIcon, Menu as MenuIcon, HelpOutline as HelpIcon, Dashboard as DashboardIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../hooks/useTasks';
 
@@ -19,16 +19,55 @@ function AdminHeader() {
       }}
       elevation={0}
     >
-      <Toolbar sx={{ minHeight: 64 }}>
-        {/* Logo / Brand */}
-        <Box sx={{ display: 'flex', alignItems: 'center', width: 260, flexShrink: 0 }}>
-          <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 700, letterSpacing: 0.5 }}>
+      <Toolbar sx={{ minHeight: 64, gap: 1 }}>
+        {/* Logo / Brand + Dashboard button (mobile) */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            width: { xs: 'auto', md: 260 },
+            flexShrink: 0
+          }}
+        >
+          <Typography
+            variant="h6"
+            noWrap
+            component="div"
+            sx={{ fontWeight: 700, letterSpacing: 0.5, cursor: 'pointer' }}
+            onClick={() => navigate('/admin/dashboard')}
+          >
             TailorBiz <Box component="span" sx={{ color: 'secondary.main' }}>Admin</Box>
           </Typography>
+
+          {/* Mobile Dashboard Button */}
+          <Button
+            variant="contained"
+            color="secondary"
+            size="small"
+            startIcon={<DashboardIcon />}
+            onClick={() => navigate('/admin/dashboard')}
+            sx={{
+              ml: 1,
+              display: { xs: 'inline-flex', md: 'none' },
+              textTransform: 'none',
+              borderRadius: 999,
+              px: 1.5,
+            }}
+          >
+            דשבורד
+          </Button>
         </Box>
 
         {/* Search Bar (AWS Style) */}
-        <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-start', ml: 4 }}>
+        <Box
+          sx={{
+            flexGrow: 1,
+            display: { xs: 'none', sm: 'flex' },
+            justifyContent: 'flex-start',
+            ml: { xs: 0, md: 4 }
+          }}
+        >
            <Box
             sx={{
               position: 'relative',
