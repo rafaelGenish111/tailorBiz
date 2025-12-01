@@ -32,10 +32,16 @@ app.use(
 );
 // CORS configuration
 const allowedOrigins = [
+  // Local development
   'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:5173',
-  process.env.CLIENT_URL
+  // Production frontend (Vercel env or custom domain)
+  process.env.CLIENT_URL,
+  process.env.CUSTOM_CLIENT_DOMAIN,
+  // Hard-coded fallback for current production domain
+  'https://tailorbiz-software.com',
+  'https://www.tailorbiz-software.com'
 ].filter(Boolean);
 
 console.log('[CORS] Allowed origins:', allowedOrigins);
@@ -46,17 +52,22 @@ app.use(cors({
     if (!origin) {
       return callback(null, true);
     }
-    
-    // בדוק אם ה-origin מותר
-    if (allowedOrigins.some(allowed => origin === allowed || origin.startsWith('http://localhost:'))) {
+
+    // בדוק אם ה-origin מותר ברשימה
+    if (allowedOrigins.some(allowed => origin === allowed)) {
       return callback(null, true);
     }
-    
+
+    // אפשר כל localhost (כולל פורטים שונים) בסביבת פיתוח
+    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+      return callback(null, true);
+    }
+
     // אם יש .vercel.app בדומיין - אפשר (לפריסות preview)
     if (origin.includes('.vercel.app')) {
       return callback(null, true);
     }
-    
+
     console.log('[CORS] Blocked origin:', origin);
     callback(new Error('Not allowed by CORS'));
   },
@@ -97,13 +108,13 @@ app.use('/api/quotes', quoteRoutes);
 // Test routes (רק ב-development)
 if (process.env.NODE_ENV === 'development') {
   app.use('/api/test', testRoutes);
-  
+
   // נתיב נוסף לסטטוס אוטומציות (גם ב-production)
   app.get('/api/automation/status', async (req, res) => {
     try {
       const reminderService = require('./services/reminderService');
       const leadNurturingService = require('./services/leadNurturingService');
-      
+
       res.json({
         success: true,
         data: {
