@@ -212,7 +212,14 @@ const TodayAgenda = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, margin: '0 auto', p: { xs: 1.5, md: 3 } }}>
+    <Box
+      sx={{
+        width: '100%',
+        maxWidth: '100%',
+        mx: 'auto',
+        p: { xs: 1.5, md: 3 }
+      }}
+    >
       {/* --- כותרת ראשית --- */}
       <Paper elevation={0} sx={{ p: 3, mb: 4, bgcolor: 'transparent' }}>
         <Grid container alignItems={{ xs: 'flex-start', md: 'center' }} spacing={2}>

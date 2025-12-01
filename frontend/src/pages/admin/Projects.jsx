@@ -92,8 +92,17 @@ const Projects = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Box sx={{ p: { xs: 1.5, md: 3 } }}>
+      <Box
+        sx={{
+          mb: 4,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 2
+        }}
+      >
         <Box>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
             פרויקטים
@@ -102,15 +111,27 @@ const Projects = () => {
             ניהול פרויקטים ומשימות חוצות יומן ולוח משימות
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={openCreate}
+          sx={{ width: { xs: '100%', md: 'auto' } }}
+        >
           פרויקט חדש
         </Button>
       </Box>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={3} alignItems="stretch">
         {projects.map((project) => (
           <Grid item xs={12} md={6} lg={4} key={project._id}>
-            <Card sx={{ borderTop: `4px solid ${project.color || '#1976d2'}` }}>
+            <Card
+              sx={{
+                borderTop: `4px solid ${project.color || '#1976d2'}`,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
+            >
               <CardHeader
                 title={
                   <Stack direction="row" spacing={1} alignItems="center">
@@ -126,7 +147,7 @@ const Projects = () => {
                     : null
                 }
               />
-              <CardContent>
+              <CardContent sx={{ flexGrow: 1 }}>
                 {project.description && (
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     {project.description}
