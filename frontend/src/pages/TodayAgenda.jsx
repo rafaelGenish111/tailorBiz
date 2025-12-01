@@ -273,7 +273,7 @@ const TodayAgenda = () => {
             <WarningIcon />
             דורש טיפול מיידי ({agenda.overdue.length})
           </Typography>
-          <Grid container spacing={3}>
+          <Grid container spacing={3} alignItems="stretch">
             {agenda.overdue.map(task => (
               <TaskCard key={task._id} task={task} isOverdue={true} />
             ))}
@@ -289,7 +289,7 @@ const TodayAgenda = () => {
         </Typography>
 
         {agenda.today && agenda.today.length > 0 ? (
-          <Grid container spacing={3}>
+          <Grid container spacing={3} alignItems="stretch">
             {agenda.today.map(task => (
               <TaskCard key={task._id} task={task} isOverdue={false} />
             ))}
