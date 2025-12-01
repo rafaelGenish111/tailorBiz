@@ -1,5 +1,5 @@
 // frontend/src/pages/TaskBoard.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Card,
@@ -30,8 +30,10 @@ import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useProjects } fr
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import TaskForm from '../admin/components/content/tasks/TaskForm';
+import { useLocation } from 'react-router-dom';
 
 const TaskBoard = () => {
+  const location = useLocation();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editTask, setEditTask] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState('todo');
@@ -50,6 +52,14 @@ const TaskBoard = () => {
 
   const tasks = (tasksResponse?.data || []).slice();
   const projects = projectsResponse?.data || [];
+
+  // פתיחת דיאלוג יצירת משימה אם הגענו מ-״משימה חדשה״ (למשל מ‑TodayAgenda)
+  useEffect(() => {
+    if (location.state?.openCreateTask) {
+      setSelectedStatus('todo');
+      setCreateDialogOpen(true);
+    }
+  }, [location.state]);
 
   // סינון לפי עדיפות וטווח תאריכים (בצד הלקוח)
   const filteredTasks = tasks.filter((t) => {
