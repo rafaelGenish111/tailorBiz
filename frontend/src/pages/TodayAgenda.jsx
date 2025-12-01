@@ -238,7 +238,7 @@ const TodayAgenda = () => {
               variant="contained"
               size="large"
               startIcon={<TaskIcon />}
-              onClick={() => navigate('/admin/tasks/new')}
+              onClick={() => navigate('/admin/tasks', { state: { openCreateTask: true } })}
               sx={{
                 borderRadius: 3,
                 px: 4,
