@@ -36,6 +36,9 @@ const TaskBoard = () => {
   const [editTask, setEditTask] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState('todo');
   const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const { data: tasksResponse } = useTasks(
     selectedProjectId ? { projectId: selectedProjectId } : undefined
@@ -45,15 +48,39 @@ const TaskBoard = () => {
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
 
-  const tasks = tasksResponse?.data || [];
+  const tasks = (tasksResponse?.data || []).slice();
   const projects = projectsResponse?.data || [];
+
+  // סינון לפי עדיפות וטווח תאריכים (בצד הלקוח)
+  const filteredTasks = tasks.filter((t) => {
+    if (priorityFilter && t.priority !== priorityFilter) return false;
+    if (dateFrom) {
+      const fromTs = new Date(dateFrom).getTime();
+      const dueTs = t.dueDate ? new Date(t.dueDate).getTime() : 0;
+      if (dueTs < fromTs) return false;
+    }
+    if (dateTo) {
+      const toTs = new Date(dateTo).getTime();
+      const dueTs = t.dueDate ? new Date(t.dueDate).getTime() : 0;
+      if (dueTs > toTs) return false;
+    }
+    return true;
+  });
+
+  // מיון משימות לפי תאריך יעד (ואז לפי כותרת)
+  filteredTasks.sort((a, b) => {
+    const aDate = a.dueDate ? new Date(a.dueDate).getTime() : 0;
+    const bDate = b.dueDate ? new Date(b.dueDate).getTime() : 0;
+    if (aDate !== bDate) return aDate - bDate;
+    return (a.title || '').localeCompare(b.title || '');
+  });
 
   // קיבוץ משימות לפי סטטוס
   const tasksByStatus = {
-    todo: tasks.filter(t => t.status === 'todo'),
-    in_progress: tasks.filter(t => t.status === 'in_progress'),
-    waiting: tasks.filter(t => t.status === 'waiting'),
-    completed: tasks.filter(t => t.status === 'completed')
+    todo: filteredTasks.filter(t => t.status === 'todo'),
+    in_progress: filteredTasks.filter(t => t.status === 'in_progress'),
+    waiting: filteredTasks.filter(t => t.status === 'waiting'),
+    completed: filteredTasks.filter(t => t.status === 'completed')
   };
 
   const columns = [
@@ -99,7 +126,7 @@ const TaskBoard = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: { xs: 1.5, md: 3 } }}>
       {/* Header */}
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Box sx={{ minWidth: 220 }}>
@@ -111,7 +138,7 @@ const TaskBoard = () => {
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
           {projects.length > 0 && (
             <TextField
               select
@@ -129,6 +156,38 @@ const TaskBoard = () => {
               ))}
             </TextField>
           )}
+
+          <TextField
+            select
+            size="small"
+            label="עדיפות"
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+            sx={{ minWidth: 160 }}
+          >
+            <MenuItem value="">כל העדיפויות</MenuItem>
+            <MenuItem value="urgent">דחופה</MenuItem>
+            <MenuItem value="high">גבוהה</MenuItem>
+            <MenuItem value="medium">בינונית</MenuItem>
+            <MenuItem value="low">נמוכה</MenuItem>
+          </TextField>
+
+          <TextField
+            size="small"
+            type="date"
+            label="מתאריך"
+            InputLabelProps={{ shrink: true }}
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+          />
+          <TextField
+            size="small"
+            type="date"
+            label="עד תאריך"
+            InputLabelProps={{ shrink: true }}
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+          />
 
           <Button
             startIcon={<AddIcon />}
@@ -151,8 +210,9 @@ const TaskBoard = () => {
             <Paper 
               elevation={0}
               sx={{ 
+                width: '100%',
                 height: '100%', 
-                minHeight: '75vh', 
+                minHeight: { xs: 'auto', md: '75vh' }, 
                 bgcolor: '#f5f5f5',
                 display: 'flex', 
                 flexDirection: 'column',

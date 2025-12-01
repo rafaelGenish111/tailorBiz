@@ -12,16 +12,36 @@ import {
 import { useClients } from '../../../hooks/useClients';
 import { useProjects } from '../../../hooks/useTasks';
 
+// פורמט לערך של input מסוג datetime-local לפי זמן מקומי (לא UTC)
+const formatDateTimeLocal = (value) => {
+  if (!value) return '';
+  const date = typeof value === 'string' ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
-  const { register, handleSubmit, control, reset } = useForm({
+  // ברירות מחדל: התחלה עכשיו, יעד שעה קדימה, סיום ריק – לפי זמן מקומי
+  const defaultStart = new Date();
+  const defaultDue = new Date(defaultStart.getTime() + 60 * 60 * 1000); // שעה קדימה
+
+  const { register, handleSubmit, control, reset, watch, setValue } = useForm({
     defaultValues: {
       title: '',
       description: '',
       priority: 'medium',
       status: 'todo',
-      // ברירת מחדל: יעד להיום בשעה נוכחית
-      dueDate: new Date().toISOString().slice(0, 16),
-      startDate: '',
+      // ברירת מחדל: התחלה עכשיו (זמן מקומי)
+      startDate: formatDateTimeLocal(defaultStart),
+      // ברירת מחדל: יעד שעה קדימה (זמן מקומי)
+      dueDate: formatDateTimeLocal(defaultDue),
+      // ברירת מחדל: ללא זמן סיום
       endDate: '',
       projectId: null,
       relatedClient: null,
@@ -29,22 +49,44 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
     }
   });
 
+  useEffect(() => {
+    // ב-create אנחנו מקבלים רק { status }, לא רוצים למחוק ברירות מחדל של זמנים
+    const hasRealData = initialData && (
+      initialData._id ||
+      initialData.dueDate ||
+      initialData.startDate ||
+      initialData.endDate ||
+      initialData.title
+    );
+
+    if (hasRealData) {
+      reset({
+        ...initialData,
+        dueDate: formatDateTimeLocal(initialData.dueDate),
+        startDate: formatDateTimeLocal(initialData.startDate),
+        endDate: formatDateTimeLocal(initialData.endDate),
+        relatedClient: initialData.relatedClient || null
+      });
+    }
+  }, [initialData, reset]);
+
   const { data: clientsResponse, isLoading: isLoadingClients } = useClients();
   const { data: projectsResponse } = useProjects();
   const clients = clientsResponse?.data || [];
   const projects = projectsResponse?.data || [];
 
+  // ברגע שהמשתמש משנה תאריך התחלה – יעד (dueDate) יהיה שעה קדימה
+  const watchStartDate = watch('startDate');
+
   useEffect(() => {
-    if (initialData) {
-      reset({
-        ...initialData,
-        dueDate: initialData.dueDate ? new Date(initialData.dueDate).toISOString().slice(0, 16) : '',
-        startDate: initialData.startDate ? new Date(initialData.startDate).toISOString().slice(0, 16) : '',
-        endDate: initialData.endDate ? new Date(initialData.endDate).toISOString().slice(0, 16) : '',
-        relatedClient: initialData.relatedClient || null
-      });
+    if (watchStartDate) {
+      const start = new Date(watchStartDate);
+      if (!isNaN(start.getTime())) {
+        const due = new Date(start.getTime() + 60 * 60 * 1000);
+        setValue('dueDate', formatDateTimeLocal(due));
+      }
     }
-  }, [initialData, reset]);
+  }, [watchStartDate, setValue]);
 
   const handleFormSubmit = (data) => {
       // Transform relatedClient to ID if it's an object
