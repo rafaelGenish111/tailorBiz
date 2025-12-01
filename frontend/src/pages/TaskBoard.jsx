@@ -128,8 +128,17 @@ const TaskBoard = () => {
   return (
     <Box sx={{ p: { xs: 1.5, md: 3 } }}>
       {/* Header */}
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-        <Box sx={{ minWidth: 220 }}>
+      <Box
+        sx={{
+          mb: 4,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 2
+        }}
+      >
+        <Box sx={{ minWidth: 220, flex: '1 1 auto' }}>
           <Typography variant="h4" gutterBottom fontWeight="bold">
             📊 לוח משימות
           </Typography>
@@ -138,7 +147,16 @@ const TaskBoard = () => {
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            justifyContent: { xs: 'flex-start', md: 'flex-end' },
+            width: { xs: '100%', md: 'auto' }
+          }}
+        >
           {projects.length > 0 && (
             <TextField
               select
@@ -146,7 +164,7 @@ const TaskBoard = () => {
               label="סינון לפי פרויקט"
               value={selectedProjectId}
               onChange={(e) => setSelectedProjectId(e.target.value)}
-              sx={{ minWidth: 220 }}
+              sx={{ minWidth: { xs: '100%', sm: 220 } }}
             >
               <MenuItem value="">כל הפרויקטים</MenuItem>
               {projects.map((p) => (
@@ -163,7 +181,7 @@ const TaskBoard = () => {
             label="עדיפות"
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            sx={{ minWidth: 160 }}
+            sx={{ minWidth: { xs: '100%', sm: 160 } }}
           >
             <MenuItem value="">כל העדיפויות</MenuItem>
             <MenuItem value="urgent">דחופה</MenuItem>
@@ -179,6 +197,7 @@ const TaskBoard = () => {
             InputLabelProps={{ shrink: true }}
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
+            sx={{ minWidth: { xs: '100%', sm: 180 } }}
           />
           <TextField
             size="small"
@@ -187,6 +206,7 @@ const TaskBoard = () => {
             InputLabelProps={{ shrink: true }}
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
+            sx={{ minWidth: { xs: '100%', sm: 180 } }}
           />
 
           <Button
@@ -197,6 +217,7 @@ const TaskBoard = () => {
               setSelectedStatus('todo');
               setCreateDialogOpen(true);
             }}
+            sx={{ width: { xs: '100%', md: 'auto' } }}
           >
             משימה חדשה
           </Button>
