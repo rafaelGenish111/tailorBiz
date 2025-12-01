@@ -54,6 +54,43 @@ const START_HOUR = 6; // 06:00
 const END_HOUR = 22;   // 22:00
 const HOUR_HEIGHT = 60; // Pixels per hour
 
+// מחשב פריסת אירנטים על ציר הזמן כך שאירועים חופפים יוצגו זה לצד זה
+const layoutDayEvents = (events) => {
+  if (!events || events.length === 0) return { laidOut: [], maxCols: 0 };
+
+  // נמיין לפי זמן התחלה
+  const sorted = [...events].sort(
+    (a, b) => new Date(a.startTime) - new Date(b.startTime)
+  );
+
+  const active = [];
+  let maxCols = 0;
+
+  for (const ev of sorted) {
+    const start = new Date(ev.startTime).getTime();
+
+    // להסיר מה-active אירועים שכבר הסתיימו
+    for (let i = active.length - 1; i >= 0; i -= 1) {
+      const actEnd = new Date(active[i].endTime).getTime();
+      if (actEnd <= start) {
+        active.splice(i, 1);
+      }
+    }
+
+    // מציאת אינדקס עמודה פנוי
+    const used = new Set(active.map((e) => e.__colIndex ?? 0));
+    let col = 0;
+    while (used.has(col)) col += 1;
+    // eslint-disable-next-line no-param-reassign
+    ev.__colIndex = col;
+
+    active.push(ev);
+    if (active.length > maxCols) maxCols = active.length;
+  }
+
+  return { laidOut: sorted, maxCols };
+};
+
 const TimeGridEvent = ({ event, style, onClick }) => {
   const theme = useTheme();
   
@@ -380,7 +417,9 @@ const CalendarView = () => {
            <Box sx={{ ml: '60px', display: 'flex', minHeight: hours.length * HOUR_HEIGHT }}>
               {daysToShow.map((day) => {
                  const dayEvents = getEventsForDate(day);
-                 
+                 const { laidOut, maxCols } = layoutDayEvents(dayEvents);
+                 const cols = Math.max(maxCols, 1);
+
                  return (
                    <Box 
                     key={day.toISOString()} 
@@ -398,7 +437,7 @@ const CalendarView = () => {
                       ))}
 
                       {/* Events */}
-                      {dayEvents.map(event => {
+                      {laidOut.map(event => {
                          const startH = getHours(event.startTime);
                          const startM = getMinutes(event.startTime);
                          
@@ -409,11 +448,21 @@ const CalendarView = () => {
                          const duration = differenceInMinutes(event.endTime, event.startTime);
                          const height = Math.max(duration * (HOUR_HEIGHT / 60), 25); // Min height 25px
 
+                         // חישוב רוחב ומיקום אופקי כדי לאפשר אירועים חופפים זה לצד זה
+                         const colIndex = event.__colIndex || 0;
+                         const widthPercent = 100 / cols;
+                         const leftPercent = colIndex * widthPercent;
+
                          return (
                            <TimeGridEvent 
                              key={event._id} 
                              event={event} 
-                             style={{ top, height, left: '2%', width: '96%' }}
+                             style={{ 
+                               top, 
+                               height, 
+                               left: `${leftPercent + 1}%`, 
+                               width: `${widthPercent - 2}%` 
+                             }}
                              onClick={(e) => setSelectedEvent(e)}
                            />
                          );
