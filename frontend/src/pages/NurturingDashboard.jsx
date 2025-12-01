@@ -108,7 +108,7 @@ const NurturingDashboard = () => {
 
   if (templatesLoading || statsLoading) {
     return (
-      <Box sx={{ p: 4 }}>
+      <Box sx={{ p: { xs: 2, md: 4 } }}>
         <LinearProgress />
         <Typography sx={{ mt: 2 }}>טוען...</Typography>
       </Box>
@@ -116,7 +116,14 @@ const NurturingDashboard = () => {
   }
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box
+      sx={{
+        width: '100%',
+        maxWidth: 1200,
+        mx: 'auto',
+        p: { xs: 1.5, md: 3 }
+      }}
+    >
       {/* Header */}
       <Box
         sx={{
@@ -152,7 +159,7 @@ const NurturingDashboard = () => {
       {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} md={3}>
-          <Card sx={{ p: 3 }}>
+          <Card sx={{ p: 3, height: '100%' }}>
             <Typography variant="h6" gutterBottom>תבניות פעילות</Typography>
             <Typography variant="h3">{stats.activeTemplates || 0}</Typography>
             <Typography variant="caption" color="text.secondary">
@@ -162,7 +169,7 @@ const NurturingDashboard = () => {
         </Grid>
 
         <Grid item xs={12} md={3}>
-          <Card sx={{ p: 3, bgcolor: '#e3f2fd' }}>
+          <Card sx={{ p: 3, bgcolor: '#e3f2fd', height: '100%' }}>
             <Typography variant="h6" gutterBottom>רצפים פעילים</Typography>
             <Typography variant="h3">{stats.activeInstances || 0}</Typography>
             <Typography variant="caption" color="text.secondary">
@@ -172,7 +179,7 @@ const NurturingDashboard = () => {
         </Grid>
 
         <Grid item xs={12} md={3}>
-          <Card sx={{ p: 3, bgcolor: '#e8f5e9' }}>
+          <Card sx={{ p: 3, bgcolor: '#e8f5e9', height: '100%' }}>
             <Typography variant="h6" gutterBottom>הושלמו</Typography>
             <Typography variant="h3">{stats.completedInstances || 0}</Typography>
             <Typography variant="caption" color="text.secondary">
@@ -182,7 +189,7 @@ const NurturingDashboard = () => {
         </Grid>
 
         <Grid item xs={12} md={3}>
-          <Card sx={{ p: 3, bgcolor: '#fff3e0' }}>
+          <Card sx={{ p: 3, bgcolor: '#fff3e0', height: '100%' }}>
             <Typography variant="h6" gutterBottom>הופסקו</Typography>
             <Typography variant="h3">{stats.stoppedInstances || 0}</Typography>
             <Typography variant="caption" color="text.secondary">
@@ -206,8 +213,18 @@ const NurturingDashboard = () => {
           <Typography variant="h6">תבניות זמינות</Typography>
         </Box>
 
-        <TableContainer>
-          <Table>
+        <TableContainer
+          sx={{
+            maxHeight: { xs: 420, md: 'none' },
+            overflowX: 'auto'
+          }}
+        >
+          <Table
+            size="small"
+            sx={{
+              minWidth: 900
+            }}
+          >
             <TableHead>
               <TableRow>
                 <TableCell>פעיל</TableCell>

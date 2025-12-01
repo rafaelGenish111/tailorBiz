@@ -124,7 +124,7 @@ const ActiveNurturing = () => {
 
   if (isLoading) {
     return (
-      <Box sx={{ p: 4 }}>
+      <Box sx={{ p: { xs: 2, md: 4 } }}>
         <LinearProgress />
         <Typography sx={{ mt: 2 }}>טוען...</Typography>
       </Box>
@@ -132,7 +132,14 @@ const ActiveNurturing = () => {
   }
 
   return (
-    <Box>
+    <Box
+      sx={{
+        width: '100%',
+        maxWidth: 1200,
+        mx: 'auto',
+        p: { xs: 1.5, md: 3 }
+      }}
+    >
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" gutterBottom>
@@ -146,7 +153,7 @@ const ActiveNurturing = () => {
       {/* Summary Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} md={4}>
-          <Card sx={{ p: 3, bgcolor: '#e3f2fd' }}>
+          <Card sx={{ p: 3, bgcolor: '#e3f2fd', height: '100%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Avatar sx={{ bgcolor: '#2196f3', width: 56, height: 56 }}>
                 <ScheduleIcon />
@@ -164,7 +171,7 @@ const ActiveNurturing = () => {
         </Grid>
 
         <Grid item xs={12} md={4}>
-          <Card sx={{ p: 3, bgcolor: '#e8f5e9' }}>
+          <Card sx={{ p: 3, bgcolor: '#e8f5e9', height: '100%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Avatar sx={{ bgcolor: '#4caf50', width: 56, height: 56 }}>
                 <CheckIcon />
@@ -182,7 +189,7 @@ const ActiveNurturing = () => {
         </Grid>
 
         <Grid item xs={12} md={4}>
-          <Card sx={{ p: 3, bgcolor: '#fff3e0' }}>
+          <Card sx={{ p: 3, bgcolor: '#fff3e0', height: '100%' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Avatar sx={{ bgcolor: '#ff9800', width: 56, height: 56 }}>
                 <PauseIcon />
@@ -205,6 +212,8 @@ const ActiveNurturing = () => {
         <Tabs
           value={tabValue}
           onChange={(e, newValue) => setTabValue(newValue)}
+          variant="scrollable"
+          scrollButtons="auto"
           sx={{ borderBottom: 1, borderColor: 'divider' }}
         >
           <Tab label="פעילים" />
@@ -215,8 +224,18 @@ const ActiveNurturing = () => {
 
       {/* Instances Table */}
       <Card>
-        <TableContainer>
-          <Table>
+        <TableContainer
+          sx={{
+            maxHeight: { xs: 420, md: 'none' },
+            overflowX: 'auto'
+          }}
+        >
+          <Table
+            size="small"
+            sx={{
+              minWidth: 900
+            }}
+          >
             <TableHead>
               <TableRow>
                 <TableCell>לקוח</TableCell>
