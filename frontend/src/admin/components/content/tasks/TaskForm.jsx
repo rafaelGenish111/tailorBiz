@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import {
   Box,
   TextField,
@@ -45,8 +45,18 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
       endDate: '',
       projectId: null,
       relatedClient: null,
+      subtasks: initialData?.subtasks || [],
       ...initialData
     }
+  });
+
+  const {
+    fields: subtaskFields,
+    append: appendSubtask,
+    remove: removeSubtask
+  } = useFieldArray({
+    control,
+    name: 'subtasks'
   });
 
   useEffect(() => {
@@ -65,7 +75,8 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
         dueDate: formatDateTimeLocal(initialData.dueDate),
         startDate: formatDateTimeLocal(initialData.startDate),
         endDate: formatDateTimeLocal(initialData.endDate),
-        relatedClient: initialData.relatedClient || null
+        relatedClient: initialData.relatedClient || null,
+        subtasks: initialData.subtasks || []
       });
     }
   }, [initialData, reset]);
@@ -230,6 +241,71 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
             label="תיאור"
             {...register('description')}
           />
+        </Grid>
+
+        {/* תתי־משימות (צ'קליסט) */}
+        <Grid item xs={12}>
+          <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="subtitle1" fontWeight="bold">
+              תתי־משימות
+            </Typography>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => appendSubtask({ title: '', done: false })}
+            >
+              הוסף תת־משימה
+            </Button>
+          </Box>
+
+          {subtaskFields.length === 0 ? (
+            <Typography variant="body2" color="text.secondary">
+              אין תתי־משימות עדיין.
+            </Typography>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              {subtaskFields.map((field, index) => (
+                <Box
+                  key={field.id}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={`תת־משימה ${index + 1}`}
+                    {...register(`subtasks.${index}.title`)}
+                  />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <TextField
+                      select
+                      size="small"
+                      label="סטטוס"
+                      sx={{ minWidth: 110 }}
+                      defaultValue={field.done ? 'done' : 'open'}
+                      {...register(`subtasks.${index}.done`)}
+                      SelectProps={{
+                        native: true,
+                      }}
+                    >
+                      <option value="open">פתוחה</option>
+                      <option value="done">בוצעה</option>
+                    </TextField>
+                    <Button
+                      size="small"
+                      color="error"
+                      onClick={() => removeSubtask(index)}
+                    >
+                      מחק
+                    </Button>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
+          )}
         </Grid>
 
         <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
