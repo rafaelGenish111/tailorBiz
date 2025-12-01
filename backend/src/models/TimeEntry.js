@@ -90,3 +90,4 @@ timeEntrySchema.statics.getClientStatsByTask = async function(clientId) {
 module.exports = mongoose.model('TimeEntry', timeEntrySchema);
 
 
+
