@@ -25,7 +25,8 @@ export const useActiveTimer = () => {
   const { data: activeTimer, isLoading, refetch } = useQuery({
     queryKey: ['activeTimer'],
     queryFn: timerApi.getActive,
-    refetchInterval: 60000,
+    refetchInterval: 5000, // רענון כל 5 שניות כדי לוודא שהטיימר מעודכן
+    refetchOnWindowFocus: true, // רענון כשהחלון מקבל פוקוס
   });
 
   useEffect(() => {
@@ -35,8 +36,10 @@ export const useActiveTimer = () => {
       intervalRef.current = null;
     }
 
-    if (activeTimer?.data?.isRunning) {
-      const startTime = new Date(activeTimer.data.startTime).getTime();
+    // בדוק אם יש טיימר פעיל - תמיכה בשני פורמטים של response
+    const timer = activeTimer?.data || activeTimer;
+    if (timer?.isRunning && timer?.startTime) {
+      const startTime = new Date(timer.startTime).getTime();
       
       const updateElapsed = () => {
         const now = Date.now();
@@ -63,7 +66,9 @@ export const useActiveTimer = () => {
   const startMutation = useMutation({
     mutationFn: ({ clientId, data }) => timerApi.start(clientId, data),
     onSuccess: async () => {
+      setElapsedTime(0); // איפוס הזמן
       await queryClient.invalidateQueries(['activeTimer']);
+      await queryClient.invalidateQueries(['clientTimeEntries']);
       await refetch();
     }
   });
@@ -71,6 +76,7 @@ export const useActiveTimer = () => {
   const stopMutation = useMutation({
     mutationFn: (entryId) => timerApi.stop(entryId),
     onSuccess: async () => {
+      setElapsedTime(0); // איפוס הזמן
       await queryClient.invalidateQueries(['activeTimer']);
       await queryClient.invalidateQueries(['clientTimeEntries']);
       await refetch();
@@ -82,16 +88,20 @@ export const useActiveTimer = () => {
   }, [startMutation]);
 
   const stopTimer = useCallback(() => {
-    if (activeTimer?.data?._id) {
-      return stopMutation.mutateAsync(activeTimer.data._id);
+    const timer = activeTimer?.data || activeTimer;
+    if (timer?._id) {
+      return stopMutation.mutateAsync(timer._id);
     }
+    throw new Error('אין טיימר פעיל לעצירה');
   }, [activeTimer, stopMutation]);
 
+  const timer = activeTimer?.data || activeTimer;
+  
   return {
-    activeTimer: activeTimer?.data || null,
+    activeTimer: timer || null,
     isLoading,
     elapsedTime,
-    isRunning: activeTimer?.data?.isRunning || false,
+    isRunning: timer?.isRunning || false,
     startTimer,
     stopTimer,
     isStarting: startMutation.isPending,
@@ -108,6 +118,8 @@ export const useClientTimeEntries = (clientId, options = {}) => {
     queryKey: ['clientTimeEntries', clientId, options],
     queryFn: () => timerApi.getClientEntries(clientId, options),
     enabled: !!clientId,
+    refetchInterval: 10000, // רענון כל 10 שניות כדי לוודא שהריצות מעודכנות
+    refetchOnWindowFocus: true, // רענון כשהחלון מקבל פוקוס
   });
 
   const addManualMutation = useMutation({

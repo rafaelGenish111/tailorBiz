@@ -56,8 +56,8 @@ const ClientTimer = ({ clientId, clientName }) => {
   const [taskType, setTaskType] = useState('general');
   const [description, setDescription] = useState('');
 
-  const isTimerForThisClient = activeTimer?.clientId === clientId || 
-                                activeTimer?.clientId?._id === clientId;
+  const timerClientId = activeTimer?.clientId?._id || activeTimer?.clientId;
+  const isTimerForThisClient = timerClientId === clientId || timerClientId?.toString() === clientId?.toString();
 
   const handleStart = async () => {
     if (activeTimer && !isTimerForThisClient) {

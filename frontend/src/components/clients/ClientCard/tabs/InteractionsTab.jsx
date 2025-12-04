@@ -38,6 +38,10 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { he } from 'date-fns/locale';
 import { useClientInteractions, useAddInteraction, useUpdateInteraction, useDeleteInteraction, useClient } from '../../../../admin/hooks/useClients';
 
 const InteractionsTab = ({ clientId }) => {
@@ -49,7 +53,7 @@ const InteractionsTab = ({ clientId }) => {
     direction: 'outbound',
     subject: '',
     content: '',
-    nextFollowUp: '',
+    nextFollowUp: null,
     businessType: 'followup'
   });
 
@@ -84,7 +88,8 @@ const InteractionsTab = ({ clientId }) => {
       clientId,
       data: {
         ...newInteraction,
-        subject
+        subject,
+        nextFollowUp: newInteraction.nextFollowUp?.toISOString() || null
       }
     });
     setOpenDialog(false);
@@ -93,27 +98,21 @@ const InteractionsTab = ({ clientId }) => {
       direction: 'outbound',
       subject: '',
       content: '',
-      nextFollowUp: '',
+      nextFollowUp: null,
       businessType: 'followup'
     });
   };
 
   const handleEditClick = (interaction) => {
-    // המרת nextFollowUp לתאריך בפורמט datetime-local
-    let nextFollowUpFormatted = '';
+    // המרת nextFollowUp ל-Date object
+    let nextFollowUpDate = null;
     if (interaction.nextFollowUp) {
-      const date = new Date(interaction.nextFollowUp);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      nextFollowUpFormatted = `${year}-${month}-${day}T${hours}:${minutes}`;
+      nextFollowUpDate = new Date(interaction.nextFollowUp);
     }
 
     setEditingInteraction({
       ...interaction,
-      nextFollowUp: nextFollowUpFormatted
+      nextFollowUp: nextFollowUpDate
     });
     setEditDialog(true);
   };
@@ -122,7 +121,10 @@ const InteractionsTab = ({ clientId }) => {
     await updateInteraction.mutateAsync({
       clientId,
       interactionId: editingInteraction._id,
-      data: editingInteraction
+      data: {
+        ...editingInteraction,
+        nextFollowUp: editingInteraction.nextFollowUp?.toISOString() || null
+      }
     });
     setEditDialog(false);
     setEditingInteraction(null);
@@ -285,12 +287,13 @@ const InteractionsTab = ({ clientId }) => {
       )}
 
       {/* Add Interaction Dialog */}
-      <Dialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        maxWidth="sm"
-        fullWidth
-      >
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
+        <Dialog
+          open={openDialog}
+          onClose={() => setOpenDialog(false)}
+          maxWidth="sm"
+          fullWidth
+        >
         <DialogTitle>אינטראקציה חדשה</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
@@ -371,15 +374,17 @@ const InteractionsTab = ({ clientId }) => {
               required
             />
 
-            <TextField
+            <DateTimePicker
               label="Follow-up הבא (תאריך ושעה)"
-              type="datetime-local"
               value={newInteraction.nextFollowUp}
-              onChange={(e) =>
-                setNewInteraction({ ...newInteraction, nextFollowUp: e.target.value })
+              onChange={(newValue) =>
+                setNewInteraction({ ...newInteraction, nextFollowUp: newValue })
               }
-              InputLabelProps={{ shrink: true }}
-              fullWidth
+              slotProps={{
+                textField: {
+                  fullWidth: true
+                }
+              }}
             />
           </Box>
         </DialogContent>
@@ -394,10 +399,12 @@ const InteractionsTab = ({ clientId }) => {
           </Button>
         </DialogActions>
       </Dialog>
+      </LocalizationProvider>
 
       {/* Edit Interaction Dialog */}
-      <Dialog
-        open={editDialog}
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
+        <Dialog
+          open={editDialog}
         onClose={() => {
           setEditDialog(false);
           setEditingInteraction(null);
@@ -462,15 +469,17 @@ const InteractionsTab = ({ clientId }) => {
                 required
               />
 
-              <TextField
+              <DateTimePicker
                 label="Follow-up הבא (תאריך ושעה)"
-                type="datetime-local"
-                value={editingInteraction.nextFollowUp || ''}
-                onChange={(e) =>
-                  setEditingInteraction({ ...editingInteraction, nextFollowUp: e.target.value })
+                value={editingInteraction.nextFollowUp}
+                onChange={(newValue) =>
+                  setEditingInteraction({ ...editingInteraction, nextFollowUp: newValue })
                 }
-                InputLabelProps={{ shrink: true }}
-                fullWidth
+                slotProps={{
+                  textField: {
+                    fullWidth: true
+                  }
+                }}
               />
             </Box>
           )}
@@ -491,6 +500,7 @@ const InteractionsTab = ({ clientId }) => {
           </Button>
         </DialogActions>
       </Dialog>
+      </LocalizationProvider>
     </Box>
   );
 };
