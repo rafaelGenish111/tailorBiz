@@ -135,15 +135,14 @@ const Projects = () => {
         </Button>
       </Box>
 
-      <Grid container spacing={3} alignItems="stretch">
+      <Grid container spacing={3}>
         {projects.map((project) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={project._id}>
             <Card
               onClick={() => handleProjectClick(project)}
               sx={{
                 borderTop: `4px solid ${project.color || '#1976d2'}`,
-                height: '100%',
-                minHeight: 280,
+                height: 320,
                 display: 'flex',
                 flexDirection: 'column',
                 cursor: 'pointer',
@@ -171,8 +170,8 @@ const Projects = () => {
                     : null
                 }
               />
-              <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                {project.description && (
+              <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                {project.description ? (
                   <Typography
                     variant="body2"
                     color="text.secondary"
@@ -188,12 +187,14 @@ const Projects = () => {
                   >
                     {project.description}
                   </Typography>
+                ) : (
+                  <Box sx={{ flexGrow: 1 }} />
                 )}
                 <Stack
                   direction="row"
                   spacing={1}
                   justifyContent="flex-end"
-                  sx={{ mt: 'auto' }}
+                  sx={{ mt: 'auto', flexShrink: 0 }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <IconButton
