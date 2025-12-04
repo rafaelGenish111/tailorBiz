@@ -3,6 +3,7 @@ const Invoice = require('../models/Invoice');
 const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const leadNurturingService = require('../services/leadNurturingService');
+const projectGeneratorService = require('../services/projectGeneratorService');
 
 // Helper function to check if string is valid ObjectId
 const isValidObjectId = (id) => {
@@ -352,6 +353,18 @@ exports.uploadContract = async (req, res) => {
     client.contract = currentContract;
     await client.save();
 
+    try {
+      const userId = req.user?.id || req.user?._id;
+      await projectGenerator.generateNewClientProject(client, userId);
+    } catch (error) {
+      console.error('Failed to auto-generate project:', error);
+      // לא זורקים שגיאה ללקוח כי ההמרה עצמה הצליחה
+    }
+    res.json({
+      success: true,
+      message: 'הליד הומר ללקוח בהצלחה (ופרויקט הוקם ברקע)',
+      data: client
+    });
     res.json({
       success: true,
       message: 'החוזה עודכן בהצלחה',
