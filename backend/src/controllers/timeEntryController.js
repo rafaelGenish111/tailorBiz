@@ -9,14 +9,29 @@ const isValidObjectId = (id) => {
   return mongoose.Types.ObjectId.isValid(id) && id !== 'temp-user-id';
 };
 
+// Helper function to get valid userId - converts temp-user-id to a real ObjectId
+const getUserId = (rawUserId) => {
+  if (!rawUserId) return null;
+  if (rawUserId === 'temp-user-id') {
+    // יצירת ObjectId קבוע עבור temp-user-id (או אפשר ליצור חדש כל פעם)
+    // כאן נשתמש ב-ObjectId קבוע כדי שכל הריצות יהיו מאותו משתמש זמני
+    return new mongoose.Types.ObjectId('000000000000000000000000');
+  }
+  if (mongoose.Types.ObjectId.isValid(rawUserId)) {
+    return new mongoose.Types.ObjectId(rawUserId);
+  }
+  return null;
+};
+
 // התחלת טיימר
 exports.startTimer = async (req, res) => {
   try {
     const { clientId } = req.params;
     const { taskType, description } = req.body;
-    const userId = req.user?.id || req.user?._id;
+    const rawUserId = req.user?.id || req.user?._id;
+    const userId = getUserId(rawUserId);
 
-    if (!isValidObjectId(userId)) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
         message: 'משתמש לא תקין'
@@ -79,9 +94,10 @@ exports.startTimer = async (req, res) => {
 exports.stopTimer = async (req, res) => {
   try {
     const { entryId } = req.params;
-    const userId = req.user?.id || req.user?._id;
+    const rawUserId = req.user?.id || req.user?._id;
+    const userId = getUserId(rawUserId);
 
-    if (!isValidObjectId(userId)) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
         message: 'משתמש לא תקין'
@@ -124,9 +140,10 @@ exports.stopTimer = async (req, res) => {
 // קבלת טיימר פעיל
 exports.getActiveTimer = async (req, res) => {
   try {
-    const userId = req.user?.id || req.user?._id;
+    const rawUserId = req.user?.id || req.user?._id;
+    const userId = getUserId(rawUserId);
 
-    if (!isValidObjectId(userId)) {
+    if (!userId) {
       return res.json({
         success: true,
         data: null
@@ -205,9 +222,10 @@ exports.updateTimeEntry = async (req, res) => {
   try {
     const { entryId } = req.params;
     const { description, taskType } = req.body;
-    const userId = req.user?.id || req.user?._id;
+    const rawUserId = req.user?.id || req.user?._id;
+    const userId = getUserId(rawUserId);
 
-    if (!isValidObjectId(userId)) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
         message: 'משתמש לא תקין'
@@ -245,9 +263,10 @@ exports.updateTimeEntry = async (req, res) => {
 exports.deleteTimeEntry = async (req, res) => {
   try {
     const { entryId } = req.params;
-    const userId = req.user?.id || req.user?._id;
+    const rawUserId = req.user?.id || req.user?._id;
+    const userId = getUserId(rawUserId);
 
-    if (!isValidObjectId(userId)) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
         message: 'משתמש לא תקין'
@@ -285,9 +304,10 @@ exports.addManualEntry = async (req, res) => {
   try {
     const { clientId } = req.params;
     const { startTime, endTime, taskType, description } = req.body;
-    const userId = req.user?.id || req.user?._id;
+    const rawUserId = req.user?.id || req.user?._id;
+    const userId = getUserId(rawUserId);
 
-    if (!isValidObjectId(userId)) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
         message: 'משתמש לא תקין'
