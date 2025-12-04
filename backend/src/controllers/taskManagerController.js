@@ -29,11 +29,19 @@ exports.getAllTasks = async (req, res) => {
 
     // פילטר לפי סטטוס
     if (status) {
-      query.status = status;
-    } else {
-      // ברירת מחדל: לא מראה משימות שבוטלו או הושלמו
-      query.status = { $nin: ['completed', 'cancelled'] };
+      // אם status הוא 'all' או 'active', נטפל בהתאם
+      if (status === 'all') {
+        // לא נסנן לפי סטטוס - נחזיר הכל
+      } else if (status === 'active') {
+        // רק משימות פעילות (לא הושלמו ולא בוטלו)
+        query.status = { $nin: ['completed', 'cancelled'] };
+      } else {
+        // סטטוס ספציפי
+        query.status = status;
+      }
     }
+    // אם אין פרמטר status, נחזיר את כל המשימות (כולל הושלמו)
+    // כך ש-TaskBoard יוכל לסנן אותן בצד הלקוח
 
     // פילטר לפי עדיפות
     if (priority) {
