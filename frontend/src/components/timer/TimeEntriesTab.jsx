@@ -232,6 +232,7 @@ const TimeEntriesTab = ({ clientId }) => {
               rows={2}
             />
           </Box>
+          </LocalizationProvider>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAddDialogOpen(false)}>ביטול</Button>
@@ -244,7 +245,6 @@ const TimeEntriesTab = ({ clientId }) => {
           </Button>
         </DialogActions>
       </Dialog>
-          </LocalizationProvider>
     </Box>
   );
 };
