@@ -10,21 +10,22 @@ import {
   Autocomplete,
   Typography
 } from '@mui/material';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { he } from 'date-fns/locale';
 import { useClients } from '../../../hooks/useClients';
 import { useProjects } from '../../../hooks/useTasks';
 
-// פורמט לערך של input מסוג datetime-local לפי זמן מקומי (לא UTC)
-const formatDateTimeLocal = (value) => {
-  if (!value) return '';
-  const date = typeof value === 'string' ? new Date(value) : value;
-  if (Number.isNaN(date.getTime())) return '';
-  const pad = (n) => String(n).padStart(2, '0');
-  const year = date.getFullYear();
-  const month = pad(date.getMonth() + 1);
-  const day = pad(date.getDate());
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
+// פונקציית עזר להמרת ערך ל-Date object
+const parseDate = (value) => {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  if (typeof value === 'string') {
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
+  }
+  return null;
 };
 
 const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
@@ -38,12 +39,12 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
       description: '',
       priority: 'medium',
       status: 'todo',
-      // ברירת מחדל: התחלה עכשיו (זמן מקומי)
-      startDate: formatDateTimeLocal(defaultStart),
-      // ברירת מחדל: יעד שעה קדימה (זמן מקומי)
-      dueDate: formatDateTimeLocal(defaultDue),
+      // ברירת מחדל: התחלה עכשיו
+      startDate: defaultStart,
+      // ברירת מחדל: יעד שעה קדימה
+      dueDate: defaultDue,
       // ברירת מחדל: ללא זמן סיום
-      endDate: '',
+      endDate: null,
       projectId: null,
       relatedClient: null,
       subtasks: initialData?.subtasks || [],
@@ -73,9 +74,9 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
     if (hasRealData) {
       reset({
         ...initialData,
-        dueDate: formatDateTimeLocal(initialData.dueDate),
-        startDate: formatDateTimeLocal(initialData.startDate),
-        endDate: formatDateTimeLocal(initialData.endDate),
+        dueDate: parseDate(initialData.dueDate),
+        startDate: parseDate(initialData.startDate),
+        endDate: parseDate(initialData.endDate),
         relatedClient: initialData.relatedClient || null,
         subtasks: initialData.subtasks || []
       });
@@ -91,12 +92,9 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
   const watchStartDate = watch('startDate');
 
   useEffect(() => {
-    if (watchStartDate) {
-      const start = new Date(watchStartDate);
-      if (!isNaN(start.getTime())) {
-        const due = new Date(start.getTime() + 60 * 60 * 1000);
-        setValue('dueDate', formatDateTimeLocal(due));
-      }
+    if (watchStartDate && watchStartDate instanceof Date) {
+      const due = new Date(watchStartDate.getTime() + 60 * 60 * 1000);
+      setValue('dueDate', due);
     }
   }, [watchStartDate, setValue]);
 
@@ -111,8 +109,9 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} sx={{ mt: 2 }}>
-      <Grid container spacing={2}>
+    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
+      <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} sx={{ mt: 2 }}>
+        <Grid container spacing={2}>
         <Grid item xs={12}>
           <TextField
             fullWidth
@@ -153,32 +152,62 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            type="datetime-local"
-            label="תאריך יעד"
-            InputLabelProps={{ shrink: true }}
-            {...register('dueDate')}
+          <Controller
+            name="dueDate"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <DateTimePicker
+                label="תאריך יעד"
+                value={parseDate(value)}
+                onChange={onChange}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    required: false
+                  }
+                }}
+              />
+            )}
           />
         </Grid>
         
         <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            type="datetime-local"
-            label="תאריך התחלה"
-            InputLabelProps={{ shrink: true }}
-            {...register('startDate')}
+          <Controller
+            name="startDate"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <DateTimePicker
+                label="תאריך התחלה"
+                value={parseDate(value)}
+                onChange={onChange}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    required: false
+                  }
+                }}
+              />
+            )}
           />
         </Grid>
 
         <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            type="datetime-local"
-            label="תאריך סיום"
-            InputLabelProps={{ shrink: true }}
-            {...register('endDate')}
+          <Controller
+            name="endDate"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <DateTimePicker
+                label="תאריך סיום"
+                value={parseDate(value)}
+                onChange={onChange}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    required: false
+                  }
+                }}
+              />
+            )}
           />
         </Grid>
 
@@ -319,6 +348,7 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
         </Grid>
       </Grid>
     </Box>
+    </LocalizationProvider>
   );
 };
 

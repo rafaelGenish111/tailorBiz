@@ -9,6 +9,10 @@ import {
 import {
   Delete as DeleteIcon, Add as AddIcon
 } from '@mui/icons-material';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { he } from 'date-fns/locale';
 import { useClientTimeEntries, formatDuration, formatDurationReadable } from '../../admin/hooks/useTimer';
 
 const taskTypeLabels = {
@@ -23,8 +27,8 @@ const taskTypeLabels = {
 const TimeEntriesTab = ({ clientId }) => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [manualEntry, setManualEntry] = useState({
-    startTime: '',
-    endTime: '',
+    startTime: null,
+    endTime: null,
     taskType: 'general',
     description: ''
   });
@@ -33,11 +37,17 @@ const TimeEntriesTab = ({ clientId }) => {
 
   const handleAddManual = async () => {
     try {
-      await addManualEntry(manualEntry);
+      // המרת Date objects ל-ISO strings
+      const entryData = {
+        ...manualEntry,
+        startTime: manualEntry.startTime?.toISOString(),
+        endTime: manualEntry.endTime?.toISOString()
+      };
+      await addManualEntry(entryData);
       setAddDialogOpen(false);
       setManualEntry({
-        startTime: '',
-        endTime: '',
+        startTime: null,
+        endTime: null,
         taskType: 'general',
         description: ''
       });
@@ -175,23 +185,30 @@ const TimeEntriesTab = ({ clientId }) => {
       <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>הוסף זמן ידנית</DialogTitle>
         <DialogContent>
-          <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <TextField
-              label="זמן התחלה"
-              type="datetime-local"
-              value={manualEntry.startTime}
-              onChange={(e) => setManualEntry(prev => ({ ...prev, startTime: e.target.value }))}
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              label="זמן סיום"
-              type="datetime-local"
-              value={manualEntry.endTime}
-              onChange={(e) => setManualEntry(prev => ({ ...prev, endTime: e.target.value }))}
-              fullWidth
-              InputLabelProps={{ shrink: true }}
-            />
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
+            <Box sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <DateTimePicker
+                label="זמן התחלה"
+                value={manualEntry.startTime}
+                onChange={(newValue) => setManualEntry(prev => ({ ...prev, startTime: newValue }))}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    required: true
+                  }
+                }}
+              />
+              <DateTimePicker
+                label="זמן סיום"
+                value={manualEntry.endTime}
+                onChange={(newValue) => setManualEntry(prev => ({ ...prev, endTime: newValue }))}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    required: true
+                  }
+                }}
+              />
             <FormControl fullWidth>
               <InputLabel>סוג משימה</InputLabel>
               <Select
@@ -227,6 +244,7 @@ const TimeEntriesTab = ({ clientId }) => {
           </Button>
         </DialogActions>
       </Dialog>
+          </LocalizationProvider>
     </Box>
   );
 };
