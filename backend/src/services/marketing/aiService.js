@@ -62,7 +62,7 @@ async function generateCampaignContent(campaignType, targetAudience, goals) {
     );
 
     const content = response.data.choices[0].message.content;
-    
+
     // נסה לפרסר JSON
     try {
       const jsonMatch = content.match(/\{[\s\S]*\}/);
@@ -147,7 +147,7 @@ async function optimizeCampaign(campaignData, performanceData) {
 
     const content = response.data.choices[0].message.content;
     const jsonMatch = content.match(/\{[\s\S]*\}/);
-    
+
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
     }
@@ -216,7 +216,7 @@ ${JSON.stringify(historicalData, null, 2)}
 
     const content = response.data.choices[0].message.content;
     const jsonMatch = content.match(/\{[\s\S]*\}/);
-    
+
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
     }
@@ -283,7 +283,7 @@ ${JSON.stringify(campaignConfig, null, 2)}
 
     const content = response.data.choices[0].message.content;
     const jsonMatch = content.match(/\{[\s\S]*\}/);
-    
+
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
     }
@@ -364,7 +364,7 @@ ${JSON.stringify(analyticsData, null, 2)}
 
     const content = response.data.choices[0].message.content;
     const jsonMatch = content.match(/\{[\s\S]*\}/);
-    
+
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
       return parsed.insights.map(insight => ({
@@ -433,7 +433,7 @@ ${JSON.stringify(competitors, null, 2)}
 
     const content = response.data.choices[0].message.content;
     const jsonMatch = content.match(/\{[\s\S]*\}/);
-    
+
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
     }
@@ -482,6 +482,50 @@ exports.analyzeCampaign = async (campaign) => {
   };
 };
 
+async function generateProjectPlan(clientData) {
+  try {
+    // בניית פרומפט חסכוני וממוקד
+    const prompt = `
+    Act as a Senior Technical Project Manager.
+    Analyze the following client requirements and contract notes to create a checklist of development & setup tasks.
+    
+    Client Business: ${clientData.businessInfo?.businessDescription || 'N/A'}
+    Current Pain Points: ${clientData.assessmentForm?.painPoints?.timeWasters?.join(', ') || 'N/A'}
+    Required Modules: ${JSON.stringify(clientData.assessmentForm?.processesToImprove || {})}
+    Contract/Goal Notes: ${clientData.contract?.notes || ''}
+    
+    Output ONLY a JSON array of tasks objects. No markdown, no extra text.
+    Structure:
+    [
+      { "title": "string", "description": "string", "priority": "high/medium/low", "estimatedHours": number }
+    ]
+    Make the tasks actionable and specific to building a CRM/Automation system.
+    `;
+
+    const response = await axios.post(
+      OPENAI_API_URL,
+      {
+        model: "gpt-4o-mini", // מודל זול ומהיר שמספיק למשימה זו
+        messages: [
+          { role: 'system', content: 'You are a JSON generator for project management.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.3, // יצירתיות נמוכה לתוצאות מדויקות
+      },
+      { headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}` } }
+    );
+
+    // ניקוי ופירסור התשובה
+    const content = response.data.choices[0].message.content;
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+    return jsonMatch ? JSON.parse(jsonMatch[0]) : [];
+
+  } catch (error) {
+    console.error('AI Project Plan Error:', error);
+    return []; // החזר מערך ריק במקרה שגיאה כדי לא לתקוע את המערכת
+  }
+}
+
 module.exports = {
   generateCampaignContent,
   optimizeCampaign,
@@ -489,6 +533,7 @@ module.exports = {
   predictPerformance,
   generateAIInsights,
   analyzeCompetitors,
+  generateProjectPlan,
   // Backward compatibility
   generateInsights: generateAIInsights,
   generateRecommendations: exports.generateRecommendations,
