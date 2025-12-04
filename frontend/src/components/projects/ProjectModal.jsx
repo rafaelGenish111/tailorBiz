@@ -348,7 +348,7 @@ const ProjectModal = ({ open, onClose, project }) => {
                 ? editingTask
                 : {
                     status: 'todo',
-                    projectId: project._id
+                    projectId: project?._id
                   }
             }
             onSubmit={editingTask ? handleUpdateTask : handleCreateTask}
