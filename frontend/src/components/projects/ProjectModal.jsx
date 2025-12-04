@@ -75,6 +75,7 @@ const ProjectModal = ({ open, onClose, project }) => {
   };
 
   const handleCreateTask = (data) => {
+    if (!project) return;
     createTask.mutate(
       { ...data, projectId: project._id },
       {
@@ -120,12 +121,10 @@ const ProjectModal = ({ open, onClose, project }) => {
     return <Chip label={config.label} color={config.color} size="small" />;
   };
 
-  if (!project) return null;
-
   return (
     <>
       <Dialog
-        open={open}
+        open={open && !!project}
         onClose={onClose}
         maxWidth="lg"
         fullWidth
@@ -137,51 +136,55 @@ const ProjectModal = ({ open, onClose, project }) => {
         }}
       >
         <DialogTitle>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, minWidth: 0 }}>
-              <Box
-                sx={{
-                  width: 8,
-                  height: 40,
-                  bgcolor: project.color || '#1976d2',
-                  borderRadius: 1,
-                  flexShrink: 0
-                }}
-              />
-              <Box sx={{ minWidth: 0, flex: 1 }}>
-                <Typography variant="h5" fontWeight="bold" sx={{ wordBreak: 'break-word' }}>
-                  {project.name}
-                </Typography>
-                <Box sx={{ mt: 0.5 }}>
-                  {getStatusChip(project.status)}
+          {project && (
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, minWidth: 0 }}>
+                <Box
+                  sx={{
+                    width: 8,
+                    height: 40,
+                    bgcolor: project.color || '#1976d2',
+                    borderRadius: 1,
+                    flexShrink: 0
+                  }}
+                />
+                <Box sx={{ minWidth: 0, flex: 1 }}>
+                  <Typography variant="h5" fontWeight="bold" sx={{ wordBreak: 'break-word' }}>
+                    {project.name}
+                  </Typography>
+                  <Box sx={{ mt: 0.5 }}>
+                    {getStatusChip(project.status)}
+                  </Box>
                 </Box>
               </Box>
+              <IconButton onClick={onClose} size="small" sx={{ flexShrink: 0 }}>
+                <CloseIcon />
+              </IconButton>
             </Box>
-            <IconButton onClick={onClose} size="small" sx={{ flexShrink: 0 }}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
+          )}
         </DialogTitle>
 
         <DialogContent dividers>
-          {/* פרטי פרויקט */}
-          {project.description && (
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="body1" color="text.secondary">
-                {project.description}
-              </Typography>
-            </Box>
-          )}
+          {project && (
+            <>
+              {/* פרטי פרויקט */}
+              {project.description && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    {project.description}
+                  </Typography>
+                </Box>
+              )}
 
-          {(project.startDate || project.endDate) && (
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="body2" color="text.secondary">
-                {project.startDate && `תאריך התחלה: ${new Date(project.startDate).toLocaleDateString('he-IL')}`}
-                {project.startDate && project.endDate && ' | '}
-                {project.endDate && `תאריך סיום: ${new Date(project.endDate).toLocaleDateString('he-IL')}`}
-              </Typography>
-            </Box>
-          )}
+              {(project.startDate || project.endDate) && (
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {project.startDate && `תאריך התחלה: ${new Date(project.startDate).toLocaleDateString('he-IL')}`}
+                    {project.startDate && project.endDate && ' | '}
+                    {project.endDate && `תאריך סיום: ${new Date(project.endDate).toLocaleDateString('he-IL')}`}
+                  </Typography>
+                </Box>
+              )}
 
           <Divider sx={{ mb: 3 }} />
 
@@ -325,6 +328,8 @@ const ProjectModal = ({ open, onClose, project }) => {
               </Stack>
             </Box>
           )}
+            </>
+          )}
         </DialogContent>
       </Dialog>
 
@@ -346,10 +351,12 @@ const ProjectModal = ({ open, onClose, project }) => {
             initialData={
               editingTask
                 ? editingTask
-                : {
+                : project
+                ? {
                     status: 'todo',
-                    projectId: project?._id
+                    projectId: project._id
                   }
+                : { status: 'todo' }
             }
             onSubmit={editingTask ? handleUpdateTask : handleCreateTask}
             onCancel={() => {

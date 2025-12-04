@@ -135,24 +135,36 @@ const Projects = () => {
         </Button>
       </Box>
 
-      <Grid container spacing={3}>
-        {projects.map((project) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={project._id}>
-            <Card
-              onClick={() => handleProjectClick(project)}
-              sx={{
-                borderTop: `4px solid ${project.color || '#1976d2'}`,
-                height: 320,
-                display: 'flex',
-                flexDirection: 'column',
-                cursor: 'pointer',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: 6
-                }
-              }}
-            >
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {projects.length === 0 ? (
+          <Grid item xs={12}>
+            <Box sx={{ textAlign: 'center', py: 8 }}>
+              <Typography variant="h6" color="text.secondary">
+                אין פרויקטים. לחץ על "פרויקט חדש" כדי להתחיל.
+              </Typography>
+            </Box>
+          </Grid>
+        ) : (
+          projects.map((project) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={project._id}>
+              <Card
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleProjectClick(project);
+                }}
+                sx={{
+                  borderTop: `4px solid ${project.color || '#1976d2'}`,
+                  height: 320,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: 6
+                  }
+                }}
+              >
               <CardHeader
                 title={
                   <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
@@ -219,9 +231,10 @@ const Projects = () => {
                   </IconButton>
                 </Stack>
               </CardContent>
-            </Card>
-          </Grid>
-        ))}
+              </Card>
+            </Grid>
+          ))
+        )}
       </Grid>
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
