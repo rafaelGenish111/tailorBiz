@@ -28,6 +28,15 @@ exports.startTimer = async (req, res) => {
   try {
     const { clientId } = req.params;
     const { taskType, description } = req.body;
+    
+    // בדוק אם clientId תקין
+    if (!isValidObjectId(clientId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'מזהה לקוח לא תקין'
+      });
+    }
+
     const rawUserId = req.user?.id || req.user?._id;
     const userId = getUserId(rawUserId);
 
@@ -66,7 +75,7 @@ exports.startTimer = async (req, res) => {
 
     // צור entry חדש
     const timeEntry = await TimeEntry.create({
-      clientId,
+      clientId: new mongoose.Types.ObjectId(clientId),
       userId,
       startTime: new Date(),
       taskType: taskType || 'general',
@@ -175,7 +184,15 @@ exports.getClientTimeEntries = async (req, res) => {
     const { clientId } = req.params;
     const { page = 1, limit = 20, startDate, endDate } = req.query;
 
-    const query = { clientId };
+    // בדוק אם clientId תקין
+    if (!isValidObjectId(clientId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'מזהה לקוח לא תקין'
+      });
+    }
+
+    const query = { clientId: new mongoose.Types.ObjectId(clientId) };
 
     if (startDate || endDate) {
       query.startTime = {};
@@ -209,6 +226,7 @@ exports.getClientTimeEntries = async (req, res) => {
     });
 
   } catch (error) {
+    console.error('Get client time entries error:', error);
     res.status(500).json({
       success: false,
       message: 'שגיאה בקבלת נתוני זמן',
@@ -304,6 +322,15 @@ exports.addManualEntry = async (req, res) => {
   try {
     const { clientId } = req.params;
     const { startTime, endTime, taskType, description } = req.body;
+    
+    // בדוק אם clientId תקין
+    if (!isValidObjectId(clientId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'מזהה לקוח לא תקין'
+      });
+    }
+
     const rawUserId = req.user?.id || req.user?._id;
     const userId = getUserId(rawUserId);
 
@@ -331,8 +358,17 @@ exports.addManualEntry = async (req, res) => {
       });
     }
 
+    // וודא שהלקוח קיים
+    const client = await Client.findById(clientId);
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: 'לקוח לא נמצא'
+      });
+    }
+
     const timeEntry = await TimeEntry.create({
-      clientId,
+      clientId: new mongoose.Types.ObjectId(clientId),
       userId,
       startTime: start,
       endTime: end,
