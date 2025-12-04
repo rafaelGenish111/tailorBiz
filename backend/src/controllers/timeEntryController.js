@@ -75,7 +75,7 @@ exports.startTimer = async (req, res) => {
 
     // צור entry חדש
     const timeEntry = await TimeEntry.create({
-      clientId: new mongoose.Types.ObjectId(clientId),
+      clientId,
       userId,
       startTime: new Date(),
       taskType: taskType || 'general',
@@ -192,7 +192,8 @@ exports.getClientTimeEntries = async (req, res) => {
       });
     }
 
-    const query = { clientId: new mongoose.Types.ObjectId(clientId) };
+    // השתמש ב-clientId ישירות - mongoose ימיר אוטומטית ל-ObjectId
+    const query = { clientId };
 
     if (startDate || endDate) {
       query.startTime = {};
@@ -200,15 +201,43 @@ exports.getClientTimeEntries = async (req, res) => {
       if (endDate) query.startTime.$lte = new Date(endDate);
     }
 
-    const timeEntries = await TimeEntry.find(query)
-      .populate('userId', 'name email')
-      .sort({ startTime: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+    let timeEntries;
+    try {
+      timeEntries = await TimeEntry.find(query)
+        .populate({
+          path: 'userId',
+          select: 'name email',
+          strictPopulate: false // לא יכשל אם אין User
+        })
+        .sort({ startTime: -1 })
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit));
+    } catch (populateError) {
+      // אם populate נכשל, ננסה בלי populate
+      console.warn('Populate failed, trying without populate:', populateError.message);
+      timeEntries = await TimeEntry.find(query)
+        .sort({ startTime: -1 })
+        .skip((page - 1) * limit)
+        .limit(parseInt(limit));
+    }
 
     const total = await TimeEntry.countDocuments(query);
-    const stats = await TimeEntry.getClientStats(clientId);
-    const statsByTask = await TimeEntry.getClientStatsByTask(clientId);
+    
+    // טיפול בשגיאות בפונקציות הסטטיסטיקה
+    let stats = { totalTime: 0, totalSessions: 0, avgSessionTime: 0 };
+    let statsByTask = [];
+    
+    try {
+      stats = await TimeEntry.getClientStats(clientId);
+    } catch (statsError) {
+      console.error('Error getting client stats:', statsError);
+    }
+    
+    try {
+      statsByTask = await TimeEntry.getClientStatsByTask(clientId);
+    } catch (statsError) {
+      console.error('Error getting client stats by task:', statsError);
+    }
 
     res.json({
       success: true,
@@ -368,7 +397,7 @@ exports.addManualEntry = async (req, res) => {
     }
 
     const timeEntry = await TimeEntry.create({
-      clientId: new mongoose.Types.ObjectId(clientId),
+      clientId,
       userId,
       startTime: start,
       endTime: end,

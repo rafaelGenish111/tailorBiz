@@ -67,14 +67,27 @@ timeEntrySchema.statics.getClientStats = async function(clientId) {
       {
         $group: {
           _id: null,
-          totalTime: { $sum: '$duration' },
+          totalTime: { 
+            $sum: { 
+              $ifNull: ['$duration', 0] 
+            } 
+          },
           totalSessions: { $sum: 1 },
-          avgSessionTime: { $avg: '$duration' }
+          avgSessionTime: { 
+            $avg: { 
+              $ifNull: ['$duration', 0] 
+            } 
+          }
         }
       }
     ]);
     
-    return stats[0] || { totalTime: 0, totalSessions: 0, avgSessionTime: 0 };
+    const result = stats[0] || { totalTime: 0, totalSessions: 0, avgSessionTime: 0 };
+    return {
+      totalTime: result.totalTime || 0,
+      totalSessions: result.totalSessions || 0,
+      avgSessionTime: result.avgSessionTime || 0
+    };
   } catch (error) {
     console.error('Error getting client stats:', error);
     return { totalTime: 0, totalSessions: 0, avgSessionTime: 0 };
@@ -93,7 +106,11 @@ timeEntrySchema.statics.getClientStatsByTask = async function(clientId) {
       {
         $group: {
           _id: '$taskType',
-          totalTime: { $sum: '$duration' },
+          totalTime: { 
+            $sum: { 
+              $ifNull: ['$duration', 0] 
+            } 
+          },
           count: { $sum: 1 }
         }
       },
