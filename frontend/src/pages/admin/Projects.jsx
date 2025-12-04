@@ -14,10 +14,12 @@ import {
   DialogActions,
   TextField,
   MenuItem,
-  Stack
+  Stack,
+  IconButton
 } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useProjects, useCreateProject, useUpdateProject, useDeleteProject } from '../../admin/hooks/useTasks';
+import ProjectModal from '../../components/projects/ProjectModal';
 
 const STATUS_OPTIONS = [
   { value: 'active', label: 'פעיל' },
@@ -29,6 +31,8 @@ const STATUS_OPTIONS = [
 const Projects = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [projectModalOpen, setProjectModalOpen] = useState(false);
 
   const { data: projectsResponse } = useProjects();
   const createProject = useCreateProject();
@@ -81,6 +85,16 @@ const Projects = () => {
     await deleteProject.mutateAsync(project._id);
   };
 
+  const handleProjectClick = (project) => {
+    setSelectedProject(project);
+    setProjectModalOpen(true);
+  };
+
+  const handleCloseProjectModal = () => {
+    setProjectModalOpen(false);
+    setSelectedProject(null);
+  };
+
   const getStatusChip = (status) => {
     const config = {
       active: { label: 'פעיל', color: 'success' },
@@ -123,19 +137,29 @@ const Projects = () => {
 
       <Grid container spacing={3} alignItems="stretch">
         {projects.map((project) => (
-          <Grid item xs={12} md={6} lg={4} key={project._id}>
+          <Grid item xs={12} sm={6} md={4} lg={3} key={project._id}>
             <Card
+              onClick={() => handleProjectClick(project)}
               sx={{
                 borderTop: `4px solid ${project.color || '#1976d2'}`,
                 height: '100%',
+                minHeight: 280,
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                cursor: 'pointer',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: 6
+                }
               }}
             >
               <CardHeader
                 title={
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="h6">{project.name}</Typography>
+                  <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                    <Typography variant="h6" sx={{ flex: 1, minWidth: 0 }}>
+                      {project.name}
+                    </Typography>
                     {getStatusChip(project.status)}
                   </Stack>
                 }
@@ -147,19 +171,51 @@ const Projects = () => {
                     : null
                 }
               />
-              <CardContent sx={{ flexGrow: 1 }}>
+              <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                 {project.description && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      mb: 2,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      flexGrow: 1
+                    }}
+                  >
                     {project.description}
                   </Typography>
                 )}
-                <Stack direction="row" spacing={1} justifyContent="flex-end">
-                  <Button size="small" onClick={() => openEdit(project)}>
-                    ערוך
-                  </Button>
-                  <Button size="small" color="error" onClick={() => handleDelete(project)}>
-                    מחק
-                  </Button>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  justifyContent="flex-end"
+                  sx={{ mt: 'auto' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEdit(project);
+                    }}
+                    color="primary"
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(project);
+                    }}
+                    color="error"
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
                 </Stack>
               </CardContent>
             </Card>
@@ -214,6 +270,13 @@ const Projects = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* מודאל פרויקט */}
+      <ProjectModal
+        open={projectModalOpen}
+        onClose={handleCloseProjectModal}
+        project={selectedProject}
+      />
     </Box>
   );
 };
