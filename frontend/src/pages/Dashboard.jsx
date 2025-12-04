@@ -226,8 +226,8 @@ const Dashboard = () => {
                             <Typography variant="h6" fontWeight="bold">משפך המכירות (Pipeline)</Typography>
                             <IconButton size="small"><MoreVertIcon /></IconButton>
                         </Box>
-                        <Box sx={{ height: 350, width: '100%' }}>
-                        <ResponsiveContainer width="100%" height="100%">
+                        <Box sx={{ height: 350, width: '100%', minHeight: 350, minWidth: 0 }}>
+                        <ResponsiveContainer width="100%" height="100%" minHeight={350}>
                             <BarChart data={pipelineData.pipeline || []} barSize={40}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
                             <XAxis dataKey="name" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
@@ -379,8 +379,8 @@ const Dashboard = () => {
                 <Grid item xs={12}>
                     <Paper sx={{ p: 3 }}>
                         <Typography variant="h6" fontWeight="bold" gutterBottom>מקורות לידים</Typography>
-                        <Box sx={{ height: 250, display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2 }}>
-                            <ResponsiveContainer width="100%" height="100%">
+                        <Box sx={{ height: 250, minHeight: 250, width: '100%', minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2 }}>
+                            <ResponsiveContainer width="100%" height="100%" minHeight={250}>
                                 <PieChart>
                                 <Pie
                                     data={stats.leadsBySource || []}
