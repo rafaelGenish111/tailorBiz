@@ -237,15 +237,25 @@ exports.updateTask = async (req, res) => {
 
     // אם הסטטוס השתנה ל-completed, שלח התראה
     if (oldStatus !== 'completed' && task.status === 'completed') {
-      await Notification.create({
-        type: 'achievement',
-        title: '🎉 משימה הושלמה!',
-        message: `סיימת את המשימה: ${task.title}`,
-        userId: task.assignedTo,
-        priority: 'low',
-        icon: 'check_circle',
-        color: '#4caf50'
-      });
+      // בדוק אם יש assignedTo תקין לפני יצירת התראה
+      const assignedUserId = task.assignedTo || task.createdBy || req.user?.id || req.user?._id;
+      if (isValidObjectId(assignedUserId)) {
+        try {
+          await Notification.create({
+            type: 'achievement',
+            title: '🎉 משימה הושלמה!',
+            message: `סיימת את המשימה: ${task.title}`,
+            userId: assignedUserId,
+            relatedTask: task._id,
+            priority: 'low',
+            icon: 'check_circle',
+            color: '#4caf50'
+          });
+        } catch (notifError) {
+          // לוג שגיאה אבל אל תכשיל את העדכון
+          console.error('Error creating notification:', notifError);
+        }
+      }
     }
 
     res.json({

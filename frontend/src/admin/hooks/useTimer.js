@@ -29,6 +29,12 @@ export const useActiveTimer = () => {
   });
 
   useEffect(() => {
+    // נקה interval קודם אם קיים
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
     if (activeTimer?.data?.isRunning) {
       const startTime = new Date(activeTimer.data.startTime).getTime();
       
@@ -37,12 +43,16 @@ export const useActiveTimer = () => {
         setElapsedTime(Math.floor((now - startTime) / 1000));
       };
 
+      // עדכן מיד
       updateElapsed();
+      
+      // הגדר interval לעדכון כל שנייה
       intervalRef.current = setInterval(updateElapsed, 1000);
 
       return () => {
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
+          intervalRef.current = null;
         }
       };
     } else {
@@ -52,16 +62,18 @@ export const useActiveTimer = () => {
 
   const startMutation = useMutation({
     mutationFn: ({ clientId, data }) => timerApi.start(clientId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['activeTimer']);
+    onSuccess: async () => {
+      await queryClient.invalidateQueries(['activeTimer']);
+      await refetch();
     }
   });
 
   const stopMutation = useMutation({
     mutationFn: (entryId) => timerApi.stop(entryId),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['activeTimer']);
-      queryClient.invalidateQueries(['clientTimeEntries']);
+    onSuccess: async () => {
+      await queryClient.invalidateQueries(['activeTimer']);
+      await queryClient.invalidateQueries(['clientTimeEntries']);
+      await refetch();
     }
   });
 
