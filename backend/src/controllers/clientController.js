@@ -149,10 +149,24 @@ exports.createClient = async (req, res) => {
 
     // === NEW: Auto-generate project for active clients ===
     const activeClientStatuses = ['won', 'active_client', 'in_development', 'completed'];
+    console.log(`🔍 Checking project generation - Client status: ${client.status}, Active statuses:`, activeClientStatuses);
     if (activeClientStatuses.includes(client.status)) {
       const userId = req.user?.id || req.user?._id;
+      console.log(`✅ Client status is active, generating project. UserId: ${userId}`);
       projectGeneratorService.generateNewClientProject(client, userId)
-        .catch(err => console.error('Background project generation failed:', err));
+        .then(project => {
+          if (project) {
+            console.log(`✅ Project created successfully: ${project._id}`);
+          } else {
+            console.warn('⚠️ Project generation returned null/undefined');
+          }
+        })
+        .catch(err => {
+          console.error('❌ Background project generation failed:', err);
+          console.error('Error stack:', err.stack);
+        });
+    } else {
+      console.log(`⏭️ Skipping project generation - client status "${client.status}" is not an active client status`);
     }
     // =====================================================
 
@@ -279,9 +293,21 @@ exports.convertLeadToClient = async (req, res) => {
     await client.save();
 
     // === NEW: Auto-generate project ===
+    console.log(`🔄 convertLeadToClient - Client status changed to: ${client.status}`);
     const userId = req.user?.id || req.user?._id;
+    console.log(`🔄 convertLeadToClient - Calling generateNewClientProject. UserId: ${userId}`);
     projectGeneratorService.generateNewClientProject(client, userId)
-      .catch(err => console.error('Background project generation failed:', err));
+      .then(project => {
+        if (project) {
+          console.log(`✅ convertLeadToClient - Project created: ${project._id}`);
+        } else {
+          console.warn('⚠️ convertLeadToClient - Project generation returned null/undefined');
+        }
+      })
+      .catch(err => {
+        console.error('❌ convertLeadToClient - Background project generation failed:', err);
+        console.error('Error stack:', err.stack);
+      });
     // ==================================
 
     // בדיקת טריגרים ואוטומציות

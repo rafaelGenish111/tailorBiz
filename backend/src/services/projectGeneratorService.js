@@ -5,10 +5,20 @@ const Notification = require('../models/Notification');
 
 exports.generateNewClientProject = async (client, userId) => {
     try {
+        console.log(`🚀 generateNewClientProject called with clientId: ${client._id}, userId: ${userId}`);
+
+        if (!client || !client._id) {
+            throw new Error('Client or client._id is missing');
+        }
+
+        if (!userId) {
+            console.warn('⚠️ userId is missing, project will be created without owner');
+        }
+
         const clientName = client.personalInfo?.fullName || 'לקוח חדש';
         const businessName = client.businessInfo?.businessName || 'עסק חדש';
 
-        console.log(`🚀 Starting auto-project generation for: ${clientName}`);
+        console.log(`🚀 Starting auto-project generation for: ${clientName} (${businessName})`);
 
         // 1. יצירת הפרויקט
         const newProject = await Project.create({
@@ -59,25 +69,41 @@ exports.generateNewClientProject = async (client, userId) => {
         });
 
         await TaskManager.insertMany(tasksToCreate);
+        console.log(`✅ Created ${tasksToCreate.length} tasks for project ${newProject._id}`);
 
         // 4. התראה למנהל
         if (userId) {
-            await Notification.create({
-                type: 'system',
-                title: '✨ פרויקט חדש נוצר!',
-                message: `הפרויקט ללקוח ${businessName} מוכן עם ${tasksToCreate.length} משימות.`,
-                userId: userId,
-                relatedClient: client._id,
-                actionUrl: `/admin/projects`,
-                priority: 'medium',
-                icon: 'auto_awesome',
-                color: '#9c27b0'
-            });
+            try {
+                await Notification.create({
+                    type: 'system',
+                    title: '✨ פרויקט חדש נוצר!',
+                    message: `הפרויקט ללקוח ${businessName} מוכן עם ${tasksToCreate.length} משימות.`,
+                    userId: userId,
+                    relatedClient: client._id,
+                    actionUrl: `/admin/projects`,
+                    priority: 'medium',
+                    icon: 'auto_awesome',
+                    color: '#9c27b0'
+                });
+                console.log(`✅ Notification created for userId: ${userId}`);
+            } catch (notifError) {
+                console.error('⚠️ Failed to create notification:', notifError.message);
+            }
+        } else {
+            console.warn('⚠️ Skipping notification - userId is missing');
         }
 
+        console.log(`✅ Project generation completed successfully. Project ID: ${newProject._id}`);
         return newProject;
 
     } catch (error) {
         console.error('❌ Error in generateNewClientProject:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            clientId: client?._id,
+            userId: userId
+        });
+        throw error; // זרוק את השגיאה כדי שנוכל לראות אותה בקונטרולר
     }
 };
