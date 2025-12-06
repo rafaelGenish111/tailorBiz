@@ -482,47 +482,72 @@ exports.analyzeCampaign = async (campaign) => {
   };
 };
 
+/**
+ * יצירת תוכנית עבודה (משימות) מפרופיל לקוח
+ */
 async function generateProjectPlan(clientData) {
   try {
-    // בניית פרומפט חסכוני וממוקד
+    if (!process.env.OPENAI_API_KEY) {
+      console.warn('OpenAI API key missing - skipping AI plan generation');
+      return [];
+    }
+
+    // הכנת המידע הרלוונטי בלבד ל-Prompt (חוסך טוקנים)
+    const context = {
+      business: clientData.businessInfo?.businessDescription || 'General Business',
+      painPoints: clientData.assessmentForm?.painPoints?.timeWasters?.join(', ') || 'None specified',
+      goals: clientData.assessmentForm?.goalsAndObjectives?.desiredOutcomes?.join(', ') || 'General improvement',
+      modulesNeeded: clientData.assessmentForm?.processesToImprove || {},
+      contractNotes: clientData.contract?.notes || ''
+    };
+
     const prompt = `
-    Act as a Senior Technical Project Manager.
-    Analyze the following client requirements and contract notes to create a checklist of development & setup tasks.
+    Role: Technical Project Manager.
+    Task: Create a setup checklist for a new client in a CRM/Automation agency.
     
-    Client Business: ${clientData.businessInfo?.businessDescription || 'N/A'}
-    Current Pain Points: ${clientData.assessmentForm?.painPoints?.timeWasters?.join(', ') || 'N/A'}
-    Required Modules: ${JSON.stringify(clientData.assessmentForm?.processesToImprove || {})}
-    Contract/Goal Notes: ${clientData.contract?.notes || ''}
+    Client Info:
+    - Business: ${context.business}
+    - Pain Points: ${context.painPoints}
+    - Goals: ${context.goals}
+    - Requested Modules: ${JSON.stringify(context.modulesNeeded)}
+    - Contract Notes: ${context.contractNotes}
+
+    Requirements:
+    1. Generate 3-7 specific, actionable setup tasks.
+    2. Include "Setup automation for [pain point]" if applicable.
+    3. Include "Configure [module]" for requested modules.
     
-    Output ONLY a JSON array of tasks objects. No markdown, no extra text.
-    Structure:
+    Output Format (JSON Array ONLY):
     [
-      { "title": "string", "description": "string", "priority": "high/medium/low", "estimatedHours": number }
+      { "title": "Action Title", "description": "Brief details", "priority": "high/medium/low", "estimatedHours": 2 }
     ]
-    Make the tasks actionable and specific to building a CRM/Automation system.
     `;
 
     const response = await axios.post(
-      OPENAI_API_URL,
+      'https://api.openai.com/v1/chat/completions',
       {
-        model: "gpt-4o-mini", // מודל זול ומהיר שמספיק למשימה זו
+        model: "gpt-4o-mini",
         messages: [
-          { role: 'system', content: 'You are a JSON generator for project management.' },
+          { role: 'system', content: 'You are a JSON factory. Output only valid JSON arrays.' },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.3, // יצירתיות נמוכה לתוצאות מדויקות
+        temperature: 0.3,
       },
-      { headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}` } }
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
     );
 
-    // ניקוי ופירסור התשובה
     const content = response.data.choices[0].message.content;
-    const jsonMatch = content.match(/\[[\s\S]*\]/);
-    return jsonMatch ? JSON.parse(jsonMatch[0]) : [];
+    const cleanJson = content.replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(cleanJson);
 
   } catch (error) {
-    console.error('AI Project Plan Error:', error);
-    return []; // החזר מערך ריק במקרה שגיאה כדי לא לתקוע את המערכת
+    console.error('AI Project Plan Error:', error.message);
+    return [];
   }
 }
 

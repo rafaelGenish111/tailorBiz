@@ -269,6 +269,12 @@ exports.convertLeadToClient = async (req, res) => {
 
     await client.save();
 
+    // === NEW: Auto-generate project ===
+    const userId = req.user?.id || req.user?._id;
+    projectGeneratorService.generateNewClientProject(client, userId)
+      .catch(err => console.error('Background project generation failed:', err));
+    // ==================================
+
     // בדיקת טריגרים ואוטומציות
     if (process.env.ENABLE_LEAD_NURTURING === 'true') {
       // 1. עצירת רצפי לידים פעילים (בגלל שהסטטוס השתנה והייתה אינטראקציה inbound)
@@ -291,7 +297,7 @@ exports.convertLeadToClient = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'הליד הומר ללקוח בהצלחה',
+      message: 'הליד הומר ללקוח בהצלחה (תהליך הקמת פרויקט החל ברקע)',
       data: client
     });
 
