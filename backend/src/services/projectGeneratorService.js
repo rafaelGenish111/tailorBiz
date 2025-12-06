@@ -5,11 +5,14 @@ const Notification = require('../models/Notification');
 
 exports.generateNewClientProject = async (client, userId) => {
     try {
-        console.log(`🚀 Starting auto-project generation for: ${client.personalInfo.fullName}`);
+        const clientName = client.personalInfo?.fullName || 'לקוח חדש';
+        const businessName = client.businessInfo?.businessName || 'עסק חדש';
+
+        console.log(`🚀 Starting auto-project generation for: ${clientName}`);
 
         // 1. יצירת הפרויקט
         const newProject = await Project.create({
-            name: `תיק לקוח: ${client.businessInfo.businessName}`,
+            name: `תיק לקוח: ${businessName}`,
             description: `פרויקט שנוצר אוטומטית בעקבות סגירת עסקה.`,
             clientId: client._id,
             ownerId: userId,
@@ -62,7 +65,7 @@ exports.generateNewClientProject = async (client, userId) => {
             await Notification.create({
                 type: 'system',
                 title: '✨ פרויקט חדש נוצר!',
-                message: `הפרויקט ללקוח ${client.businessInfo.businessName} מוכן עם ${tasksToCreate.length} משימות.`,
+                message: `הפרויקט ללקוח ${businessName} מוכן עם ${tasksToCreate.length} משימות.`,
                 userId: userId,
                 relatedClient: client._id,
                 actionUrl: `/admin/projects`,

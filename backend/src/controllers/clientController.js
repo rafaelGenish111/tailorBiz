@@ -147,6 +147,15 @@ exports.createClient = async (req, res) => {
       console.error('Error triggering nurturing for new lead:', err);
     });
 
+    // === NEW: Auto-generate project for active clients ===
+    const activeClientStatuses = ['won', 'active_client', 'in_development', 'completed'];
+    if (activeClientStatuses.includes(client.status)) {
+      const userId = req.user?.id || req.user?._id;
+      projectGeneratorService.generateNewClientProject(client, userId)
+        .catch(err => console.error('Background project generation failed:', err));
+    }
+    // =====================================================
+
     res.status(201).json({
       success: true,
       message: 'לקוח נוצר בהצלחה',
