@@ -1,5 +1,6 @@
 const Client = require('../models/Client');
 const Invoice = require('../models/Invoice');
+const Project = require('../models/Project');
 const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const leadNurturingService = require('../services/leadNurturingService');
@@ -228,6 +229,42 @@ exports.updateClient = async (req, res) => {
         console.error('Error checking status-change triggers:', err);
       });
     }
+
+    // === NEW: Auto-generate project if status changed to active client status ===
+    const activeClientStatuses = ['won', 'active_client', 'in_development', 'completed'];
+    const leadStatuses = ['lead', 'contacted', 'assessment_scheduled', 'assessment_completed', 'proposal_sent', 'negotiation', 'lost', 'on_hold', 'churned'];
+
+    // בדוק אם הסטטוס השתנה מליד ללקוח פעיל
+    const changedToActiveClient =
+      leadStatuses.includes(oldStatus) &&
+      activeClientStatuses.includes(client.status);
+
+    if (changedToActiveClient) {
+      console.log(`🔄 updateClient - Status changed from "${oldStatus}" to "${client.status}" - checking for existing project`);
+
+      // בדוק אם כבר יש פרויקט ללקוח הזה
+      const existingProject = await Project.findOne({ clientId: client._id });
+
+      if (!existingProject) {
+        console.log(`✅ updateClient - No existing project found, generating new project`);
+        const userId = req.user?.id || req.user?._id;
+        projectGeneratorService.generateNewClientProject(client, userId)
+          .then(project => {
+            if (project) {
+              console.log(`✅ updateClient - Project created: ${project._id}`);
+            } else {
+              console.warn('⚠️ updateClient - Project generation returned null/undefined');
+            }
+          })
+          .catch(err => {
+            console.error('❌ updateClient - Background project generation failed:', err);
+            console.error('Error stack:', err.stack);
+          });
+      } else {
+        console.log(`⏭️ updateClient - Client already has a project (${existingProject._id}), skipping generation`);
+      }
+    }
+    // =====================================================
 
     res.json({
       success: true,
