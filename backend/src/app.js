@@ -21,6 +21,12 @@ const quoteRoutes = require('./routes/quoteRoutes');
 
 const app = express();
 const isDev = process.env.NODE_ENV === 'development';
+const IS_VERCEL = process.env.VERCEL === '1';
+
+// ב-Vercel (מאחורי פרוקסי) חובה להגדיר trust proxy כדי שה-rate limit יזהה IP נכון
+if (IS_VERCEL) {
+  app.set('trust proxy', 1);
+}
 
 // Security middleware
 app.use(
