@@ -325,16 +325,18 @@ exports.generatePDF = async (req, res) => {
 
     const pdfBuffer = Buffer.concat(buffers);
 
-    // יעד ברירת מחדל: data URL (למקרה שאין Cloudinary)
-    let pdfUrl = null;
+    // ניצור תמיד data URL לצורך תצוגה מקדימה בצד ה-Frontend
+    const base64 = pdfBuffer.toString('base64');
+    const pdfDataUrl = `data:application/pdf;base64,${base64}`;
 
-    // אם Cloudinary מוגדר, נעדיף להשתמש ב-URL ישיר מ-Cloudinary (עדיף לתצוגה)
+    // נתוני Cloudinary (לשימוש באחסון בלבד, לא לתצוגה)
     const hasCloudinaryConfig =
       process.env.CLOUDINARY_CLOUD_NAME &&
       process.env.CLOUDINARY_API_KEY &&
       process.env.CLOUDINARY_API_SECRET;
 
     let pdfCloudinaryId = null;
+    let pdfCloudinaryUrl = null;
 
     if (hasCloudinaryConfig) {
       try {
@@ -355,19 +357,14 @@ exports.generatePDF = async (req, res) => {
         });
 
         pdfCloudinaryId = uploadResult.public_id;
-        pdfUrl = uploadResult.secure_url; // נשתמש ב-URL של Cloudinary לתצוגה
+        pdfCloudinaryUrl = uploadResult.secure_url;
       } catch (uploadError) {
-        console.error('Cloudinary upload failed (falling back to data URL):', uploadError.message);
+        console.error('Cloudinary upload failed (using data URL for preview):', uploadError.message);
       }
     }
 
-    // אם אין Cloudinary או שההעלאה נכשלה - נשתמש ב-data URL
-    if (!pdfUrl) {
-      const base64 = pdfBuffer.toString('base64');
-      pdfUrl = `data:application/pdf;base64,${base64}`;
-    }
-
-    quote.pdfUrl = pdfUrl;
+    // לתצוגה מקדימה ב-Frontend נשתמש תמיד ב-data URL
+    quote.pdfUrl = pdfDataUrl;
     quote.pdfCloudinaryId = pdfCloudinaryId;
     await quote.save();
 
@@ -381,7 +378,7 @@ exports.generatePDF = async (req, res) => {
       mimeType: 'application/pdf',
       fileSize: pdfBuffer.length,
       cloudinaryId: pdfCloudinaryId,
-      cloudinaryUrl: pdfUrl,
+      cloudinaryUrl: pdfCloudinaryUrl || pdfDataUrl,
       resourceType: 'raw',
       category: 'quote',
       description: `הצעת מחיר ${quote.quoteNumber} ללקוח ${quote.clientInfo?.name}`,
@@ -392,7 +389,7 @@ exports.generatePDF = async (req, res) => {
       success: true,
       message: 'PDF נוצר בהצלחה',
       data: {
-        pdfUrl,
+        pdfUrl: pdfDataUrl,
         quote
       }
     });
@@ -429,19 +426,35 @@ exports.uploadExternalPDF = async (req, res) => {
 
     const userId = req.user?.id || req.user?._id;
     const IS_VERCEL = process.env.VERCEL === '1';
-    
-    let pdfUrl;
+
+    // נבנה data URL מהקובץ לצורך תצוגה מקדימה ב-Frontend
+    let previewDataUrl = null;
+    try {
+      let buffer;
+      if (req.file.buffer) {
+        buffer = req.file.buffer;
+      } else if (req.file.path) {
+        buffer = fs.readFileSync(req.file.path);
+      }
+      if (buffer) {
+        const base64 = buffer.toString('base64');
+        previewDataUrl = `data:application/pdf;base64,${base64}`;
+      }
+    } catch (e) {
+      console.error('Failed to build data URL for uploaded PDF:', e.message);
+    }
+
+    let pdfStorageUrl = null;
     let pdfCloudinaryId = null;
 
     // ב-Vercel (serverless) אין גישה לדיסק, צריך להעלות ל-Cloudinary
     // או אם req.file.filename לא קיים (memory storage)
-    if (IS_VERCEL || !req.file.filename) {
-      // העלה ל-Cloudinary
-      const hasCloudinaryConfig = 
-        process.env.CLOUDINARY_CLOUD_NAME && 
-        process.env.CLOUDINARY_API_KEY && 
-        process.env.CLOUDINARY_API_SECRET;
+    const hasCloudinaryConfig = 
+      process.env.CLOUDINARY_CLOUD_NAME && 
+      process.env.CLOUDINARY_API_KEY && 
+      process.env.CLOUDINARY_API_SECRET;
 
+    if (IS_VERCEL || !req.file.filename) {
       if (hasCloudinaryConfig) {
         try {
           const uploadResult = await new Promise((resolve, reject) => {
@@ -459,7 +472,7 @@ exports.uploadExternalPDF = async (req, res) => {
             streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
           });
 
-          pdfUrl = uploadResult.secure_url;
+          pdfStorageUrl = uploadResult.secure_url;
           pdfCloudinaryId = uploadResult.public_id;
         } catch (uploadError) {
           console.error('Cloudinary upload failed:', uploadError.message);
@@ -477,10 +490,13 @@ exports.uploadExternalPDF = async (req, res) => {
       }
     } else {
       // בסביבת פיתוח מקומית - שמור בדיסק
-      pdfUrl = `/uploads/quotes/${req.file.filename}`;
+      pdfStorageUrl = `/uploads/quotes/${req.file.filename}`;
     }
 
-    quote.pdfUrl = pdfUrl;
+    // לתצוגה מקדימה נשתמש ב-data URL, ואם לא הצלחנו לבנות אותו – נ fallback ל-URL האחסון
+    const pdfUrlForPreview = previewDataUrl || pdfStorageUrl;
+
+    quote.pdfUrl = pdfUrlForPreview;
     quote.pdfCloudinaryId = pdfCloudinaryId;
     await quote.save();
 
@@ -494,7 +510,7 @@ exports.uploadExternalPDF = async (req, res) => {
       mimeType: req.file.mimetype,
       fileSize: req.file.size,
       cloudinaryId: pdfCloudinaryId,
-      cloudinaryUrl: pdfUrl,
+      cloudinaryUrl: pdfStorageUrl || pdfUrlForPreview,
       resourceType: 'raw',
       category: 'quote',
       description: `קובץ PDF שהועלה ידנית להצעת מחיר ${quote.quoteNumber}`,
@@ -505,7 +521,7 @@ exports.uploadExternalPDF = async (req, res) => {
       success: true,
       message: 'קובץ PDF הועלה ונקשר להצעת המחיר',
       data: {
-        pdfUrl,
+        pdfUrl: pdfUrlForPreview,
         quote
       }
     });
