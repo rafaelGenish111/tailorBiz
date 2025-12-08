@@ -50,7 +50,8 @@ const statusConfig = {
 const SERVER_BASE_URL = API_URL.replace(/\/api$/, '');
 
 const resolvePdfUrl = (url) => {
-  if (!url) return null;
+  // בדיקה אם ה-URL תקין
+  if (!url || url.includes('undefined') || url.includes('null')) return null;
   if (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }
@@ -541,7 +542,7 @@ const QuotesTab = ({ clientId, clientName }) => {
                   'העלה / עדכן PDF'
                 )}
               </Button>
-              {activeQuote.pdfUrl && (
+              {activeQuote.pdfUrl && resolvePdfUrl(activeQuote.pdfUrl) && (
                 <Button
                   variant="text"
                   startIcon={<PdfIcon />}
@@ -575,7 +576,7 @@ const QuotesTab = ({ clientId, clientName }) => {
               justifyContent: 'center',
             }}
           >
-            {activeQuote.pdfUrl ? (
+            {activeQuote.pdfUrl && resolvePdfUrl(activeQuote.pdfUrl) ? (
               <iframe
                 title="תצוגה מקדימה של הצעת המחיר"
                 src={resolvePdfUrl(activeQuote.pdfUrl)}
