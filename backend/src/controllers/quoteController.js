@@ -422,12 +422,60 @@ exports.uploadExternalPDF = async (req, res) => {
     }
 
     const userId = req.user?.id || req.user?._id;
+    const IS_VERCEL = process.env.VERCEL === '1';
+    
+    let pdfUrl;
+    let pdfCloudinaryId = null;
 
-    // הקובץ נשמר בתיקיית uploads/quotes, נחשף דרך /uploads בצד השרת
-    const pdfUrl = `/uploads/quotes/${req.file.filename}`;
+    // ב-Vercel (serverless) אין גישה לדיסק, צריך להעלות ל-Cloudinary
+    // או אם req.file.filename לא קיים (memory storage)
+    if (IS_VERCEL || !req.file.filename) {
+      // העלה ל-Cloudinary
+      const hasCloudinaryConfig = 
+        process.env.CLOUDINARY_CLOUD_NAME && 
+        process.env.CLOUDINARY_API_KEY && 
+        process.env.CLOUDINARY_API_SECRET;
+
+      if (hasCloudinaryConfig) {
+        try {
+          const uploadResult = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+              {
+                folder: `tailorbiz/quotes`,
+                resource_type: 'raw',
+                public_id: `quote-${quoteId}-${Date.now()}`
+              },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
+            );
+            streamifier.createReadStream(req.file.buffer).pipe(uploadStream);
+          });
+
+          pdfUrl = uploadResult.secure_url;
+          pdfCloudinaryId = uploadResult.public_id;
+        } catch (uploadError) {
+          console.error('Cloudinary upload failed:', uploadError.message);
+          return res.status(500).json({
+            success: false,
+            message: 'שגיאה בהעלאת קובץ PDF ל-Cloudinary',
+            error: uploadError.message
+          });
+        }
+      } else {
+        return res.status(500).json({
+          success: false,
+          message: 'Cloudinary לא מוגדר - לא ניתן להעלות קבצים ב-Vercel'
+        });
+      }
+    } else {
+      // בסביבת פיתוח מקומית - שמור בדיסק
+      pdfUrl = `/uploads/quotes/${req.file.filename}`;
+    }
 
     quote.pdfUrl = pdfUrl;
-    quote.pdfCloudinaryId = null;
+    quote.pdfCloudinaryId = pdfCloudinaryId;
     await quote.save();
 
     // צור גם רשומה בטבלת Documents לצורך ניהול מסמכים מרכזי
@@ -439,7 +487,7 @@ exports.uploadExternalPDF = async (req, res) => {
       fileType: 'pdf',
       mimeType: req.file.mimetype,
       fileSize: req.file.size,
-      cloudinaryId: null,
+      cloudinaryId: pdfCloudinaryId,
       cloudinaryUrl: pdfUrl,
       resourceType: 'raw',
       category: 'quote',
