@@ -11,9 +11,7 @@ export default defineConfig({
       // קבצים סטטיים שייכנסו לבילד
       includeAssets: [
         'favicon.svg',
-        'robots.txt',
-        // נשתמש באותו אייקון גם כ-icon וכ-apple-touch-icon
-        'assets/images/image-removebg-preview.png'
+        'robots.txt'
       ],
       // FIX: Increase the file size limit for caching (set to 4MB)
       workbox: {
@@ -31,22 +29,17 @@ export default defineConfig({
         start_url: '/admin/dashboard',
         icons: [
           {
-            // האייקונים חייבים להתאים לקבצים שקיימים ב-public
-            // כאן אנחנו משתמשים באייקון שנמצא ב-public/assets/images
-            src: 'assets/images/image-removebg-preview.png',
-            sizes: '192x192',
-            type: 'image/png',
+            // משתמשים ב-favicon.svg שקיים ונגיש
+            src: 'favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any'
           },
           {
-            src: 'assets/images/image-removebg-preview.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
-          {
-            src: 'assets/images/image-removebg-preview.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable',
+            src: 'favicon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'maskable'
           }
         ]
       }
