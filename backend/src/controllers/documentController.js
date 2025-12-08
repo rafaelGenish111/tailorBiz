@@ -73,8 +73,8 @@ exports.getClientDocuments = async (req, res) => {
       query.category = category;
     }
 
+    // שים לב: אין מודל User במערכת, לכן לא נבצע populate על uploadedBy כדי להימנע מ-MissingSchemaError
     const documents = await Document.find(query)
-      .populate('uploadedBy', 'name')
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
