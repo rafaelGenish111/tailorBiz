@@ -57,8 +57,9 @@ exports.getAllTasks = async (req, res) => {
     if (assignedTo) {
       query.assignedTo = assignedTo;
     } else {
-      // ברירת מחדל: אם יש userId תקין – רק משימות שלי, אחרת לא מסננים לפי משתמש
-      if (isValidObjectId(req.user?.id || req.user?._id)) {
+      // ברירת מחדל: אם יש userId תקין – רק משימות שלי,
+      // אבל אם מסננים לפי projectId – מציגים את כל משימות הפרויקט (גם אם לא הוקצו למשתמש)
+      if (!projectId && isValidObjectId(req.user?.id || req.user?._id)) {
         query.assignedTo = req.user.id;
       }
     }
