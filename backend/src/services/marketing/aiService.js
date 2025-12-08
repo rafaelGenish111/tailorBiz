@@ -484,10 +484,12 @@ exports.analyzeCampaign = async (campaign) => {
 
 /**
  * יצירת תוכנית עבודה (משימות) מפרופיל לקוח
+ * מחזיר תמיד מערך משימות או [] במקרה של כשל
  */
 async function generateProjectPlan(clientData) {
   try {
-    if (!process.env.OPENAI_API_KEY) {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
       console.warn('OpenAI API key missing - skipping AI plan generation');
       return [];
     }
@@ -535,15 +537,55 @@ async function generateProjectPlan(clientData) {
       },
       {
         headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
         }
       }
     );
 
-    const content = response.data.choices[0].message.content;
-    const cleanJson = content.replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(cleanJson);
+    const content = response?.data?.choices?.[0]?.message?.content || '';
+
+    if (!content) {
+      console.warn('AI Project Plan: empty content from OpenAI');
+      return [];
+    }
+
+    // מנקה ```json ``` אם קיימים
+    const cleaned = content.replace(/```json/gi, '').replace(/```/g, '').trim();
+
+    let parsed;
+
+    // ניסיון ראשון: JSON ישיר
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      // ניסיון שני: לחלץ מערך JSON מתוך טקסט ארוך
+      const match = content.match(/\[[\s\S]*\]/);
+      if (match) {
+        try {
+          parsed = JSON.parse(match[0]);
+        } catch (innerErr) {
+          console.error('AI Project Plan JSON parse (array extract) failed:', innerErr.message);
+        }
+      } else {
+        console.warn('AI Project Plan: no JSON array found in content');
+      }
+    }
+
+    if (!Array.isArray(parsed)) {
+      console.warn('AI Project Plan: parsed result is not an array, returning []');
+      return [];
+    }
+
+    // וידוא מבנה בסיסי של כל משימה
+    return parsed
+      .filter(t => t && typeof t.title === 'string')
+      .map(t => ({
+        title: t.title,
+        description: t.description || '',
+        priority: t.priority || 'medium',
+        estimatedHours: typeof t.estimatedHours === 'number' ? t.estimatedHours : 1
+      }));
 
   } catch (error) {
     console.error('AI Project Plan Error:', error.message);
