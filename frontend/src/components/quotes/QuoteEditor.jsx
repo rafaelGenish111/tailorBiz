@@ -26,22 +26,43 @@ const resolvePdfUrl = (url) => {
   return `${SERVER_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
 };
 
+// המרת data URL ל-blob URL לתצוגה מקדימה ב-iframe
+const dataUrlToBlobUrl = (dataUrl) => {
+  try {
+    if (!dataUrl || !dataUrl.startsWith('data:application/pdf')) return dataUrl;
+    const base64 = dataUrl.split(',')[1];
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'application/pdf' });
+    return URL.createObjectURL(blob);
+  } catch (e) {
+    console.error('Failed to convert data URL to blob URL:', e);
+    return null;
+  }
+};
+
+// קבלת URL לתצוגה מקדימה (ממיר data URL ל-blob URL)
+const getPreviewUrl = (url) => {
+  const resolvedUrl = resolvePdfUrl(url);
+  if (!resolvedUrl) return null;
+  if (resolvedUrl.startsWith('data:')) {
+    return dataUrlToBlobUrl(resolvedUrl);
+  }
+  return resolvedUrl;
+};
+
 const openPdf = (url) => {
   const finalUrl = resolvePdfUrl(url);
   if (!finalUrl) return;
 
   try {
     if (finalUrl.startsWith('data:application/pdf')) {
-      const base64 = finalUrl.split(',')[1];
-      const byteCharacters = atob(base64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'application/pdf' });
-      const blobUrl = URL.createObjectURL(blob);
-      window.open(blobUrl, '_blank');
+      const blobUrl = dataUrlToBlobUrl(finalUrl);
+      if (blobUrl) window.open(blobUrl, '_blank');
     } else {
       window.open(finalUrl, '_blank');
     }
@@ -171,9 +192,12 @@ const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
     mutationFn: (quoteId) => 
       axios.post(`${API_URL}/quotes/${quoteId}/generate-pdf`).then(res => res.data),
     onSuccess: (data) => {
+      // רק רענון הנתונים ועדכון ה-state - לא פותח אוטומטית
       queryClient.invalidateQueries(['clientQuotes', clientId]);
-      const url = data?.data?.pdfUrl;
-      openPdf(url);
+      const newUrl = data?.data?.pdfUrl;
+      if (newUrl) {
+        setQuote((prev) => ({ ...prev, pdfUrl: newUrl }));
+      }
     }
   });
 
@@ -516,7 +540,7 @@ const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
               {uploadPdfMutation.isPending ? <CircularProgress size={20} /> : 'העלה PDF להצעה'}
             </Button>
 
-            {quote.pdfUrl && resolvePdfUrl(quote.pdfUrl) && (
+            {quote.pdfUrl && getPreviewUrl(quote.pdfUrl) && (
               <Box sx={{ mt: 2 }}>
                 <Typography variant="subtitle2" gutterBottom>
                   תצוגה מקדימה של ה‑PDF
@@ -524,7 +548,7 @@ const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
                 <Box sx={{ border: '1px solid #e0e0e0', borderRadius: 1, overflow: 'hidden', height: 300 }}>
                   <iframe
                     title="תצוגה מקדימה של הצעת המחיר"
-                    src={resolvePdfUrl(quote.pdfUrl)}
+                    src={getPreviewUrl(quote.pdfUrl)}
                     style={{ width: '100%', height: '100%', border: 'none' }}
                   />
                 </Box>
