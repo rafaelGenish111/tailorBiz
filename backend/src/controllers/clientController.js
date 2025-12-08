@@ -301,12 +301,38 @@ exports.convertLeadToClient = async (req, res) => {
     // עדכון פרטי הצעה וחוזה
     if (finalPrice) client.proposal.finalPrice = Number(finalPrice);
 
-    client.contract = {
+    let contractData = {
       signed: true,
       signedAt: signedAt ? new Date(signedAt) : new Date(),
-      notes: notes,
-      fileUrl: contractFile ? `/uploads/contracts/${contractFile.filename}` : undefined
+      notes: notes
     };
+
+    if (contractFile) {
+      const IS_VERCEL = process.env.VERCEL === '1';
+      let fileUrlForPreview = undefined;
+
+      if (IS_VERCEL && contractFile.buffer) {
+        // ב-Vercel אין מערכת קבצים - נשתמש ב-data URL לצורך תצוגה מקדימה
+        try {
+          const base64 = contractFile.buffer.toString('base64');
+          fileUrlForPreview = `data:${contractFile.mimetype || 'application/pdf'};base64,${base64}`;
+        } catch (e) {
+          console.error('Failed to build data URL for contract file in convertLeadToClient:', e.message);
+        }
+      }
+
+      // בסביבת פיתוח מקומית נשתמש בנתיב הקובץ שנשמר בדיסק
+      if (!fileUrlForPreview && contractFile.filename) {
+        fileUrlForPreview = `/uploads/contracts/${contractFile.filename}`;
+      }
+
+      contractData.fileUrl = fileUrlForPreview;
+    } else if (client.contract?.fileUrl) {
+      // אם כבר היה חוזה קודם, נשמור את ה-URL הקיים
+      contractData.fileUrl = client.contract.fileUrl;
+    }
+
+    client.contract = contractData;
 
     // הוספת אינטראקציה של סגירה
     const interaction = {
@@ -409,7 +435,26 @@ exports.uploadContract = async (req, res) => {
 
     // עדכון שדות חוזה
     if (contractFile) {
-      currentContract.fileUrl = `/uploads/contracts/${contractFile.filename}`;
+      const IS_VERCEL = process.env.VERCEL === '1';
+
+      let fileUrlForPreview = null;
+
+      if (IS_VERCEL && contractFile.buffer) {
+        // ב-Vercel אין מערכת קבצים - נשתמש ב-data URL לצורך תצוגה מקדימה
+        try {
+          const base64 = contractFile.buffer.toString('base64');
+          fileUrlForPreview = `data:${contractFile.mimetype || 'application/pdf'};base64,${base64}`;
+        } catch (e) {
+          console.error('Failed to build data URL for contract file:', e.message);
+        }
+      }
+
+      // בסביבת פיתוח מקומית נשתמש בנתיב הקובץ שנשמר בדיסק
+      if (!fileUrlForPreview && contractFile.filename) {
+        fileUrlForPreview = `/uploads/contracts/${contractFile.filename}`;
+      }
+
+      currentContract.fileUrl = fileUrlForPreview || currentContract.fileUrl;
       currentContract.signed = true;
       if (!currentContract.signedAt) {
         currentContract.signedAt = new Date();
@@ -431,18 +476,6 @@ exports.uploadContract = async (req, res) => {
     client.contract = currentContract;
     await client.save();
 
-    try {
-      const userId = req.user?.id || req.user?._id;
-      await projectGenerator.generateNewClientProject(client, userId);
-    } catch (error) {
-      console.error('Failed to auto-generate project:', error);
-      // לא זורקים שגיאה ללקוח כי ההמרה עצמה הצליחה
-    }
-    res.json({
-      success: true,
-      message: 'הליד הומר ללקוח בהצלחה (ופרויקט הוקם ברקע)',
-      data: client
-    });
     res.json({
       success: true,
       message: 'החוזה עודכן בהצלחה',
