@@ -124,18 +124,35 @@ const quoteSchema = new mongoose.Schema({
 });
 
 // יצירת מספר הצעה אוטומטי
+// חשוב: משתמשים ב-max quoteNumber לשנה במקום countDocuments כדי להימנע מדופליקייטים
 quoteSchema.pre('save', async function(next) {
-  if (!this.quoteNumber) {
-    const year = new Date().getFullYear();
-    const count = await this.constructor.countDocuments({
-      createdAt: {
-        $gte: new Date(year, 0, 1),
-        $lt: new Date(year + 1, 0, 1)
+  try {
+    if (!this.quoteNumber) {
+      const year = new Date().getFullYear();
+
+      // מצא את ההצעה האחרונה לאותה שנה לפי quoteNumber הגבוה ביותר
+      const lastQuote = await this.constructor
+        .findOne({ quoteNumber: new RegExp(`^Q${year}-`) })
+        .sort({ quoteNumber: -1 })
+        .select('quoteNumber')
+        .lean();
+
+      let nextNumber = 1;
+
+      if (lastQuote?.quoteNumber) {
+        const parts = lastQuote.quoteNumber.split('-');
+        const lastSeq = parseInt(parts[1], 10);
+        if (!isNaN(lastSeq)) {
+          nextNumber = lastSeq + 1;
+        }
       }
-    });
-    this.quoteNumber = `Q${year}-${String(count + 1).padStart(4, '0')}`;
+
+      this.quoteNumber = `Q${year}-${String(nextNumber).padStart(4, '0')}`;
+    }
+    next();
+  } catch (err) {
+    next(err);
   }
-  next();
 });
 
 // חישוב סכומים
