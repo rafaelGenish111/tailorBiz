@@ -21,7 +21,7 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 const SERVER_BASE_URL = API_URL.replace(/\/api$/, '');
 
 const resolveFileUrl = (url) => {
-  if (!url) return null;
+  if (!url || url.includes('undefined') || url.includes('null')) return null;
   if (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }
