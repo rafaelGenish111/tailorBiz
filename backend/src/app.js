@@ -82,10 +82,11 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting - יותר מקל בסביבת פיתוח
+// Rate limiting - יותר מקל גם ב-Production כדי למנוע 429 מהירים מ-Frontend
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: isDev ? 1000 : 100, // בסביבת פיתוח: 1000 בקשות, ב-production: 100
+  // ברירת מחדל חדשה: גבול גבוה גם ב-Production (מתאים למערכת פנימית / עומס נמוך)
+  max: isDev ? 2000 : 1000, // Dev: 2000, Prod: 1000
   message: 'יותר מדי בקשות, נסה שוב מאוחר יותר',
   standardHeaders: true,
   legacyHeaders: false,
