@@ -81,8 +81,21 @@ exports.getClientDocuments = async (req, res) => {
 
     const total = await Document.countDocuments(query);
 
+    // בניית $match בטוח ל-categoryCounts (מגן מפני clientId לא תקין)
+    let match = { status: 'active' };
+    try {
+      if (isValidObjectId(clientId)) {
+        match.clientId = new mongoose.Types.ObjectId(clientId);
+      } else {
+        // אם clientId לא תקין - נחפש על clientId שלא קיים כדי למנוע שגיאה
+        match.clientId = new mongoose.Types.ObjectId('000000000000000000000000');
+      }
+    } catch (e) {
+      match.clientId = new mongoose.Types.ObjectId('000000000000000000000000');
+    }
+
     const categoryCounts = await Document.aggregate([
-      { $match: { clientId: new mongoose.Types.ObjectId(clientId), status: 'active' } },
+      { $match: match },
       { $group: { _id: '$category', count: { $sum: 1 } } }
     ]);
 
@@ -104,6 +117,7 @@ exports.getClientDocuments = async (req, res) => {
     });
 
   } catch (error) {
+    console.error('Error in getClientDocuments:', error);
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת המסמכים',
