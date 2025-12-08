@@ -325,16 +325,15 @@ exports.generatePDF = async (req, res) => {
 
     const pdfBuffer = Buffer.concat(buffers);
 
-    // ניצור תמיד data URL לצורך צפייה בצד ה-Frontend
-    const base64 = pdfBuffer.toString('base64');
-    const pdfUrl = `data:application/pdf;base64,${base64}`;
+    // יעד ברירת מחדל: data URL (למקרה שאין Cloudinary)
+    let pdfUrl = null;
 
-    // אם Cloudinary מוגדר, נעלה לשם לצורכי אחסון בלבד, אבל לצפייה נמשיך להשתמש ב-data URL
+    // אם Cloudinary מוגדר, נעדיף להשתמש ב-URL ישיר מ-Cloudinary (עדיף לתצוגה)
     const hasCloudinaryConfig =
       process.env.CLOUDINARY_CLOUD_NAME &&
       process.env.CLOUDINARY_API_KEY &&
       process.env.CLOUDINARY_API_SECRET;
-    
+
     let pdfCloudinaryId = null;
 
     if (hasCloudinaryConfig) {
@@ -356,9 +355,16 @@ exports.generatePDF = async (req, res) => {
         });
 
         pdfCloudinaryId = uploadResult.public_id;
+        pdfUrl = uploadResult.secure_url; // נשתמש ב-URL של Cloudinary לתצוגה
       } catch (uploadError) {
-        console.error('Cloudinary upload failed (using local data URL for viewing):', uploadError.message);
+        console.error('Cloudinary upload failed (falling back to data URL):', uploadError.message);
       }
+    }
+
+    // אם אין Cloudinary או שההעלאה נכשלה - נשתמש ב-data URL
+    if (!pdfUrl) {
+      const base64 = pdfBuffer.toString('base64');
+      pdfUrl = `data:application/pdf;base64,${base64}`;
     }
 
     quote.pdfUrl = pdfUrl;
