@@ -27,9 +27,17 @@ app.use(
   helmet({
     // בסביבת פיתוח נבטל CSP וגם X-Frame-Options כדי לאפשר iframe מ-5174 (Vite)
     contentSecurityPolicy: isDev ? false : undefined,
-    frameguard: isDev ? false : undefined
+    // אפשר iframe גם ב-production עבור תצוגה מקדימה של מסמכים
+    frameguard: false // הסר X-Frame-Options לחלוטין כדי לאפשר תצוגה מקדימה
   })
 );
+
+// הסר X-Frame-Options מפורשות עבור כל הבקשות (גם אם Vercel או שירותים אחרים מוסיפים אותו)
+app.use((req, res, next) => {
+  res.removeHeader('X-Frame-Options');
+  next();
+});
+
 // CORS configuration
 const allowedOrigins = [
   // Local development
