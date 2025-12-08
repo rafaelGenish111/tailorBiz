@@ -17,7 +17,8 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 const SERVER_BASE_URL = API_URL.replace(/\/api$/, '');
 
 const resolvePdfUrl = (url) => {
-  if (!url) return null;
+  // בדיקה אם ה-URL תקין
+  if (!url || url.includes('undefined') || url.includes('null')) return null;
   if (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }
@@ -515,7 +516,7 @@ const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
               {uploadPdfMutation.isPending ? <CircularProgress size={20} /> : 'העלה PDF להצעה'}
             </Button>
 
-            {quote.pdfUrl && (
+            {quote.pdfUrl && resolvePdfUrl(quote.pdfUrl) && (
               <Box sx={{ mt: 2 }}>
                 <Typography variant="subtitle2" gutterBottom>
                   תצוגה מקדימה של ה‑PDF
