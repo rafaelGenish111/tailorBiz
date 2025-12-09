@@ -56,8 +56,19 @@ const ClientTimer = ({ clientId, clientName }) => {
   const [taskType, setTaskType] = useState('general');
   const [description, setDescription] = useState('');
 
+  // חילוץ clientId מהטיימר הפעיל - תמיכה בשני פורמטים
   const timerClientId = activeTimer?.clientId?._id || activeTimer?.clientId;
-  const isTimerForThisClient = timerClientId === clientId || timerClientId?.toString() === clientId?.toString();
+
+  // השוואה בטוחה בין clientId - מטפלת גם ב-ObjectId וגם במחרוזות
+  const isTimerForThisClient = (() => {
+    if (!activeTimer || !timerClientId || !clientId) {
+      return false;
+    }
+    // המרה למחרוזות להשוואה בטוחה
+    const timerIdStr = String(timerClientId);
+    const currentIdStr = String(clientId);
+    return timerIdStr === currentIdStr;
+  })();
 
   const handleStart = async () => {
     if (activeTimer && !isTimerForThisClient) {
@@ -102,9 +113,9 @@ const ClientTimer = ({ clientId, clientName }) => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <TimerIcon 
-            color={isTimerForThisClient && isRunning ? 'success' : 'action'} 
-            sx={{ 
+          <TimerIcon
+            color={isTimerForThisClient && isRunning ? 'success' : 'action'}
+            sx={{
               fontSize: 32,
               animation: isTimerForThisClient && isRunning ? 'pulse 1s infinite' : 'none',
               '@keyframes pulse': {
@@ -114,10 +125,10 @@ const ClientTimer = ({ clientId, clientName }) => {
               }
             }}
           />
-          
+
           <Box>
             <Typography variant="h6" fontWeight={700}>
-              {isTimerForThisClient && isRunning 
+              {isTimerForThisClient && isRunning
                 ? formatDuration(elapsedTime)
                 : 'טיימר'}
             </Typography>
@@ -131,10 +142,10 @@ const ClientTimer = ({ clientId, clientName }) => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {isTimerForThisClient && isRunning ? (
             <>
-              <Chip 
+              <Chip
                 label={taskTypes.find(t => t.value === activeTimer?.taskType)?.label || 'כללי'}
                 size="small"
-                sx={{ 
+                sx={{
                   bgcolor: taskTypes.find(t => t.value === activeTimer?.taskType)?.color,
                   color: 'white'
                 }}
@@ -194,11 +205,11 @@ const ClientTimer = ({ clientId, clientName }) => {
                 {taskTypes.map(type => (
                   <MenuItem key={type.value} value={type.value}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box sx={{ 
-                        width: 12, 
-                        height: 12, 
-                        borderRadius: '50%', 
-                        bgcolor: type.color 
+                      <Box sx={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: '50%',
+                        bgcolor: type.color
                       }} />
                       {type.label}
                     </Box>
@@ -219,9 +230,9 @@ const ClientTimer = ({ clientId, clientName }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setStartDialogOpen(false)}>ביטול</Button>
-          <Button 
-            variant="contained" 
-            color="success" 
+          <Button
+            variant="contained"
+            color="success"
             onClick={confirmStart}
             disabled={isStarting}
           >
