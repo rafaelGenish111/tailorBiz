@@ -4,18 +4,57 @@ import { differenceInDays } from 'date-fns';
 
 // Gantt פשוט ב־CSS ללא ספרייה חיצונית, כדי להשתלב בעיצוב הקיים
 const ProjectGantt = ({ projects = [], range }) => {
+  // Debug logging
+  React.useEffect(() => {
+    console.log('ProjectGantt received:', { projects, range, projectsCount: projects.length });
+    projects.forEach(({ project, tasks }) => {
+      console.log(`Project ${project.name}:`, { tasksCount: tasks.length, tasks });
+    });
+  }, [projects, range]);
+
   if (!projects.length) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
         <Typography variant="body1" color="text.secondary">
           אין משימות לתצוגה בטווח התאריכים הנבחר.
         </Typography>
+        {process.env.NODE_ENV === 'development' && (
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            Debug: projects.length = {projects.length}, range = {JSON.stringify(range)}
+          </Typography>
+        )}
       </Box>
     );
   }
 
-  const start = range?.from ? new Date(range.from) : new Date();
-  const end = range?.to ? new Date(range.to) : new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
+  // Handle range - can be ISO string or Date object
+  let start, end;
+
+  try {
+    if (range?.from) {
+      start = typeof range.from === 'string' ? new Date(range.from) : new Date(range.from);
+    } else {
+      start = new Date();
+    }
+
+    if (range?.to) {
+      end = typeof range.to === 'string' ? new Date(range.to) : new Date(range.to);
+    } else {
+      end = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
+    }
+
+    // Validate dates
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      console.error('Invalid dates:', { range, start, end });
+      start = new Date();
+      end = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
+    }
+  } catch (err) {
+    console.error('Error parsing dates:', err, range);
+    start = new Date();
+    end = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
+  }
+
   const totalDays = Math.max(differenceInDays(end, start) + 1, 1);
 
   const getOffsetAndWidth = (task) => {
