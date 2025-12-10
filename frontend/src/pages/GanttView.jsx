@@ -26,19 +26,31 @@ const GanttView = () => {
   const [projectId, setProjectId] = useState('');
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
   const { data: projectsResponse } = useProjects();
   const projects = projectsResponse?.data || [];
 
   const loadData = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await tasksAPI.getGanttView({
         from: range.from,
         to: range.to,
         projectId: projectId || undefined
       });
-      setData(res.data.data);
+      console.log('Gantt data received:', res.data);
+      if (res.data?.success && res.data?.data) {
+        setData(res.data.data);
+      } else {
+        setError('לא התקבלו נתונים מהשרת');
+        setData(null);
+      }
+    } catch (err) {
+      console.error('Error loading Gantt data:', err);
+      setError(err.response?.data?.message || 'שגיאה בטעינת הנתונים');
+      setData(null);
     } finally {
       setLoading(false);
     }
@@ -131,10 +143,22 @@ const GanttView = () => {
         </Button>
       </Stack>
 
+      {error && (
+        <Paper sx={{ p: 3, mb: 3, bgcolor: 'error.light', color: 'error.contrastText' }}>
+          <Typography variant="body1">{error}</Typography>
+        </Paper>
+      )}
+
       {loading && !data ? (
         <Box sx={{ p: 4, textAlign: 'center' }}>
           <CircularProgress />
         </Box>
+      ) : !data ? (
+        <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="body1" color="text.secondary">
+            לחץ על "רענן" כדי לטעון את הנתונים
+          </Typography>
+        </Paper>
       ) : isMobile ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {(data?.projects || []).length === 0 ? (
