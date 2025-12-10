@@ -375,11 +375,11 @@ exports.getTodayAgenda = async (req, res) => {
     // התראות לא נקראו
     const unreadNotifications = hasValidUser
       ? await Notification.find({
-          userId: req.user.id,
-          read: false
-        })
-          .sort('-createdAt')
-          .limit(10)
+        userId: req.user.id,
+        read: false
+      })
+        .sort('-createdAt')
+        .limit(10)
       : [];
 
     res.json({
@@ -591,12 +591,27 @@ exports.getGanttView = async (req, res) => {
     const start = from ? new Date(from) : new Date();
     const end = to ? new Date(to) : new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000); // +30 יום
 
+    // Build flexible query that includes tasks with dates in range or without dates
     const query = {
       assignedTo: req.user.id,
       status: { $nin: ['cancelled'] },
       $or: [
+        // Tasks with startDate in range
         { startDate: { $lte: end, $gte: start } },
-        { dueDate: { $lte: end, $gte: start } }
+        // Tasks with dueDate in range
+        { dueDate: { $lte: end, $gte: start } },
+        // Tasks with startDate before range but dueDate in or after range
+        { startDate: { $lt: start }, dueDate: { $gte: start, $lte: end } },
+        // Tasks with startDate in range but dueDate after range
+        { startDate: { $gte: start, $lte: end }, dueDate: { $gt: end } },
+        // Tasks spanning the entire range
+        { startDate: { $lte: start }, dueDate: { $gte: end } },
+        // Tasks with only startDate (no dueDate) in range
+        { startDate: { $gte: start, $lte: end }, dueDate: { $exists: false } },
+        { startDate: { $gte: start, $lte: end }, dueDate: null },
+        // Tasks with only dueDate (no startDate) in range
+        { dueDate: { $gte: start, $lte: end }, startDate: { $exists: false } },
+        { dueDate: { $gte: start, $lte: end }, startDate: null }
       ]
     };
 
@@ -607,6 +622,9 @@ exports.getGanttView = async (req, res) => {
     const tasks = await TaskManager.find(query)
       .populate('projectId', 'name color status')
       .sort('startDate dueDate');
+
+    console.log('Gantt query:', JSON.stringify(query, null, 2));
+    console.log('Found tasks:', tasks.length);
 
     const projectsMap = {};
 
@@ -681,7 +699,7 @@ exports.getTaskStats = async (req, res) => {
 
     const stats = {
       total: await TaskManager.countDocuments({ assignedTo: userId }),
-      
+
       byStatus: {
         todo: await TaskManager.countDocuments({ assignedTo: userId, status: 'todo' }),
         in_progress: await TaskManager.countDocuments({ assignedTo: userId, status: 'in_progress' }),
