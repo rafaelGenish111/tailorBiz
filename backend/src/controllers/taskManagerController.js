@@ -591,55 +591,126 @@ exports.getGanttView = async (req, res) => {
     const start = from ? new Date(from) : new Date();
     const end = to ? new Date(to) : new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000); // +30 יום
 
-    // Build flexible query that includes tasks with dates in range or without dates
-    const query = {
+    // First, get all tasks assigned to user (not cancelled)
+    const baseQuery = {
       assignedTo: req.user.id,
-      status: { $nin: ['cancelled'] },
-      $or: [
-        // Tasks with startDate in range
-        { startDate: { $lte: end, $gte: start } },
-        // Tasks with dueDate in range
-        { dueDate: { $lte: end, $gte: start } },
-        // Tasks with startDate before range but dueDate in or after range
-        { startDate: { $lt: start }, dueDate: { $gte: start, $lte: end } },
-        // Tasks with startDate in range but dueDate after range
-        { startDate: { $gte: start, $lte: end }, dueDate: { $gt: end } },
-        // Tasks spanning the entire range
-        { startDate: { $lte: start }, dueDate: { $gte: end } },
-        // Tasks with only startDate (no dueDate) in range
-        { startDate: { $gte: start, $lte: end }, dueDate: { $exists: false } },
-        { startDate: { $gte: start, $lte: end }, dueDate: null },
-        // Tasks with only dueDate (no startDate) in range
-        { dueDate: { $gte: start, $lte: end }, startDate: { $exists: false } },
-        { dueDate: { $gte: start, $lte: end }, startDate: null }
-      ]
+      status: { $nin: ['cancelled'] }
     };
 
     if (projectId && isValidObjectId(projectId)) {
-      query.projectId = projectId;
+      baseQuery.projectId = projectId;
     }
 
-    const tasks = await TaskManager.find(query)
+    // Get all tasks first to see what we have
+    const allTasks = await TaskManager.find(baseQuery)
       .populate('projectId', 'name color status')
       .sort('startDate dueDate');
 
-    console.log('Gantt query:', JSON.stringify(query, null, 2));
-    console.log('Found tasks:', tasks.length);
+    console.log('Total tasks for user:', allTasks.length);
+    console.log('Date range:', { start: start.toISOString(), end: end.toISOString() });
+    console.log('User ID:', req.user.id);
+
+    if (allTasks.length > 0) {
+      console.log('Sample task:', {
+        id: allTasks[0]._id,
+        title: allTasks[0].title,
+        startDate: allTasks[0].startDate,
+        dueDate: allTasks[0].dueDate,
+        endDate: allTasks[0].endDate,
+        assignedTo: allTasks[0].assignedTo,
+        projectId: allTasks[0].projectId
+      });
+    }
+
+    // Filter tasks that have dates in range or no dates at all
+    // For now, include ALL tasks to ensure they show up, even if dates are outside range
+    const tasks = allTasks.filter(task => {
+      const taskStart = task.startDate ? new Date(task.startDate) : null;
+      const taskDue = task.dueDate ? new Date(task.dueDate) : null;
+      const taskEnd = task.endDate ? new Date(task.endDate) : null;
+
+      // Always include tasks with no dates
+      if (!taskStart && !taskDue && !taskEnd) {
+        return true;
+      }
+
+      // Check if any date is in range
+      if (taskStart && taskStart <= end && taskStart >= start) return true;
+      if (taskDue && taskDue <= end && taskDue >= start) return true;
+      if (taskEnd && taskEnd <= end && taskEnd >= start) return true;
+
+      // Check if task spans the range
+      if (taskStart && taskDue && taskStart <= start && taskDue >= end) return true;
+      if (taskStart && taskEnd && taskStart <= start && taskEnd >= end) return true;
+
+      // Check if task starts before but ends in range
+      if (taskStart && taskStart < start) {
+        if (taskDue && taskDue >= start && taskDue <= end) return true;
+        if (taskEnd && taskEnd >= start && taskEnd <= end) return true;
+      }
+
+      // Check if task starts in range but ends after
+      if (taskStart && taskStart >= start && taskStart <= end) {
+        if ((taskDue && taskDue > end) || (taskEnd && taskEnd > end)) return true;
+      }
+
+      // TEMPORARY: Include all tasks to debug - remove this later
+      // This ensures we see all tasks even if dates are outside range
+      return true;
+    });
+
+    console.log('Filtered tasks in range:', tasks.length);
+
+    if (tasks.length === 0 && allTasks.length > 0) {
+      console.log('No tasks in range, but user has tasks. Showing sample task dates:');
+      allTasks.slice(0, 3).forEach((task, idx) => {
+        console.log(`Task ${idx + 1}:`, {
+          title: task.title,
+          startDate: task.startDate,
+          dueDate: task.dueDate,
+          endDate: task.endDate,
+          projectId: task.projectId
+        });
+      });
+    }
 
     const projectsMap = {};
 
-    tasks.forEach(task => {
-      const projectKey = task.projectId ? String(task.projectId._id) : 'no_project';
+    console.log('Processing tasks for projects map. Tasks count:', tasks.length);
+
+    tasks.forEach((task, idx) => {
+      console.log(`Processing task ${idx + 1}:`, {
+        id: task._id,
+        title: task.title,
+        projectId: task.projectId,
+        projectIdType: typeof task.projectId,
+        projectIdValue: task.projectId ? (task.projectId._id || task.projectId) : null
+      });
+
+      // Handle projectId - can be ObjectId, populated object, or null
+      let projectKey;
+      let projectData;
+
+      if (task.projectId) {
+        // If populated, use _id, otherwise use the ObjectId directly
+        projectKey = task.projectId._id ? String(task.projectId._id) : String(task.projectId);
+        projectData = task.projectId;
+      } else {
+        projectKey = 'no_project';
+        projectData = {
+          _id: 'no_project',
+          name: 'ללא פרויקט',
+          color: '#9e9e9e',
+          status: 'active'
+        };
+      }
+
       if (!projectsMap[projectKey]) {
         projectsMap[projectKey] = {
-          project: task.projectId || {
-            _id: 'no_project',
-            name: 'ללא פרויקט',
-            color: '#9e9e9e',
-            status: 'active'
-          },
+          project: projectData,
           tasks: []
         };
+        console.log(`Created project entry for: ${projectKey}`, projectData.name || 'ללא פרויקט');
       }
 
       const startTime = task.startDate || task.dueDate || start;
@@ -653,7 +724,16 @@ exports.getGanttView = async (req, res) => {
         status: task.status,
         priority: task.priority,
         color: task.color,
-        projectId: task.projectId ? task.projectId._id : null
+        projectId: task.projectId ? (task.projectId._id || task.projectId) : null
+      });
+    });
+
+    console.log('Projects map keys:', Object.keys(projectsMap));
+    console.log('Projects map values count:', Object.values(projectsMap).length);
+    Object.values(projectsMap).forEach((proj, idx) => {
+      console.log(`Project ${idx + 1}:`, {
+        projectName: proj.project.name,
+        tasksCount: proj.tasks.length
       });
     });
 
