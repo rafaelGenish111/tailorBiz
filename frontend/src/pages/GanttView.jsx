@@ -42,7 +42,14 @@ const GanttView = () => {
       });
       console.log('Gantt data received:', res.data);
       if (res.data?.success && res.data?.data) {
-        setData(res.data.data);
+        const ganttData = res.data.data;
+        console.log('Gantt data structure:', {
+          hasProjects: !!ganttData.projects,
+          projectsLength: ganttData.projects?.length || 0,
+          projects: ganttData.projects,
+          range: ganttData.range
+        });
+        setData(ganttData);
       } else {
         setError('לא התקבלו נתונים מהשרת');
         setData(null);
@@ -217,7 +224,20 @@ const GanttView = () => {
           )}
         </Box>
       ) : (
-        <ProjectGantt projects={data?.projects || []} range={data?.range} />
+        <>
+          {data && (!data.projects || data.projects.length === 0) ? (
+            <Paper sx={{ p: 4, textAlign: 'center' }}>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                אין משימות לתצוגה בטווח התאריכים הנבחר.
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                נסה לשנות את טווח התאריכים או לבחור פרויקט אחר.
+              </Typography>
+            </Paper>
+          ) : (
+            <ProjectGantt projects={data?.projects || []} range={data?.range} />
+          )}
+        </>
       )}
     </Box>
   );
