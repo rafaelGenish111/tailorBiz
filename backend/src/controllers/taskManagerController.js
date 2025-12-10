@@ -578,7 +578,17 @@ exports.getGanttView = async (req, res) => {
   try {
     const { from, to, projectId } = req.query;
 
-    if (!isValidObjectId(req.user.id)) {
+    console.log('getGanttView called with:', {
+      userId: req.user?.id,
+      userIdType: typeof req.user?.id,
+      isValidUserId: isValidObjectId(req.user?.id),
+      from,
+      to,
+      projectId
+    });
+
+    if (!isValidObjectId(req.user?.id)) {
+      console.log('Invalid user ID, returning empty projects');
       return res.json({
         success: true,
         data: {
@@ -601,12 +611,22 @@ exports.getGanttView = async (req, res) => {
       baseQuery.projectId = projectId;
     }
 
+    console.log('Base query:', JSON.stringify(baseQuery, null, 2));
+
+    // Check total tasks in system first
+    const totalTasksInSystem = await TaskManager.countDocuments({});
+    console.log('Total tasks in system:', totalTasksInSystem);
+
+    // Check tasks for this user
+    const tasksForUser = await TaskManager.countDocuments({ assignedTo: req.user.id });
+    console.log('Tasks assigned to user:', tasksForUser);
+
     // Get all tasks first to see what we have
     const allTasks = await TaskManager.find(baseQuery)
       .populate('projectId', 'name color status')
       .sort('startDate dueDate');
 
-    console.log('Total tasks for user:', allTasks.length);
+    console.log('Total tasks for user (after query):', allTasks.length);
     console.log('Date range:', { start: start.toISOString(), end: end.toISOString() });
     console.log('User ID:', req.user.id);
 
@@ -730,23 +750,41 @@ exports.getGanttView = async (req, res) => {
 
     console.log('Projects map keys:', Object.keys(projectsMap));
     console.log('Projects map values count:', Object.values(projectsMap).length);
+    const projectsArray = Object.values(projectsMap);
+    console.log('Projects array:', JSON.stringify(projectsArray.map(p => ({
+      projectName: p.project?.name || 'Unknown',
+      tasksCount: p.tasks?.length || 0
+    })), null, 2));
+
     Object.values(projectsMap).forEach((proj, idx) => {
       console.log(`Project ${idx + 1}:`, {
-        projectName: proj.project.name,
-        tasksCount: proj.tasks.length
+        projectName: proj.project?.name || 'Unknown',
+        tasksCount: proj.tasks?.length || 0,
+        projectId: proj.project?._id || 'no_project'
       });
     });
 
-    res.json({
+    const responseData = {
       success: true,
       data: {
         range: {
           from: start.toISOString(),
           to: end.toISOString()
         },
-        projects: Object.values(projectsMap)
+        projects: projectsArray
       }
+    };
+
+    console.log('Sending response with', projectsArray.length, 'projects');
+    console.log('Response data preview:', {
+      projectsCount: projectsArray.length,
+      firstProject: projectsArray[0] ? {
+        name: projectsArray[0].project?.name,
+        tasksCount: projectsArray[0].tasks?.length
+      } : null
     });
+
+    res.json(responseData);
   } catch (error) {
     console.error('Error in getGanttView:', error);
     res.status(500).json({
