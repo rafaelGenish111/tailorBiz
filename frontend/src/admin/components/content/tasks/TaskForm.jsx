@@ -99,255 +99,272 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
   }, [watchStartDate, setValue]);
 
   const handleFormSubmit = (data) => {
-      // Transform relatedClient to ID if it's an object
-      const formattedData = {
-          ...data,
-          relatedClient: data.relatedClient?._id || data.relatedClient,
-          projectId: data.projectId?._id || data.projectId
-      };
-      onSubmit(formattedData);
+    // Transform relatedClient to ID if it's an object
+    const formattedData = {
+      ...data,
+      relatedClient: data.relatedClient?._id || data.relatedClient,
+      projectId: data.projectId?._id || data.projectId,
+      // נרמול done של תתי-משימות ל-boolean (מגיע מה-select כמחרוזת)
+      subtasks: (data.subtasks || []).map((s) => ({
+        ...s,
+        done:
+          s?.done === true ||
+          s?.done === 'true' ||
+          s?.done === 1 ||
+          s?.done === '1' ||
+          s?.done === 'done'
+      }))
+    };
+    onSubmit(formattedData);
   };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
       <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} sx={{ mt: 2 }}>
         <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="כותרת המשימה"
-            {...register('title', { required: 'שדה חובה' })}
-            required
-          />
-        </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="כותרת המשימה"
+              {...register('title', { required: 'שדה חובה' })}
+              required
+            />
+          </Grid>
 
-        <Grid item xs={12} md={6}>
-          <TextField
-            select
-            fullWidth
-            label="עדיפות"
-            defaultValue="medium"
-            {...register('priority')}
-          >
-            <MenuItem value="low">נמוכה</MenuItem>
-            <MenuItem value="medium">בינונית</MenuItem>
-            <MenuItem value="high">גבוהה</MenuItem>
-            <MenuItem value="urgent">דחופה</MenuItem>
-          </TextField>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <TextField
-            select
-            fullWidth
-            label="סטטוס"
-            defaultValue="todo"
-            {...register('status')}
-          >
-            <MenuItem value="todo">לביצוע</MenuItem>
-            <MenuItem value="in_progress">בטיפול</MenuItem>
-            <MenuItem value="waiting">ממתין</MenuItem>
-            <MenuItem value="completed">הושלם</MenuItem>
-          </TextField>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Controller
-            name="dueDate"
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <DateTimePicker
-                label="תאריך יעד"
-                value={parseDate(value)}
-                onChange={onChange}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    required: false
-                  }
-                }}
-              />
-            )}
-          />
-        </Grid>
-        
-        <Grid item xs={12} md={6}>
-          <Controller
-            name="startDate"
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <DateTimePicker
-                label="תאריך התחלה"
-                value={parseDate(value)}
-                onChange={onChange}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    required: false
-                  }
-                }}
-              />
-            )}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Controller
-            name="endDate"
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <DateTimePicker
-                label="תאריך סיום"
-                value={parseDate(value)}
-                onChange={onChange}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    required: false
-                  }
-                }}
-              />
-            )}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Controller
-            name="projectId"
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <Autocomplete
-                options={projects}
-                getOptionLabel={(option) => option.name || ''}
-                value={value && typeof value === 'string' ? projects.find(p => p._id === value) : value}
-                onChange={(_, newValue) => onChange(newValue)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="פרויקט"
-                  />
-                )}
-              />
-            )}
-          />
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-           <Controller
-            name="relatedClient"
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <Autocomplete
-                options={clients}
-                getOptionLabel={(option) => option.personalInfo?.fullName || ''}
-                value={value && typeof value === 'string' ? clients.find(c => c._id === value) : value}
-                onChange={(_, newValue) => onChange(newValue)}
-                loading={isLoadingClients}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="לקוח מקושר"
-                    InputProps={{
-                      ...params.InputProps,
-                      endAdornment: (
-                        <>
-                          {isLoadingClients ? <CircularProgress color="inherit" size={20} /> : null}
-                          {params.InputProps.endAdornment}
-                        </>
-                      ),
-                    }}
-                  />
-                )}
-              />
-            )}
-          />
-        </Grid>
-
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            multiline
-            rows={4}
-            label="תיאור"
-            {...register('description')}
-          />
-        </Grid>
-
-        {/* תתי־משימות (צ'קליסט) */}
-        <Grid item xs={12}>
-          <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="subtitle1" fontWeight="bold">
-              תתי־משימות
-            </Typography>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => appendSubtask({ title: '', done: false })}
+          <Grid item xs={12} md={6}>
+            <TextField
+              select
+              fullWidth
+              label="עדיפות"
+              defaultValue="medium"
+              {...register('priority')}
             >
-              הוסף תת־משימה
-            </Button>
-          </Box>
+              <MenuItem value="low">נמוכה</MenuItem>
+              <MenuItem value="medium">בינונית</MenuItem>
+              <MenuItem value="high">גבוהה</MenuItem>
+              <MenuItem value="urgent">דחופה</MenuItem>
+            </TextField>
+          </Grid>
 
-          {subtaskFields.length === 0 ? (
-            <Typography variant="body2" color="text.secondary">
-              אין תתי־משימות עדיין.
-            </Typography>
-          ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              {subtaskFields.map((field, index) => (
-                <Box
-                  key={field.id}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
+          <Grid item xs={12} md={6}>
+            <TextField
+              select
+              fullWidth
+              label="סטטוס"
+              defaultValue="todo"
+              {...register('status')}
+            >
+              <MenuItem value="todo">לביצוע</MenuItem>
+              <MenuItem value="in_progress">בטיפול</MenuItem>
+              <MenuItem value="waiting">ממתין</MenuItem>
+              <MenuItem value="completed">הושלם</MenuItem>
+            </TextField>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Controller
+              name="dueDate"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <DateTimePicker
+                  label="תאריך יעד"
+                  value={parseDate(value)}
+                  onChange={onChange}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      required: false
+                    }
                   }}
-                >
-                  <TextField
-                    fullWidth
-                    size="small"
-                    label={`תת־משימה ${index + 1}`}
-                    {...register(`subtasks.${index}.title`)}
-                  />
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <TextField
-                      select
-                      size="small"
-                      label="סטטוס"
-                      sx={{ minWidth: 110 }}
-                      defaultValue={field.done ? 'done' : 'open'}
-                      {...register(`subtasks.${index}.done`)}
-                      SelectProps={{
-                        native: true,
-                      }}
-                    >
-                      <option value="open">פתוחה</option>
-                      <option value="done">בוצעה</option>
-                    </TextField>
-                    <Button
-                      size="small"
-                      color="error"
-                      onClick={() => removeSubtask(index)}
-                    >
-                      מחק
-                    </Button>
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-          )}
-        </Grid>
+                />
+              )}
+            />
+          </Grid>
 
-        <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-          <Button onClick={onCancel} disabled={isLoading}>
-            ביטול
-          </Button>
-          <Button type="submit" variant="contained" disabled={isLoading}>
-            {isLoading ? <CircularProgress size={24} /> : (initialData ? 'עדכן משימה' : 'צור משימה')}
-          </Button>
+          <Grid item xs={12} md={6}>
+            <Controller
+              name="startDate"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <DateTimePicker
+                  label="תאריך התחלה"
+                  value={parseDate(value)}
+                  onChange={onChange}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      required: false
+                    }
+                  }}
+                />
+              )}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Controller
+              name="endDate"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <DateTimePicker
+                  label="תאריך סיום"
+                  value={parseDate(value)}
+                  onChange={onChange}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      required: false
+                    }
+                  }}
+                />
+              )}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Controller
+              name="projectId"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Autocomplete
+                  options={projects}
+                  getOptionLabel={(option) => option.name || ''}
+                  value={value && typeof value === 'string' ? projects.find(p => p._id === value) : value}
+                  onChange={(_, newValue) => onChange(newValue)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="פרויקט"
+                    />
+                  )}
+                />
+              )}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Controller
+              name="relatedClient"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Autocomplete
+                  options={clients}
+                  getOptionLabel={(option) => option.personalInfo?.fullName || ''}
+                  value={value && typeof value === 'string' ? clients.find(c => c._id === value) : value}
+                  onChange={(_, newValue) => onChange(newValue)}
+                  loading={isLoadingClients}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="לקוח מקושר"
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                          <>
+                            {isLoadingClients ? <CircularProgress color="inherit" size={20} /> : null}
+                            {params.InputProps.endAdornment}
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              )}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="תיאור"
+              {...register('description')}
+            />
+          </Grid>
+
+          {/* תתי־משימות (צ'קליסט) */}
+          <Grid item xs={12}>
+            <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="subtitle1" fontWeight="bold">
+                תתי־משימות
+              </Typography>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() => appendSubtask({ title: '', done: false })}
+              >
+                הוסף תת־משימה
+              </Button>
+            </Box>
+
+            {subtaskFields.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                אין תתי־משימות עדיין.
+              </Typography>
+            ) : (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {subtaskFields.map((field, index) => (
+                  <Box
+                    key={field.id}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label={`תת־משימה ${index + 1}`}
+                      {...register(`subtasks.${index}.title`)}
+                    />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <TextField
+                        select
+                        size="small"
+                        label="סטטוס"
+                        sx={{ minWidth: 110 }}
+                        defaultValue={field.done ? 'true' : 'false'}
+                        {...register(`subtasks.${index}.done`, {
+                          setValueAs: (v) =>
+                            v === true ||
+                            v === 'true' ||
+                            v === 1 ||
+                            v === '1' ||
+                            v === 'done'
+                        })}
+                        SelectProps={{
+                          native: true,
+                        }}
+                      >
+                        <option value="false">פתוחה</option>
+                        <option value="true">בוצעה</option>
+                      </TextField>
+                      <Button
+                        size="small"
+                        color="error"
+                        onClick={() => removeSubtask(index)}
+                      >
+                        מחק
+                      </Button>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Grid>
+
+          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
+            <Button onClick={onCancel} disabled={isLoading}>
+              ביטול
+            </Button>
+            <Button type="submit" variant="contained" disabled={isLoading}>
+              {isLoading ? <CircularProgress size={24} /> : (initialData ? 'עדכן משימה' : 'צור משימה')}
+            </Button>
+          </Grid>
         </Grid>
-      </Grid>
-    </Box>
+      </Box>
     </LocalizationProvider>
   );
 };

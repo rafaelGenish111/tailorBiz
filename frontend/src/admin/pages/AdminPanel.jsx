@@ -37,6 +37,7 @@ function AdminPanel() {
         {/* Tasks & Planner */}
         <Route path="today" element={<TodayAgenda />} />
         <Route path="calendar" element={<CalendarView />} />
+        <Route path="tasks/:id" element={<TaskBoard />} />
         <Route path="tasks" element={<TaskBoard />} />
         <Route path="gantt" element={<GanttView />} />
         <Route path="projects" element={<Projects />} />
