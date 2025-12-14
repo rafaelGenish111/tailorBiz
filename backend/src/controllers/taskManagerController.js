@@ -579,18 +579,12 @@ exports.getGanttView = async (req, res) => {
   try {
     const { from, to, projectId } = req.query;
 
-    // בלי משתמש תקין – אין טעם להחזיר נתונים
-    if (!isValidObjectId(req.user?.id)) {
-      return res.json({
-        success: true,
-        data: {
-          range: { from, to },
-          projects: []
-        }
-      });
-    }
-
-    const userId = req.user.id;
+    // כרגע המערכת משתמשת ב-temp-user-id (ראה auth middleware),
+    // לכן חשוב לתמוך גם במצב "ללא משתמש ObjectId תקין" ולהציג *את כל* המשימות.
+    // כאשר יהיה אימות אמיתי, נמשיך להציג משימות של המשתמש + משימות לא משויכות (assignedTo=null).
+    const rawUserId = req.user?.id || req.user?._id;
+    const hasValidUser = isValidObjectId(rawUserId);
+    const userId = hasValidUser ? String(rawUserId) : null;
 
     // טווח תאריכים לבניה של הציר
     const start = from ? new Date(from) : new Date();
@@ -625,10 +619,17 @@ exports.getGanttView = async (req, res) => {
     //
     // 1. משימות מרכזיות (TaskManager)
     //
-    const centralQuery = {
-      assignedTo: userId,
-      status: { $nin: ['cancelled'] }
-    };
+    const centralQuery = { status: { $nin: ['cancelled'] } };
+
+    // אם יש משתמש תקין – מציגים משימות שלו + משימות שלא הוקצו (assignedTo=null/לא קיים)
+    // אם אין משתמש תקין – מציגים את כל המשימות
+    if (hasValidUser) {
+      centralQuery.$or = [
+        { assignedTo: userId },
+        { assignedTo: null },
+        { assignedTo: { $exists: false } }
+      ];
+    }
 
     // סינון לפי פרויקט רלוונטי רק למשימות מרכזיות
     if (projectId && isValidObjectId(projectId)) {
@@ -679,9 +680,18 @@ exports.getGanttView = async (req, res) => {
     //
     if (!projectId) {
       const clientQuery = {
-        'tasks.status': { $ne: 'cancelled' },
-        'tasks.assignedTo': userId
+        'tasks.status': { $ne: 'cancelled' }
       };
+
+      // אם יש משתמש תקין – נביא רק לקוחות שיש להם לפחות משימה אחת של המשתמש או לא משויכת
+      // (הסינון הסופי עדיין מתבצע בלולאה על כל task).
+      if (hasValidUser) {
+        clientQuery.$or = [
+          { 'tasks.assignedTo': userId },
+          { 'tasks.assignedTo': null },
+          { 'tasks.assignedTo': { $exists: false } }
+        ];
+      }
 
       const clientsWithTasks = await Client.find(clientQuery)
         .select('personalInfo businessInfo tasks')
@@ -703,7 +713,9 @@ exports.getGanttView = async (req, res) => {
         };
 
         (client.tasks || []).forEach((task) => {
-          if (String(task.assignedTo || '') !== String(userId)) return;
+          // כאשר יש משתמש תקין – נציג משימות של המשתמש + משימות לא משויכות.
+          // כאשר אין משתמש תקין – נציג את כל המשימות.
+          if (hasValidUser && task.assignedTo && String(task.assignedTo) !== String(userId)) return;
           if (task.status === 'cancelled') return;
 
           // במשימות לקוח יש לנו dueDate ו-createdAt – נשתמש ב-dueDate כברירת מחדל
