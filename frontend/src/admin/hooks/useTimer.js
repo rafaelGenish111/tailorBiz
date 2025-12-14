@@ -16,6 +16,16 @@ const timerApi = {
   delete: (entryId) => axios.delete(`${API_URL}/time-entries/${entryId}`).then(res => res.data),
 };
 
+// unwrap אחיד ל-response מהשרת עבור טיימר פעיל:
+// כשהשרת מחזיר { success: true, data: null } אין טיימר פעיל — חייבים להחזיר null (לא את כל האובייקט)
+const unwrapActiveTimerResponse = (response) => {
+  if (!response) return null;
+  if (typeof response === 'object' && response !== null && 'data' in response) {
+    return response.data ?? null;
+  }
+  return response;
+};
+
 // Hook לטיימר פעיל
 export const useActiveTimer = () => {
   const queryClient = useQueryClient();
@@ -37,10 +47,10 @@ export const useActiveTimer = () => {
     }
 
     // בדוק אם יש טיימר פעיל - תמיכה בשני פורמטים של response
-    const timer = activeTimer?.data || activeTimer;
+    const timer = unwrapActiveTimerResponse(activeTimer);
     if (timer?.isRunning && timer?.startTime) {
       const startTime = new Date(timer.startTime).getTime();
-      
+
       const updateElapsed = () => {
         const now = Date.now();
         setElapsedTime(Math.floor((now - startTime) / 1000));
@@ -48,7 +58,7 @@ export const useActiveTimer = () => {
 
       // עדכן מיד
       updateElapsed();
-      
+
       // הגדר interval לעדכון כל שנייה
       intervalRef.current = setInterval(updateElapsed, 1000);
 
@@ -88,15 +98,15 @@ export const useActiveTimer = () => {
   }, [startMutation]);
 
   const stopTimer = useCallback(() => {
-    const timer = activeTimer?.data || activeTimer;
+    const timer = unwrapActiveTimerResponse(activeTimer);
     if (timer?._id) {
       return stopMutation.mutateAsync(timer._id);
     }
     throw new Error('אין טיימר פעיל לעצירה');
   }, [activeTimer, stopMutation]);
 
-  const timer = activeTimer?.data || activeTimer;
-  
+  const timer = unwrapActiveTimerResponse(activeTimer);
+
   return {
     activeTimer: timer || null,
     isLoading,
@@ -153,7 +163,7 @@ export const useClientTimeEntries = (clientId, options = {}) => {
 // פונקציית עזר לפורמט זמן
 export const formatDuration = (seconds) => {
   if (!seconds || seconds < 0) return '00:00:00';
-  
+
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
@@ -166,14 +176,14 @@ export const formatDuration = (seconds) => {
 // פורמט זמן קריא
 export const formatDurationReadable = (seconds) => {
   if (!seconds || seconds < 0) return '0 דקות';
-  
+
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
 
   if (hours === 0) {
     return `${minutes} דקות`;
   }
-  
+
   if (minutes === 0) {
     return `${hours} שעות`;
   }
