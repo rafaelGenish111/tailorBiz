@@ -56,6 +56,17 @@ const END_HOUR = 22;   // 22:00
 const HOUR_HEIGHT = 60; // Pixels per hour
 const SLOT_MINUTES = 30; // גריד של חצי שעה כמו Google Calendar
 
+const getTaskDisplayTitle = (task) => {
+  const title = (task?.title || '').trim();
+  const projectName =
+    typeof task?.projectId === 'object'
+      ? (task.projectId?.name || '').trim()
+      : '';
+
+  if (!title) return projectName || '';
+  return projectName ? `${title} - ${projectName}` : title;
+};
+
 // מחשב פריסת אירנטים על ציר הזמן כך שאירועים חופפים יוצגו זה לצד זה
 const layoutDayEvents = (events) => {
   if (!events || events.length === 0) return { laidOut: [], maxCols: 0 };
@@ -100,6 +111,7 @@ const TimeGridEvent = ({ event, style, onClick }) => {
   const bgColor = isTask
     ? (event.color || (event.priority === 'high' ? theme.palette.warning.main : event.priority === 'urgent' ? theme.palette.error.main : theme.palette.primary.main))
     : theme.palette.success.main;
+  const title = isTask ? (event.displayTitle || event.title) : (event.subject || 'Follow-up');
 
   return (
     <Box
@@ -132,7 +144,7 @@ const TimeGridEvent = ({ event, style, onClick }) => {
         {format(new Date(event.startTime), 'HH:mm')}
       </Typography>
       <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-        {isTask ? event.title : event.subject || 'Follow-up'}
+        {title}
       </Typography>
       {!isTask && event.clientName && (
         <Typography variant="caption" display="block" sx={{ lineHeight: 1.1, opacity: 0.9, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -231,6 +243,7 @@ const CalendarView = () => {
         return {
           ...t,
           __kind: 'task',
+          displayTitle: getTaskDisplayTitle(t),
           startTime: baseStart,
           endTime: baseEnd
         };
@@ -368,7 +381,7 @@ const CalendarView = () => {
                         else setSelectedEvent(event);
                       }}
                     >
-                      {format(new Date(event.startTime), 'HH:mm')} {event.__kind === 'task' ? event.title : event.subject}
+                      {format(new Date(event.startTime), 'HH:mm')} {event.__kind === 'task' ? (event.displayTitle || event.title) : event.subject}
                     </Box>
                   ))}
                   {events.length > 3 && (
@@ -756,7 +769,7 @@ const CalendarView = () => {
                   sx={{ border: 1, borderColor: 'divider', borderRadius: 1, mb: 1 }}
                 >
                   <ListItemText
-                    primary={event.__kind === 'task' ? event.title : event.subject || 'Follow-up'}
+                    primary={event.__kind === 'task' ? (event.displayTitle || event.title) : event.subject || 'Follow-up'}
                     secondary={`${format(event.startTime, 'HH:mm')} - ${event.clientName || ''}`}
                   />
                   <Chip
