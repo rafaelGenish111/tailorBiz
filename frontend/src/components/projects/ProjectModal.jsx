@@ -28,6 +28,7 @@ import { useTasks, useCreateTask, useUpdateTask, useDeleteTask } from '../../adm
 import TaskForm from '../../admin/components/content/tasks/TaskForm';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
+import TaskModal from '../tasks/TaskModal';
 
 const STATUS_OPTIONS = [
   { value: 'todo', label: 'לביצוע', color: '#607d8b' },
@@ -54,6 +55,7 @@ const PRIORITY_LABELS = {
 const ProjectModal = ({ open, onClose, project }) => {
   const [taskFormOpen, setTaskFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [taskModalId, setTaskModalId] = useState(null);
 
   const { data: tasksResponse, isLoading: isLoadingTasks } = useTasks(
     project ? { projectId: project._id } : undefined
@@ -73,6 +75,13 @@ const ProjectModal = ({ open, onClose, project }) => {
     setEditingTask(task);
     setTaskFormOpen(true);
   };
+
+  const handleOpenTaskModal = (task) => {
+    if (!task?._id) return;
+    setTaskModalId(task._id);
+  };
+
+  const handleCloseTaskModal = () => setTaskModalId(null);
 
   const handleCreateTask = (data) => {
     if (!project) return;
@@ -186,148 +195,148 @@ const ProjectModal = ({ open, onClose, project }) => {
                 </Box>
               )}
 
-          <Divider sx={{ mb: 3 }} />
+              <Divider sx={{ mb: 3 }} />
 
-          {/* כותרת רשימת משימות */}
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              mb: 2,
-              flexWrap: 'wrap',
-              gap: 1
-            }}
-          >
-            <Typography variant="h6" fontWeight="bold">
-              משימות ({tasks.length})
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={handleOpenCreateTask}
-              size="small"
-              sx={{ width: { xs: '100%', sm: 'auto' } }}
-            >
-              הוסף משימה
-            </Button>
-          </Box>
+              {/* כותרת רשימת משימות */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  mb: 2,
+                  flexWrap: 'wrap',
+                  gap: 1
+                }}
+              >
+                <Typography variant="h6" fontWeight="bold">
+                  משימות ({tasks.length})
+                </Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={handleOpenCreateTask}
+                  size="small"
+                  sx={{ width: { xs: '100%', sm: 'auto' } }}
+                >
+                  הוסף משימה
+                </Button>
+              </Box>
 
-          {/* רשימת משימות */}
-          {isLoadingTasks ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-              <CircularProgress />
-            </Box>
-          ) : tasks.length === 0 ? (
-            <Alert severity="info" sx={{ mb: 2 }}>
-              אין משימות בפרויקט זה. לחץ על "הוסף משימה" כדי להתחיל.
-            </Alert>
-          ) : (
-            <Box
-              sx={{
-                maxHeight: '50vh',
-                overflowY: 'auto',
-                pr: 1
-              }}
-            >
-              <Stack spacing={2}>
-                {tasks.map((task) => (
-                  <Card
-                    key={task._id}
-                    elevation={2}
-                    sx={{
-                      borderLeft: `4px solid ${
-                        task.priority === 'urgent'
-                          ? '#f44336'
-                          : task.priority === 'high'
-                          ? '#ff9800'
-                          : task.priority === 'medium'
-                          ? '#2196f3'
-                          : '#9e9e9e'
-                      }`,
-                      transition: 'transform 0.2s, box-shadow 0.2s',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: 4
-                      }
-                    }}
-                  >
-                    <CardContent>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, gap: 1, flexWrap: 'wrap' }}>
-                        <Typography variant="h6" fontWeight="bold" sx={{ flex: 1, minWidth: 0, wordBreak: 'break-word' }}>
-                          {task.title}
-                        </Typography>
-                        <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleOpenEditTask(task)}
-                            color="primary"
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleDeleteTask(task._id)}
-                            color="error"
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Box>
-                      </Box>
+              {/* רשימת משימות */}
+              {isLoadingTasks ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress />
+                </Box>
+              ) : tasks.length === 0 ? (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  אין משימות בפרויקט זה. לחץ על "הוסף משימה" כדי להתחיל.
+                </Alert>
+              ) : (
+                <Box
+                  sx={{
+                    maxHeight: '50vh',
+                    overflowY: 'auto',
+                    pr: 1
+                  }}
+                >
+                  <Stack spacing={2}>
+                    {tasks.map((task) => (
+                      <Card
+                        key={task._id}
+                        elevation={2}
+                        sx={{
+                          borderLeft: `4px solid ${task.priority === 'urgent'
+                              ? '#f44336'
+                              : task.priority === 'high'
+                                ? '#ff9800'
+                                : task.priority === 'medium'
+                                  ? '#2196f3'
+                                  : '#9e9e9e'
+                            }`,
+                          transition: 'transform 0.2s, box-shadow 0.2s',
+                          '&:hover': {
+                            transform: 'translateY(-2px)',
+                            boxShadow: 4
+                          }
+                        }}
+                        onClick={() => handleOpenTaskModal(task)}
+                      >
+                        <CardContent>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, gap: 1, flexWrap: 'wrap' }}>
+                            <Typography variant="h6" fontWeight="bold" sx={{ flex: 1, minWidth: 0, wordBreak: 'break-word' }}>
+                              {task.title}
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleOpenEditTask(task)}
+                                color="primary"
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => handleDeleteTask(task._id)}
+                                color="error"
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          </Box>
 
-                      {task.description && (
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ mb: 2, wordBreak: 'break-word' }}
-                        >
-                          {task.description}
-                        </Typography>
-                      )}
+                          {task.description && (
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ mb: 2, wordBreak: 'break-word' }}
+                            >
+                              {task.description}
+                            </Typography>
+                          )}
 
-                      <Stack direction="row" spacing={1} sx={{ mb: 2 }} flexWrap="wrap" useFlexGap>
-                        <Chip
-                          label={PRIORITY_LABELS[task.priority] || task.priority}
-                          color={PRIORITY_COLORS[task.priority] || 'default'}
-                          size="small"
-                          variant="outlined"
-                        />
-                        <Select
-                          value={task.status}
-                          onChange={(e) => handleStatusChange(task._id, e.target.value)}
-                          size="small"
-                          sx={{ minWidth: { xs: '100%', sm: 120 } }}
-                        >
-                          {STATUS_OPTIONS.map((opt) => (
-                            <MenuItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                        {task.dueDate && (
-                          <Chip
-                            icon={<AssignmentIcon />}
-                            label={format(new Date(task.dueDate), 'dd/MM/yyyy HH:mm', {
-                              locale: he
-                            })}
-                            size="small"
-                            variant="outlined"
-                            sx={{ maxWidth: { xs: '100%', sm: 'auto' } }}
-                          />
-                        )}
-                      </Stack>
+                          <Stack direction="row" spacing={1} sx={{ mb: 2 }} flexWrap="wrap" useFlexGap>
+                            <Chip
+                              label={PRIORITY_LABELS[task.priority] || task.priority}
+                              color={PRIORITY_COLORS[task.priority] || 'default'}
+                              size="small"
+                              variant="outlined"
+                            />
+                            <Select
+                              value={task.status}
+                              onChange={(e) => handleStatusChange(task._id, e.target.value)}
+                              size="small"
+                              sx={{ minWidth: { xs: '100%', sm: 120 } }}
+                            >
+                              {STATUS_OPTIONS.map((opt) => (
+                                <MenuItem key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                            {task.dueDate && (
+                              <Chip
+                                icon={<AssignmentIcon />}
+                                label={format(new Date(task.dueDate), 'dd/MM/yyyy HH:mm', {
+                                  locale: he
+                                })}
+                                size="small"
+                                variant="outlined"
+                                sx={{ maxWidth: { xs: '100%', sm: 'auto' } }}
+                              />
+                            )}
+                          </Stack>
 
-                      {task.relatedClient && (
-                        <Typography variant="caption" color="text.secondary">
-                          לקוח: {task.relatedClient.personalInfo?.fullName || 'לא זמין'}
-                        </Typography>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </Stack>
-            </Box>
-          )}
+                          {task.relatedClient && (
+                            <Typography variant="caption" color="text.secondary">
+                              לקוח: {task.relatedClient.personalInfo?.fullName || 'לא זמין'}
+                            </Typography>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </Stack>
+                </Box>
+              )}
             </>
           )}
         </DialogContent>
@@ -352,11 +361,11 @@ const ProjectModal = ({ open, onClose, project }) => {
               editingTask
                 ? editingTask
                 : project
-                ? {
+                  ? {
                     status: 'todo',
                     projectId: project._id
                   }
-                : { status: 'todo' }
+                  : { status: 'todo' }
             }
             onSubmit={editingTask ? handleUpdateTask : handleCreateTask}
             onCancel={() => {
@@ -369,6 +378,13 @@ const ProjectModal = ({ open, onClose, project }) => {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Task View Modal */}
+      <TaskModal
+        open={Boolean(taskModalId)}
+        taskId={taskModalId}
+        onClose={handleCloseTaskModal}
+      />
     </>
   );
 };

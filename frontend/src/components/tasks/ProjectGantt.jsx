@@ -4,6 +4,7 @@ import { addDays, differenceInDays, eachDayOfInterval, isSameDay, isSameMonth } 
 
 const LABEL_COL_WIDTH = 320;
 const ROW_HEIGHT = 44;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 const isDateOnlyString = (v) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
 
@@ -52,7 +53,7 @@ const ProjectGantt = ({ projects = [], range }) => {
 
   const now = normalizeToStartOfDay(new Date());
   const fallbackStart = normalizeToStartOfDay(new Date());
-  const fallbackEnd = normalizeToStartOfDay(addDays(fallbackStart, 30));
+  const fallbackEnd = normalizeToStartOfDay(addDays(fallbackStart, 365));
 
   const rawStart = parseRangeValue(range?.from, fallbackStart);
   const rawEnd = parseRangeValue(range?.to, fallbackEnd);
@@ -68,7 +69,22 @@ const ProjectGantt = ({ projects = [], range }) => {
   }
 
   const totalDays = Math.max(days.length, 1);
-  const dayWidthPct = 100 / totalDays;
+  const scale = totalDays > 120 ? 'week' : 'day';
+  const unitDates =
+    scale === 'day'
+      ? days
+      : (() => {
+        const arr = [];
+        let d = start;
+        while (d <= end) {
+          arr.push(d);
+          d = addDays(d, 7);
+        }
+        return arr.length ? arr : [start];
+      })();
+  const totalUnits = Math.max(unitDates.length, 1);
+  const unitWidthPct = 100 / totalUnits;
+  const totalMs = Math.max(end.getTime() - start.getTime() + DAY_MS, DAY_MS);
 
   const getOffsetAndWidth = (task) => {
     const taskStartRaw = task.startDate || task.dueDate || task.endDate || start;
@@ -80,31 +96,31 @@ const ProjectGantt = ({ projects = [], range }) => {
     const clampedStart = taskStart < start ? start : taskStart;
     const clampedEnd = taskEnd > end ? end : taskEnd;
 
-    const offsetDays = Math.max(differenceInDays(clampedStart, start), 0);
-    const durationDays = Math.max(differenceInDays(clampedEnd, clampedStart) + 1, 1);
+    const leftMs = Math.max(clampedStart.getTime() - start.getTime(), 0);
+    const widthMs = Math.max(clampedEnd.getTime() - clampedStart.getTime() + DAY_MS, DAY_MS);
 
     return {
-      leftPct: (offsetDays / totalDays) * 100,
-      widthPct: (durationDays / totalDays) * 100
+      leftPct: Math.min((leftMs / totalMs) * 100, 100),
+      widthPct: Math.min((widthMs / totalMs) * 100, 100)
     };
   };
 
   const todayInRange = now >= start && now <= end;
-  const todayLeftPct = todayInRange ? (Math.max(differenceInDays(now, start), 0) / totalDays) * 100 : null;
+  const todayLeftPct = todayInRange ? Math.min(((now.getTime() - start.getTime()) / totalMs) * 100, 100) : null;
 
   // חודשיות לכותרת עליונה (תאים "מאוחדים")
   const monthSegments = [];
   let segStartIdx = 0;
-  for (let i = 0; i < days.length; i += 1) {
-    const isLast = i === days.length - 1;
-    const nextBreak = !isLast && !isSameMonth(days[i], days[i + 1]);
+  for (let i = 0; i < unitDates.length; i += 1) {
+    const isLast = i === unitDates.length - 1;
+    const nextBreak = !isLast && !isSameMonth(unitDates[i], unitDates[i + 1]);
     if (nextBreak || isLast) {
       const endIdx = i;
       const count = endIdx - segStartIdx + 1;
       monthSegments.push({
-        key: `${days[segStartIdx].getFullYear()}-${days[segStartIdx].getMonth()}`,
-        label: days[segStartIdx].toLocaleDateString('he-IL', { month: 'long', year: 'numeric' }),
-        widthPct: (count / totalDays) * 100
+        key: `${unitDates[segStartIdx].getFullYear()}-${unitDates[segStartIdx].getMonth()}`,
+        label: unitDates[segStartIdx].toLocaleDateString('he-IL', { month: 'long', year: 'numeric' }),
+        widthPct: (count / totalUnits) * 100
       });
       segStartIdx = i + 1;
     }
@@ -112,7 +128,7 @@ const ProjectGantt = ({ projects = [], range }) => {
 
   const gridBg = {
     backgroundImage: 'linear-gradient(to right, rgba(0,0,0,0.06) 1px, transparent 1px)',
-    backgroundSize: `${dayWidthPct}% 100%`,
+    backgroundSize: `${unitWidthPct}% 100%`,
     backgroundPosition: 'left top'
   };
 
@@ -160,7 +176,7 @@ const ProjectGantt = ({ projects = [], range }) => {
         bgcolor: 'background.paper'
       }}
     >
-      <Box sx={{ minWidth: 980 }}>
+      <Box sx={{ minWidth: 1100 }}>
         {/* Sticky header */}
         <Box sx={{ position: 'sticky', top: 0, zIndex: 5, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
           {/* Months row */}
@@ -247,14 +263,17 @@ const ProjectGantt = ({ projects = [], range }) => {
               )}
 
               <Box sx={{ display: 'flex' }}>
-                {days.map((d, idx) => {
-                  // כדי לא להעמיס, מציגים טקסט רק כל 2 ימים וגם על הראשון/האחרון
-                  const showLabel = idx === 0 || idx === days.length - 1 || idx % 2 === 0 || isSameDay(d, now);
+                {unitDates.map((d, idx) => {
+                  // כדי לא להעמיס: בסקאלה יומית מציגים כל 2 ימים, ובסקאלה שבועית מציגים כל שבוע
+                  const showLabel =
+                    scale === 'week'
+                      ? true
+                      : idx === 0 || idx === unitDates.length - 1 || idx % 2 === 0 || isSameDay(d, now);
                   return (
                     <Box
                       key={d.toISOString()}
                       sx={{
-                        width: `${dayWidthPct}%`,
+                        width: `${unitWidthPct}%`,
                         textAlign: 'center'
                       }}
                     >
