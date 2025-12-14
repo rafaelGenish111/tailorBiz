@@ -85,6 +85,14 @@ const TaskManagerSchema = new mongoose.Schema({
   // תגיות
   tags: [String],
 
+  // תתי־משימות (צ'קליסט)
+  subtasks: [
+    {
+      title: { type: String, trim: true, default: '' },
+      done: { type: Boolean, default: false }
+    }
+  ],
+
   // תזכורות
   reminders: [{
     time: Date,
@@ -98,7 +106,7 @@ const TaskManagerSchema = new mongoose.Schema({
 
   // הערות ועדכונים
   notes: String,
-  
+
   updates: [{
     content: String,
     timestamp: { type: Date, default: Date.now },
@@ -153,40 +161,40 @@ TaskManagerSchema.index({ createdBy: 1 });
 TaskManagerSchema.index({ tags: 1 });
 
 // Virtual - האם המשימה באיחור
-TaskManagerSchema.virtual('isOverdue').get(function() {
-  return this.status !== 'completed' && 
-         this.status !== 'cancelled' &&
-         this.dueDate && 
-         new Date() > new Date(this.dueDate);
+TaskManagerSchema.virtual('isOverdue').get(function () {
+  return this.status !== 'completed' &&
+    this.status !== 'cancelled' &&
+    this.dueDate &&
+    new Date() > new Date(this.dueDate);
 });
 
 // Virtual - זמן שנותר
-TaskManagerSchema.virtual('timeUntilDue').get(function() {
+TaskManagerSchema.virtual('timeUntilDue').get(function () {
   if (!this.dueDate || this.status === 'completed' || this.status === 'cancelled') {
     return null;
   }
-  
+
   const now = new Date();
   const due = new Date(this.dueDate);
   const diff = due - now;
-  
+
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const days = Math.floor(hours / 24);
-  
+
   if (days > 0) return `${days} ימים`;
   if (hours > 0) return `${hours} שעות`;
   return 'בקרוב';
 });
 
 // Middleware
-TaskManagerSchema.pre('save', function(next) {
+TaskManagerSchema.pre('save', function (next) {
   this.metadata.updatedAt = new Date();
-  
+
   // אם הושלם, רשום מתי
   if (this.status === 'completed' && !this.completedAt) {
     this.completedAt = new Date();
   }
-  
+
   next();
 });
 
