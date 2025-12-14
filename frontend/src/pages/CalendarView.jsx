@@ -54,6 +54,7 @@ import { he } from 'date-fns/locale';
 const START_HOUR = 6; // 06:00
 const END_HOUR = 22;   // 22:00
 const HOUR_HEIGHT = 60; // Pixels per hour
+const SLOT_MINUTES = 30; // גריד של חצי שעה כמו Google Calendar
 
 // מחשב פריסת אירנטים על ציר הזמן כך שאירועים חופפים יוצגו זה לצד זה
 const layoutDayEvents = (events) => {
@@ -198,8 +199,35 @@ const CalendarView = () => {
 
     const allEvents = [
       ...tasks.map(t => {
+        // חישוב start/end כמו גוגל קלנדר:
+        // - startDate אם קיים, אחרת dueDate
+        // - endDate אם קיים
+        // - אחרת, אם יש startDate + dueDate וה-dueDate אחרי ה-startDate, נשתמש ב-dueDate כ-end (היעד בפועל)
+        // - אחרת, estimatedMinutes/actualMinutes אם קיים
+        // - אחרת, ברירת מחדל שעה
         const baseStart = t.startDate ? new Date(t.startDate) : new Date(t.dueDate);
-        const baseEnd = t.endDate ? new Date(t.endDate) : addHours(baseStart, 1);
+        const dueAsEnd =
+          t.startDate &&
+            t.dueDate &&
+            new Date(t.dueDate).getTime() > new Date(t.startDate).getTime()
+            ? new Date(t.dueDate)
+            : null;
+
+        const durationMinutes =
+          (typeof t.actualMinutes === 'number' && t.actualMinutes > 0
+            ? t.actualMinutes
+            : (typeof t.estimatedMinutes === 'number' && t.estimatedMinutes > 0
+              ? t.estimatedMinutes
+              : 60));
+
+        const rawEnd = t.endDate
+          ? new Date(t.endDate)
+          : (dueAsEnd || new Date(baseStart.getTime() + durationMinutes * 60 * 1000));
+
+        // הגנה: end לפני start → נצמיד ל-start+30 דקות
+        const baseEnd = rawEnd.getTime() > baseStart.getTime()
+          ? rawEnd
+          : new Date(baseStart.getTime() + SLOT_MINUTES * 60 * 1000);
         return {
           ...t,
           __kind: 'task',
@@ -369,6 +397,8 @@ const CalendarView = () => {
     }
 
     const hours = Array.from({ length: END_HOUR - START_HOUR + 1 }).map((_, i) => START_HOUR + i);
+    const slotsPerHour = 60 / SLOT_MINUTES;
+    const totalSlots = hours.length * slotsPerHour;
 
     return (
       <Paper sx={{ mt: 2, overflow: 'hidden', display: 'flex', flexDirection: 'column' }} elevation={0} variant="outlined">
@@ -438,22 +468,38 @@ const CalendarView = () => {
                     bgcolor: isToday(day) ? 'rgba(25, 118, 210, 0.02)' : 'transparent'
                   }}
                 >
-                  {/* Hour Lines */}
-                  {hours.map(hour => (
-                    <Box key={`line-${hour}`} sx={{ height: HOUR_HEIGHT, borderBottom: 1, borderColor: 'divider' }} />
+                  {/* Slot lines (30 דקות) */}
+                  {Array.from({ length: totalSlots }).map((_, slotIdx) => (
+                    <Box
+                      key={`slot-${slotIdx}`}
+                      sx={{
+                        height: HOUR_HEIGHT / slotsPerHour,
+                        borderBottom: 1,
+                        borderColor: slotIdx % slotsPerHour === 0 ? 'divider' : 'rgba(0,0,0,0.06)'
+                      }}
+                    />
                   ))}
 
                   {/* Events */}
                   {laidOut.map(event => {
-                    const startH = getHours(event.startTime);
-                    const startM = getMinutes(event.startTime);
+                    // מציגים אירוע אם הוא חותך את חלון השעות (כולל קלמפינג כמו גוגל קלנדר)
+                    const dayStart = setMinutes(setHours(new Date(day), START_HOUR), 0);
+                    const dayEnd = setMinutes(setHours(new Date(day), END_HOUR + 1), 0); // end בלעדי
 
-                    // Check if event is within viewable hours
-                    if (startH < START_HOUR || startH > END_HOUR) return null; // Or handle overflow
+                    const rawStart = new Date(event.startTime);
+                    const rawEnd = new Date(event.endTime);
 
-                    const top = ((startH - START_HOUR) * 60 + startM) * (HOUR_HEIGHT / 60);
-                    const duration = differenceInMinutes(event.endTime, event.startTime);
-                    const height = Math.max(duration * (HOUR_HEIGHT / 60), 25); // Min height 25px
+                    if (isNaN(rawStart.getTime()) || isNaN(rawEnd.getTime())) return null;
+                    if (rawEnd <= dayStart || rawStart >= dayEnd) return null;
+
+                    const clampedStart = rawStart < dayStart ? dayStart : rawStart;
+                    const clampedEnd = rawEnd > dayEnd ? dayEnd : rawEnd;
+
+                    const minutesFromStart = differenceInMinutes(clampedStart, dayStart);
+                    const duration = Math.max(differenceInMinutes(clampedEnd, clampedStart), SLOT_MINUTES / 2); // מינימום 15 דק׳ כדי שלא ייעלם
+
+                    const top = minutesFromStart * (HOUR_HEIGHT / 60);
+                    const height = duration * (HOUR_HEIGHT / 60);
 
                     // חישוב רוחב ומיקום אופקי כדי לאפשר אירועים חופפים זה לצד זה
                     const colIndex = event.__colIndex || 0;
