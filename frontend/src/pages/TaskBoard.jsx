@@ -32,6 +32,7 @@ import { he } from 'date-fns/locale';
 import TaskForm from '../admin/components/content/tasks/TaskForm';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTask } from '../admin/hooks/useTasks';
+import TaskModal from '../components/tasks/TaskModal';
 
 const TaskBoard = () => {
   const location = useLocation();
@@ -44,6 +45,7 @@ const TaskBoard = () => {
   const [priorityFilter, setPriorityFilter] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [taskModalId, setTaskModalId] = useState(null);
 
   const { data: taskByIdResponse } = useTask(taskIdFromUrl);
   const taskFromUrl = taskIdFromUrl ? taskByIdResponse?.data : null;
@@ -58,6 +60,13 @@ const TaskBoard = () => {
       navigate('/admin/tasks', { replace: true });
     }
   };
+
+  const openTaskModal = (id) => {
+    if (!id) return;
+    setTaskModalId(id);
+  };
+
+  const closeTaskModal = () => setTaskModalId(null);
 
   const { data: tasksResponse } = useTasks(
     selectedProjectId ? { projectId: selectedProjectId } : undefined
@@ -319,6 +328,7 @@ const TaskBoard = () => {
                           },
                           position: 'relative'
                         }}
+                        onClick={() => openTaskModal(task._id)}
                       >
                         {/* Priority Stripe */}
                         <Box
@@ -519,6 +529,13 @@ const TaskBoard = () => {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Task View Modal (click anywhere) */}
+      <TaskModal
+        open={Boolean(taskModalId)}
+        taskId={taskModalId}
+        onClose={closeTaskModal}
+      />
     </Box>
   );
 };

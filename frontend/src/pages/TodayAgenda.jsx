@@ -33,6 +33,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTodayAgenda, useUpdateTask, useTaskStats } from '../admin/hooks/useTasks';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
+import TaskModal from '../components/tasks/TaskModal';
 
 const TodayAgenda = () => {
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ const TodayAgenda = () => {
   const { data: agendaResponse, isLoading } = useTodayAgenda();
   const { data: statsResponse } = useTaskStats();
   const updateTask = useUpdateTask();
+  const [taskModalId, setTaskModalId] = React.useState(null);
 
   const agenda = agendaResponse?.data || {};
   const stats = statsResponse?.data || {};
@@ -103,6 +105,7 @@ const TodayAgenda = () => {
             transition: 'transform 0.2s',
             '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 }
           }}
+          onClick={() => setTaskModalId(task._id)}
         >
           <CardContent sx={{ flexGrow: 1, pb: 1 }}>
             {/* כותרת ושבב עדיפות */}
@@ -165,7 +168,10 @@ const TodayAgenda = () => {
                   <IconButton
                     size="small"
                     sx={{ bgcolor: '#e8f5e9', color: '#2e7d32', border: '1px solid #c8e6c9' }}
-                    onClick={() => handleWhatsApp(phone)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleWhatsApp(phone);
+                    }}
                   >
                     <WhatsAppIcon fontSize="small" />
                   </IconButton>
@@ -176,7 +182,10 @@ const TodayAgenda = () => {
                   <IconButton
                     size="small"
                     sx={{ bgcolor: '#e3f2fd', color: '#1565c0', border: '1px solid #bbdefb' }}
-                    onClick={() => handleCall(phone)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCall(phone);
+                    }}
                   >
                     <PhoneIcon fontSize="small" />
                   </IconButton>
@@ -187,7 +196,10 @@ const TodayAgenda = () => {
                   <IconButton
                     size="small"
                     sx={{ bgcolor: '#fff3e0', color: '#ef6c00', border: '1px solid #ffe0b2' }}
-                    onClick={() => handleEmail(email)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEmail(email);
+                    }}
                   >
                     <EmailIcon fontSize="small" />
                   </IconButton>
@@ -200,7 +212,10 @@ const TodayAgenda = () => {
               size="small"
               color="success"
               startIcon={<CheckIcon />}
-              onClick={() => handleCompleteTask(task._id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCompleteTask(task._id);
+              }}
               sx={{ borderRadius: 4, textTransform: 'none', px: 2 }}
             >
               בוצע
@@ -312,6 +327,12 @@ const TodayAgenda = () => {
           </Paper>
         )}
       </Box>
+
+      <TaskModal
+        open={Boolean(taskModalId)}
+        taskId={taskModalId}
+        onClose={() => setTaskModalId(null)}
+      />
     </Box>
   );
 };

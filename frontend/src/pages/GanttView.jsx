@@ -21,7 +21,7 @@ const GanttView = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [range, setRange] = useState({
     from: new Date().toISOString().slice(0, 10),
-    to: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+    to: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
   });
   const [projectId, setProjectId] = useState('');
   const [loading, setLoading] = useState(false);
@@ -139,6 +139,18 @@ const GanttView = () => {
           sx={{ width: { xs: '100%', md: 'auto' } }}
         >
           30 יום קדימה
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={() =>
+            setRange({
+              from: new Date().toISOString().slice(0, 10),
+              to: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+            })
+          }
+          sx={{ width: { xs: '100%', md: 'auto' } }}
+        >
+          שנה קדימה
         </Button>
         <Button
           variant="contained"
