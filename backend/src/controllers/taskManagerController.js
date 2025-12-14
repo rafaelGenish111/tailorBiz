@@ -10,6 +10,29 @@ const isValidObjectId = (id) => {
   return mongoose.Types.ObjectId.isValid(id) && id !== 'temp-user-id';
 };
 
+// Normalize subtasks coming from clients (handles legacy "open"/"done" strings)
+const normalizeSubtasks = (subtasks) => {
+  if (!Array.isArray(subtasks)) return subtasks;
+  return subtasks.map((s) => {
+    const doneRaw = s?.done;
+    let done = false;
+
+    if (typeof doneRaw === 'boolean') {
+      done = doneRaw;
+    } else if (typeof doneRaw === 'number') {
+      done = doneRaw === 1;
+    } else if (typeof doneRaw === 'string') {
+      const v = doneRaw.trim().toLowerCase();
+      done = v === 'true' || v === '1' || v === 'yes' || v === 'done';
+    }
+
+    return {
+      title: typeof s?.title === 'string' ? s.title : (s?.title ?? ''),
+      done
+    };
+  });
+};
+
 // קבלת כל המשימות (עם פילטרים)
 exports.getAllTasks = async (req, res) => {
   try {
@@ -182,6 +205,7 @@ exports.createTask = async (req, res) => {
 
     const taskData = {
       ...req.body,
+      subtasks: normalizeSubtasks(req.body?.subtasks),
       createdBy: safeUserId,
       assignedTo: req.body.assignedTo || safeUserId
     };
@@ -239,7 +263,11 @@ exports.updateTask = async (req, res) => {
     // עדכון שדות
     Object.keys(req.body).forEach(key => {
       if (key !== '_id' && key !== 'createdBy') {
-        task[key] = req.body[key];
+        if (key === 'subtasks') {
+          task[key] = normalizeSubtasks(req.body[key]);
+        } else {
+          task[key] = req.body[key];
+        }
       }
     });
 

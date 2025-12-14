@@ -30,10 +30,13 @@ import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useProjects } fr
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import TaskForm from '../admin/components/content/tasks/TaskForm';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useTask } from '../admin/hooks/useTasks';
 
 const TaskBoard = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { id: taskIdFromUrl } = useParams();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editTask, setEditTask] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState('todo');
@@ -41,6 +44,20 @@ const TaskBoard = () => {
   const [priorityFilter, setPriorityFilter] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+
+  const { data: taskByIdResponse } = useTask(taskIdFromUrl);
+  const taskFromUrl = taskIdFromUrl ? taskByIdResponse?.data : null;
+  const openCreateTaskFromNav = Boolean(location.state?.openCreateTask);
+  const effectiveCreateDialogOpen = createDialogOpen || openCreateTaskFromNav;
+  const effectiveSelectedStatus = openCreateTaskFromNav ? 'todo' : selectedStatus;
+  const effectiveEditTask = taskFromUrl || editTask;
+
+  const clearRouteContext = () => {
+    // מנקה state/params כדי לא לפתוח מחדש דיאלוג ברענון
+    if (taskIdFromUrl || openCreateTaskFromNav) {
+      navigate('/admin/tasks', { replace: true });
+    }
+  };
 
   const { data: tasksResponse } = useTasks(
     selectedProjectId ? { projectId: selectedProjectId } : undefined
@@ -53,13 +70,15 @@ const TaskBoard = () => {
   const tasks = (tasksResponse?.data || []).slice();
   const projects = projectsResponse?.data || [];
 
-  // פתיחת דיאלוג יצירת משימה אם הגענו מ-״משימה חדשה״ (למשל מ‑TodayAgenda)
-  useEffect(() => {
-    if (location.state?.openCreateTask) {
-      setSelectedStatus('todo');
-      setCreateDialogOpen(true);
-    }
-  }, [location.state]);
+  const closeCreateDialog = () => {
+    setCreateDialogOpen(false);
+    clearRouteContext();
+  };
+
+  const closeEditDialog = () => {
+    setEditTask(null);
+    clearRouteContext();
+  };
 
   // סינון לפי עדיפות וטווח תאריכים (בצד הלקוח)
   const filteredTasks = tasks.filter((t) => {
@@ -125,13 +144,17 @@ const TaskBoard = () => {
 
   const handleCreate = (data) => {
     createTask.mutate(data, {
-      onSuccess: () => setCreateDialogOpen(false)
+      onSuccess: () => closeCreateDialog()
     });
   };
 
   const handleUpdate = (data) => {
-    updateTask.mutate({ id: editTask._id, data }, {
-      onSuccess: () => setEditTask(null)
+    const id = effectiveEditTask?._id;
+    if (!id) return;
+    updateTask.mutate({ id, data }, {
+      onSuccess: () => {
+        closeEditDialog();
+      }
     });
   };
 
@@ -238,14 +261,14 @@ const TaskBoard = () => {
       <Grid container spacing={3}>
         {columns.map((column) => (
           <Grid item xs={12} md={6} lg={3} key={column.id}>
-            <Paper 
+            <Paper
               elevation={0}
-              sx={{ 
+              sx={{
                 width: '100%',
-                height: '100%', 
-                minHeight: { xs: 'auto', md: '75vh' }, 
+                height: '100%',
+                minHeight: { xs: 'auto', md: '75vh' },
                 bgcolor: '#f5f5f5',
-                display: 'flex', 
+                display: 'flex',
                 flexDirection: 'column',
                 borderRadius: 2,
                 overflow: 'hidden'
@@ -271,9 +294,9 @@ const TaskBoard = () => {
                     {column.title}
                   </Typography>
                 </Box>
-                <Chip 
-                  label={tasksByStatus[column.id].length} 
-                  size="small" 
+                <Chip
+                  label={tasksByStatus[column.id].length}
+                  size="small"
                   sx={{ bgcolor: column.color, color: 'white', fontWeight: 'bold' }}
                 />
               </Box>
@@ -298,31 +321,31 @@ const TaskBoard = () => {
                         }}
                       >
                         {/* Priority Stripe */}
-                        <Box 
-                          sx={{ 
-                            position: 'absolute', 
-                            left: 0, 
-                            top: 0, 
-                            bottom: 0, 
-                            width: 4, 
-                            bgcolor: task.priority === 'urgent' ? 'error.main' : 
-                                    task.priority === 'high' ? 'warning.main' : 
-                                    task.priority === 'medium' ? 'info.main' : 'grey.300'
-                          }} 
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            width: 4,
+                            bgcolor: task.priority === 'urgent' ? 'error.main' :
+                              task.priority === 'high' ? 'warning.main' :
+                                task.priority === 'medium' ? 'info.main' : 'grey.300'
+                          }}
                         />
 
                         {/* Task Header */}
                         <Box sx={{ pl: 1, display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                           <Chip
-                            label={task.priority === 'urgent' ? 'דחוף' : 
-                                   task.priority === 'high' ? 'גבוה' : 
-                                   task.priority === 'medium' ? 'בינוני' : 'נמוך'}
+                            label={task.priority === 'urgent' ? 'דחוף' :
+                              task.priority === 'high' ? 'גבוה' :
+                                task.priority === 'medium' ? 'בינוני' : 'נמוך'}
                             size="small"
                             color={getPriorityColor(task.priority)}
                             variant="outlined"
                           />
                           <Box>
-                            <IconButton 
+                            <IconButton
                               size="small"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -370,9 +393,9 @@ const TaskBoard = () => {
 
                           {/* Footer Info */}
                           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 'auto' }}>
-                             {task.relatedClient ? (
+                            {task.relatedClient ? (
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Avatar 
+                                <Avatar
                                   sx={{ width: 24, height: 24, fontSize: '0.75rem', bgcolor: 'primary.main' }}
                                 >
                                   {task.relatedClient.personalInfo.fullName?.charAt(0)}
@@ -398,9 +421,9 @@ const TaskBoard = () => {
                                 />
                               )}
                               {task.dueDate && (
-                                <Chip 
+                                <Chip
                                   icon={<ScheduleIcon sx={{ fontSize: '1rem !important' }} />}
-                                  label={format(new Date(task.dueDate), 'dd/MM HH:mm')}
+                                  label={format(new Date(task.dueDate), 'dd/MM HH:mm', { locale: he })}
                                   size="small"
                                   sx={{ fontSize: '0.75rem', height: 24 }}
                                 />
@@ -411,21 +434,21 @@ const TaskBoard = () => {
 
                         {/* Actions */}
                         <Box sx={{ mt: 2, pt: 1, borderTop: 1, borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                            {task.status === 'todo' && (
-                              <Button size="small" onClick={() => handleStatusChange(task._id, 'in_progress')}>
-                                התחל טיפול
-                              </Button>
-                            )}
-                            {task.status === 'in_progress' && (
-                              <Button size="small" color="success" onClick={() => handleStatusChange(task._id, 'completed')}>
-                                סיים משימה
-                              </Button>
-                            )}
-                            {task.status === 'completed' && (
-                               <Typography variant="caption" color="success.main" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                 <CheckCircleIcon fontSize="small" /> הושלם
-                               </Typography>
-                            )}
+                          {task.status === 'todo' && (
+                            <Button size="small" onClick={() => handleStatusChange(task._id, 'in_progress')}>
+                              התחל טיפול
+                            </Button>
+                          )}
+                          {task.status === 'in_progress' && (
+                            <Button size="small" color="success" onClick={() => handleStatusChange(task._id, 'completed')}>
+                              סיים משימה
+                            </Button>
+                          )}
+                          {task.status === 'completed' && (
+                            <Typography variant="caption" color="success.main" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <CheckCircleIcon fontSize="small" /> הושלם
+                            </Typography>
+                          )}
                         </Box>
                       </Card>
                     ))}
@@ -463,17 +486,17 @@ const TaskBoard = () => {
 
       {/* Create Task Dialog */}
       <Dialog
-        open={createDialogOpen}
-        onClose={() => setCreateDialogOpen(false)}
+        open={effectiveCreateDialogOpen}
+        onClose={closeCreateDialog}
         maxWidth="md"
         fullWidth
       >
         <DialogTitle>משימה חדשה</DialogTitle>
         <DialogContent dividers>
-          <TaskForm 
-            initialData={{ status: selectedStatus }}
+          <TaskForm
+            initialData={{ status: effectiveSelectedStatus }}
             onSubmit={handleCreate}
-            onCancel={() => setCreateDialogOpen(false)}
+            onCancel={closeCreateDialog}
             isLoading={createTask.isPending}
           />
         </DialogContent>
@@ -481,17 +504,17 @@ const TaskBoard = () => {
 
       {/* Edit Task Dialog */}
       <Dialog
-        open={Boolean(editTask)}
-        onClose={() => setEditTask(null)}
+        open={Boolean(effectiveEditTask)}
+        onClose={closeEditDialog}
         maxWidth="md"
         fullWidth
       >
         <DialogTitle>עריכת משימה</DialogTitle>
         <DialogContent dividers>
-          <TaskForm 
-            initialData={editTask}
+          <TaskForm
+            initialData={effectiveEditTask}
             onSubmit={handleUpdate}
-            onCancel={() => setEditTask(null)}
+            onCancel={closeEditDialog}
             isLoading={updateTask.isPending}
           />
         </DialogContent>
