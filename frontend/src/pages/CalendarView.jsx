@@ -120,7 +120,15 @@ const layoutDayEvents = (events) => {
   return { laidOut: sorted, maxCols };
 };
 
-const TimeGridEvent = ({ event, style, onClick, onTaskPointerDown, disableClick }) => {
+const TimeGridEvent = ({
+  event,
+  style,
+  onClick,
+  onTaskPointerDown,
+  onTaskResizePointerDown,
+  onTaskResizeStartPointerDown,
+  disableClick
+}) => {
   const theme = useTheme();
 
   const isTask = event.__kind === 'task';
@@ -163,6 +171,28 @@ const TimeGridEvent = ({ event, style, onClick, onTaskPointerDown, disableClick 
         }
       }}
     >
+      {/* Resize handle (top) - change start time */}
+      {isTask && (
+        <Box
+          onPointerDown={(e) => {
+            if (e.button !== 0) return;
+            e.stopPropagation();
+            onTaskResizeStartPointerDown?.(event, e);
+          }}
+          sx={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 0,
+            height: 8,
+            cursor: 'ns-resize',
+            bgcolor: 'rgba(0,0,0,0.18)',
+            borderTopLeftRadius: '4px',
+            borderTopRightRadius: '4px'
+          }}
+        />
+      )}
+
       <Typography variant="caption" display="block" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>
         {format(new Date(event.startTime), 'HH:mm')}
       </Typography>
@@ -173,6 +203,29 @@ const TimeGridEvent = ({ event, style, onClick, onTaskPointerDown, disableClick 
         <Typography variant="caption" display="block" sx={{ lineHeight: 1.1, opacity: 0.9, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {event.clientName}
         </Typography>
+      )}
+
+      {/* Resize handle (bottom) - Google Calendar style */}
+      {isTask && (
+        <Box
+          onPointerDown={(e) => {
+            // כפתור ראשי בלבד
+            if (e.button !== 0) return;
+            e.stopPropagation();
+            onTaskResizePointerDown?.(event, e);
+          }}
+          sx={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 8,
+            cursor: 'ns-resize',
+            bgcolor: 'rgba(0,0,0,0.18)',
+            borderBottomLeftRadius: '4px',
+            borderBottomRightRadius: '4px'
+          }}
+        />
       )}
     </Box>
   );
@@ -514,6 +567,7 @@ const CalendarView = () => {
       const durationMs = Math.max(originalEnd.getTime() - originalStart.getTime(), SLOT_MINUTES * 60 * 1000);
 
       dragStateRef.current = {
+        mode: 'move',
         taskId: event._id,
         displayTitle: event.displayTitle || event.title,
         title: event.title,
@@ -528,6 +582,90 @@ const CalendarView = () => {
       };
 
       // יצירת preview ראשוני
+      setDragPreview({
+        taskId: event._id,
+        displayTitle: event.displayTitle || event.title,
+        title: event.title,
+        __kind: 'task',
+        color: event.color,
+        priority: event.priority,
+        startTime: originalStart,
+        endTime: originalEnd
+      });
+
+      try {
+        pointerEvent.currentTarget.setPointerCapture(pointerEvent.pointerId);
+      } catch (_) {
+        // ignore
+      }
+    };
+
+    const handleTaskResizePointerDown = (event, pointerEvent) => {
+      const gridRect = gridBodyRef.current?.getBoundingClientRect?.();
+      if (!gridRect) return;
+
+      const originalStart = new Date(event.startTime);
+      const originalEnd = new Date(event.endTime);
+      const minDurationMs = (SLOT_MINUTES / 2) * 60 * 1000; // 15 דקות כברירת מחדל
+      const durationMs = Math.max(originalEnd.getTime() - originalStart.getTime(), minDurationMs);
+
+      dragStateRef.current = {
+        mode: 'resize',
+        taskId: event._id,
+        displayTitle: event.displayTitle || event.title,
+        title: event.title,
+        color: event.color,
+        priority: event.priority,
+        pointerStart: { x: pointerEvent.clientX, y: pointerEvent.clientY },
+        originalStart,
+        originalEnd,
+        durationMs,
+        minDurationMs,
+        daysCount: viewMode === 'day' ? 1 : 7
+      };
+
+      setDragPreview({
+        taskId: event._id,
+        displayTitle: event.displayTitle || event.title,
+        title: event.title,
+        __kind: 'task',
+        color: event.color,
+        priority: event.priority,
+        startTime: originalStart,
+        endTime: originalEnd
+      });
+
+      try {
+        pointerEvent.currentTarget.setPointerCapture(pointerEvent.pointerId);
+      } catch (_) {
+        // ignore
+      }
+    };
+
+    const handleTaskResizeStartPointerDown = (event, pointerEvent) => {
+      const gridRect = gridBodyRef.current?.getBoundingClientRect?.();
+      if (!gridRect) return;
+
+      const originalStart = new Date(event.startTime);
+      const originalEnd = new Date(event.endTime);
+      const minDurationMs = (SLOT_MINUTES / 2) * 60 * 1000; // 15 דקות
+      const durationMs = Math.max(originalEnd.getTime() - originalStart.getTime(), minDurationMs);
+
+      dragStateRef.current = {
+        mode: 'resize_start',
+        taskId: event._id,
+        displayTitle: event.displayTitle || event.title,
+        title: event.title,
+        color: event.color,
+        priority: event.priority,
+        pointerStart: { x: pointerEvent.clientX, y: pointerEvent.clientY },
+        originalStart,
+        originalEnd,
+        durationMs,
+        minDurationMs,
+        daysCount: viewMode === 'day' ? 1 : 7
+      };
+
       setDragPreview({
         taskId: event._id,
         displayTitle: event.displayTitle || event.title,
@@ -671,6 +809,8 @@ const CalendarView = () => {
                         }}
                         disableClick={isDragging}
                         onTaskPointerDown={(ev, pe) => handleTaskPointerDown(ev, pe, dayIndex, daysToShow)}
+                        onTaskResizePointerDown={handleTaskResizePointerDown}
+                        onTaskResizeStartPointerDown={handleTaskResizeStartPointerDown}
                       />
                     );
                   })}
@@ -699,45 +839,103 @@ const CalendarView = () => {
       const gridRect = gridBodyRef.current?.getBoundingClientRect?.();
       if (!gridRect) return;
 
-      const dayWidth = gridRect.width / state.daysCount;
-      const currentDayIndex = Math.max(0, Math.min(state.daysCount - 1, Math.floor((e.clientX - gridRect.left) / dayWidth)));
-
-      const deltaY = e.clientY - state.pointerStart.y;
       const pxPerMinute = HOUR_HEIGHT / 60;
-      const rawDeltaMinutes = deltaY / pxPerMinute;
-      const snappedDeltaMinutes = Math.round(rawDeltaMinutes / SLOT_MINUTES) * SLOT_MINUTES;
 
-      const baseShifted = addMinutes(state.originalStart, snappedDeltaMinutes);
-      const targetDay = (() => {
-        // daysToShow isn't in ref; reconstruct from grid rect won't help.
-        // We keep dayIndex by calculating relative to currentDate and viewMode for week/day.
-        // For correctness: week uses startOfWeek(currentDate) + idx, day uses currentDate.
-        if (viewMode === 'day') return currentDate;
-        const start = startOfWeek(currentDate, { weekStartsOn: 0 });
-        return addDays(start, currentDayIndex);
-      })();
+      if (state.mode === 'resize') {
+        const taskDay = new Date(state.originalStart);
+        const dayStart = setMinutes(setHours(new Date(taskDay), START_HOUR), 0);
+        const dayEnd = setMinutes(setHours(new Date(taskDay), END_HOUR + 1), 0); // end בלעדי
 
-      let nextStart = new Date(targetDay);
-      nextStart.setHours(baseShifted.getHours(), baseShifted.getMinutes(), 0, 0);
-      nextStart = snapToSlot(nextStart);
+        // end לפי המיקום האנכי של העכבר (snapping ל-30 דק')
+        const y = e.clientY - gridRect.top; // px from top of grid
+        const minutesFromDayStart = Math.max(0, Math.round((y / pxPerMinute) / SLOT_MINUTES) * SLOT_MINUTES);
+        let nextEnd = addMinutes(dayStart, minutesFromDayStart);
+        nextEnd = snapToSlot(nextEnd);
 
-      const dayStart = setMinutes(setHours(new Date(targetDay), START_HOUR), 0);
-      const dayEnd = setMinutes(setHours(new Date(targetDay), END_HOUR + 1), 0);
-      nextStart = clampIntoView(nextStart, state.durationMs, dayStart, dayEnd);
+        const minEnd = new Date(state.originalStart.getTime() + state.minDurationMs);
+        if (nextEnd.getTime() < minEnd.getTime()) nextEnd = snapToSlot(minEnd);
+        if (nextEnd.getTime() > dayEnd.getTime()) nextEnd = new Date(dayEnd.getTime());
 
-      const nextEnd = new Date(nextStart.getTime() + state.durationMs);
+        // שמירה על start המקורי
+        setDragPreview((prev) => ({
+          ...(prev || {}),
+          taskId: state.taskId,
+          displayTitle: state.displayTitle,
+          title: state.title,
+          __kind: 'task',
+          color: state.color,
+          priority: state.priority,
+          startTime: state.originalStart,
+          endTime: nextEnd
+        }));
+      } else if (state.mode === 'resize_start') {
+        const taskDay = new Date(state.originalStart);
+        const dayStart = setMinutes(setHours(new Date(taskDay), START_HOUR), 0);
+        const dayEnd = setMinutes(setHours(new Date(taskDay), END_HOUR + 1), 0); // end בלעדי
 
-      setDragPreview((prev) => ({
-        ...(prev || {}),
-        taskId: state.taskId,
-        displayTitle: state.displayTitle,
-        title: state.title,
-        __kind: 'task',
-        color: state.color,
-        priority: state.priority,
-        startTime: nextStart,
-        endTime: nextEnd
-      }));
+        // start לפי המיקום האנכי של העכבר (snapping ל-30 דק')
+        const y = e.clientY - gridRect.top; // px from top of grid
+        const minutesFromDayStart = Math.max(0, Math.round((y / pxPerMinute) / SLOT_MINUTES) * SLOT_MINUTES);
+        let nextStart = addMinutes(dayStart, minutesFromDayStart);
+        nextStart = snapToSlot(nextStart);
+
+        // אסור לעבור את end - minDuration
+        const maxStart = new Date(state.originalEnd.getTime() - state.minDurationMs);
+        if (nextStart.getTime() > maxStart.getTime()) nextStart = snapToSlot(maxStart);
+
+        // קלמפינג לתחום התצוגה
+        if (nextStart.getTime() < dayStart.getTime()) nextStart = new Date(dayStart.getTime());
+        if (nextStart.getTime() > dayEnd.getTime()) nextStart = new Date(dayEnd.getTime());
+
+        setDragPreview((prev) => ({
+          ...(prev || {}),
+          taskId: state.taskId,
+          displayTitle: state.displayTitle,
+          title: state.title,
+          __kind: 'task',
+          color: state.color,
+          priority: state.priority,
+          startTime: nextStart,
+          endTime: state.originalEnd
+        }));
+      } else {
+        // mode: move
+        const dayWidth = gridRect.width / state.daysCount;
+        const currentDayIndex = Math.max(0, Math.min(state.daysCount - 1, Math.floor((e.clientX - gridRect.left) / dayWidth)));
+
+        const deltaY = e.clientY - state.pointerStart.y;
+        const rawDeltaMinutes = deltaY / pxPerMinute;
+        const snappedDeltaMinutes = Math.round(rawDeltaMinutes / SLOT_MINUTES) * SLOT_MINUTES;
+
+        const baseShifted = addMinutes(state.originalStart, snappedDeltaMinutes);
+        const targetDay = (() => {
+          if (viewMode === 'day') return currentDate;
+          const start = startOfWeek(currentDate, { weekStartsOn: 0 });
+          return addDays(start, currentDayIndex);
+        })();
+
+        let nextStart = new Date(targetDay);
+        nextStart.setHours(baseShifted.getHours(), baseShifted.getMinutes(), 0, 0);
+        nextStart = snapToSlot(nextStart);
+
+        const dayStart = setMinutes(setHours(new Date(targetDay), START_HOUR), 0);
+        const dayEnd = setMinutes(setHours(new Date(targetDay), END_HOUR + 1), 0);
+        nextStart = clampIntoView(nextStart, state.durationMs, dayStart, dayEnd);
+
+        const nextEnd = new Date(nextStart.getTime() + state.durationMs);
+
+        setDragPreview((prev) => ({
+          ...(prev || {}),
+          taskId: state.taskId,
+          displayTitle: state.displayTitle,
+          title: state.title,
+          __kind: 'task',
+          color: state.color,
+          priority: state.priority,
+          startTime: nextStart,
+          endTime: nextEnd
+        }));
+      }
     };
 
     const onUp = async () => {
@@ -751,19 +949,39 @@ const CalendarView = () => {
       }
 
       // אם לא זזנו באמת, אל תשלח עדכון
-      const moved =
-        new Date(preview.startTime).getTime() !== state.originalStart.getTime() ||
-        new Date(preview.endTime).getTime() !== state.originalEnd.getTime();
+      const startChanged = new Date(preview.startTime).getTime() !== state.originalStart.getTime();
+      const endChanged = new Date(preview.endTime).getTime() !== state.originalEnd.getTime();
 
-      if (moved) {
-        await updateTask.mutateAsync({
-          id: state.taskId,
-          data: {
-            startDate: new Date(preview.startTime).toISOString(),
-            endDate: new Date(preview.endTime).toISOString(),
-            dueDate: new Date(preview.endTime).toISOString()
-          }
-        });
+      if (state.mode === 'resize') {
+        if (endChanged) {
+          await updateTask.mutateAsync({
+            id: state.taskId,
+            data: {
+              endDate: new Date(preview.endTime).toISOString(),
+              dueDate: new Date(preview.endTime).toISOString()
+            }
+          });
+        }
+      } else if (state.mode === 'resize_start') {
+        if (startChanged) {
+          await updateTask.mutateAsync({
+            id: state.taskId,
+            data: {
+              startDate: new Date(preview.startTime).toISOString()
+            }
+          });
+        }
+      } else {
+        if (startChanged || endChanged) {
+          await updateTask.mutateAsync({
+            id: state.taskId,
+            data: {
+              startDate: new Date(preview.startTime).toISOString(),
+              endDate: new Date(preview.endTime).toISOString(),
+              dueDate: new Date(preview.endTime).toISOString()
+            }
+          });
+        }
       }
 
       setDragPreview(null);
