@@ -273,14 +273,14 @@ const TaskBoard = () => {
       <Grid container spacing={3}>
         {columns.map((column) => (
           <Grid item xs={12} md={6} lg={3} key={column.id}>
-            <Paper
+            <Paper 
               elevation={0}
-              sx={{
+              sx={{ 
                 width: '100%',
-                height: '100%',
-                minHeight: { xs: 'auto', md: '75vh' },
+                height: '100%', 
+                minHeight: { xs: 'auto', md: '75vh' }, 
                 bgcolor: '#f5f5f5',
-                display: 'flex',
+                display: 'flex', 
                 flexDirection: 'column',
                 borderRadius: 2,
                 overflow: 'hidden'
@@ -306,9 +306,9 @@ const TaskBoard = () => {
                     {column.title}
                   </Typography>
                 </Box>
-                <Chip
-                  label={tasksByStatus[column.id].length}
-                  size="small"
+                <Chip 
+                  label={tasksByStatus[column.id].length} 
+                  size="small" 
                   sx={{ bgcolor: column.color, color: 'white', fontWeight: 'bold' }}
                 />
               </Box>
@@ -334,31 +334,31 @@ const TaskBoard = () => {
                         onClick={() => openTaskModal(task._id)}
                       >
                         {/* Priority Stripe */}
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            left: 0,
-                            top: 0,
-                            bottom: 0,
-                            width: 4,
-                            bgcolor: task.priority === 'urgent' ? 'error.main' :
-                              task.priority === 'high' ? 'warning.main' :
-                                task.priority === 'medium' ? 'info.main' : 'grey.300'
-                          }}
+                        <Box 
+                          sx={{ 
+                            position: 'absolute', 
+                            left: 0, 
+                            top: 0, 
+                            bottom: 0, 
+                            width: 4, 
+                            bgcolor: task.priority === 'urgent' ? 'error.main' : 
+                                    task.priority === 'high' ? 'warning.main' : 
+                                    task.priority === 'medium' ? 'info.main' : 'grey.300'
+                          }} 
                         />
 
                         {/* Task Header */}
                         <Box sx={{ pl: 1, display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                           <Chip
-                            label={task.priority === 'urgent' ? 'דחוף' :
-                              task.priority === 'high' ? 'גבוה' :
-                                task.priority === 'medium' ? 'בינוני' : 'נמוך'}
+                            label={task.priority === 'urgent' ? 'דחוף' : 
+                                   task.priority === 'high' ? 'גבוה' : 
+                                   task.priority === 'medium' ? 'בינוני' : 'נמוך'}
                             size="small"
                             color={getPriorityColor(task.priority)}
                             variant="outlined"
                           />
                           <Box>
-                            <IconButton
+                            <IconButton 
                               size="small"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -406,9 +406,9 @@ const TaskBoard = () => {
 
                           {/* Footer Info */}
                           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 'auto' }}>
-                            {task.relatedClient ? (
+                             {task.relatedClient ? (
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Avatar
+                                <Avatar 
                                   sx={{ width: 24, height: 24, fontSize: '0.75rem', bgcolor: 'primary.main' }}
                                 >
                                   {task.relatedClient.personalInfo.fullName?.charAt(0)}
@@ -434,7 +434,7 @@ const TaskBoard = () => {
                                 />
                               )}
                               {task.dueDate && (
-                                <Chip
+                                <Chip 
                                   icon={<ScheduleIcon sx={{ fontSize: '1rem !important' }} />}
                                   label={format(new Date(task.dueDate), 'dd/MM HH:mm', { locale: he })}
                                   size="small"
@@ -447,21 +447,21 @@ const TaskBoard = () => {
 
                         {/* Actions */}
                         <Box sx={{ mt: 2, pt: 1, borderTop: 1, borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                          {task.status === 'todo' && (
-                            <Button size="small" onClick={() => handleStatusChange(task._id, 'in_progress')}>
-                              התחל טיפול
-                            </Button>
-                          )}
-                          {task.status === 'in_progress' && (
-                            <Button size="small" color="success" onClick={() => handleStatusChange(task._id, 'completed')}>
-                              סיים משימה
-                            </Button>
-                          )}
-                          {task.status === 'completed' && (
-                            <Typography variant="caption" color="success.main" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <CheckCircleIcon fontSize="small" /> הושלם
-                            </Typography>
-                          )}
+                            {task.status === 'todo' && (
+                              <Button size="small" onClick={() => handleStatusChange(task._id, 'in_progress')}>
+                                התחל טיפול
+                              </Button>
+                            )}
+                            {task.status === 'in_progress' && (
+                              <Button size="small" color="success" onClick={() => handleStatusChange(task._id, 'completed')}>
+                                סיים משימה
+                              </Button>
+                            )}
+                            {task.status === 'completed' && (
+                               <Typography variant="caption" color="success.main" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                 <CheckCircleIcon fontSize="small" /> הושלם
+                               </Typography>
+                            )}
                         </Box>
                       </Card>
                     ))}
@@ -526,7 +526,7 @@ const TaskBoard = () => {
           </Button>
         </DialogTitle>
         <DialogContent dividers>
-          <TaskForm
+          <TaskForm 
             formId={createFormId}
             showActions={false}
             initialData={{ status: effectiveSelectedStatus }}
@@ -571,7 +571,7 @@ const TaskBoard = () => {
           </Button>
         </DialogTitle>
         <DialogContent dividers>
-          <TaskForm
+          <TaskForm 
             initialData={effectiveEditTask}
             onSubmit={handleUpdate}
             onCancel={closeEditDialog}
