@@ -12,17 +12,22 @@ import {
   Divider,
   Accordion,
   AccordionSummary,
-  AccordionDetails
+  AccordionDetails,
+  IconButton
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { useAdminPage, usePublishAdminPage, useRollbackAdminPage, useSaveAdminPageDraft } from '../../../admin/hooks/useCMS';
+import { useUploadImage } from '../../../admin/hooks/useCMS';
 
 const DEFAULT_HOME = {
   heroTitle: 'מערכת חכמה בתפירה אישית',
   heroSubtitle: 'ללא דמי מנוי חודשיים - הנכס נשאר שלך',
   heroCtaText: 'לבדיקת היתכנות ואפיון',
   heroCtaHref: '/contact',
-  homeContent: ''
+  sections: []
 };
 
 const DEFAULT_ABOUT = {
@@ -35,6 +40,7 @@ const PageEditor = ({ slug, title }) => {
   const saveDraft = useSaveAdminPageDraft(slug);
   const publish = usePublishAdminPage(slug);
   const rollback = useRollbackAdminPage(slug);
+  const uploadImage = useUploadImage();
 
   const page = pageResp?.data;
   const initialDraft = page?.draft || (slug === 'home' ? DEFAULT_HOME : DEFAULT_ABOUT);
@@ -61,6 +67,16 @@ const PageEditor = ({ slug, title }) => {
     // שמירה לפני פרסום כדי למנוע פרסום תוכן לא שמור
     await handleSave();
     await publish.mutateAsync();
+  };
+
+  const sections = Array.isArray(draft?.sections) ? draft.sections : [];
+
+  const uploadSectionImage = async (file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('folder', 'tailorbiz/site/home/sections');
+    const res = await uploadImage.mutateAsync(fd);
+    return res?.data?.data;
   };
 
   return (
@@ -135,14 +151,144 @@ const PageEditor = ({ slug, title }) => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="תכני דף הבית (טקסט חופשי/נקודות)"
-                value={draft.homeContent || ''}
-                onChange={(e) => setDraft((p) => ({ ...p, homeContent: e.target.value }))}
-                multiline
-                minRows={8}
-              />
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, borderColor: 'grey.100' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box>
+                    <Typography fontWeight={800}>תכני דף הבית (Sections)</Typography>
+                    <Typography variant="body2" color="text.secondary">כל Section כולל כותרת/תיאור/תמונה</Typography>
+                  </Box>
+                  <Button
+                    variant="contained"
+                    onClick={() =>
+                      setDraft((p) => ({
+                        ...p,
+                        sections: [
+                          ...(Array.isArray(p.sections) ? p.sections : []),
+                          { title: '', description: '', image: null }
+                        ]
+                      }))
+                    }
+                  >
+                    הוסף Section
+                  </Button>
+                </Box>
+
+                <Stack spacing={2}>
+                  {sections.map((s, idx) => (
+                    <Paper key={idx} variant="outlined" sx={{ p: 2, borderRadius: 3, borderColor: 'grey.100' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <Typography fontWeight={700}>Section {idx + 1}</Typography>
+                        <Stack direction="row" spacing={0.5}>
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              if (idx === 0) return;
+                              setDraft((p) => {
+                                const arr = [...(p.sections || [])];
+                                const tmp = arr[idx - 1];
+                                arr[idx - 1] = arr[idx];
+                                arr[idx] = tmp;
+                                return { ...p, sections: arr };
+                              });
+                            }}
+                          >
+                            <ArrowUpwardIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              if (idx === sections.length - 1) return;
+                              setDraft((p) => {
+                                const arr = [...(p.sections || [])];
+                                const tmp = arr[idx + 1];
+                                arr[idx + 1] = arr[idx];
+                                arr[idx] = tmp;
+                                return { ...p, sections: arr };
+                              });
+                            }}
+                          >
+                            <ArrowDownwardIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => {
+                              setDraft((p) => ({
+                                ...p,
+                                sections: (p.sections || []).filter((_, i) => i !== idx)
+                              }));
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Stack>
+                      </Box>
+
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} md={6}>
+                          <TextField
+                            fullWidth
+                            label="כותרת"
+                            value={s.title || ''}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              setDraft((p) => ({
+                                ...p,
+                                sections: (p.sections || []).map((it, i) => (i === idx ? { ...it, title: v } : it))
+                              }));
+                            }}
+                          />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Button variant="outlined" component="label" fullWidth>
+                            העלה תמונה
+                            <input
+                              hidden
+                              type="file"
+                              accept="image/*"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const up = await uploadSectionImage(file);
+                                setDraft((p) => ({
+                                  ...p,
+                                  sections: (p.sections || []).map((it, i) =>
+                                    i === idx ? { ...it, image: { url: up.url, publicId: up.publicId, alt: it.title } } : it
+                                  )
+                                }));
+                              }}
+                            />
+                          </Button>
+                          {s.image?.url ? (
+                            <Box sx={{ mt: 1 }}>
+                              <Box component="img" src={s.image.url} alt={s.image.alt || ''} sx={{ width: '100%', maxHeight: 120, objectFit: 'contain', borderRadius: 2, border: '1px solid', borderColor: 'grey.100' }} />
+                            </Box>
+                          ) : null}
+                        </Grid>
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth
+                            label="תיאור"
+                            value={s.description || ''}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              setDraft((p) => ({
+                                ...p,
+                                sections: (p.sections || []).map((it, i) => (i === idx ? { ...it, description: v } : it))
+                              }));
+                            }}
+                            multiline
+                            minRows={4}
+                          />
+                        </Grid>
+                      </Grid>
+                    </Paper>
+                  ))}
+                  {sections.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary">אין Sections עדיין. לחץ על \"הוסף Section\".</Typography>
+                  ) : null}
+                </Stack>
+              </Paper>
             </Grid>
           </>
         ) : (
