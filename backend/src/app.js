@@ -50,48 +50,18 @@ app.use((req, res, next) => {
 });
 
 // CORS configuration
-const allowedOrigins = [
-  // Local development
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://127.0.0.1:5173',
-  // Production frontend (Vercel env or custom domain)
-  process.env.CLIENT_URL,
-  process.env.CUSTOM_CLIENT_DOMAIN,
-  // Hard-coded fallback for current production domain
-  'https://tailorbiz-software.com',
-  'https://www.tailorbiz-software.com'
-].filter(Boolean);
-
-console.log('[CORS] Allowed origins:', allowedOrigins);
-
+// חשוב: כדי למנוע מצבים שבהם שגיאות שרת/פרוקסי מחזירות בלי CORS headers (ואז הדפדפן "חוסם"),
+// אנחנו משקפים את ה-Origin שנשלח בבקשה (origin: true) ומאפשרים credentials.
+// למערכת אדמין זה עדיף על חסימות שגויות.
 app.use(cors({
-  origin: function (origin, callback) {
-    // אפשר בקשות ללא origin (כמו Postman, curl, health checks)
-    if (!origin) {
-      return callback(null, true);
-    }
-
-    // בדוק אם ה-origin מותר ברשימה
-    if (allowedOrigins.some(allowed => origin === allowed)) {
-      return callback(null, true);
-    }
-
-    // אפשר כל localhost (כולל פורטים שונים) בסביבת פיתוח
-    if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
-      return callback(null, true);
-    }
-
-    // אם יש .vercel.app בדומיין - אפשר (לפריסות preview)
-    if (origin.includes('.vercel.app')) {
-      return callback(null, true);
-    }
-
-    console.log('[CORS] Blocked origin:', origin);
-    callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Preflight לכל הנתיבים (Express 5 לא מקבל "*")
+app.options(/.*/, cors({ origin: true, credentials: true }));
 
 // Rate limiting - יותר מקל גם ב-Production כדי למנוע 429 מהירים מ-Frontend
 const limiter = rateLimit({
