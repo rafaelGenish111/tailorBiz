@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogActions,
   Box,
   Typography,
   Chip,
@@ -56,6 +57,7 @@ const ProjectModal = ({ open, onClose, project }) => {
   const [taskFormOpen, setTaskFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [taskModalId, setTaskModalId] = useState(null);
+  const formId = editingTask ? 'project-task-edit-form' : 'project-task-create-form';
 
   const { data: tasksResponse, isLoading: isLoadingTasks } = useTasks(
     project ? { projectId: project._id } : undefined
@@ -246,12 +248,12 @@ const ProjectModal = ({ open, onClose, project }) => {
                         elevation={2}
                         sx={{
                           borderLeft: `4px solid ${task.priority === 'urgent'
-                              ? '#f44336'
-                              : task.priority === 'high'
-                                ? '#ff9800'
-                                : task.priority === 'medium'
-                                  ? '#2196f3'
-                                  : '#9e9e9e'
+                            ? '#f44336'
+                            : task.priority === 'high'
+                              ? '#ff9800'
+                              : task.priority === 'medium'
+                                ? '#2196f3'
+                                : '#9e9e9e'
                             }`,
                           transition: 'transform 0.2s, box-shadow 0.2s',
                           '&:hover': {
@@ -353,10 +355,32 @@ const ProjectModal = ({ open, onClose, project }) => {
         fullWidth
       >
         <DialogTitle>
-          {editingTask ? 'עריכת משימה' : 'משימה חדשה'}
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexDirection: 'row-reverse',
+              gap: 2
+            }}
+          >
+            <Typography variant="h6" fontWeight="bold">
+              {editingTask ? 'עדכן משימה' : 'משימה חדשה'}
+            </Typography>
+            <Button
+              type="submit"
+              form={formId}
+              variant="contained"
+              disabled={editingTask ? updateTask.isPending : createTask.isPending}
+            >
+              {editingTask ? (updateTask.isPending ? 'שומר…' : 'עדכן משימה') : (createTask.isPending ? 'שומר…' : 'צור משימה')}
+            </Button>
+          </Box>
         </DialogTitle>
         <DialogContent dividers>
           <TaskForm
+            formId={formId}
+            showActions={false}
             initialData={
               editingTask
                 ? editingTask
@@ -377,6 +401,17 @@ const ProjectModal = ({ open, onClose, project }) => {
             }
           />
         </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setTaskFormOpen(false);
+              setEditingTask(null);
+            }}
+            disabled={editingTask ? updateTask.isPending : createTask.isPending}
+          >
+            ביטול
+          </Button>
+        </DialogActions>
       </Dialog>
 
       {/* Task View Modal */}
