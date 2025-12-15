@@ -1,5 +1,5 @@
 // frontend/src/pages/CalendarView.jsx
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Card,
@@ -110,7 +110,6 @@ const layoutDayEvents = (events) => {
     const used = new Set(active.map((e) => e.__colIndex ?? 0));
     let col = 0;
     while (used.has(col)) col += 1;
-    // eslint-disable-next-line no-param-reassign
     ev.__colIndex = col;
 
     active.push(ev);
@@ -233,6 +232,7 @@ const TimeGridEvent = ({
 
 const CalendarView = () => {
   const theme = useTheme();
+  const isRtl = theme.direction === 'rtl';
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null); // For detailed view
@@ -411,7 +411,6 @@ const CalendarView = () => {
             const isLastInRow = (index + 1) % 7 === 0;
             const isLastRow = index >= calendarDays.length - 7;
 
-            const dayKey = format(day, 'yyyy-MM-dd');
             return (
               <Box
                 key={day.toISOString()}
@@ -595,7 +594,7 @@ const CalendarView = () => {
 
       try {
         pointerEvent.currentTarget.setPointerCapture(pointerEvent.pointerId);
-      } catch (_) {
+      } catch {
         // ignore
       }
     };
@@ -637,7 +636,7 @@ const CalendarView = () => {
 
       try {
         pointerEvent.currentTarget.setPointerCapture(pointerEvent.pointerId);
-      } catch (_) {
+      } catch {
         // ignore
       }
     };
@@ -679,7 +678,7 @@ const CalendarView = () => {
 
       try {
         pointerEvent.currentTarget.setPointerCapture(pointerEvent.pointerId);
-      } catch (_) {
+      } catch {
         // ignore
       }
     };
@@ -901,7 +900,11 @@ const CalendarView = () => {
       } else {
         // mode: move
         const dayWidth = gridRect.width / state.daysCount;
-        const currentDayIndex = Math.max(0, Math.min(state.daysCount - 1, Math.floor((e.clientX - gridRect.left) / dayWidth)));
+        const rawIndex = Math.floor((e.clientX - gridRect.left) / dayWidth);
+        const visualIndex = isRtl && state.daysCount > 1
+          ? (state.daysCount - 1 - rawIndex)
+          : rawIndex;
+        const currentDayIndex = Math.max(0, Math.min(state.daysCount - 1, visualIndex));
 
         const deltaY = e.clientY - state.pointerStart.y;
         const rawDeltaMinutes = deltaY / pxPerMinute;
@@ -993,10 +996,10 @@ const CalendarView = () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
-  }, [dragPreview, updateTask, viewMode, currentDate]);
+  }, [dragPreview, updateTask, viewMode, currentDate, isRtl]);
 
   // Helper for current time line
-  const CurrentTimeIndicator = ({ viewMode, daysToShow }) => {
+  const CurrentTimeIndicator = ({ daysToShow }) => {
     const [now, setNow] = useState(new Date());
 
     useEffect(() => {
