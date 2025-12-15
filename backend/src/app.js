@@ -18,6 +18,11 @@ const testRoutes = require('./routes/testRoutes');
 const timeEntryRoutes = require('./routes/timeEntryRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const quoteRoutes = require('./routes/quoteRoutes');
+const publicCmsRoutes = require('./routes/publicCmsRoutes');
+const adminPagesRoutes = require('./routes/adminPagesRoutes');
+const adminArticlesRoutes = require('./routes/adminArticlesRoutes');
+const adminClientsRoutes = require('./routes/adminClientsRoutes');
+const adminUploadsRoutes = require('./routes/adminUploadsRoutes');
 
 const app = express();
 const isDev = process.env.NODE_ENV === 'development';
@@ -119,6 +124,15 @@ app.use('/api/marketing', marketingRoutes);
 app.use('/api/time-entries', timeEntryRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/quotes', quoteRoutes);
+
+// Public CMS
+app.use('/api/public', publicCmsRoutes);
+
+// Admin CMS
+app.use('/api/admin/pages', adminPagesRoutes);
+app.use('/api/admin/articles', adminArticlesRoutes);
+app.use('/api/admin/clients', adminClientsRoutes);
+app.use('/api/admin/uploads', adminUploadsRoutes);
 
 // Test routes (רק ב-development)
 if (process.env.NODE_ENV === 'development') {

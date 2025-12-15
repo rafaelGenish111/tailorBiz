@@ -47,18 +47,18 @@ const menuItems = [
   { text: 'פרויקטים', icon: <ProjectsIcon />, path: '/admin/projects' },
   { text: 'לוח גאנט', icon: <GanttIcon />, path: '/admin/gantt' },
   { divider: true, label: 'אוטומציות טיפוח' },
-  { 
-    text: 'טיפוח לידים', 
-    icon: <NurturingIcon />, 
+  {
+    text: 'טיפוח לידים',
+    icon: <NurturingIcon />,
     children: [
       { text: 'אוטומציות', path: '/admin/nurturing' },
       { text: 'רצפים פעילים', path: '/admin/nurturing/active' },
     ]
   },
   { divider: true, label: 'מרכז שיווק' },
-  { 
-    text: 'מרכז שיווק', 
-    icon: <CampaignIcon />, 
+  {
+    text: 'מרכז שיווק',
+    icon: <CampaignIcon />,
     children: [
       { text: 'דשבורד', path: '/admin/marketing' },
       { text: 'קמפיינים', path: '/admin/marketing/campaigns' },
@@ -69,7 +69,9 @@ const menuItems = [
   },
   { divider: true, label: 'ניהול תוכן' },
   { text: 'המלצות', icon: <TestimonialsIcon />, path: '/admin/testimonials' },
-  { text: 'מאמרים', icon: <BlogIcon />, path: '/admin/blog' },
+  { text: 'דפי אתר', icon: <TimelineIcon />, path: '/admin/cms/pages' },
+  { text: 'מאמרים', icon: <BlogIcon />, path: '/admin/cms/articles' },
+  { text: 'לקוחות (אתר)', icon: <ClientsIcon />, path: '/admin/cms/clients' },
   { text: 'תיק עבודות', icon: <PortfolioIcon />, path: '/admin/portfolio' },
   { text: 'מוצרים', icon: <ProductsIcon />, path: '/admin/products' },
   { divider: true, label: 'ניהול לידים ולקוחות' },
@@ -83,7 +85,7 @@ function SidebarItem({ item, depth = 0, onItemClick }) {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const hasChildren = item.children && item.children.length > 0;
-  
+
   // Check if any child is active
   const isChildActive = hasChildren && item.children.some(child => location.pathname === child.path);
   const isActive = location.pathname === item.path || isChildActive;
@@ -121,18 +123,18 @@ function SidebarItem({ item, depth = 0, onItemClick }) {
           >
             {item.icon}
           </ListItemIcon>
-          <ListItemText 
-            primary={item.text} 
-            primaryTypographyProps={{ 
-              fontSize: '0.9rem', 
+          <ListItemText
+            primary={item.text}
+            primaryTypographyProps={{
+              fontSize: '0.9rem',
               fontWeight: isActive ? 600 : 400,
               color: isActive ? 'text.primary' : 'text.secondary'
-            }} 
+            }}
           />
           {hasChildren ? (open ? <ExpandLess sx={{ fontSize: '1rem', color: 'text.secondary' }} /> : <ExpandMore sx={{ fontSize: '1rem', color: 'text.secondary' }} />) : null}
         </ListItemButton>
       </ListItem>
-      
+
       {hasChildren && (
         <Collapse in={open || isChildActive} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
@@ -148,15 +150,15 @@ function SidebarItem({ item, depth = 0, onItemClick }) {
                   minHeight: 32,
                 }}
               >
-                 <ListItemIcon sx={{ minWidth: 20 }}>
-                    <CircleIcon sx={{ fontSize: 6, color: location.pathname === child.path ? 'secondary.main' : 'text.disabled' }} />
-                 </ListItemIcon>
-                <ListItemText 
-                  primary={child.text} 
-                  primaryTypographyProps={{ 
+                <ListItemIcon sx={{ minWidth: 20 }}>
+                  <CircleIcon sx={{ fontSize: 6, color: location.pathname === child.path ? 'secondary.main' : 'text.disabled' }} />
+                </ListItemIcon>
+                <ListItemText
+                  primary={child.text}
+                  primaryTypographyProps={{
                     fontSize: '0.85rem',
                     color: location.pathname === child.path ? 'text.primary' : 'text.secondary'
-                  }} 
+                  }}
                 />
               </ListItemButton>
             ))}
@@ -169,7 +171,7 @@ function SidebarItem({ item, depth = 0, onItemClick }) {
 
 function Sidebar({ mobileOpen, onClose, drawerWidth = DRAWER_WIDTH, variant = 'permanent' }) {
   const location = useLocation();
-  
+
   const handleItemClick = () => {
     if (variant === 'temporary' && onClose) {
       onClose(); // Close drawer on mobile click
@@ -184,8 +186,8 @@ function Sidebar({ mobileOpen, onClose, drawerWidth = DRAWER_WIDTH, variant = 'p
         onClose={onClose}
         ModalProps={{ keepMounted: true }} // Better open performance on mobile
         sx={{
-          '& .MuiDrawer-paper': { 
-            boxSizing: 'border-box', 
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
             width: drawerWidth,
             top: variant === 'permanent' ? 64 : 0, // Height of AppBar on desktop
             height: variant === 'permanent' ? 'calc(100% - 64px)' : '100%',

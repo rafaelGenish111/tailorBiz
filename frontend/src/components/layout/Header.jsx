@@ -9,6 +9,8 @@ import {
   Drawer,
   List,
   ListItem,
+  Menu,
+  MenuItem,
   useMediaQuery,
   useTheme,
   useScrollTrigger,
@@ -19,6 +21,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [articlesAnchorEl, setArticlesAnchorEl] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const trigger = useScrollTrigger({
@@ -29,8 +32,16 @@ function Header() {
   const navItems = [
     { label: 'אודות', path: '/about' },
     { label: 'תכונות', path: '/#features' },
+    { label: 'לקוחות', path: '/clients' },
     { label: 'תמחור', path: '/pricing' },
     { label: 'צור קשר', path: '/contact' },
+  ];
+
+  const articleMenuItems = [
+    { label: 'כל המאמרים', path: '/articles' },
+    { label: 'אוטומציות', path: '/articles?category=automation' },
+    { label: 'תהליכים', path: '/articles?category=process' },
+    { label: 'CRM', path: '/articles?category=crm' },
   ];
 
   return (
@@ -74,6 +85,37 @@ function Header() {
 
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Button
+                onClick={(e) => setArticlesAnchorEl(e.currentTarget)}
+                sx={{
+                  color: 'text.primary',
+                  fontWeight: 500,
+                  px: 2,
+                  '&:hover': {
+                    bgcolor: 'transparent',
+                    color: 'primary.main',
+                  },
+                }}
+              >
+                מאמרים
+              </Button>
+              <Menu
+                anchorEl={articlesAnchorEl}
+                open={Boolean(articlesAnchorEl)}
+                onClose={() => setArticlesAnchorEl(null)}
+                MenuListProps={{ sx: { minWidth: 220 } }}
+              >
+                {articleMenuItems.map((it) => (
+                  <MenuItem
+                    key={it.path}
+                    component={Link}
+                    to={it.path}
+                    onClick={() => setArticlesAnchorEl(null)}
+                  >
+                    {it.label}
+                  </MenuItem>
+                ))}
+              </Menu>
               {navItems.map((item) => (
                 <Button
                   key={item.label}
@@ -99,10 +141,10 @@ function Header() {
                 to="/contact"
                 sx={{
                   mr: 2,
-                  boxShadow: '0px 4px 16px rgba(0,188,212,0.3)',
+                  boxShadow: '0px 4px 16px rgba(211,139,42,0.28)',
                 }}
               >
-                קבעו דמו
+                לבדיקת היתכנות ואפיון
               </Button>
             </Box>
           )}
@@ -136,6 +178,22 @@ function Header() {
           </IconButton>
         </Box>
         <List sx={{ px: 3 }}>
+          <ListItem
+            component={Link}
+            to="/articles"
+            onClick={() => setMobileOpen(false)}
+            sx={{
+              py: 2,
+              fontSize: '1.25rem',
+              fontWeight: 600,
+              color: 'text.primary',
+              borderBottom: '1px solid',
+              borderColor: 'grey.200',
+              textDecoration: 'none',
+            }}
+          >
+            מאמרים
+          </ListItem>
           {navItems.map((item) => (
             <ListItem
               key={item.label}
@@ -165,7 +223,7 @@ function Header() {
               to="/contact"
               onClick={() => setMobileOpen(false)}
             >
-              קבעו דמו
+              לבדיקת היתכנות ואפיון
             </Button>
           </ListItem>
         </List>

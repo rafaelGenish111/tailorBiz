@@ -12,6 +12,9 @@ import adminTheme from './admin/styles/adminTheme';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import About from './pages/About';
+import Articles from './pages/Articles';
+import ArticlePage from './pages/ArticlePage';
+import OurClients from './pages/OurClients';
 import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -44,6 +47,9 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/about" element={<About />} />
+                  <Route path="/articles" element={<Articles />} />
+                  <Route path="/articles/:slug" element={<ArticlePage />} />
+                  <Route path="/clients" element={<OurClients />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
