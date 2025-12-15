@@ -16,7 +16,7 @@ import {
   Alert
 } from '@mui/material';
 import { CheckCircle as CheckCircleIcon } from '@mui/icons-material';
-import { useTask, useUpdateTask } from '../../admin/hooks/useTasks';
+import { useTask, useUpdateTask, useDeleteTask } from '../../admin/hooks/useTasks';
 import TaskForm from '../../admin/components/content/tasks/TaskForm';
 
 const PRIORITY_LABELS = {
@@ -37,6 +37,7 @@ const STATUS_LABELS = {
 const TaskModal = ({ open, taskId, onClose }) => {
   const { data: taskResponse, isLoading, isError } = useTask(taskId);
   const updateTask = useUpdateTask();
+  const deleteTask = useDeleteTask();
   const [isEditing, setIsEditing] = React.useState(false);
 
   const task = taskResponse?.data;
@@ -70,6 +71,15 @@ const TaskModal = ({ open, taskId, onClose }) => {
         onSuccess: () => setIsEditing(false)
       }
     );
+  };
+
+  const handleDelete = async () => {
+    if (!task?._id) return;
+    // eslint-disable-next-line no-alert
+    if (!window.confirm('האם למחוק את המשימה לצמיתות?')) return;
+    await deleteTask.mutateAsync(task._id);
+    setIsEditing(false);
+    onClose?.();
   };
 
   const completedCount = subtasks.filter((s) => Boolean(s?.done)).length;
@@ -198,6 +208,16 @@ const TaskModal = ({ open, taskId, onClose }) => {
         >
           סגור
         </Button>
+        {!isEditing && (
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={handleDelete}
+            disabled={!task?._id || updateTask.isPending || deleteTask.isPending}
+          >
+            מחק
+          </Button>
+        )}
         {!isEditing && (
           <Button
             variant="outlined"
