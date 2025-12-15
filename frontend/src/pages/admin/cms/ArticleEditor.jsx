@@ -10,7 +10,10 @@ import {
   MenuItem,
   Stack,
   Divider,
-  IconButton
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -18,6 +21,7 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 import { useAdminArticle, useUpdateAdminArticle, usePublishAdminArticle, useUploadImage } from '../../../admin/hooks/useCMS';
+import ArticleBlocksRenderer from '../../../components/articles/ArticleBlocksRenderer';
 
 const CATEGORY_OPTIONS = [
   { value: 'general', label: 'כללי' },
@@ -28,7 +32,7 @@ const CATEGORY_OPTIONS = [
 
 const BLOCK_TYPES = [
   { value: 'hero', label: 'Hero' },
-  { value: 'heading', label: 'כותרת' },
+  { value: 'heading', label: 'כותרת משנה' },
   { value: 'paragraph', label: 'פסקה' },
   { value: 'image', label: 'תמונה' },
   { value: 'quote', label: 'ציטוט' },
@@ -48,6 +52,7 @@ const ArticleEditor = () => {
   const uploadImage = useUploadImage();
 
   const [form, setForm] = React.useState(null);
+  const [previewOpen, setPreviewOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (!article) return;
@@ -63,6 +68,23 @@ const ArticleEditor = () => {
   }, [article?._id]);
 
   const blocks = form?.draft?.blocks || [];
+
+  const getBodyText = () => {
+    const firstPara = (blocks || []).find((b) => b.type === 'paragraph');
+    return firstPara?.data?.text || '';
+  };
+
+  const setBodyText = (text) => {
+    setForm((p) => {
+      const currentBlocks = p.draft?.blocks || [];
+      const idx = currentBlocks.findIndex((b) => b.type === 'paragraph');
+      if (idx === -1) {
+        return { ...p, draft: { ...p.draft, blocks: [{ type: 'paragraph', data: { text } }, ...currentBlocks] } };
+      }
+      const next = currentBlocks.map((b, i) => (i === idx ? { ...b, data: { ...(b.data || {}), text } } : b));
+      return { ...p, draft: { ...p.draft, blocks: next } };
+    });
+  };
 
   const setBlock = (idx, patch) => {
     setForm((p) => ({
@@ -129,6 +151,9 @@ const ArticleEditor = () => {
         </Box>
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
           <Button variant="outlined" onClick={() => navigate('/admin/cms/articles')}>חזרה לרשימה</Button>
+          <Button variant="outlined" onClick={() => setPreviewOpen(true)}>
+            תצוגה מקדימה
+          </Button>
           <Button variant="outlined" onClick={saveDraft} disabled={update.isPending}>שמור טיוטה</Button>
           <Button variant="contained" color="success" onClick={async () => { await saveDraft(); await publish.mutateAsync(id); }} disabled={publish.isPending || update.isPending}>
             פרסם
@@ -155,7 +180,26 @@ const ArticleEditor = () => {
                 <TextField fullWidth label="כותרת" value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} />
               </Grid>
               <Grid item xs={12}>
-                <TextField fullWidth label="תקציר" value={form.excerpt} onChange={(e) => setForm((p) => ({ ...p, excerpt: e.target.value }))} multiline minRows={3} />
+                <TextField
+                  fullWidth
+                  label="תקציר (מופיע בבולד בראש המאמר)"
+                  value={form.excerpt}
+                  onChange={(e) => setForm((p) => ({ ...p, excerpt: e.target.value }))}
+                  multiline
+                  minRows={3}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="גוף המאמר (טקסט רגיל)"
+                  value={getBodyText()}
+                  onChange={(e) => setBodyText(e.target.value)}
+                  multiline
+                  minRows={10}
+                  helperText="אפשר להוסיף כותרות משנה ותמונות באמצעות בלוקים בצד שמאל."
+                />
               </Grid>
 
               <Grid item xs={12} md={6}>
@@ -315,6 +359,33 @@ const ArticleEditor = () => {
           </Paper>
         </Grid>
       </Grid>
+
+      <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+          <Typography variant="h6" fontWeight={800}>תצוגה מקדימה (טיוטה)</Typography>
+          <Button onClick={() => setPreviewOpen(false)}>סגור</Button>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Box sx={{ maxWidth: 820, mx: 'auto' }}>
+            <Typography variant="h4" fontWeight={800} sx={{ mb: 2 }}>
+              {form.title}
+            </Typography>
+            {form.excerpt ? (
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, borderColor: 'grey.100', bgcolor: 'grey.50', mb: 3 }}>
+                <Typography variant="body1" sx={{ fontWeight: 800 }}>
+                  {form.excerpt}
+                </Typography>
+              </Paper>
+            ) : null}
+            {form.coverImage?.url ? (
+              <Box sx={{ borderRadius: 3, overflow: 'hidden', mb: 3, border: '1px solid', borderColor: 'grey.100' }}>
+                <Box component="img" src={form.coverImage.url} alt={form.coverImage.alt || form.title} sx={{ width: '100%', display: 'block' }} />
+              </Box>
+            ) : null}
+            <ArticleBlocksRenderer blocks={form.draft?.blocks || []} />
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };
