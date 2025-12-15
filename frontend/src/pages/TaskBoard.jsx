@@ -11,6 +11,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogActions,
   Avatar,
   Badge,
   Paper,
@@ -53,6 +54,8 @@ const TaskBoard = () => {
   const effectiveCreateDialogOpen = createDialogOpen || openCreateTaskFromNav;
   const effectiveSelectedStatus = openCreateTaskFromNav ? 'todo' : selectedStatus;
   const effectiveEditTask = taskFromUrl || editTask;
+  const createFormId = 'task-create-form';
+  const editFormId = 'task-edit-form';
 
   const clearRouteContext = () => {
     // מנקה state/params כדי לא לפתוח מחדש דיאלוג ברענון
@@ -501,15 +504,42 @@ const TaskBoard = () => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>משימה חדשה</DialogTitle>
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexDirection: 'row-reverse',
+            gap: 2
+          }}
+        >
+          <Typography variant="h6" fontWeight="bold">
+            משימה חדשה
+          </Typography>
+          <Button
+            type="submit"
+            form={createFormId}
+            variant="contained"
+            disabled={createTask.isPending}
+          >
+            {createTask.isPending ? 'שומר…' : 'צור משימה'}
+          </Button>
+        </DialogTitle>
         <DialogContent dividers>
           <TaskForm
+            formId={createFormId}
+            showActions={false}
             initialData={{ status: effectiveSelectedStatus }}
             onSubmit={handleCreate}
             onCancel={closeCreateDialog}
             isLoading={createTask.isPending}
           />
         </DialogContent>
+        <DialogActions>
+          <Button onClick={closeCreateDialog} disabled={createTask.isPending}>
+            ביטול
+          </Button>
+        </DialogActions>
       </Dialog>
 
       {/* Edit Task Dialog */}
@@ -519,15 +549,42 @@ const TaskBoard = () => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>עריכת משימה</DialogTitle>
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexDirection: 'row-reverse',
+            gap: 2
+          }}
+        >
+          <Typography variant="h6" fontWeight="bold">
+            עדכן משימה
+          </Typography>
+          <Button
+            type="submit"
+            form={editFormId}
+            variant="contained"
+            disabled={updateTask.isPending}
+          >
+            {updateTask.isPending ? 'שומר…' : 'עדכן משימה'}
+          </Button>
+        </DialogTitle>
         <DialogContent dividers>
           <TaskForm
             initialData={effectiveEditTask}
             onSubmit={handleUpdate}
             onCancel={closeEditDialog}
             isLoading={updateTask.isPending}
+            formId={editFormId}
+            showActions={false}
           />
         </DialogContent>
+        <DialogActions>
+          <Button onClick={closeEditDialog} disabled={updateTask.isPending}>
+            ביטול
+          </Button>
+        </DialogActions>
       </Dialog>
 
       {/* Task View Modal (click anywhere) */}

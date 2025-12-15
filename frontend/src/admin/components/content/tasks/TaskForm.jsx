@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import {
   Box,
@@ -8,9 +8,14 @@ import {
   Grid,
   CircularProgress,
   Autocomplete,
-  Typography
+  Typography,
+  Stack,
+  Collapse,
+  Divider
 } from '@mui/material';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
@@ -28,8 +33,31 @@ const parseDate = (value) => {
   return null;
 };
 
-const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
-  // ברירות מחדל: התחלה עכשיו, יעד שעה קדימה, סיום ריק – לפי זמן מקומי
+const mergeDateAndTime = (datePart, timePart) => {
+  if (!datePart && !timePart) return null;
+  const base = datePart ? new Date(datePart) : new Date(timePart);
+  const time = timePart ? new Date(timePart) : new Date(datePart);
+  base.setHours(time.getHours(), time.getMinutes(), 0, 0);
+  return base;
+};
+
+const isCloseTo = (a, b, toleranceMs = 60 * 1000) => {
+  if (!a || !b) return false;
+  const da = parseDate(a);
+  const db = parseDate(b);
+  if (!da || !db) return false;
+  return Math.abs(da.getTime() - db.getTime()) <= toleranceMs;
+};
+
+const TaskForm = ({
+  initialData,
+  onSubmit,
+  onCancel,
+  isLoading,
+  formId = 'task-form',
+  showActions = true
+}) => {
+  // ברירות מחדל: התחלה עכשיו, יעד שעה קדימה – לפי זמן מקומי
   const defaultStart = new Date();
   const defaultDue = new Date(defaultStart.getTime() + 60 * 60 * 1000); // שעה קדימה
 
@@ -43,8 +71,6 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
       startDate: defaultStart,
       // ברירת מחדל: יעד שעה קדימה
       dueDate: defaultDue,
-      // ברירת מחדל: ללא זמן סיום
-      endDate: null,
       projectId: null,
       relatedClient: null,
       subtasks: initialData?.subtasks || [],
@@ -67,7 +93,6 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
       initialData._id ||
       initialData.dueDate ||
       initialData.startDate ||
-      initialData.endDate ||
       initialData.title
     );
 
@@ -76,7 +101,6 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
         ...initialData,
         dueDate: parseDate(initialData.dueDate),
         startDate: parseDate(initialData.startDate),
-        endDate: parseDate(initialData.endDate),
         relatedClient: initialData.relatedClient || null,
         subtasks: initialData.subtasks || []
       });
@@ -88,15 +112,32 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
   const clients = clientsResponse?.data || [];
   const projects = projectsResponse?.data || [];
 
-  // ברגע שהמשתמש משנה תאריך התחלה – יעד (dueDate) יהיה שעה קדימה
+  // Auto dueDate: רק כאשר dueDate ריק או עדיין במצב "אוטומטי"
   const watchStartDate = watch('startDate');
+  const watchDueDate = watch('dueDate');
+  const lastAutoDueRef = useRef(defaultDue);
+
+  const [subtasksExpanded, setSubtasksExpanded] = useState(false);
+
+  useEffect(() => {
+    if (subtaskFields.length > 0) {
+      setSubtasksExpanded(true);
+    }
+  }, [subtaskFields.length]);
 
   useEffect(() => {
     if (watchStartDate && watchStartDate instanceof Date) {
       const due = new Date(watchStartDate.getTime() + 60 * 60 * 1000);
-      setValue('dueDate', due);
+      const canAutoSet =
+        !watchDueDate ||
+        isCloseTo(watchDueDate, lastAutoDueRef.current);
+
+      if (canAutoSet) {
+        setValue('dueDate', due);
+        lastAutoDueRef.current = due;
+      }
     }
-  }, [watchStartDate, setValue]);
+  }, [watchStartDate, watchDueDate, setValue]);
 
   const handleFormSubmit = (data) => {
     // Transform relatedClient to ID if it's an object
@@ -120,12 +161,15 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
-      <Box component="form" onSubmit={handleSubmit(handleFormSubmit)} sx={{ mt: 2 }}>
+      <Box id={formId} component="form" onSubmit={handleSubmit(handleFormSubmit)} sx={{ mt: 2 }}>
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField
               fullWidth
               label="כותרת המשימה"
+              multiline
+              minRows={2}
+              maxRows={2}
               {...register('title', { required: 'שדה חובה' })}
               required
             />
@@ -163,60 +207,66 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
 
           <Grid item xs={12} md={6}>
             <Controller
-              name="dueDate"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <DateTimePicker
-                  label="תאריך יעד"
-                  value={parseDate(value)}
-                  onChange={onChange}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      required: false
-                    }
-                  }}
-                />
-              )}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Controller
               name="startDate"
               control={control}
               render={({ field: { onChange, value } }) => (
-                <DateTimePicker
-                  label="תאריך התחלה"
-                  value={parseDate(value)}
-                  onChange={onChange}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      required: false
-                    }
-                  }}
-                />
+                <Grid container spacing={1}>
+                  <Grid item xs={7}>
+                    <DatePicker
+                      label="תאריך התחלה"
+                      value={parseDate(value)}
+                      onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
+                      slotProps={{ textField: { fullWidth: true } }}
+                    />
+                  </Grid>
+                  <Grid item xs={5}>
+                    <TimePicker
+                      label="שעה"
+                      value={parseDate(value)}
+                      onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
+                      ampm={false}
+                      views={['hours', 'minutes']}
+                      viewRenderers={{
+                        hours: renderTimeViewClock,
+                        minutes: renderTimeViewClock
+                      }}
+                      slotProps={{ textField: { fullWidth: true } }}
+                    />
+                  </Grid>
+                </Grid>
               )}
             />
           </Grid>
 
           <Grid item xs={12} md={6}>
             <Controller
-              name="endDate"
+              name="dueDate"
               control={control}
               render={({ field: { onChange, value } }) => (
-                <DateTimePicker
-                  label="תאריך סיום"
-                  value={parseDate(value)}
-                  onChange={onChange}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      required: false
-                    }
-                  }}
-                />
+                <Grid container spacing={1}>
+                  <Grid item xs={7}>
+                    <DatePicker
+                      label="תאריך יעד"
+                      value={parseDate(value)}
+                      onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
+                      slotProps={{ textField: { fullWidth: true } }}
+                    />
+                  </Grid>
+                  <Grid item xs={5}>
+                    <TimePicker
+                      label="שעה"
+                      value={parseDate(value)}
+                      onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
+                      ampm={false}
+                      views={['hours', 'minutes']}
+                      viewRenderers={{
+                        hours: renderTimeViewClock,
+                        minutes: renderTimeViewClock
+                      }}
+                      slotProps={{ textField: { fullWidth: true } }}
+                    />
+                  </Grid>
+                </Grid>
               )}
             />
           </Grid>
@@ -277,7 +327,7 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
             <TextField
               fullWidth
               multiline
-              rows={4}
+              minRows={6}
               label="תיאור"
               {...register('description')}
             />
@@ -292,7 +342,10 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
               <Button
                 size="small"
                 variant="outlined"
-                onClick={() => appendSubtask({ title: '', done: false })}
+                onClick={() => {
+                  appendSubtask({ title: '', done: false });
+                  setSubtasksExpanded(true);
+                }}
               >
                 הוסף תת־משימה
               </Button>
@@ -302,67 +355,70 @@ const TaskForm = ({ initialData, onSubmit, onCancel, isLoading }) => {
               <Typography variant="body2" color="text.secondary">
                 אין תתי־משימות עדיין.
               </Typography>
-            ) : (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            ) : null}
+
+            <Collapse in={subtasksExpanded && subtaskFields.length > 0}>
+              <Divider sx={{ my: 1.5 }} />
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {subtaskFields.map((field, index) => (
-                  <Box
-                    key={field.id}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                    }}
-                  >
-                    <TextField
-                      fullWidth
-                      size="small"
-                      label={`תת־משימה ${index + 1}`}
-                      {...register(`subtasks.${index}.title`)}
-                    />
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Grid container spacing={1} key={field.id} alignItems="flex-start">
+                    <Grid item xs={12} md={8}>
                       <TextField
-                        select
-                        size="small"
-                        label="סטטוס"
-                        sx={{ minWidth: 110 }}
-                        defaultValue={field.done ? 'true' : 'false'}
-                        {...register(`subtasks.${index}.done`, {
-                          setValueAs: (v) =>
-                            v === true ||
-                            v === 'true' ||
-                            v === 1 ||
-                            v === '1' ||
-                            v === 'done'
-                        })}
-                        SelectProps={{
-                          native: true,
-                        }}
-                      >
-                        <option value="false">פתוחה</option>
-                        <option value="true">בוצעה</option>
-                      </TextField>
-                      <Button
-                        size="small"
-                        color="error"
-                        onClick={() => removeSubtask(index)}
-                      >
-                        מחק
-                      </Button>
-                    </Box>
-                  </Box>
+                        fullWidth
+                        label={`תת־משימה ${index + 1}`}
+                        multiline
+                        minRows={2}
+                        {...register(`subtasks.${index}.title`)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={4}>
+                      <Stack direction="row" spacing={1} alignItems="stretch">
+                        <TextField
+                          select
+                          label="סטטוס"
+                          fullWidth
+                          defaultValue={field.done ? 'true' : 'false'}
+                          {...register(`subtasks.${index}.done`, {
+                            setValueAs: (v) =>
+                              v === true ||
+                              v === 'true' ||
+                              v === 1 ||
+                              v === '1' ||
+                              v === 'done'
+                          })}
+                          SelectProps={{
+                            native: true,
+                          }}
+                        >
+                          <option value="false">פתוחה</option>
+                          <option value="true">בוצעה</option>
+                        </TextField>
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          onClick={() => removeSubtask(index)}
+                          sx={{ whiteSpace: 'nowrap' }}
+                        >
+                          מחק
+                        </Button>
+                      </Stack>
+                    </Grid>
+                  </Grid>
                 ))}
               </Box>
-            )}
+            </Collapse>
           </Grid>
 
-          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-            <Button onClick={onCancel} disabled={isLoading}>
-              ביטול
-            </Button>
-            <Button type="submit" variant="contained" disabled={isLoading}>
-              {isLoading ? <CircularProgress size={24} /> : (initialData ? 'עדכן משימה' : 'צור משימה')}
-            </Button>
-          </Grid>
+          {showActions ? (
+            <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
+              <Button onClick={onCancel} disabled={isLoading}>
+                ביטול
+              </Button>
+              <Button type="submit" variant="contained" disabled={isLoading}>
+                {isLoading ? <CircularProgress size={24} /> : (initialData ? 'עדכן משימה' : 'צור משימה')}
+              </Button>
+            </Grid>
+          ) : null}
         </Grid>
       </Box>
     </LocalizationProvider>

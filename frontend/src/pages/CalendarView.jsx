@@ -239,6 +239,7 @@ const CalendarView = () => {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [viewMode, setViewMode] = useState('week'); // 'day' | 'week' | 'month'
   const [createTaskDialogOpen, setCreateTaskDialogOpen] = useState(false);
+  const createFormId = 'calendar-task-create-form';
   const [dragPreview, setDragPreview] = useState(null); // { taskId, startTime, endTime, displayTitle, title, __kind, color, priority }
   const dragStateRef = useRef(null);
   const gridBodyRef = useRef(null);
@@ -1256,9 +1257,31 @@ const CalendarView = () => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>משימה חדשה</DialogTitle>
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexDirection: 'row-reverse',
+            gap: 2
+          }}
+        >
+          <Typography variant="h6" fontWeight="bold">
+            משימה חדשה
+          </Typography>
+          <Button
+            type="submit"
+            form={createFormId}
+            variant="contained"
+            disabled={createTask.isPending}
+          >
+            {createTask.isPending ? 'שומר…' : 'צור משימה'}
+          </Button>
+        </DialogTitle>
         <DialogContent dividers>
           <TaskForm
+            formId={createFormId}
+            showActions={false}
             initialData={{
               dueDate: selectedDate
                 ? format(setHours(setMinutes(selectedDate, 0), 10), "yyyy-MM-dd'T'HH:mm") // Default to 10:00 on selected day
@@ -1269,6 +1292,11 @@ const CalendarView = () => {
             isLoading={createTask.isPending}
           />
         </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateTaskDialogOpen(false)} disabled={createTask.isPending}>
+            ביטול
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );
