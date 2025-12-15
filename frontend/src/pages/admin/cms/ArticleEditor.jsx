@@ -13,7 +13,9 @@ import {
   IconButton,
   Dialog,
   DialogTitle,
-  DialogContent
+  DialogContent,
+  ToggleButtonGroup,
+  ToggleButton
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -53,6 +55,7 @@ const ArticleEditor = () => {
 
   const [form, setForm] = React.useState(null);
   const [previewOpen, setPreviewOpen] = React.useState(false);
+  const [previewDevice, setPreviewDevice] = React.useState('desktop'); // 'desktop' | 'mobile'
 
   React.useEffect(() => {
     if (!article) return;
@@ -362,27 +365,64 @@ const ArticleEditor = () => {
 
       <Dialog open={previewOpen} onClose={() => setPreviewOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-          <Typography variant="h6" fontWeight={800}>תצוגה מקדימה (טיוטה)</Typography>
+          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+            <Typography variant="h6" fontWeight={800}>תצוגה מקדימה (טיוטה)</Typography>
+            <ToggleButtonGroup
+              size="small"
+              exclusive
+              value={previewDevice}
+              onChange={(_, v) => {
+                if (v) setPreviewDevice(v);
+              }}
+              sx={{ ml: 1 }}
+            >
+              <ToggleButton value="desktop">Desktop</ToggleButton>
+              <ToggleButton value="mobile">Mobile</ToggleButton>
+            </ToggleButtonGroup>
+          </Stack>
           <Button onClick={() => setPreviewOpen(false)}>סגור</Button>
         </DialogTitle>
         <DialogContent dividers>
-          <Box sx={{ maxWidth: 820, mx: 'auto' }}>
-            <Typography variant="h4" fontWeight={800} sx={{ mb: 2 }}>
-              {form.title}
-            </Typography>
-            {form.excerpt ? (
-              <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, borderColor: 'grey.100', bgcolor: 'grey.50', mb: 3 }}>
-                <Typography variant="body1" sx={{ fontWeight: 800 }}>
-                  {form.excerpt}
+          <Box
+            sx={{
+              bgcolor: 'grey.50',
+              borderRadius: 3,
+              p: { xs: 1, md: 2 },
+              border: '1px solid',
+              borderColor: 'grey.100'
+            }}
+          >
+            <Box
+              sx={{
+                maxWidth: previewDevice === 'mobile' ? 390 : 820,
+                mx: 'auto',
+                bgcolor: 'background.default',
+                borderRadius: previewDevice === 'mobile' ? 4 : 0,
+                border: previewDevice === 'mobile' ? '1px solid' : 'none',
+                borderColor: previewDevice === 'mobile' ? 'grey.200' : 'transparent',
+                boxShadow: previewDevice === 'mobile' ? '0 12px 40px rgba(0,0,0,0.12)' : 'none',
+                overflow: 'hidden'
+              }}
+            >
+              <Box sx={{ p: { xs: 2, md: 0 } }}>
+                <Typography variant="h4" fontWeight={800} sx={{ mb: 2 }}>
+                  {form.title}
                 </Typography>
-              </Paper>
-            ) : null}
-            {form.coverImage?.url ? (
-              <Box sx={{ borderRadius: 3, overflow: 'hidden', mb: 3, border: '1px solid', borderColor: 'grey.100' }}>
-                <Box component="img" src={form.coverImage.url} alt={form.coverImage.alt || form.title} sx={{ width: '100%', display: 'block' }} />
+                {form.excerpt ? (
+                  <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, borderColor: 'grey.100', bgcolor: 'grey.50', mb: 3 }}>
+                    <Typography variant="body1" sx={{ fontWeight: 800 }}>
+                      {form.excerpt}
+                    </Typography>
+                  </Paper>
+                ) : null}
+                {form.coverImage?.url ? (
+                  <Box sx={{ borderRadius: 3, overflow: 'hidden', mb: 3, border: '1px solid', borderColor: 'grey.100' }}>
+                    <Box component="img" src={form.coverImage.url} alt={form.coverImage.alt || form.title} sx={{ width: '100%', display: 'block' }} />
+                  </Box>
+                ) : null}
+                <ArticleBlocksRenderer blocks={form.draft?.blocks || []} />
               </Box>
-            ) : null}
-            <ArticleBlocksRenderer blocks={form.draft?.blocks || []} />
+            </Box>
           </Box>
         </DialogContent>
       </Dialog>
