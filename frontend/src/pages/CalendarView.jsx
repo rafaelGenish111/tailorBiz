@@ -1,5 +1,5 @@
 // frontend/src/pages/CalendarView.jsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Box,
   Card,
@@ -29,7 +29,7 @@ import {
   Event as EventIcon,
   Add as AddIcon
 } from '@mui/icons-material';
-import { useCalendarView, useCreateTask } from '../admin/hooks/useTasks';
+import { useCalendarView, useCreateTask, useUpdateTask } from '../admin/hooks/useTasks';
 import TaskForm from '../admin/components/content/tasks/TaskForm';
 import TaskModal from '../components/tasks/TaskModal';
 import {
@@ -46,7 +46,8 @@ import {
   getHours,
   getMinutes,
   differenceInMinutes,
-  addHours
+  addHours,
+  addMinutes
 } from 'date-fns';
 import { he } from 'date-fns/locale';
 
@@ -65,6 +66,21 @@ const getTaskDisplayTitle = (task) => {
 
   if (!title) return projectName || '';
   return projectName ? `${title} - ${projectName}` : title;
+};
+
+const snapToSlot = (date) => {
+  const d = new Date(date);
+  const minutes = d.getHours() * 60 + d.getMinutes();
+  const snapped = Math.round(minutes / SLOT_MINUTES) * SLOT_MINUTES;
+  d.setHours(Math.floor(snapped / 60), snapped % 60, 0, 0);
+  return d;
+};
+
+const clampIntoView = (start, durationMs, dayStart, dayEndExclusive) => {
+  const minStart = dayStart.getTime();
+  const maxStart = dayEndExclusive.getTime() - durationMs;
+  const s = Math.min(Math.max(start.getTime(), minStart), maxStart);
+  return new Date(s);
 };
 
 // מחשב פריסת אירנטים על ציר הזמן כך שאירועים חופפים יוצגו זה לצד זה
@@ -104,7 +120,7 @@ const layoutDayEvents = (events) => {
   return { laidOut: sorted, maxCols };
 };
 
-const TimeGridEvent = ({ event, style, onClick }) => {
+const TimeGridEvent = ({ event, style, onClick, onTaskPointerDown, disableClick }) => {
   const theme = useTheme();
 
   const isTask = event.__kind === 'task';
@@ -117,7 +133,14 @@ const TimeGridEvent = ({ event, style, onClick }) => {
     <Box
       onClick={(e) => {
         e.stopPropagation();
-        onClick(event);
+        if (!disableClick) onClick(event);
+      }}
+      onPointerDown={(e) => {
+        if (!isTask) return;
+        // כפתור ראשי בלבד
+        if (e.button !== 0) return;
+        e.stopPropagation();
+        onTaskPointerDown?.(event, e);
       }}
       sx={{
         position: 'absolute',
@@ -163,12 +186,17 @@ const CalendarView = () => {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [viewMode, setViewMode] = useState('week'); // 'day' | 'week' | 'month'
   const [createTaskDialogOpen, setCreateTaskDialogOpen] = useState(false);
+  const [dragPreview, setDragPreview] = useState(null); // { taskId, startTime, endTime, displayTitle, title, __kind, color, priority }
+  const dragStateRef = useRef(null);
+  const gridBodyRef = useRef(null);
+  const monthDragRef = useRef(null); // { taskId, startTime, endTime, displayTitle, title }
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth() + 1;
 
   const { data: calendarResponse, isLoading } = useCalendarView(year, month);
   const createTask = useCreateTask();
+  const updateTask = useUpdateTask();
 
   const calendarData = calendarResponse?.data || {};
   const tasksByDate = calendarData.tasks || {};
@@ -206,7 +234,10 @@ const CalendarView = () => {
   // --- Data Preparation ---
   const getEventsForDate = (date) => {
     const dateKey = format(date, 'yyyy-MM-dd');
-    const tasks = tasksByDate[dateKey] || [];
+    const tasksRaw = tasksByDate[dateKey] || [];
+    const tasks = dragPreview?.taskId
+      ? tasksRaw.filter((t) => String(t._id) !== String(dragPreview.taskId))
+      : tasksRaw;
     const interactions = interactionsByDate[dateKey] || [];
 
     const allEvents = [
@@ -255,6 +286,20 @@ const CalendarView = () => {
         endTime: addHours(new Date(i.nextFollowUp), 1) // Default duration 1h
       }))
     ];
+
+    // הוסף preview בזמן גרירה ליום היעד
+    if (dragPreview?.taskId) {
+      const previewKey = format(new Date(dragPreview.startTime), 'yyyy-MM-dd');
+      if (previewKey === dateKey) {
+        allEvents.push({
+          ...dragPreview,
+          _id: dragPreview.taskId,
+          __kind: 'task',
+          startTime: new Date(dragPreview.startTime),
+          endTime: new Date(dragPreview.endTime)
+        });
+      }
+    }
 
     // Filter out invalid dates
     return allEvents.filter(e => !isNaN(e.startTime.getTime()));
@@ -313,6 +358,7 @@ const CalendarView = () => {
             const isLastInRow = (index + 1) % 7 === 0;
             const isLastRow = index >= calendarDays.length - 7;
 
+            const dayKey = format(day, 'yyyy-MM-dd');
             return (
               <Box
                 key={day.toISOString()}
@@ -333,6 +379,41 @@ const CalendarView = () => {
                   overflow: 'hidden',
                   display: 'flex',
                   flexDirection: 'column'
+                }}
+                onDragOver={(e) => {
+                  // מאפשר drop של משימה ליום אחר
+                  if (monthDragRef.current?.taskId) e.preventDefault();
+                }}
+                onDrop={async (e) => {
+                  e.preventDefault();
+                  const dragged = monthDragRef.current;
+                  if (!dragged?.taskId) return;
+
+                  const origStart = new Date(dragged.startTime);
+                  const origEnd = new Date(dragged.endTime);
+                  const durationMs = Math.max(origEnd.getTime() - origStart.getTime(), SLOT_MINUTES * 60 * 1000);
+
+                  // שמירת שעות/דקות והחלפת תאריך ליום ה-drop
+                  let nextStart = new Date(day);
+                  nextStart.setHours(origStart.getHours(), origStart.getMinutes(), 0, 0);
+                  nextStart = snapToSlot(nextStart);
+
+                  const dayStart = setMinutes(setHours(new Date(day), START_HOUR), 0);
+                  const dayEnd = setMinutes(setHours(new Date(day), END_HOUR + 1), 0);
+                  nextStart = clampIntoView(nextStart, durationMs, dayStart, dayEnd);
+
+                  const nextEnd = new Date(nextStart.getTime() + durationMs);
+
+                  await updateTask.mutateAsync({
+                    id: dragged.taskId,
+                    data: {
+                      startDate: nextStart.toISOString(),
+                      endDate: nextEnd.toISOString(),
+                      dueDate: nextEnd.toISOString()
+                    }
+                  });
+
+                  monthDragRef.current = null;
                 }}
                 onClick={() => {
                   setSelectedDate(day);
@@ -380,6 +461,17 @@ const CalendarView = () => {
                         if (event.__kind === 'task') setSelectedTaskId(event._id);
                         else setSelectedEvent(event);
                       }}
+                      draggable={event.__kind === 'task'}
+                      onDragStart={() => {
+                        if (event.__kind !== 'task') return;
+                        monthDragRef.current = {
+                          taskId: event._id,
+                          startTime: event.startTime,
+                          endTime: event.endTime,
+                          displayTitle: event.displayTitle || event.title,
+                          title: event.title
+                        };
+                      }}
                     >
                       {format(new Date(event.startTime), 'HH:mm')} {event.__kind === 'task' ? (event.displayTitle || event.title) : event.subject}
                     </Box>
@@ -412,6 +504,49 @@ const CalendarView = () => {
     const hours = Array.from({ length: END_HOUR - START_HOUR + 1 }).map((_, i) => START_HOUR + i);
     const slotsPerHour = 60 / SLOT_MINUTES;
     const totalSlots = hours.length * slotsPerHour;
+
+    const handleTaskPointerDown = (event, pointerEvent, dayIndex, daysToShow) => {
+      const gridRect = gridBodyRef.current?.getBoundingClientRect?.();
+      if (!gridRect) return;
+
+      const originalStart = new Date(event.startTime);
+      const originalEnd = new Date(event.endTime);
+      const durationMs = Math.max(originalEnd.getTime() - originalStart.getTime(), SLOT_MINUTES * 60 * 1000);
+
+      dragStateRef.current = {
+        taskId: event._id,
+        displayTitle: event.displayTitle || event.title,
+        title: event.title,
+        color: event.color,
+        priority: event.priority,
+        pointerStart: { x: pointerEvent.clientX, y: pointerEvent.clientY },
+        originalStart,
+        originalEnd,
+        durationMs,
+        startDayIndex: dayIndex,
+        daysCount: daysToShow.length
+      };
+
+      // יצירת preview ראשוני
+      setDragPreview({
+        taskId: event._id,
+        displayTitle: event.displayTitle || event.title,
+        title: event.title,
+        __kind: 'task',
+        color: event.color,
+        priority: event.priority,
+        startTime: originalStart,
+        endTime: originalEnd
+      });
+
+      try {
+        pointerEvent.currentTarget.setPointerCapture(pointerEvent.pointerId);
+      } catch (_) {
+        // ignore
+      }
+    };
+
+    const isDragging = Boolean(dragStateRef.current && dragPreview);
 
     return (
       <Paper sx={{ mt: 2, overflow: 'hidden', display: 'flex', flexDirection: 'column' }} elevation={0} variant="outlined">
@@ -464,11 +599,12 @@ const CalendarView = () => {
           </Box>
 
           {/* Grid Body */}
-          <Box sx={{ ml: '60px', display: 'flex', minHeight: hours.length * HOUR_HEIGHT }}>
+          <Box ref={gridBodyRef} sx={{ ml: '60px', display: 'flex', minHeight: hours.length * HOUR_HEIGHT }}>
             {daysToShow.map((day) => {
               const dayEvents = getEventsForDate(day);
               const { laidOut, maxCols } = layoutDayEvents(dayEvents);
               const cols = Math.max(maxCols, 1);
+              const dayIndex = daysToShow.findIndex((d) => isSameDay(d, day));
 
               return (
                 <Box
@@ -533,6 +669,8 @@ const CalendarView = () => {
                           if (e.__kind === 'task') setSelectedTaskId(e._id);
                           else setSelectedEvent(e);
                         }}
+                        disableClick={isDragging}
+                        onTaskPointerDown={(ev, pe) => handleTaskPointerDown(ev, pe, dayIndex, daysToShow)}
                       />
                     );
                   })}
@@ -549,6 +687,95 @@ const CalendarView = () => {
       </Paper>
     );
   };
+
+  // Drag handlers (week/day)
+  useEffect(() => {
+    if (!dragStateRef.current || !dragPreview) return;
+
+    const onMove = (e) => {
+      const state = dragStateRef.current;
+      if (!state) return;
+
+      const gridRect = gridBodyRef.current?.getBoundingClientRect?.();
+      if (!gridRect) return;
+
+      const dayWidth = gridRect.width / state.daysCount;
+      const currentDayIndex = Math.max(0, Math.min(state.daysCount - 1, Math.floor((e.clientX - gridRect.left) / dayWidth)));
+
+      const deltaY = e.clientY - state.pointerStart.y;
+      const pxPerMinute = HOUR_HEIGHT / 60;
+      const rawDeltaMinutes = deltaY / pxPerMinute;
+      const snappedDeltaMinutes = Math.round(rawDeltaMinutes / SLOT_MINUTES) * SLOT_MINUTES;
+
+      const baseShifted = addMinutes(state.originalStart, snappedDeltaMinutes);
+      const targetDay = (() => {
+        // daysToShow isn't in ref; reconstruct from grid rect won't help.
+        // We keep dayIndex by calculating relative to currentDate and viewMode for week/day.
+        // For correctness: week uses startOfWeek(currentDate) + idx, day uses currentDate.
+        if (viewMode === 'day') return currentDate;
+        const start = startOfWeek(currentDate, { weekStartsOn: 0 });
+        return addDays(start, currentDayIndex);
+      })();
+
+      let nextStart = new Date(targetDay);
+      nextStart.setHours(baseShifted.getHours(), baseShifted.getMinutes(), 0, 0);
+      nextStart = snapToSlot(nextStart);
+
+      const dayStart = setMinutes(setHours(new Date(targetDay), START_HOUR), 0);
+      const dayEnd = setMinutes(setHours(new Date(targetDay), END_HOUR + 1), 0);
+      nextStart = clampIntoView(nextStart, state.durationMs, dayStart, dayEnd);
+
+      const nextEnd = new Date(nextStart.getTime() + state.durationMs);
+
+      setDragPreview((prev) => ({
+        ...(prev || {}),
+        taskId: state.taskId,
+        displayTitle: state.displayTitle,
+        title: state.title,
+        __kind: 'task',
+        color: state.color,
+        priority: state.priority,
+        startTime: nextStart,
+        endTime: nextEnd
+      }));
+    };
+
+    const onUp = async () => {
+      const state = dragStateRef.current;
+      const preview = dragPreview;
+      dragStateRef.current = null;
+
+      if (!state || !preview) {
+        setDragPreview(null);
+        return;
+      }
+
+      // אם לא זזנו באמת, אל תשלח עדכון
+      const moved =
+        new Date(preview.startTime).getTime() !== state.originalStart.getTime() ||
+        new Date(preview.endTime).getTime() !== state.originalEnd.getTime();
+
+      if (moved) {
+        await updateTask.mutateAsync({
+          id: state.taskId,
+          data: {
+            startDate: new Date(preview.startTime).toISOString(),
+            endDate: new Date(preview.endTime).toISOString(),
+            dueDate: new Date(preview.endTime).toISOString()
+          }
+        });
+      }
+
+      setDragPreview(null);
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp, { once: true });
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+  }, [dragPreview, updateTask, viewMode, currentDate]);
 
   // Helper for current time line
   const CurrentTimeIndicator = ({ viewMode, daysToShow }) => {
