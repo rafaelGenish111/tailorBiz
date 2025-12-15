@@ -33,6 +33,24 @@ if (IS_VERCEL) {
   app.set('trust proxy', 1);
 }
 
+// CORS (קשיח) - כדי להבטיח headers גם כשהשרת מחזיר שגיאה/403.
+// חשוב במיוחד ל-uploads (multipart) שנחסם אחרת בדפדפן.
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+  }
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 // Security middleware
 app.use(
   helmet({
@@ -60,8 +78,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Preflight לכל הנתיבים (Express 5 לא מקבל "*")
-app.options(/.*/, cors({ origin: true, credentials: true }));
+// Preflight - כבר מטופל במידלוור "קשיח" למעלה
 
 // Rate limiting - יותר מקל גם ב-Production כדי למנוע 429 מהירים מ-Frontend
 const limiter = rateLimit({
