@@ -6,35 +6,42 @@ export const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#1a237e', // כחול נייבי כהה ומקצועי
-      light: '#534bae',
-      dark: '#000051',
+      // Navy/Steel - Clean Industrial
+      main: '#0B1F33',
+      light: '#203A55',
+      dark: '#071522',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#00bcd4', // טורקיז בהיר ונקי
-      light: '#62efff',
-      dark: '#008ba3',
-      contrastText: '#000000',
+      // Copper CTA
+      main: '#D38B2A',
+      light: '#F0B56C',
+      dark: '#9A5C12',
+      contrastText: '#ffffff',
     },
     background: {
-      default: '#ffffff',
-      paper: '#fafafa',
+      default: '#FFFFFF',
+      paper: '#F7F8FA',
     },
     text: {
-      primary: '#212121',
-      secondary: '#616161',
+      primary: '#0F172A',
+      secondary: '#475569',
     },
     grey: {
-      50: '#fafafa',
-      100: '#f5f5f5',
-      200: '#eeeeee',
+      50: '#F8FAFC',
+      100: '#F1F5F9',
+      200: '#E2E8F0',
+    },
+    success: {
+      // Mint accent (optional)
+      main: '#2EBE8B',
+      contrastText: '#ffffff',
     },
   },
   typography: {
     fontFamily: "'Heebo', 'Assistant', sans-serif",
     h1: {
-      fontWeight: 800,
+      fontWeight: 700,
       fontSize: '3.5rem',
       lineHeight: 1.1,
       letterSpacing: '-0.02em',
@@ -43,7 +50,7 @@ export const theme = createTheme({
       },
     },
     h2: {
-      fontWeight: 700,
+      fontWeight: 650,
       fontSize: '2.75rem',
       lineHeight: 1.2,
       letterSpacing: '-0.01em',
@@ -64,16 +71,16 @@ export const theme = createTheme({
     body1: {
       fontSize: '1.125rem',
       lineHeight: 1.8,
-      color: '#616161',
+      color: '#475569',
     },
     button: {
-      fontWeight: 600,
+      fontWeight: 700,
       textTransform: 'none',
       fontSize: '1rem',
     },
   },
   shape: {
-      borderRadius: 8,
+    borderRadius: 8,
   },
   shadows: [
     'none',
@@ -90,7 +97,7 @@ export const theme = createTheme({
           borderRadius: 6,
           padding: '12px 32px',
           fontSize: '1rem',
-          fontWeight: 600,
+          fontWeight: 700,
           boxShadow: 'none',
           transition: 'all 0.3s ease',
           '&:hover': {

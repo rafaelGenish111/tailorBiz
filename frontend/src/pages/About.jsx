@@ -1,3 +1,4 @@
+import React from 'react';
 import { Box, Container, Typography, Grid, Paper, Button } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
@@ -9,11 +10,44 @@ import AutoGraphIcon from '@mui/icons-material/AutoGraph';
 import SecurityIcon from '@mui/icons-material/Security';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import { publicCMS } from '../utils/publicApi';
 
 const MotionBox = motion(Box);
 const MotionPaper = motion(Paper);
 
 function About() {
+  const [cmsAbout, setCmsAbout] = React.useState(null);
+  const [cmsLoaded, setCmsLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    const run = async () => {
+      try {
+        const res = await publicCMS.getPage('about');
+        setCmsAbout(res.data?.data?.content || null);
+      } catch (_) {
+        setCmsAbout(null);
+      } finally {
+        setCmsLoaded(true);
+      }
+    };
+    run();
+  }, []);
+
+  if (cmsLoaded && cmsAbout) {
+    return (
+      <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: 'background.default' }}>
+        <Container maxWidth="md">
+          <Typography variant="h2" fontWeight={800} sx={{ mb: 2, textAlign: 'center' }}>
+            {cmsAbout.title || 'אודות'}
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>
+            {cmsAbout.content || ''}
+          </Typography>
+        </Container>
+      </Box>
+    );
+  }
+
   const values = [
     {
       icon: RocketLaunchIcon,
@@ -362,10 +396,10 @@ function About() {
                   <Typography variant="h5" fontWeight={700} gutterBottom color="primary.main">
                     {value.title}
                   </Typography>
-                  <Typography 
-                    variant="body1" 
-                    color="text.secondary" 
-                    sx={{ 
+                  <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    sx={{
                       lineHeight: 1.8,
                       flexGrow: 1,
                     }}
@@ -447,9 +481,9 @@ function About() {
                       >
                         <Icon sx={{ color: 'secondary.main', fontSize: 24 }} />
                       </Box>
-                      <Typography 
-                        variant="h6" 
-                        sx={{ 
+                      <Typography
+                        variant="h6"
+                        sx={{
                           mt: 1,
                           flexGrow: 1,
                         }}

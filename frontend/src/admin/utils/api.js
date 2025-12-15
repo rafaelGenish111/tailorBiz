@@ -81,20 +81,20 @@ export const clientAPI = {
   // אינטראקציות
   addInteraction: (id, data) => api.post(`/clients/${id}/interactions`, data),
   getInteractions: (id) => api.get(`/clients/${id}/interactions`),
-  updateInteraction: (id, interactionId, data) => 
+  updateInteraction: (id, interactionId, data) =>
     api.put(`/clients/${id}/interactions/${interactionId}`, data),
-  deleteInteraction: (id, interactionId) => 
+  deleteInteraction: (id, interactionId) =>
     api.delete(`/clients/${id}/interactions/${interactionId}`),
 
   // הזמנות
   createOrder: (id, data) => api.post(`/clients/${id}/orders`, data),
   getOrders: (id) => api.get(`/clients/${id}/orders`),
-  updateOrder: (id, orderId, data) => 
+  updateOrder: (id, orderId, data) =>
     api.put(`/clients/${id}/orders/${orderId}`, data),
 
   // תשלומים
   createPaymentPlan: (id, data) => api.post(`/clients/${id}/payment-plan`, data),
-  updateInstallment: (id, installmentId, data) => 
+  updateInstallment: (id, installmentId, data) =>
     api.put(`/clients/${id}/payment-plan/installments/${installmentId}`, data),
 
   // חשבוניות
@@ -104,7 +104,7 @@ export const clientAPI = {
   // משימות
   createTask: (id, data) => api.post(`/clients/${id}/tasks`, data),
   getTasks: (id, params) => api.get(`/clients/${id}/tasks`, { params }),
-  updateTask: (id, taskId, data) => 
+  updateTask: (id, taskId, data) =>
     api.put(`/clients/${id}/tasks/${taskId}`, data),
 
   // חוזה
@@ -137,7 +137,7 @@ export const whatsappAPI = {
   sendMessage: (data) => api.post('/whatsapp/send-message', data),
   sendTemplate: (data) => api.post('/whatsapp/send-template', data),
   getConversations: () => api.get('/whatsapp/conversations'),
-  getClientConversation: (clientId) => 
+  getClientConversation: (clientId) =>
     api.get(`/whatsapp/conversations/${clientId}`),
   getStatus: () => api.get('/whatsapp/status')
 };
@@ -186,6 +186,42 @@ export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (data) => api.put('/auth/profile', data)
+};
+
+// ========== CMS (Admin) ==========
+export const adminPagesAPI = {
+  list: () => api.get('/admin/pages'),
+  getBySlug: (slug) => api.get(`/admin/pages/${slug}`),
+  saveDraft: (slug, data) => api.put(`/admin/pages/${slug}/draft`, data),
+  publish: (slug) => api.post(`/admin/pages/${slug}/publish`),
+  unpublish: (slug) => api.post(`/admin/pages/${slug}/unpublish`),
+  rollback: (slug, versionIndex) => api.post(`/admin/pages/${slug}/rollback/${versionIndex}`)
+};
+
+export const adminArticlesAPI = {
+  list: (params) => api.get('/admin/articles', { params }),
+  getById: (id) => api.get(`/admin/articles/${id}`),
+  create: (data) => api.post('/admin/articles', data),
+  update: (id, data) => api.put(`/admin/articles/${id}`, data),
+  delete: (id) => api.delete(`/admin/articles/${id}`),
+  publish: (id) => api.post(`/admin/articles/${id}/publish`),
+  unpublish: (id) => api.post(`/admin/articles/${id}/unpublish`),
+  rollback: (id, versionIndex) => api.post(`/admin/articles/${id}/rollback/${versionIndex}`)
+};
+
+export const adminSiteClientsAPI = {
+  list: () => api.get('/admin/clients'),
+  create: (data) => api.post('/admin/clients', data),
+  update: (id, data) => api.put(`/admin/clients/${id}`, data),
+  delete: (id) => api.delete(`/admin/clients/${id}`),
+  reorder: (ids) => api.post('/admin/clients/reorder', { ids })
+};
+
+export const uploadsAPI = {
+  uploadImage: (formData) =>
+    api.post('/admin/uploads/image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
 };
 
 export default api;

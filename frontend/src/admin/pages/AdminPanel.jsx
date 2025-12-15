@@ -18,6 +18,10 @@ import CampaignForm from '../../pages/admin/marketing/CampaignForm';
 import ChannelsPage from '../../pages/admin/marketing/ChannelsPage';
 import AnalyticsPage from '../../pages/admin/marketing/AnalyticsPage';
 import AutomationsPage from '../../pages/admin/marketing/AutomationsPage';
+import SitePagesEditor from '../../pages/admin/cms/SitePagesEditor';
+import ArticlesManager from '../../pages/admin/cms/ArticlesManager';
+import ArticleEditor from '../../pages/admin/cms/ArticleEditor';
+import ClientsManager from '../../pages/admin/cms/ClientsManager';
 import { Box, Typography } from '@mui/material';
 
 function Placeholder({ title }) {
@@ -56,7 +60,11 @@ function AdminPanel() {
         <Route path="marketing/analytics" element={<AnalyticsPage />} />
         {/* Content Management */}
         <Route path="testimonials" element={<TestimonialsList />} />
-        <Route path="blog" element={<Placeholder title="מאמרים" />} />
+        <Route path="cms/pages" element={<SitePagesEditor />} />
+        <Route path="cms/articles" element={<ArticlesManager />} />
+        <Route path="cms/articles/:id" element={<ArticleEditor />} />
+        <Route path="cms/clients" element={<ClientsManager />} />
+        <Route path="blog" element={<Navigate to="/admin/cms/articles" replace />} />
         <Route path="portfolio" element={<Placeholder title="תיק עבודות" />} />
         <Route path="products" element={<Placeholder title="מוצרים" />} />
         {/* Clients & Leads */}

@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת ניהול אסטרטגיה עסקית - פתרונות ליבה</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Executive Gold -->
+    <!-- Primary: Slate-900 (Deep Navy), Secondary: Amber-600 (Bronze/Gold), Background: Slate-50 (Paper) -->
+    
+    <style>
+        body { font-family: 'Heebo', sans-serif; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 350px; }
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .active-tab {
+            border-bottom: 3px solid #d97706; /* amber-600 */
+            color: #d97706;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white shadow-lg z-10 shrink-0">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center text-xl font-bold">L</div>
+                <div>
+                    <h1 class="text-xl font-bold leading-none">מערכת ליבה</h1>
+                    <p class="text-xs text-slate-400">מרכז שליטה אסטרטגי</p>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center gap-6 text-sm">
+                <div class="text-center">
+                    <span class="block text-slate-400 text-xs">יעד רבעוני</span>
+                    <span class="font-bold text-amber-500">₪120,000</span>
+                </div>
+                <div class="text-center">
+                    <span class="block text-slate-400 text-xs">סטטוס שבועי</span>
+                    <span class="font-bold text-green-400" id="header-progress">0%</span>
+                </div>
+            </div>
+            <button class="md:hidden text-2xl" onclick="toggleMobileMenu()">☰</button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar Navigation (Desktop) -->
+        <nav class="hidden md:flex flex-col w-64 bg-white border-l border-slate-200 shrink-0">
+            <div class="p-6">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">ניווט ראשי</h3>
+                <ul class="space-y-2">
+                    <li><button onclick="navigate('dashboard')" class="nav-btn w-full text-right px-4 py-3 rounded-lg hover:bg-slate-50 flex items-center gap-3 transition-colors active-tab" data-target="dashboard"><span>📊</span> דשבורד ראשי</button></li>
+                    <li><button onclick="navigate('strategy')" class="nav-btn w-full text-right px-4 py-3 rounded-lg hover:bg-slate-50 flex items-center gap-3 transition-colors" data-target="strategy"><span>🧭</span> המצפן האסטרטגי</button></li>
+                    <li><button onclick="navigate('model')" class="nav-btn w-full text-right px-4 py-3 rounded-lg hover:bg-slate-50 flex items-center gap-3 transition-colors" data-target="model"><span>💼</span> המודל העסקי</button></li>
+                    <li><button onclick="navigate('social')" class="nav-btn w-full text-right px-4 py-3 rounded-lg hover:bg-slate-50 flex items-center gap-3 transition-colors" data-target="social"><span>📣</span> אסטרטגיית תוכן</button></li>
+                    <li><button onclick="navigate('tactics')" class="nav-btn w-full text-right px-4 py-3 rounded-lg hover:bg-slate-50 flex items-center gap-3 transition-colors" data-target="tactics"><span>⚔️</span> תוכנית פעולה</button></li>
+                    <li><button onclick="navigate('scripts')" class="nav-btn w-full text-right px-4 py-3 rounded-lg hover:bg-slate-50 flex items-center gap-3 transition-colors" data-target="scripts"><span>💬</span> כספת תסריטים</button></li>
+                    <li><button onclick="navigate('simulator')" class="nav-btn w-full text-right px-4 py-3 rounded-lg hover:bg-slate-50 flex items-center gap-3 transition-colors" data-target="simulator"><span>🧮</span> סימולטור הכנסות</button></li>
+                </ul>
+            </div>
+            <div class="mt-auto p-6 bg-slate-50 border-t border-slate-100">
+                <p class="text-xs text-slate-500 italic">"אנחנו לא מוכרים קוד, אנחנו מוכרים שקט תעשייתי."</p>
+            </div>
+        </nav>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="fixed inset-0 bg-slate-900/90 z-50 hidden flex flex-col p-8 md:hidden">
+            <button class="self-end text-white text-3xl mb-8" onclick="toggleMobileMenu()">×</button>
+            <nav class="flex flex-col gap-4 text-white text-xl">
+                <button onclick="navigate('dashboard'); toggleMobileMenu()">📊 דשבורד ראשי</button>
+                <button onclick="navigate('strategy'); toggleMobileMenu()">🧭 המצפן האסטרטגי</button>
+                <button onclick="navigate('model'); toggleMobileMenu()">💼 המודל העסקי</button>
+                <button onclick="navigate('social'); toggleMobileMenu()">📣 אסטרטגיית תוכן</button>
+                <button onclick="navigate('tactics'); toggleMobileMenu()">⚔️ תוכנית פעולה</button>
+                <button onclick="navigate('scripts'); toggleMobileMenu()">💬 כספת תסריטים</button>
+                <button onclick="navigate('simulator'); toggleMobileMenu()">🧮 סימולטור הכנסות</button>
+            </nav>
+        </div>
+
+        <!-- Main Content Area -->
+        <main id="app-content" class="flex-1 overflow-y-auto p-4 md:p-8 bg-slate-50 scroll-smooth">
+            <!-- Dynamic Content Injected Here -->
+        </main>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- State Management ---
+        const state = {
+            currentView: 'dashboard',
+            checklist: {
+                linkedin: false,
+                caseStudy: false,
+                penetration: false,
+                consultantsList: false,
+                familyCalls: false,
+                directSearch: false,
+                meetings: false,
+                weeklyReview: false
+            },
+            simulator: {
+                penetrationPrice: 3500,
+                penetrationCount: 5,
+                corePrice: 40000,
+                coreCount: 2,
+                retainerPrice: 2000,
+                retainerCount: 2
+            }
+        };
+
+        // --- Content Data ---
+        const content = {
+            dashboard: `
+                <div class="max-w-4xl mx-auto animate-fade-in">
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-slate-900 mb-2">ברוך הבא למגרש של הגדולים</h2>
+                        <p class="text-slate-600">זהו מרכז השליטה האסטרטגי שלך. המטרה: מעבר מפרילאנסר למומחה פתרונות עסקיים.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:border-amber-500 transition-colors">
+                            <div class="text-amber-600 text-2xl mb-2">🎯</div>
+                            <h3 class="font-bold text-slate-800">היעד הגדול</h3>
+                            <p class="text-3xl font-black text-slate-900 mt-2">₪120,000</p>
+                            <p class="text-sm text-slate-500 mt-1">יעד מחזור עסקה ראשוני</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:border-amber-500 transition-colors">
+                            <div class="text-amber-600 text-2xl mb-2">👤</div>
+                            <h3 class="font-bold text-slate-800">לקוח הזהב</h3>
+                            <p class="text-lg font-bold text-slate-900 mt-2">"הדור השני"</p>
+                            <p class="text-sm text-slate-500 mt-1">מחזור 2-10M | דיגיטליים</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:border-amber-500 transition-colors">
+                            <div class="text-amber-600 text-2xl mb-2">🛠️</div>
+                            <h3 class="font-bold text-slate-800">מוצר החדירה</h3>
+                            <p class="text-lg font-bold text-slate-900 mt-2">אפיון טכני</p>
+                            <p class="text-sm text-slate-500 mt-1">₪3,500 - ₪5,000</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 mb-8">
+                        <h3 class="font-bold text-slate-900 mb-4 text-lg border-b border-slate-100 pb-2">תמונת מצב אסטרטגית</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                            <div>
+                                <p class="mb-4 text-slate-600 leading-relaxed">
+                                    האסטרטגיה הנוכחית מתמקדת בשינוי תפיסה: במקום "למכור קוד" (שירות זול), אנחנו מוכרים "פתרון בעיות תפעוליות" (שירות פרימיום).
+                                    <br><br>
+                                    ערוץ השיווק המרכזי הוא **יועצים עסקיים** ("ציידים") שיספקו לנו את הגישה ללקוחות הקצה ללא עלויות שיווק ממומן.
+                                </p>
+                                <button onclick="navigate('tactics')" class="bg-amber-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-amber-700 transition-colors shadow-md">עבור לתוכנית העבודה היומית &larr;</button>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="dashboardChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            strategy: `
+                <div class="max-w-5xl mx-auto animate-fade-in">
+                    <div class="mb-8 border-b border-slate-200 pb-4">
+                        <h2 class="text-3xl font-bold text-slate-900">המצפן האסטרטגי: חזון וזהות</h2>
+                        <p class="text-slate-600 mt-2">בניית ה-DNA של העסק: למה אנחנו קמים בבוקר ולאן אנחנו הולכים.</p>
+                    </div>
+
+                    <!-- Vision & Values Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+                        
+                        <!-- Core Purpose -->
+                        <div class="bg-slate-900 text-white p-8 rounded-2xl shadow-lg relative overflow-hidden flex flex-col justify-center">
+                            <div class="relative z-10">
+                                <h3 class="text-amber-500 font-bold uppercase tracking-widest text-sm mb-3">הייעוד (The Why)</h3>
+                                <p class="text-2xl font-light leading-relaxed">
+                                    "להיות כיפת הברזל התפעולית של העסקים הבינוניים בישראל. למנוע כאוס, לחסוך טעויות אנוש, ולאפשר לדור השני להצמיח את העסק בראש שקט."
+                                </p>
+                            </div>
+                            <div class="absolute top-0 right-0 w-64 h-64 bg-amber-600 opacity-10 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
+                        </div>
+
+                        <!-- Core Values -->
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="text-slate-900 font-bold uppercase tracking-widest text-sm mb-6 border-b border-slate-100 pb-2">ערכי הליבה (Core Values)</h3>
+                            <ul class="space-y-4">
+                                <li class="flex items-start gap-3">
+                                    <span class="bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded text-xs mt-1">01</span>
+                                    <div>
+                                        <h4 class="font-bold text-slate-800">בלי בולשיט (No Bullshit)</h4>
+                                        <p class="text-sm text-slate-600">אנחנו לא מוכרים פיצ'רים מיותרים. אם אקסל פותר את הבעיה, נמליץ על אקסל. פרגמטיות מעל הכל.</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <span class="bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded text-xs mt-1">02</span>
+                                    <div>
+                                        <h4 class="font-bold text-slate-800">ביזנס לפני טכנולוגיה</h4>
+                                        <p class="text-sm text-slate-600">אנחנו לא מתאהבים בקוד. כל שורת קוד חייבת להצדיק את עצמה ב-ROI עסקי ברור.</p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <span class="bg-amber-100 text-amber-800 font-bold px-2 py-1 rounded text-xs mt-1">03</span>
+                                    <div>
+                                        <h4 class="font-bold text-slate-800">שותפות לטווח ארוך</h4>
+                                        <p class="text-sm text-slate-600">אנחנו לא "ספקים שנעלמים". אנחנו בונים תשתיות שצריכות לעבוד שנים קדימה.</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Goals Timeline -->
+                    <div class="mb-10">
+                         <h3 class="text-xl font-bold text-slate-900 mb-6">מפת הדרכים (The Roadmap)</h3>
+                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- 1 Year -->
+                            <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                                <span class="text-xs font-bold text-slate-500 uppercase">בעוד שנה</span>
+                                <h4 class="text-xl font-bold text-amber-600 mt-2">ביסוס המותג</h4>
+                                <ul class="mt-4 space-y-2 text-sm text-slate-700">
+                                    <li>✅ 5-7 לקוחות ריטיינר קבועים</li>
+                                    <li>✅ מחזור חודשי יציב של 40k</li>
+                                    <li>✅ עובד ראשון (מפתח Junior)</li>
+                                </ul>
+                            </div>
+                            <!-- 3 Years -->
+                            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+                                <span class="text-xs font-bold text-slate-500 uppercase">בעוד 3 שנים</span>
+                                <h4 class="text-xl font-bold text-slate-900 mt-2">בוטיק אוטומציה</h4>
+                                <ul class="mt-4 space-y-2 text-sm text-slate-700 relative z-10">
+                                    <li>🏆 סוכנות ה-Go-To בתחום הלוגיסטיקה</li>
+                                    <li>👥 צוות של 4-5 עובדים</li>
+                                    <li>💰 מחזור שנתי של 2 מיליון ש"ח</li>
+                                </ul>
+                                <div class="absolute -right-4 -bottom-4 text-9xl text-slate-50 opacity-50 z-0">3</div>
+                            </div>
+                            <!-- 10 Years -->
+                            <div class="bg-slate-900 text-slate-300 p-6 rounded-xl border border-slate-800">
+                                <span class="text-xs font-bold text-amber-500 uppercase">היעד הגדול (BHAG)</span>
+                                <h4 class="text-xl font-bold text-white mt-2">סטנדרט ארצי</h4>
+                                <p class="mt-4 text-sm leading-relaxed">
+                                    להיות החברה שהגדירה מחדש איך עסקים משפחתיים בישראל מנהלים אופרציה. הקמת אקדמיה להכשרת מנהלי תפעול טכנולוגיים.
+                                </p>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            `,
+            model: `
+                <div class="max-w-5xl mx-auto animate-fade-in">
+                    <div class="mb-8 border-b border-slate-200 pb-4">
+                        <h2 class="text-3xl font-bold text-slate-900">המודל העסקי: סולם הערך</h2>
+                        <p class="text-slate-600 mt-2">איך הופכים שירות של "זמן וכסף" למוצרים ארוזים ורווחיים.</p>
+                    </div>
+
+                    <!-- The Concept: Productization -->
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-xl mb-8">
+                        <h3 class="font-bold text-blue-900 text-lg mb-2">💡 השינוי התפיסתי</h3>
+                        <p class="text-blue-800 text-sm leading-relaxed">
+                            רוב הפרילאנסרים מוכרים "שעות פיתוח". זה מודל גרוע כי הוא מוגבל בזמן שלך.
+                            <br>
+                            המודל שלנו הוא **"שירותים מוצרים" (Productized Services)**: אנחנו מוכרים תוצאה ארוזה במחיר קבוע (Fixed Price), מה שמאפשר לנו להרוויח על היעילות שלנו.
+                        </p>
+                    </div>
+
+                    <!-- The Value Ladder (Visual) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 relative">
+                        <!-- Connecting Line (Desktop) -->
+                        <div class="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-slate-200 -z-10 -translate-y-1/2"></div>
+
+                        <!-- Step 1: Audit -->
+                        <div class="bg-white p-6 rounded-xl border-2 border-slate-100 hover:border-amber-400 transition-all shadow-sm group">
+                            <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-2xl mb-4 group-hover:bg-amber-100 transition-colors">🔍</div>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">שלב 1: החדירה</span>
+                            <h4 class="text-xl font-bold text-slate-900 mt-1">אפיון טכני (Audit)</h4>
+                            <div class="my-4">
+                                <span class="text-2xl font-bold text-amber-600">₪3,500</span>
+                                <span class="text-xs text-slate-500">מחיר קבוע</span>
+                            </div>
+                            <ul class="text-sm text-slate-600 space-y-2 mb-4">
+                                <li>✅ מיפוי המצב הקיים</li>
+                                <li>✅ זיהוי "חורים" בתהליך</li>
+                                <li>✅ תוכנית עבודה לפתרון</li>
+                            </ul>
+                            <p class="text-xs bg-slate-50 p-2 rounded text-slate-500 border border-slate-100">
+                                <strong>המטרה:</strong> לייצר אמון ולהוכיח מקצועיות בסיכון נמוך ללקוח.
+                            </p>
+                        </div>
+
+                        <!-- Step 2: Core Project -->
+                        <div class="bg-white p-6 rounded-xl border-2 border-amber-500 shadow-lg transform md:-translate-y-4 relative z-10">
+                            <div class="absolute -top-3 right-4 bg-amber-500 text-white text-xs px-2 py-1 rounded font-bold">הרווח העיקרי</div>
+                            <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-2xl mb-4">⚙️</div>
+                            <span class="text-xs font-bold text-amber-600 uppercase tracking-wider">שלב 2: הליבה</span>
+                            <h4 class="text-xl font-bold text-slate-900 mt-1">פיתוח ואינטגרציה</h4>
+                            <div class="my-4">
+                                <span class="text-2xl font-bold text-slate-900">₪20k - ₪60k</span>
+                            </div>
+                            <ul class="text-sm text-slate-600 space-y-2 mb-4">
+                                <li>✅ פיתוח ה"גשר" החסר</li>
+                                <li>✅ אוטומציות ודשבורדים</li>
+                                <li>✅ הדרכת צוות והטמעה</li>
+                            </ul>
+                            <p class="text-xs bg-amber-50 p-2 rounded text-amber-800 border border-amber-100">
+                                <strong>המטרה:</strong> לפתור את הכאב הגדול ולחסוך ללקוח כוח אדם.
+                            </p>
+                        </div>
+
+                        <!-- Step 3: Retainer -->
+                        <div class="bg-white p-6 rounded-xl border-2 border-slate-100 hover:border-green-400 transition-all shadow-sm group">
+                            <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-2xl mb-4 group-hover:bg-green-100 transition-colors">🛡️</div>
+                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">שלב 3: היציבות</span>
+                            <h4 class="text-xl font-bold text-slate-900 mt-1">תחזוקה (Retainer)</h4>
+                            <div class="my-4">
+                                <span class="text-2xl font-bold text-green-600">₪2,000</span>
+                                <span class="text-xs text-slate-500">לחודש</span>
+                            </div>
+                            <ul class="text-sm text-slate-600 space-y-2 mb-4">
+                                <li>✅ ניטור תקלות (Monitoring)</li>
+                                <li>✅ שינויים קטנים ותמיכה</li>
+                                <li>✅ שקט נפשי למנכ"ל</li>
+                            </ul>
+                            <p class="text-xs bg-slate-50 p-2 rounded text-slate-500 border border-slate-100">
+                                <strong>המטרה:</strong> תזרים מזומנים קבוע (Cash Flow) ומניעת נטישה.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Profit Logic -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                            <h3 class="font-bold text-slate-800 mb-4">📊 מבנה העלויות (Unit Economics)</h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center text-sm border-b border-slate-100 pb-2">
+                                    <span class="text-slate-600">זמן אפיון (שלב 1)</span>
+                                    <span class="font-mono font-bold">5-10 שעות</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm border-b border-slate-100 pb-2">
+                                    <span class="text-slate-600">זמן פיתוח ליבה (שלב 2)</span>
+                                    <span class="font-mono font-bold">80-120 שעות</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm border-b border-slate-100 pb-2">
+                                    <span class="text-slate-600">עלות שיווק (CAC)</span>
+                                    <span class="font-mono font-bold text-green-600">₪0 (שותפים)</span>
+                                </div>
+                                <div class="bg-slate-50 p-3 rounded mt-2">
+                                    <span class="block text-xs text-slate-500">רווחיות גולמית משוערת</span>
+                                    <span class="font-bold text-slate-900 text-lg">70% - 80%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                            <h3 class="font-bold text-slate-800 mb-4">⛔ מה אנחנו לא מוכרים (Out of Scope)</h3>
+                            <ul class="space-y-3 text-sm text-slate-600">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-red-500 font-bold">X</span>
+                                    <span><strong>חומרה ורשתות:</strong> לא מתקנים מדפסות, לא מגדירים וויפיי.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-red-500 font-bold">X</span>
+                                    <span><strong>בניית אתרי תדמית:</strong> זה שוק של מחיר נמוך, לא מעניין אותנו.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-red-500 font-bold">X</span>
+                                    <span><strong>שיווק דיגיטלי:</strong> אנחנו אנשי אופרציה, לא אנשי קריאייטיב.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-red-500 font-bold">X</span>
+                                    <span><strong>תמיכה 24/7:</strong> אנחנו עובדים בשעות עסקים. זה B2B, לא חדר מיון.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `,
+            social: `
+                <div class="max-w-6xl mx-auto animate-fade-in">
+                    <div class="mb-8 border-b border-slate-200 pb-4">
+                        <h2 class="text-3xl font-bold text-slate-900">אסטרטגיית תוכן וסושיאל</h2>
+                        <p class="text-slate-600 mt-2">הפלטפורמה שלך לבניית סמכות ללא מאמץ שיווקי ממומן.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+                        
+                        <!-- LinkedIn Section -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
+                            <div class="bg-[#0077b5] text-white p-6 rounded-t-xl flex justify-between items-center">
+                                <div>
+                                    <h3 class="text-xl font-bold flex items-center gap-2"><span class="bg-white text-[#0077b5] rounded px-2 text-sm font-extrabold">in</span> הזירה המקצועית</h3>
+                                    <p class="text-xs text-blue-100 mt-1">תדירות: 3-4 בשבוע | סגנון: מעמיק, נתונים, סמכות</p>
+                                </div>
+                            </div>
+                            
+                            <div class="p-6 flex-1 overflow-y-auto max-h-[600px] scroll-smooth">
+                                <!-- Pillar 1 -->
+                                <div class="mb-8">
+                                    <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wider mb-4 border-b border-slate-100 pb-2 text-[#0077b5]">1. Case Studies (הוכחת יכולת)</h4>
+                                    <div class="space-y-3">
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#0077b5]">"איך אקסל אחד הפיל חברת לוגיסטיקה של 10 מיליון שח"</p>
+                                            <p class="text-xs text-slate-500 mt-1">סיפור על טעות קריטית בניהול מלאי ואיך פתרנו אותה.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#0077b5]">"למה סמנכ"ל התפעול הזה חזר לישון בלילה?"</p>
+                                            <p class="text-xs text-slate-500 mt-1">הדגמה של דשבורד אוטומטי שמחליף 20 שיחות טלפון ביום.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#0077b5]">"חיסכון של משרה שלמה ב-30 יום: המספרים"</p>
+                                            <p class="text-xs text-slate-500 mt-1">פירוט ROI: עלות המערכת מול עלות עובד שנתי.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#0077b5]">"איך הפכנו מחסן כאוס למכונה משומנת של 5000 מק״טים"</p>
+                                            <p class="text-xs text-slate-500 mt-1">הדגמה של סדר וארגון באמצעות טכנולוגיה פשוטה.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#0077b5]">"העלות הנסתרת של הזנת נתונים: דוגמה מהשטח"</p>
+                                            <p class="text-xs text-slate-500 mt-1">ניתוח כספי של טעויות הקלדה חוזרות.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Pillar 2 -->
+                                <div class="mb-8">
+                                    <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wider mb-4 border-b border-slate-100 pb-2 text-[#0077b5]">2. Industry Insights (פרשנות מומחה)</h4>
+                                    <div class="space-y-3">
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#0077b5]">"המלכודת של תוכנות המדף: מתי ה-CRM בוגד בכם?"</p>
+                                            <p class="text-xs text-slate-500 mt-1">הסבר על הפער בין מה שהתוכנה מבטיחה למציאות בשטח.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#0077b5]">"למה Low-Code זה העתיד של עסקים בינוניים"</p>
+                                            <p class="text-xs text-slate-500 mt-1">חינוך שוק: אפשר לבנות מערכות מטורפות בשבריר עלות.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#0077b5]">"למה 'פיתוח מותאם אישית' זו לא מילה גסה ב-2025"</p>
+                                            <p class="text-xs text-slate-500 mt-1">שבירת המיתוס שפיתוח זה יקר ומסובך מדי.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#0077b5]">"הפער הבלתי נסבל בין ה-ERP שלכם למציאות בשטח"</p>
+                                            <p class="text-xs text-slate-500 mt-1">על הצורך ב'דבק' טכנולוגי שמחבר את המערכות.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Pillar 3 -->
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wider mb-4 border-b border-slate-100 pb-2 text-[#0077b5]">3. Contrarian Views (לשחוט פרות קדושות)</h4>
+                                    <div class="space-y-3">
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#0077b5]">"תפסיקו לגייס עוד מזכירות. אתם זורקים כסף."</p>
+                                            <p class="text-xs text-slate-500 mt-1">דעה לא פופולרית: הבעיה היא לא כוח אדם, היא תהליך עקום.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#0077b5]">"למה אני ממליץ ללקוחות שלי *לא* לפתח אפליקציה"</p>
+                                            <p class="text-xs text-slate-500 mt-1">שבירת המיתוס שכל עסק צריך אפליקציה בחנות.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#0077b5]">"תפסיקו לחפש את 'האפליקציה המושלמת'. היא לא קיימת."</p>
+                                            <p class="text-xs text-slate-500 mt-1">האמת על אינטגרציה והתאמה אישית.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#0077b5]">"אוטומציה לא תתקן תהליך עקום (היא רק תאיץ אותו)"</p>
+                                            <p class="text-xs text-slate-500 mt-1">קודם כל מסדרים את התהליך, רק אחר כך בונים קוד.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Facebook Section -->
+                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
+                            <div class="bg-[#1877F2] text-white p-6 rounded-t-xl flex justify-between items-center">
+                                <div>
+                                    <h3 class="text-xl font-bold flex items-center gap-2"><span class="bg-white text-[#1877F2] rounded-full px-2 text-sm font-extrabold">f</span> הזירה האישית</h3>
+                                    <p class="text-xs text-blue-100 mt-1">תדירות: 2-3 בשבוע | סגנון: רגש, אותנטיות, מאחורי הקלעים</p>
+                                </div>
+                            </div>
+                            
+                            <div class="p-6 flex-1 overflow-y-auto max-h-[600px] scroll-smooth">
+                                <!-- Pillar 1 -->
+                                <div class="mb-8">
+                                    <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wider mb-4 border-b border-slate-100 pb-2 text-[#1877F2]">1. מאחורי הקלעים (The Grind)</h4>
+                                    <div class="space-y-3">
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#1877F2]">"תמונה: קפה שחור ושרטוטים על דף במחסן"</p>
+                                            <p class="text-xs text-slate-500 mt-1">"לפעמים הייטק זה לא משרד נוצץ, זה להבין איך מלגזה עובדת כדי לבנות לה תוכנה."</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#1877F2]">"הרגע הזה שהלקוח אומר 'וואו, זה עובד'"</p>
+                                            <p class="text-xs text-slate-500 mt-1">שיתוף רגשי של סיפוק מקצועי אחרי פיצוח בעיה קשה.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#1877F2]">"דיבאגינג ב-2 בלילה: הזוהר מול המציאות"</p>
+                                            <p class="text-xs text-slate-500 mt-1">הצצה כנה לחיים של בעל עסק טכנולוגי.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#1877F2]">"פגישה על רצפת הייצור: איפה שהקסם באמת קורה"</p>
+                                            <p class="text-xs text-slate-500 mt-1">תמונה מהשטח, עם קסדה או וסט זוהר.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Pillar 2 -->
+                                <div class="mb-8">
+                                    <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wider mb-4 border-b border-slate-100 pb-2 text-[#1877F2]">2. סיפורי מסע (Vulnerability)</h4>
+                                    <div class="space-y-3">
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#1877F2]">"הטעות שעלתה לי ביוקר בתחילת הדרך"</p>
+                                            <p class="text-xs text-slate-500 mt-1">שיתוף על תמחור נמוך מדי או פרויקט שנכשל - בונה המון אמון ואנושיות.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#1877F2]">"ממתכנת ליועץ: השינוי הכי מפחיד שעשיתי"</p>
+                                            <p class="text-xs text-slate-500 mt-1">הסיפור האישי שלך על המעבר משכיר/פרילאנסר לבעל עסק שמוביל לקוחות.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#1877F2]">"ה'לא' הראשון שאמרתי ללקוח (ולמה זה היה הדבר הנכון)"</p>
+                                            <p class="text-xs text-slate-500 mt-1">על הצבת גבולות ובחירת הלקוחות המדויקים.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#1877F2]">"למה בחרתי להתמקד דווקא בעסקים משפחתיים"</p>
+                                            <p class="text-xs text-slate-500 mt-1">חיבור לערכים ולייעוד העסקי.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Pillar 3 -->
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-sm uppercase tracking-wider mb-4 border-b border-slate-100 pb-2 text-[#1877F2]">3. המלצות בזק (Value)</h4>
+                                    <div class="space-y-3">
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#1877F2]">"הספר ששינה לי את התפיסה על ניהול זמן"</p>
+                                            <p class="text-xs text-slate-500 mt-1">המלצה קצרה ואותנטית.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#1877F2]">"כלי ה-AI שאני לא יכול לחיות בלעדיו השבוע"</p>
+                                            <p class="text-xs text-slate-500 mt-1">טיפ טכנולוגי קטן ושימושי.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#1877F2]">"פודקאסט שכל מנהל תפעול חייב לשמוע בדרך לעבודה"</p>
+                                            <p class="text-xs text-slate-500 mt-1">המלצת תוכן רלוונטית לקהל היעד.</p>
+                                        </div>
+                                        <div class="p-3 bg-slate-50 hover:bg-blue-50 rounded border border-slate-100 cursor-pointer transition-colors group">
+                                            <p class="font-bold text-slate-700 group-hover:text-[#1877F2]">"הטיפ הקטן בפרודוקטיביות שמציל לי את השבוע"</p>
+                                            <p class="text-xs text-slate-500 mt-1">שיתוף של כלי או שיטה אישית לניהול משימות.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            tactics: `
+                <div class="max-w-4xl mx-auto animate-fade-in">
+                    <div class="mb-8 border-b border-slate-200 pb-4 flex justify-between items-end">
+                        <div>
+                            <h2 class="text-3xl font-bold text-slate-900">תוכנית עבודה ומדריך טקטי</h2>
+                            <p class="text-slate-600 mt-2">רשימת הצעדים המעשיים להשגת היעד ללא שיווק ממומן.</p>
+                        </div>
+                        <div class="text-center bg-white p-3 rounded-lg shadow-sm border border-slate-100">
+                            <span class="block text-xs text-slate-500">הושלם</span>
+                            <span id="progress-percent" class="text-2xl font-bold text-amber-600">0%</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 1 -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 mb-6 overflow-hidden">
+                        <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                            <h3 class="font-bold text-slate-800">שלב 1: הכנת הקרקע (מיידי)</h3>
+                            <span class="text-xs bg-slate-200 text-slate-600 px-2 py-1 rounded">חד פעמי</span>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <label class="flex items-start gap-4 cursor-pointer group">
+                                <input type="checkbox" class="task-check w-5 h-5 mt-1 accent-amber-600 rounded" data-task="linkedin" onchange="updateProgress()">
+                                <div>
+                                    <span class="font-bold group-hover:text-amber-700 transition-colors">חידוד פרופיל LinkedIn</span>
+                                    <p class="text-sm text-slate-500">שינוי כותרת ל: "מנהל פרויקטים טכנולוגי | מומחה לאוטומציה וחיבור מערכות (Operations Architect)"</p>
+                                </div>
+                            </label>
+                            <label class="flex items-start gap-4 cursor-pointer group">
+                                <input type="checkbox" class="task-check w-5 h-5 mt-1 accent-amber-600 rounded" data-task="caseStudy" onchange="updateProgress()">
+                                <div>
+                                    <span class="font-bold group-hover:text-amber-700 transition-colors">כתיבת Case Study (עמוד אחד)</span>
+                                    <p class="text-sm text-slate-500">בעיה -> פתרון -> תוצאה (על הלקוח הקיים).</p>
+                                </div>
+                            </label>
+                            <label class="flex items-start gap-4 cursor-pointer group">
+                                <input type="checkbox" class="task-check w-5 h-5 mt-1 accent-amber-600 rounded" data-task="penetration" onchange="updateProgress()">
+                                <div>
+                                    <span class="font-bold group-hover:text-amber-700 transition-colors">הכנת מסמך "מוצר חדירה"</span>
+                                    <p class="text-sm text-slate-500">הצעת מחיר גנרית לאפיון ב-3,500 ש"ח.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 mb-6 overflow-hidden">
+                        <div class="bg-amber-50 px-6 py-4 border-b border-amber-100 flex justify-between items-center">
+                            <h3 class="font-bold text-amber-900">שלב 2: תוכנית שבועית (שוטף)</h3>
+                            <span class="text-xs bg-amber-200 text-amber-800 px-2 py-1 rounded">חוזר</span>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <label class="flex items-start gap-4 cursor-pointer group">
+                                <input type="checkbox" class="task-check w-5 h-5 mt-1 accent-amber-600 rounded" data-task="consultantsList" onchange="updateProgress()">
+                                <div>
+                                    <span class="font-bold group-hover:text-amber-700 transition-colors">יום א': 10 פניות ליועצים</span>
+                                    <p class="text-sm text-slate-500">איתור יועצים רלוונטיים ושליחת הודעה אישית (ראה לשונית תסריטים).</p>
+                                </div>
+                            </label>
+                            <label class="flex items-start gap-4 cursor-pointer group">
+                                <input type="checkbox" class="task-check w-5 h-5 mt-1 accent-amber-600 rounded" data-task="familyCalls" onchange="updateProgress()">
+                                <div>
+                                    <span class="font-bold group-hover:text-amber-700 transition-colors">יום ב': 5 שיחות רשת חמה</span>
+                                    <p class="text-sm text-slate-500">שיחה למכרים: "מחפש חיבור למנהלי תפעול".</p>
+                                </div>
+                            </label>
+                            <label class="flex items-start gap-4 cursor-pointer group">
+                                <input type="checkbox" class="task-check w-5 h-5 mt-1 accent-amber-600 rounded" data-task="directSearch" onchange="updateProgress()">
+                                <div>
+                                    <span class="font-bold group-hover:text-amber-700 transition-colors">יום ג': פניות ישירות ("חוקר")</span>
+                                    <p class="text-sm text-slate-500">חיפוש חברות יעד בלינקדאין ופנייה בגישת המחקר.</p>
+                                </div>
+                            </label>
+                            <label class="flex items-start gap-4 cursor-pointer group">
+                                <input type="checkbox" class="task-check w-5 h-5 mt-1 accent-amber-600 rounded" data-task="meetings" onchange="updateProgress()">
+                                <div>
+                                    <span class="font-bold group-hover:text-amber-700 transition-colors">יום ד': פגישות זום/קפה</span>
+                                    <p class="text-sm text-slate-500">ביצוע הפגישות שתואמו. מיקוד ב"להיות קבלן הביצוע שלהם".</p>
+                                </div>
+                            </label>
+                            <label class="flex items-start gap-4 cursor-pointer group">
+                                <input type="checkbox" class="task-check w-5 h-5 mt-1 accent-amber-600 rounded" data-task="weeklyReview" onchange="updateProgress()">
+                                <div>
+                                    <span class="font-bold group-hover:text-amber-700 transition-colors">יום ה': סיכום ושיפור</span>
+                                    <p class="text-sm text-slate-500">כמה שיחות היו? מה עבד? תיקון מסרים.</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `,
+            scripts: `
+                <div class="max-w-4xl mx-auto animate-fade-in">
+                    <div class="mb-8 border-b border-slate-200 pb-4">
+                        <h2 class="text-3xl font-bold text-slate-900">כספת תסריטים</h2>
+                        <p class="text-slate-600 mt-2">תבניות מוכנות להעתקה והדבקה. זכור: התאם את הטון לבן אדם.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-8">
+                        <!-- Consultant Script -->
+                        <div class="bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden">
+                            <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center">
+                                <h3 class="font-bold flex items-center gap-2">🕵️ פנייה ליועצים (הערוץ הראשי)</h3>
+                                <button onclick="copyToClipboard('consultant-script')" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded transition-colors">העתק טקסט</button>
+                            </div>
+                            <div class="p-6 bg-slate-50">
+                                <pre id="consultant-script" class="whitespace-pre-wrap font-sans text-slate-700 text-sm leading-relaxed">היי [שם], ראיתי שאתה מלווה עסקים בתחום ה-[לוגיסטיקה/שירות].
+אני מפתח מערכות שמשלימות את העבודה שלך – אני הופך את הנהלים והאסטרטגיה שאתה בונה ללקוח, לכלים טכנולוגיים שמונעים טעויות אנוש וחוסכים כוח אדם.
+המטרה שלי היא להיות "קבלן הביצוע" הטכני שלך, כדי שהלקוחות שלך יצליחו ליישם את הייעוץ בפועל.
+
+אשמח להכיר בשיחה קצרה ולראות איך אוכל לתת ערך ללקוחות שלך (דרך אגב, אני עובד במודל של עמלת הפנייה או הנחה ללקוח שלך – מה שתבחר).</pre>
+                            </div>
+                            <div class="px-6 py-3 bg-slate-100 text-xs text-slate-500 border-t border-slate-200">
+                                💡 טיפ: שלח את זה בלינקדאין או בפייסבוק מסנג'ר. אל תהיה "מכירתי" מדי, תבוא בגישה של שותף.
+                            </div>
+                        </div>
+
+                        <!-- Direct Client Script -->
+                        <div class="bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden">
+                            <div class="bg-amber-600 text-white px-6 py-4 flex justify-between items-center">
+                                <h3 class="font-bold flex items-center gap-2">📞 פנייה ישירה ("טכניקת האבל")</h3>
+                                <button onclick="copyToClipboard('client-script')" class="text-xs bg-amber-700 hover:bg-amber-500 px-3 py-1 rounded transition-colors">העתק טקסט</button>
+                            </div>
+                            <div class="p-6 bg-slate-50">
+                                <pre id="client-script" class="whitespace-pre-wrap font-sans text-slate-700 text-sm leading-relaxed"><strong>אתה:</strong> היי [שם הלקוח], אני מדבר עם עסקים בתחום שלכם כדי להבין איך אתם מתמודדים עם המעבר בין המערכות השונות. אני מניח שיש לכם כבר תוכנה לניהול העסק, נכון?
+
+<strong>לקוח:</strong> כן, יש לנו תוכנה X.
+
+<strong>אתה:</strong> מעולה. בדרך כלל אני שומע שהיא טובה לדברים הבסיסיים, <strong>אבל</strong> תמיד יש איזו פינה שהיא לא סוגרת ושם אתם עדיין עובדים עם אקסלים או ניירת. איפה זה תופס אתכם?
+
+<strong>[כאן הלקוח שופך את הלב - להקשיב!]</strong>
+
+<strong>אתה (הסגירה):</strong> שמע, זה נשמע פתיר לגמרי. אני לא מציע להחליף את התוכנה, אלא לבנות "גשר" קטן שיפתור בדיוק את הבעיה הזו. בוא נעשה פגישת אפיון ממוקדת (עלות סמלית של 3,500 ש"ח), אני אבנה לך תוכנית טכנית לפתרון, ואחריה תחליט איך להתקדם.</pre>
+                            </div>
+                            <div class="px-6 py-3 bg-amber-50 text-xs text-amber-800 border-t border-amber-100">
+                                💡 טיפ: מילת המפתח היא "אבל". חכה לה, היא תמיד מגיעה.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            simulator: `
+                <div class="max-w-6xl mx-auto animate-fade-in h-full flex flex-col">
+                    <div class="mb-4 border-b border-slate-200 pb-4">
+                        <h2 class="text-3xl font-bold text-slate-900">סימולטור הכנסות</h2>
+                        <p class="text-slate-600 mt-2">שחק עם המספרים כדי לראות איך מגיעים ל-120,000 ש"ח.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1">
+                        <!-- Controls -->
+                        <div class="lg:col-span-4 space-y-6 bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-fit">
+                            
+                            <!-- Penetration Product -->
+                            <div class="space-y-3">
+                                <h4 class="font-bold text-slate-800 flex items-center justify-between">
+                                    <span>🏹 מוצרי חדירה (אפיון)</span>
+                                    <span class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-500">קל למכור</span>
+                                </h4>
+                                <div>
+                                    <label class="text-xs text-slate-500">מחיר ליחידה (₪)</label>
+                                    <input type="number" id="pen-price" value="3500" class="w-full border border-slate-200 rounded p-2 text-sm" onchange="updateSimulator()">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-slate-500 flex justify-between"><span>כמות עסקאות</span> <span id="pen-count-val" class="font-bold">5</span></label>
+                                    <input type="range" id="pen-count" min="0" max="20" value="5" class="w-full accent-amber-600" oninput="updateSimulator()">
+                                </div>
+                            </div>
+
+                            <hr class="border-slate-100">
+
+                            <!-- Core Product -->
+                            <div class="space-y-3">
+                                <h4 class="font-bold text-slate-800 flex items-center justify-between">
+                                    <span>🏗️ פרויקטי ליבה</span>
+                                    <span class="text-xs bg-amber-100 px-2 py-1 rounded text-amber-800">הכסף הגדול</span>
+                                </h4>
+                                <div>
+                                    <label class="text-xs text-slate-500">מחיר ממוצע (₪)</label>
+                                    <input type="number" id="core-price" value="40000" class="w-full border border-slate-200 rounded p-2 text-sm" onchange="updateSimulator()">
+                                </div>
+                                <div>
+                                    <label class="text-xs text-slate-500 flex justify-between"><span>כמות עסקאות</span> <span id="core-count-val" class="font-bold">2</span></label>
+                                    <input type="range" id="core-count" min="0" max="10" value="2" class="w-full accent-amber-600" oninput="updateSimulator()">
+                                </div>
+                            </div>
+
+                            <hr class="border-slate-100">
+                            
+                            <!-- Summary Box -->
+                            <div class="bg-slate-900 text-white p-4 rounded-lg text-center">
+                                <span class="block text-xs text-slate-400 mb-1">סה"כ הכנסה משוערת</span>
+                                <span id="total-revenue" class="text-3xl font-bold text-amber-500">₪0</span>
+                                <div id="goal-status" class="mt-2 text-xs px-2 py-1 bg-white/10 rounded inline-block"></div>
+                            </div>
+                        </div>
+
+                        <!-- Visualization -->
+                        <div class="lg:col-span-8 bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex flex-col">
+                            <h4 class="font-bold text-slate-800 mb-4">תחזית גרפית</h4>
+                            <div class="chart-container flex-1 w-full">
+                                <canvas id="simulatorChart"></canvas>
+                            </div>
+                            <div class="mt-4 text-sm text-slate-500 bg-slate-50 p-4 rounded">
+                                <p><strong>התובנה:</strong> שים לב איך מספר קטן של פרויקטי ליבה משפיע דרמטית על השורה התחתונה. מוצרי החדירה הם רק הדלת פנימה.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `
+        };
+
+        // --- Core Functions ---
+
+        function init() {
+            navigate('dashboard');
+            // Load saved state if exists (mock)
+            // Render Initial Dashboard Chart
+            setTimeout(() => {
+                if(document.getElementById('dashboardChart')) renderDashboardChart();
+            }, 100);
+        }
+
+        function navigate(viewId) {
+            state.currentView = viewId;
+            
+            // Update UI Content
+            document.getElementById('app-content').innerHTML = content[viewId];
+            
+            // Update Tab Styling
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if(btn.dataset.target === viewId) {
+                    btn.classList.add('active-tab', 'bg-slate-50');
+                } else {
+                    btn.classList.remove('active-tab', 'bg-slate-50');
+                }
+            });
+
+            // View Specific Logic
+            if(viewId === 'tactics') {
+                restoreChecklistState();
+                updateProgress(); // calc initial %
+            } else if (viewId === 'simulator') {
+                updateSimulator();
+            } else if (viewId === 'dashboard') {
+                setTimeout(renderDashboardChart, 50);
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // --- Tactics Logic ---
+        function updateProgress() {
+            const checks = document.querySelectorAll('.task-check');
+            let completed = 0;
+            checks.forEach(check => {
+                state.checklist[check.dataset.task] = check.checked;
+                if(check.checked) completed++;
+            });
+
+            const percent = Math.round((completed / checks.length) * 100);
+            document.getElementById('progress-percent').innerText = percent + '%';
+            document.getElementById('header-progress').innerText = percent + '%';
+        }
+
+        function restoreChecklistState() {
+            const checks = document.querySelectorAll('.task-check');
+            checks.forEach(check => {
+                const key = check.dataset.task;
+                if(state.checklist[key]) check.checked = true;
+            });
+        }
+
+        // --- Simulator Logic ---
+        let simulatorChartInstance = null;
+
+        function updateSimulator() {
+            // Get DOM elements
+            const penPrice = parseInt(document.getElementById('pen-price').value) || 0;
+            const penCount = parseInt(document.getElementById('pen-count').value) || 0;
+            const corePrice = parseInt(document.getElementById('core-price').value) || 0;
+            const coreCount = parseInt(document.getElementById('core-count').value) || 0;
+
+            // Update Labels
+            document.getElementById('pen-count-val').innerText = penCount;
+            document.getElementById('core-count-val').innerText = coreCount;
+
+            // Calculate
+            const penTotal = penPrice * penCount;
+            const coreTotal = corePrice * coreCount;
+            const grandTotal = penTotal + coreTotal;
+            const goal = 120000;
+
+            // Update Total Text
+            document.getElementById('total-revenue').innerText = '₪' + grandTotal.toLocaleString();
+
+            // Goal Status
+            const statusEl = document.getElementById('goal-status');
+            if (grandTotal >= goal) {
+                statusEl.innerText = "🏆 היעד הושג!";
+                statusEl.className = "mt-2 text-xs px-2 py-1 bg-green-500/20 text-green-300 rounded inline-block font-bold";
+            } else {
+                const diff = goal - grandTotal;
+                statusEl.innerText = `עוד ₪${diff.toLocaleString()} ליעד`;
+                statusEl.className = "mt-2 text-xs px-2 py-1 bg-white/10 rounded inline-block";
+            }
+
+            // Update Chart
+            renderSimulatorChart(penTotal, coreTotal, goal);
+        }
+
+        function renderSimulatorChart(penTotal, coreTotal, goal) {
+            const ctx = document.getElementById('simulatorChart');
+            if(!ctx) return;
+
+            if (simulatorChartInstance) {
+                simulatorChartInstance.destroy();
+            }
+
+            simulatorChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['הכנסות צפויות'],
+                    datasets: [
+                        {
+                            label: 'מוצרי חדירה',
+                            data: [penTotal],
+                            backgroundColor: '#cbd5e1', // slate-300
+                            stack: 'Stack 0',
+                        },
+                        {
+                            label: 'פרויקטי ליבה',
+                            data: [coreTotal],
+                            backgroundColor: '#d97706', // amber-600
+                            stack: 'Stack 0',
+                        },
+                        {
+                            label: 'יעד (רף)',
+                            data: [0], // Dummy for legend
+                            borderColor: '#ef4444',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            type: 'line'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    yMin: goal,
+                                    yMax: goal,
+                                    borderColor: 'rgb(239, 68, 68)',
+                                    borderWidth: 2,
+                                    borderDash: [6, 6],
+                                    label: {
+                                        content: 'יעד 120K',
+                                        enabled: true,
+                                        position: 'end'
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: Math.max(goal * 1.2, penTotal + coreTotal + 20000),
+                            ticks: {
+                                callback: function(value) { return '₪' + value/1000 + 'k'; }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Dashboard Chart ---
+        function renderDashboardChart() {
+            const ctx = document.getElementById('dashboardChart');
+            if(!ctx) return;
+
+            // Radar Chart for "Ideal Client"
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'בשלות דיגיטלית',
+                        'מורכבות תפעולית',
+                        'יכולת תשלום',
+                        'נכונות לשינוי',
+                        'פוטנציאל חיסכון',
+                        'גודל ארגון'
+                    ],
+                    datasets: [{
+                        label: 'לקוח "דור שני"',
+                        data: [85, 90, 80, 95, 100, 70],
+                        fill: true,
+                        backgroundColor: 'rgba(217, 119, 6, 0.2)',
+                        borderColor: 'rgb(217, 119, 6)',
+                        pointBackgroundColor: 'rgb(217, 119, 6)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(217, 119, 6)'
+                    }, {
+                        label: 'עסק קטן / חובבן',
+                        data: [20, 30, 20, 40, 30, 20],
+                        fill: true,
+                        backgroundColor: 'rgba(148, 163, 184, 0.2)',
+                        borderColor: 'rgb(148, 163, 184)',
+                        pointBackgroundColor: 'rgb(148, 163, 184)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(148, 163, 184)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: { line: { borderWidth: 3 } },
+                    scales: {
+                        r: {
+                            angleLines: { display: false },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: { display: false } // clean look
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // --- Utils ---
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('הטקסט הועתק ללוח!');
+            });
+        }
+
+        // Start App
+        init();
+
+    </script>
+    
+    <!-- Visualization & Content Choices: 
+         1. Dashboard Radar Chart: Visualizes WHY "Second Gen" clients are the target vs "Amateurs". 
+            Goal: Reinforce the Avatar strategy visually.
+         2. Revenue Simulator Bar Chart: Shows the additive power of small wins (penetration products) leading to big wins.
+            Goal: Motivation and financial planning.
+         3. Interactive Checklist: Stores state in JS memory to feel like a real app.
+            Goal: Accountability.
+         4. Script Vault: Utility feature. 
+            Goal: Remove friction from doing the actual outreach work.
+    -->
+    
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. Charts via Chart.js Canvas. -->
+</body>
+</html>

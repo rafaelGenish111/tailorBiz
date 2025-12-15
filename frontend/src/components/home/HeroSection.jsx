@@ -1,9 +1,31 @@
+import React from 'react';
 import { Box, Container, Typography, Button, Stack } from '@mui/material';
 import { motion } from 'framer-motion';
 import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import { Link } from 'react-router-dom';
+import { publicCMS } from '../../utils/publicApi';
 
 function HeroSection() {
+  const [cmsHero, setCmsHero] = React.useState(null);
+
+  React.useEffect(() => {
+    const run = async () => {
+      try {
+        const res = await publicCMS.getPage('home');
+        setCmsHero(res.data?.data?.content || null);
+      } catch (_) {
+        setCmsHero(null);
+      }
+    };
+    run();
+  }, []);
+
+  const title = (cmsHero?.heroTitle || 'מערכת חכמה בתפירה אישית').trim();
+  const subtitle = (cmsHero?.heroSubtitle || 'ללא דמי מנוי חודשיים - הנכס נשאר שלך').trim();
+  const ctaText = (cmsHero?.heroCtaText || 'לבדיקת היתכנות ואפיון').trim();
+  const ctaHref = cmsHero?.heroCtaHref || '/contact';
+
   return (
     <Box
       sx={{
@@ -22,7 +44,7 @@ function HeroSection() {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'linear-gradient(135deg, rgba(26,35,126,0.03) 0%, rgba(0,188,212,0.05) 100%)',
+          background: 'linear-gradient(135deg, rgba(11,31,51,0.03) 0%, rgba(211,139,42,0.05) 100%)',
           zIndex: 0,
         }}
       />
@@ -36,7 +58,7 @@ function HeroSection() {
           width: 400,
           height: 400,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0,188,212,0.08) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(211,139,42,0.08) 0%, transparent 70%)',
           filter: 'blur(60px)',
           zIndex: 0,
         }}
@@ -49,7 +71,7 @@ function HeroSection() {
           width: 350,
           height: 350,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(26,35,126,0.06) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(11,31,51,0.06) 0%, transparent 70%)',
           filter: 'blur(50px)',
           zIndex: 0,
         }}
@@ -101,23 +123,10 @@ function HeroSection() {
               sx={{
                 mb: 3,
                 color: 'text.primary',
-                fontWeight: 800,
+                fontWeight: 700,
               }}
             >
-              תעשו את מה שאתם טובים בו{' '}
-              <Box
-                component="span"
-                sx={{
-                  background: 'linear-gradient(135deg, #1a237e 0%, #00bcd4 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                –
-              </Box>
-              <br />
-              אנחנו נדאג לשאר
+              {title}
             </Typography>
           </motion.div>
 
@@ -136,7 +145,7 @@ function HeroSection() {
                 lineHeight: 1.6,
               }}
             >
-              חוסכת <strong>10+ שעות שבועיות</strong> ומחזירה לקוחות שהלכו לאיבוד
+              <strong>{subtitle}</strong>
             </Typography>
           </motion.div>
 
@@ -157,18 +166,22 @@ function HeroSection() {
                 size="large"
                 color="secondary"
                 startIcon={<RocketLaunchOutlinedIcon />}
+                component={Link}
+                to={ctaHref}
                 sx={{
                   px: 4,
                   py: 1.5,
                   fontSize: '1.1rem',
                 }}
               >
-                קבעו דמו חינם
+                {ctaText}
               </Button>
               <Button
                 variant="outlined"
                 size="large"
                 startIcon={<PlayCircleOutlineIcon />}
+                component={Link}
+                to="/contact"
                 sx={{
                   px: 4,
                   py: 1.5,
@@ -177,11 +190,11 @@ function HeroSection() {
                   color: 'primary.main',
                   '&:hover': {
                     borderColor: 'primary.dark',
-                    bgcolor: 'rgba(26,35,126,0.04)',
+                    bgcolor: 'rgba(11,31,51,0.04)',
                   },
                 }}
               >
-                צפו איך זה עובד
+                רוצים לעצור את זליגת הכסף? בואו נדבר
               </Button>
             </Stack>
           </motion.div>
