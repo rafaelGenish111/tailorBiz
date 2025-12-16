@@ -23,6 +23,7 @@ import ArticlesManager from '../../pages/admin/cms/ArticlesManager';
 import ArticleEditor from '../../pages/admin/cms/ArticleEditor';
 import ClientsManager from '../../pages/admin/cms/ClientsManager';
 import SiteSettingsPage from './SiteSettingsPage';
+import EmployeesPage from './EmployeesPage';
 import { Box, Typography } from '@mui/material';
 
 function Placeholder({ title }) {
@@ -75,6 +76,7 @@ function AdminPanel() {
         <Route path="clients/:id" element={<ClientCard />} />
         {/* Settings */}
         <Route path="settings" element={<SiteSettingsPage />} />
+        <Route path="employees" element={<EmployeesPage />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
     </AdminLayout>

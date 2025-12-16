@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 
 // Import routes
 const testimonialRoutes = require('./routes/testimonials.routes');
@@ -18,12 +19,14 @@ const testRoutes = require('./routes/testRoutes');
 const timeEntryRoutes = require('./routes/timeEntryRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const quoteRoutes = require('./routes/quoteRoutes');
+const authRoutes = require('./routes/authRoutes');
 const publicCmsRoutes = require('./routes/publicCmsRoutes');
 const adminPagesRoutes = require('./routes/adminPagesRoutes');
 const adminArticlesRoutes = require('./routes/adminArticlesRoutes');
 const adminClientsRoutes = require('./routes/adminClientsRoutes');
 const adminUploadsRoutes = require('./routes/adminUploadsRoutes');
 const adminSiteSettingsRoutes = require('./routes/adminSiteSettingsRoutes');
+const adminUsersRoutes = require('./routes/adminUsersRoutes');
 
 const app = express();
 const isDev = process.env.NODE_ENV === 'development';
@@ -95,11 +98,13 @@ app.use('/api/', limiter);
 // Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Serve static files (uploaded images)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/invoices', invoiceRoutes);
@@ -122,6 +127,7 @@ app.use('/api/admin/articles', adminArticlesRoutes);
 app.use('/api/admin/clients', adminClientsRoutes);
 app.use('/api/admin/uploads', adminUploadsRoutes);
 app.use('/api/admin/site-settings', adminSiteSettingsRoutes);
+app.use('/api/admin/users', adminUsersRoutes);
 
 // Test routes (רק ב-development)
 if (process.env.NODE_ENV === 'development') {

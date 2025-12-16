@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const testimonialController = require('../controllers/testimonialController');
-const { protect, authorize } = require('../middleware/auth.middleware');
+const { protect, authorize, requireModule } = require('../middleware/auth.middleware');
 const upload = require('../middleware/upload.middleware');
 
 // Public route
@@ -9,6 +9,7 @@ router.get('/public', testimonialController.getPublicTestimonials);
 
 // Protected routes (require authentication)
 router.use(protect);
+router.use(requireModule('cms'));
 
 router.route('/')
   .get(testimonialController.getAllTestimonials)

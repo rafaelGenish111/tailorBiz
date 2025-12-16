@@ -86,11 +86,7 @@ const ChannelsPage = () => {
   const fetchChannels = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/marketing/channels`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await axios.get(`${API_URL}/marketing/channels`, { withCredentials: true });
       setChannels(response.data.data || []);
     } catch (err) {
       setError(err.response?.data?.message || 'שגיאה בטעינת ערוצים');
@@ -133,24 +129,14 @@ const ChannelsPage = () => {
         await axios.put(
           `${API_URL}/marketing/channels/${editingChannel._id}`,
           formData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-              'Content-Type': 'application/json'
-            }
-          }
+          { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
         );
         setSnackbar({ open: true, message: 'ערוץ עודכן בהצלחה', severity: 'success' });
       } else {
         await axios.post(
           `${API_URL}/marketing/channels`,
           formData,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-              'Content-Type': 'application/json'
-            }
-          }
+          { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
         );
         setSnackbar({ open: true, message: 'ערוץ נוצר בהצלחה', severity: 'success' });
       }
@@ -167,11 +153,7 @@ const ChannelsPage = () => {
     }
 
     try {
-      await axios.delete(`${API_URL}/marketing/channels/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      await axios.delete(`${API_URL}/marketing/channels/${id}`, { withCredentials: true });
       setSnackbar({ open: true, message: 'ערוץ נמחק בהצלחה', severity: 'success' });
       fetchChannels();
     } catch (err) {
@@ -184,12 +166,7 @@ const ChannelsPage = () => {
       await axios.post(
         `${API_URL}/marketing/channels/${id}/connect`,
         { apiKey: 'demo-key' },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json'
-          }
-        }
+        { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
       );
       setSnackbar({ open: true, message: 'ערוץ חובר בהצלחה', severity: 'success' });
       fetchChannels();
@@ -203,11 +180,7 @@ const ChannelsPage = () => {
       await axios.post(
         `${API_URL}/marketing/channels/${id}/disconnect`,
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        }
+        { withCredentials: true }
       );
       setSnackbar({ open: true, message: 'ערוץ נותק בהצלחה', severity: 'success' });
       fetchChannels();
@@ -221,11 +194,7 @@ const ChannelsPage = () => {
       await axios.post(
         `${API_URL}/marketing/channels/${id}/sync`,
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        }
+        { withCredentials: true }
       );
       setSnackbar({ open: true, message: 'ערוץ סונכרן בהצלחה', severity: 'success' });
       fetchChannels();
@@ -273,8 +242,8 @@ const ChannelsPage = () => {
         {channels.map((channel, index) => {
           const Icon = channelIcons[channel.platform] || TrendingUpIcon;
           const color = channelColors[channel.platform] || '#666';
-          const budgetUsage = channel.budget?.monthly > 0 
-            ? ((channel.budget?.spent || 0) / channel.budget.monthly * 100) 
+          const budgetUsage = channel.budget?.monthly > 0
+            ? ((channel.budget?.spent || 0) / channel.budget.monthly * 100)
             : 0;
 
           return (

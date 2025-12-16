@@ -51,7 +51,7 @@ const Dashboard = () => {
   const theme = useTheme();
   const { data: statsResponse } = useClientStats();
   const { data: pipelineResponse } = usePipelineStats();
-  
+
   // State עבור מיקוד בוקר
   const [morningFocus, setMorningFocus] = useState([]);
   const [loadingFocus, setLoadingFocus] = useState(true);
@@ -65,11 +65,8 @@ const Dashboard = () => {
       try {
         // ב-Production נשתמש ב-/api, בלוקאל נגדיר VITE_API_URL=http://localhost:5000/api
         const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
-        const token = localStorage.getItem('token');
         const res = await axios.get(`${API_BASE_URL}/clients/stats/morning-focus`, {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : ''
-          }
+          withCredentials: true
         });
         if (res.data.success) {
           setMorningFocus(res.data.data);
@@ -187,7 +184,7 @@ const Dashboard = () => {
             >
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                 <Box>
-                   <Typography variant="body2" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                  <Typography variant="body2" color="text.secondary" fontWeight={600} sx={{ textTransform: 'uppercase', fontSize: '0.75rem' }}>
                     {card.title}
                   </Typography>
                   <Typography variant="h4" fontWeight="bold" sx={{ mt: 1, color: 'text.primary' }}>
@@ -199,14 +196,14 @@ const Dashboard = () => {
                 </Box>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
-                 <Chip 
-                    label={card.change} 
-                    size="small" 
-                    color={card.trend === 'up' ? 'success' : 'error'} 
-                    variant="filled"
-                    sx={{ height: 20, fontSize: '0.7rem', fontWeight: 'bold' }}
-                 />
-                 <Typography variant="caption" color="text.secondary">לחודש קודם</Typography>
+                <Chip
+                  label={card.change}
+                  size="small"
+                  color={card.trend === 'up' ? 'success' : 'error'}
+                  variant="filled"
+                  sx={{ height: 20, fontSize: '0.7rem', fontWeight: 'bold' }}
+                />
+                <Typography variant="caption" color="text.secondary">לחודש קודם</Typography>
               </Box>
             </Paper>
           </Grid>
@@ -215,252 +212,252 @@ const Dashboard = () => {
 
       {/* Main Content Grid */}
       <Grid container spacing={3}>
-        
+
         {/* Left Column: Pipeline & Tasks */}
         <Grid item xs={12} lg={8}>
-            <Grid container spacing={3}>
-                {/* Pipeline Chart */}
-                <Grid item xs={12}>
-                    <Paper sx={{ p: 3, height: '100%', minHeight: 400 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                            <Typography variant="h6" fontWeight="bold">משפך המכירות (Pipeline)</Typography>
-                            <IconButton size="small"><MoreVertIcon /></IconButton>
-                        </Box>
-                        <Box sx={{ height: 350, width: '100%', minHeight: 350, minWidth: 0 }}>
-                        <ResponsiveContainer width="100%" height="100%" minHeight={350}>
-                            <BarChart data={pipelineData.pipeline || []} barSize={40}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
-                            <XAxis dataKey="name" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                            <YAxis yAxisId="left" orientation="left" stroke="#8884d8" hide />
-                            <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" hide />
-                            <RechartsTooltip 
-                                contentStyle={{ backgroundColor: '#fff', borderRadius: 8, border: '1px solid #f0f0f0', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                                cursor={{ fill: '#f5f5f5' }}
-                            />
-                            <Legend iconType="circle" />
-                            <Bar yAxisId="left" dataKey="count" fill="#5e35b1" name="כמות לידים" radius={[4, 4, 0, 0]} />
-                            <Bar yAxisId="right" dataKey="value" fill="#ffb74d" name="שווי כספי (₪)" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                        </Box>
-                    </Paper>
-                </Grid>
-
-                 {/* Tasks / Pipeline Details */}
-                 <Grid item xs={12}>
-                     <Paper sx={{ p: 3 }}>
-                        <Typography variant="h6" fontWeight="bold" gutterBottom>המרה לפי שלבים</Typography>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
-                        {pipelineData.pipeline?.map((stage, index) => (
-                            <Box key={index}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                    <Typography variant="body2" fontWeight={600}>{stage.name}</Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                    {stage.count} לידים • ₪{stage.value?.toLocaleString() || 0}
-                                    </Typography>
-                                </Box>
-                                <LinearProgress
-                                    variant="determinate"
-                                    value={Math.min((stage.count / (Math.max(stats.totalClients, 1))) * 100, 100)}
-                                    sx={{ 
-                                        height: 8, 
-                                        borderRadius: 4,
-                                        bgcolor: 'grey.100',
-                                        '& .MuiLinearProgress-bar': {
-                                            borderRadius: 4,
-                                            bgcolor: COLORS[index % COLORS.length]
-                                        }
-                                    }}
-                                />
-                            </Box>
-                        ))}
-                        </Box>
-                     </Paper>
-                 </Grid>
+          <Grid container spacing={3}>
+            {/* Pipeline Chart */}
+            <Grid item xs={12}>
+              <Paper sx={{ p: 3, height: '100%', minHeight: 400 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                  <Typography variant="h6" fontWeight="bold">משפך המכירות (Pipeline)</Typography>
+                  <IconButton size="small"><MoreVertIcon /></IconButton>
+                </Box>
+                <Box sx={{ height: 350, width: '100%', minHeight: 350, minWidth: 0 }}>
+                  <ResponsiveContainer width="100%" height="100%" minHeight={350}>
+                    <BarChart data={pipelineData.pipeline || []} barSize={40}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+                      <XAxis dataKey="name" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                      <YAxis yAxisId="left" orientation="left" stroke="#8884d8" hide />
+                      <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" hide />
+                      <RechartsTooltip
+                        contentStyle={{ backgroundColor: '#fff', borderRadius: 8, border: '1px solid #f0f0f0', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                        cursor={{ fill: '#f5f5f5' }}
+                      />
+                      <Legend iconType="circle" />
+                      <Bar yAxisId="left" dataKey="count" fill="#5e35b1" name="כמות לידים" radius={[4, 4, 0, 0]} />
+                      <Bar yAxisId="right" dataKey="value" fill="#ffb74d" name="שווי כספי (₪)" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Box>
+              </Paper>
             </Grid>
+
+            {/* Tasks / Pipeline Details */}
+            <Grid item xs={12}>
+              <Paper sx={{ p: 3 }}>
+                <Typography variant="h6" fontWeight="bold" gutterBottom>המרה לפי שלבים</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
+                  {pipelineData.pipeline?.map((stage, index) => (
+                    <Box key={index}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body2" fontWeight={600}>{stage.name}</Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {stage.count} לידים • ₪{stage.value?.toLocaleString() || 0}
+                        </Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={Math.min((stage.count / (Math.max(stats.totalClients, 1))) * 100, 100)}
+                        sx={{
+                          height: 8,
+                          borderRadius: 4,
+                          bgcolor: 'grey.100',
+                          '& .MuiLinearProgress-bar': {
+                            borderRadius: 4,
+                            bgcolor: COLORS[index % COLORS.length]
+                          }
+                        }}
+                      />
+                    </Box>
+                  ))}
+                </Box>
+              </Paper>
+            </Grid>
+          </Grid>
         </Grid>
 
         {/* Right Column */}
         <Grid item xs={12} lg={4}>
-            <Grid container spacing={3} direction="column">
-                
-                {/* --- Morning Focus Widget (חדש) --- */}
-                <Grid item xs={12}>
-                  <Card 
-                    elevation={3} 
-                    sx={{ 
-                      p: 0, 
-                      background: 'linear-gradient(135deg, #fff 0%, #fcfcff 100%)',
-                      border: '1px solid #e3f2fd'
-                    }}
-                  >
-                    <Box sx={{ p: 2, bgcolor: '#e3f2fd', borderBottom: '1px solid #bbdefb', display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <FireIcon color="error" />
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight="bold" color="#1565c0">
-                          מיקוד בוקר
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1 }}>
-                          הזדמנויות חמות שלא טופלו (24 שעות)
-                        </Typography>
-                      </Box>
+          <Grid container spacing={3} direction="column">
+
+            {/* --- Morning Focus Widget (חדש) --- */}
+            <Grid item xs={12}>
+              <Card
+                elevation={3}
+                sx={{
+                  p: 0,
+                  background: 'linear-gradient(135deg, #fff 0%, #fcfcff 100%)',
+                  border: '1px solid #e3f2fd'
+                }}
+              >
+                <Box sx={{ p: 2, bgcolor: '#e3f2fd', borderBottom: '1px solid #bbdefb', display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <FireIcon color="error" />
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight="bold" color="#1565c0">
+                      מיקוד בוקר
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1 }}>
+                      הזדמנויות חמות שלא טופלו (24 שעות)
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <List disablePadding>
+                  {loadingFocus ? (
+                    <Box sx={{ p: 4, textAlign: 'center' }}>
+                      <Typography variant="body2" color="text.secondary">
+                        טוען...
+                      </Typography>
                     </Box>
-
-                    <List disablePadding>
-                      {loadingFocus ? (
-                        <Box sx={{ p: 4, textAlign: 'center' }}>
-                          <Typography variant="body2" color="text.secondary">
-                            טוען...
-                          </Typography>
-                        </Box>
-                      ) : morningFocus.length > 0 ? (
-                        morningFocus.map((lead, index) => (
-                          <React.Fragment key={lead._id}>
-                            <ListItem sx={{ px: 2, py: 1.5 }}>
-                              <ListItemAvatar>
-                                <Avatar sx={{ bgcolor: lead.leadScore > 80 ? '#ffcdd2' : '#fff9c4', color: 'text.primary', fontWeight: 'bold' }}>
-                                  {lead.leadScore}
-                                </Avatar>
-                              </ListItemAvatar>
-                              <ListItemText 
-                                primary={
-                                  <Typography variant="subtitle2" fontWeight="bold">
-                                    {lead.personalInfo?.fullName}
-                                  </Typography>
+                  ) : morningFocus.length > 0 ? (
+                    morningFocus.map((lead, index) => (
+                      <React.Fragment key={lead._id}>
+                        <ListItem sx={{ px: 2, py: 1.5 }}>
+                          <ListItemAvatar>
+                            <Avatar sx={{ bgcolor: lead.leadScore > 80 ? '#ffcdd2' : '#fff9c4', color: 'text.primary', fontWeight: 'bold' }}>
+                              {lead.leadScore}
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText
+                            primary={
+                              <Typography variant="subtitle2" fontWeight="bold">
+                                {lead.personalInfo?.fullName}
+                              </Typography>
+                            }
+                            secondary={
+                              <Typography component="span" variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                <TimeIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
+                                {lead.metadata?.lastContactedAt
+                                  ? 'דיברתם לאחרונה ב-' + new Date(lead.metadata.lastContactedAt).toLocaleDateString('he-IL')
+                                  : 'טרם נוצר קשר'
                                 }
-                                secondary={
-                                  <Typography component="span" variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                    <TimeIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
-                                    {lead.metadata?.lastContactedAt 
-                                      ? 'דיברתם לאחרונה ב-' + new Date(lead.metadata.lastContactedAt).toLocaleDateString('he-IL')
-                                      : 'טרם נוצר קשר'
-                                    }
-                                  </Typography>
-                                }
-                              />
-                              <Tooltip title="שלח הודעה בוואטסאפ">
-                                <IconButton 
-                                  color="success" 
-                                  size="small" 
-                                  sx={{ bgcolor: '#e8f5e9' }}
-                                  onClick={() => handleWhatsApp(lead.personalInfo?.phone || lead.businessInfo?.phone)}
-                                >
-                                  <WhatsAppIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="צפה בכרטיס">
-                                <IconButton size="small" onClick={() => navigate(`/admin/clients/${lead._id}`)}>
-                                  <ArrowForwardIcon fontSize="small" sx={{ transform: 'rotate(180deg)' }} />
-                                </IconButton>
-                              </Tooltip>
-                            </ListItem>
-                            {index < morningFocus.length - 1 && <Divider variant="inset" component="li" />}
-                          </React.Fragment>
-                        ))
-                      ) : (
-                        <Box sx={{ p: 4, textAlign: 'center' }}>
-                          <Typography variant="body2" color="text.secondary">
-                            🎉 כל הכבוד! אין לידים מוזנחים.
-                          </Typography>
-                        </Box>
-                      )}
-                    </List>
-                    {morningFocus.length > 0 && (
-                      <Box sx={{ p: 1.5, bgcolor: '#fafafa', borderTop: '1px solid #eee', textAlign: 'center' }}>
-                        <Button size="small" onClick={() => navigate('/admin/active-nurturing')}>
-                          למסך טיפוח לידים מלא
-                        </Button>
-                      </Box>
-                    )}
-                  </Card>
-                </Grid>
-
-                {/* Lead Sources Pie */}
-                <Grid item xs={12}>
-                    <Paper sx={{ p: 3 }}>
-                        <Typography variant="h6" fontWeight="bold" gutterBottom>מקורות לידים</Typography>
-                        <Box sx={{ height: 250, minHeight: 250, width: '100%', minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2 }}>
-                            <ResponsiveContainer width="100%" height="100%" minHeight={250}>
-                                <PieChart>
-                                <Pie
-                                    data={stats.leadsBySource || []}
-                                    dataKey="count"
-                                    nameKey="_id"
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={5}
-                                >
-                                    {(stats.leadsBySource || []).map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
-                                    ))}
-                                </Pie>
-                                <RechartsTooltip />
-                                <Legend verticalAlign="bottom" height={36} iconSize={10} wrapperStyle={{ fontSize: '12px' }}/>
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </Box>
-                    </Paper>
-                </Grid>
-
-                {/* Recent Activity Feed */}
-                <Grid item xs={12} sx={{ flexGrow: 1 }}>
-                    <Paper sx={{ p: 0, overflow: 'hidden' }}>
-                        <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                             <Typography variant="subtitle1" fontWeight="bold">פעילות אחרונה</Typography>
-                             <Button size="small" onClick={() => navigate('/admin/clients')}>
-                                הכל
-                             </Button>
-                        </Box>
-                        
-                        <List sx={{ p: 0 }}>
-                        {stats.recentActivity?.slice(0, 4).map((activity, index) => (
-                            <React.Fragment key={index}>
-                                <ListItem
-                                component="button"
-                                onClick={() => navigate(`/admin/clients/${activity._id}`)}
-                                sx={{ 
-                                    px: 2, py: 1.5,
-                                    cursor: 'pointer',
-                                    border: 'none',
-                                    background: 'transparent',
-                                    width: '100%',
-                                    textAlign: 'right',
-                                    '&:hover': { bgcolor: 'action.hover' }
-                                }}
-                                >
-                                <ListItemAvatar>
-                                    <Avatar sx={{ bgcolor: COLORS[index % COLORS.length], width: 32, height: 32, fontSize: '0.8rem' }}>
-                                    {activity.personalInfo?.fullName?.charAt(0) || '?'}
-                                    </Avatar>
-                                </ListItemAvatar>
-                                <ListItemText
-                                    primary={
-                                        <Typography variant="body2" fontWeight="bold">
-                                            {activity.personalInfo?.fullName}
-                                        </Typography>
-                                    }
-                                    secondary={
-                                        <Typography variant="caption" color="text.secondary" noWrap>
-                                           {activity.status === 'lead' ? 'ליד חדש' : activity.businessInfo?.businessName}
-                                        </Typography>
-                                    }
-                                />
-                                <Chip
-                                    label={activity.status}
-                                    size="small"
-                                    variant="outlined"
-                                    sx={{ height: 20, fontSize: '0.65rem' }}
-                                />
-                                </ListItem>
-                                {index < Math.min(stats.recentActivity.length, 4) - 1 && <Divider component="li" variant="inset" />}
-                            </React.Fragment>
-                        ))}
-                        </List>
-                    </Paper>
-                </Grid>
+                              </Typography>
+                            }
+                          />
+                          <Tooltip title="שלח הודעה בוואטסאפ">
+                            <IconButton
+                              color="success"
+                              size="small"
+                              sx={{ bgcolor: '#e8f5e9' }}
+                              onClick={() => handleWhatsApp(lead.personalInfo?.phone || lead.businessInfo?.phone)}
+                            >
+                              <WhatsAppIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="צפה בכרטיס">
+                            <IconButton size="small" onClick={() => navigate(`/admin/clients/${lead._id}`)}>
+                              <ArrowForwardIcon fontSize="small" sx={{ transform: 'rotate(180deg)' }} />
+                            </IconButton>
+                          </Tooltip>
+                        </ListItem>
+                        {index < morningFocus.length - 1 && <Divider variant="inset" component="li" />}
+                      </React.Fragment>
+                    ))
+                  ) : (
+                    <Box sx={{ p: 4, textAlign: 'center' }}>
+                      <Typography variant="body2" color="text.secondary">
+                        🎉 כל הכבוד! אין לידים מוזנחים.
+                      </Typography>
+                    </Box>
+                  )}
+                </List>
+                {morningFocus.length > 0 && (
+                  <Box sx={{ p: 1.5, bgcolor: '#fafafa', borderTop: '1px solid #eee', textAlign: 'center' }}>
+                    <Button size="small" onClick={() => navigate('/admin/active-nurturing')}>
+                      למסך טיפוח לידים מלא
+                    </Button>
+                  </Box>
+                )}
+              </Card>
             </Grid>
+
+            {/* Lead Sources Pie */}
+            <Grid item xs={12}>
+              <Paper sx={{ p: 3 }}>
+                <Typography variant="h6" fontWeight="bold" gutterBottom>מקורות לידים</Typography>
+                <Box sx={{ height: 250, minHeight: 250, width: '100%', minWidth: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 2 }}>
+                  <ResponsiveContainer width="100%" height="100%" minHeight={250}>
+                    <PieChart>
+                      <Pie
+                        data={stats.leadsBySource || []}
+                        dataKey="count"
+                        nameKey="_id"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={5}
+                      >
+                        {(stats.leadsBySource || []).map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} strokeWidth={0} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip />
+                      <Legend verticalAlign="bottom" height={36} iconSize={10} wrapperStyle={{ fontSize: '12px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </Box>
+              </Paper>
+            </Grid>
+
+            {/* Recent Activity Feed */}
+            <Grid item xs={12} sx={{ flexGrow: 1 }}>
+              <Paper sx={{ p: 0, overflow: 'hidden' }}>
+                <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="subtitle1" fontWeight="bold">פעילות אחרונה</Typography>
+                  <Button size="small" onClick={() => navigate('/admin/clients')}>
+                    הכל
+                  </Button>
+                </Box>
+
+                <List sx={{ p: 0 }}>
+                  {stats.recentActivity?.slice(0, 4).map((activity, index) => (
+                    <React.Fragment key={index}>
+                      <ListItem
+                        component="button"
+                        onClick={() => navigate(`/admin/clients/${activity._id}`)}
+                        sx={{
+                          px: 2, py: 1.5,
+                          cursor: 'pointer',
+                          border: 'none',
+                          background: 'transparent',
+                          width: '100%',
+                          textAlign: 'right',
+                          '&:hover': { bgcolor: 'action.hover' }
+                        }}
+                      >
+                        <ListItemAvatar>
+                          <Avatar sx={{ bgcolor: COLORS[index % COLORS.length], width: 32, height: 32, fontSize: '0.8rem' }}>
+                            {activity.personalInfo?.fullName?.charAt(0) || '?'}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={
+                            <Typography variant="body2" fontWeight="bold">
+                              {activity.personalInfo?.fullName}
+                            </Typography>
+                          }
+                          secondary={
+                            <Typography variant="caption" color="text.secondary" noWrap>
+                              {activity.status === 'lead' ? 'ליד חדש' : activity.businessInfo?.businessName}
+                            </Typography>
+                          }
+                        />
+                        <Chip
+                          label={activity.status}
+                          size="small"
+                          variant="outlined"
+                          sx={{ height: 20, fontSize: '0.65rem' }}
+                        />
+                      </ListItem>
+                      {index < Math.min(stats.recentActivity.length, 4) - 1 && <Divider component="li" variant="inset" />}
+                    </React.Fragment>
+                  ))}
+                </List>
+              </Paper>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
     </Box>

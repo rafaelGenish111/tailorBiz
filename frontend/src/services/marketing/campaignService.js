@@ -8,9 +8,7 @@ export const getCampaigns = async (filters = {}) => {
   try {
     const params = new URLSearchParams(filters);
     const response = await axios.get(`${API_URL}/marketing/campaigns?${params}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
+      withCredentials: true
     });
     return response.data;
   } catch (error) {
@@ -22,9 +20,7 @@ export const getCampaigns = async (filters = {}) => {
 export const getCampaign = async (id) => {
   try {
     const response = await axios.get(`${API_URL}/marketing/campaigns/${id}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
+      withCredentials: true
     });
     return response.data;
   } catch (error) {
@@ -39,10 +35,8 @@ export const createCampaign = async (campaignData) => {
       `${API_URL}/marketing/campaigns`,
       campaignData,
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true
       }
     );
     return response.data;
@@ -58,10 +52,8 @@ export const updateCampaign = async (id, campaignData) => {
       `${API_URL}/marketing/campaigns/${id}`,
       campaignData,
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true
       }
     );
     return response.data;
@@ -74,9 +66,7 @@ export const updateCampaign = async (id, campaignData) => {
 export const deleteCampaign = async (id) => {
   try {
     const response = await axios.delete(`${API_URL}/marketing/campaigns/${id}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
+      withCredentials: true
     });
     return response.data;
   } catch (error) {
@@ -91,9 +81,7 @@ export const activateCampaign = async (id) => {
       `${API_URL}/marketing/campaigns/${id}/activate`,
       {},
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+        withCredentials: true
       }
     );
     return response.data;
@@ -109,9 +97,7 @@ export const pauseCampaign = async (id) => {
       `${API_URL}/marketing/campaigns/${id}/pause`,
       {},
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+        withCredentials: true
       }
     );
     return response.data;
@@ -126,9 +112,7 @@ export const getCampaignAnalytics = async (id) => {
     const response = await axios.get(
       `${API_URL}/marketing/campaigns/${id}/analytics`,
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+        withCredentials: true
       }
     );
     return response.data;
@@ -144,9 +128,7 @@ export const duplicateCampaign = async (id) => {
       `${API_URL}/marketing/campaigns/${id}/duplicate`,
       {},
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+        withCredentials: true
       }
     );
     return response.data;
@@ -161,9 +143,7 @@ export const getUpcomingCampaigns = async (days = 30) => {
     const response = await axios.get(
       `${API_URL}/marketing/campaigns/upcoming?days=${days}`,
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+        withCredentials: true
       }
     );
     return response.data;

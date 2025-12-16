@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const analyticsController = require('../../controllers/marketing/analyticsController');
-const { protect } = require('../../middleware/auth.middleware');
+const { protect, requireModule } = require('../../middleware/auth.middleware');
 
 // כל ה-routes דורשים אימות
 router.use(protect);
+router.use(requireModule('marketing'));
 
 router.route('/')
   .get(analyticsController.getAnalyticsReports);

@@ -12,10 +12,11 @@ const {
   duplicateQuote,
   uploadExternalPDF
 } = require('../controllers/quoteController');
-const { protect } = require('../middleware/auth.middleware');
+const { protect, requireModule } = require('../middleware/auth.middleware');
 const uploadQuotePdf = require('../middleware/quotePdfUpload.middleware');
 
 router.use(protect);
+router.use(requireModule('invoices_docs'));
 
 router.route('/client/:clientId')
   .get(getClientQuotes)

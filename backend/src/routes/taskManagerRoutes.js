@@ -2,10 +2,11 @@
 const express = require('express');
 const router = express.Router();
 const taskManagerController = require('../controllers/taskManagerController');
-const { protect, authorize } = require('../middleware/auth.middleware');
+const { protect, requireModule } = require('../middleware/auth.middleware');
 
 // כל הנתיבים דורשים אימות
 router.use(protect);
+router.use(requireModule('tasks_calendar'));
 
 // תצוגות מיוחדות
 router.get('/views/today-agenda', taskManagerController.getTodayAgenda);

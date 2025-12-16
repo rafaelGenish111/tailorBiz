@@ -9,13 +9,11 @@ export const getOverview = async (startDate, endDate) => {
     const params = new URLSearchParams();
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
-    
+
     const response = await axios.get(
       `${API_URL}/marketing/analytics/overview?${params}`,
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+        withCredentials: true
       }
     );
     return response.data;
@@ -31,9 +29,7 @@ export const getCampaignsPerformance = async (filters = {}) => {
     const response = await axios.get(
       `${API_URL}/marketing/analytics/campaigns?${params}`,
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+        withCredentials: true
       }
     );
     return response.data;
@@ -48,9 +44,7 @@ export const getChannelsPerformance = async () => {
     const response = await axios.get(
       `${API_URL}/marketing/analytics/channels`,
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+        withCredentials: true
       }
     );
     return response.data;
@@ -65,13 +59,11 @@ export const getROIAnalysis = async (startDate, endDate) => {
     const params = new URLSearchParams();
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
-    
+
     const response = await axios.get(
       `${API_URL}/marketing/analytics/roi?${params}`,
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+        withCredentials: true
       }
     );
     return response.data;
@@ -86,13 +78,11 @@ export const getInsights = async (startDate, endDate) => {
     const params = new URLSearchParams();
     if (startDate) params.append('startDate', startDate);
     if (endDate) params.append('endDate', endDate);
-    
+
     const response = await axios.get(
       `${API_URL}/marketing/analytics/insights?${params}`,
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+        withCredentials: true
       }
     );
     return response.data;
@@ -108,10 +98,8 @@ export const generateReport = async (startDate, endDate, periodType) => {
       `${API_URL}/marketing/analytics/generate`,
       { startDate, endDate, periodType },
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true
       }
     );
     return response.data;
@@ -127,10 +115,8 @@ export const exportAnalytics = async (startDate, endDate, format = 'json') => {
       `${API_URL}/marketing/analytics/export`,
       { startDate, endDate, format },
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true,
         responseType: format === 'csv' ? 'blob' : 'json'
       }
     );

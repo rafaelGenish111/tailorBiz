@@ -19,6 +19,9 @@ import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import AdminPanel from './admin/pages/AdminPanel';
+import LoginPage from './admin/pages/LoginPage';
+import BootstrapAdminPage from './admin/pages/BootstrapAdminPage';
+import RequireAdminAuth from './admin/components/auth/RequireAdminAuth';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -65,7 +68,18 @@ function App() {
           element={
             <ThemeProvider theme={adminTheme}>
               <CssBaseline />
-              <AdminPanel />
+              <Routes>
+                <Route path="login" element={<LoginPage />} />
+                <Route path="setup" element={<BootstrapAdminPage />} />
+                <Route
+                  path="*"
+                  element={
+                    <RequireAdminAuth>
+                      <AdminPanel />
+                    </RequireAdminAuth>
+                  }
+                />
+              </Routes>
             </ThemeProvider>
           }
         />

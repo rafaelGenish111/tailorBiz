@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const whatsappController = require('../controllers/whatsappController');
-const { protect } = require('../middleware/auth.middleware');
+const { protect, requireModule } = require('../middleware/auth.middleware');
 
 // Webhook לקבלת הודעות נכנסות (לא דורש אימות)
 router.post('/webhook', whatsappController.handleWebhook);
@@ -9,6 +9,7 @@ router.get('/webhook', whatsappController.verifyWebhook); // לאימות Webhoo
 
 // כל ה-routes האחרים דורשים אימות
 router.use(protect);
+router.use(requireModule('marketing'));
 
 // שליחת הודעות
 router.post('/send-message', whatsappController.sendMessage);

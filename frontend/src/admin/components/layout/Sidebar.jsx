@@ -78,6 +78,7 @@ const menuItems = [
   { text: 'לידים', icon: <ClientsIcon />, path: '/admin/leads' },
   { text: 'לקוחות', icon: <ClientsIcon />, path: '/admin/customers' },
   { divider: true, label: 'הגדרות' },
+  { text: 'עובדים', icon: <ClientsIcon />, path: '/admin/employees' },
   { text: 'הגדרות', icon: <SettingsIcon />, path: '/admin/settings' },
 ];
 

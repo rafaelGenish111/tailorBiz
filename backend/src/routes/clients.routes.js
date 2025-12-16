@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const clientController = require('../controllers/clientController');
-const { protect, authorize } = require('../middleware/auth.middleware');
+const { protect, requireAnyModule } = require('../middleware/auth.middleware');
 const { body } = require('express-validator');
 const uploadContract = require('../middleware/contractUpload.middleware');
 
@@ -16,6 +16,7 @@ const validateClient = [
 
 // כל ה-routes דורשים אימות
 router.use(protect);
+router.use(requireAnyModule(['clients', 'leads']));
 
 // Routes כלליים
 router.get('/stats/overview', clientController.getOverviewStats);
