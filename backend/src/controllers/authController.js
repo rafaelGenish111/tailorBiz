@@ -24,6 +24,17 @@ const signToken = (user) => {
   );
 };
 
+const ensureJwtSecret = (res) => {
+  if (!process.env.JWT_SECRET) {
+    res.status(500).json({
+      success: false,
+      message: 'חסר JWT_SECRET בשרת. יש להגדיר אותו ב-Vercel ואז לעשות redeploy.'
+    });
+    return false;
+  }
+  return true;
+};
+
 exports.bootstrapNeeded = async (req, res) => {
   try {
     const adminCount = await User.countDocuments({ role: 'admin' });
@@ -36,6 +47,9 @@ exports.bootstrapNeeded = async (req, res) => {
 
 exports.bootstrap = async (req, res) => {
   try {
+    // חשוב: אם חסר JWT_SECRET, לא ניצור משתמש ואז "ניפול" בהחזרת cookie
+    if (!ensureJwtSecret(res)) return;
+
     const secret = process.env.ADMIN_BOOTSTRAP_SECRET;
     if (!secret) {
       return res.status(500).json({ success: false, message: 'ADMIN_BOOTSTRAP_SECRET לא מוגדר בשרת' });
@@ -88,6 +102,8 @@ exports.bootstrap = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
+    if (!ensureJwtSecret(res)) return;
+
     const { username, password } = req.body || {};
     const u = String(username || '').trim().toLowerCase();
     const p = String(password || '');
@@ -127,6 +143,8 @@ exports.me = async (req, res) => {
 
 exports.changePassword = async (req, res) => {
   try {
+    if (!ensureJwtSecret(res)) return;
+
     const { currentPassword, newPassword } = req.body || {};
     const cur = String(currentPassword || '');
     const next = String(newPassword || '');
