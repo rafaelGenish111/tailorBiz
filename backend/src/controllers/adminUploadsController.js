@@ -57,3 +57,41 @@ exports.uploadImage = async (req, res) => {
   }
 };
 
+// מחזיר חתימה להעלאה ישירה ל-Cloudinary (מונע מגבלות גוף בקשה של Vercel)
+exports.getCloudinarySignature = async (req, res) => {
+  try {
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    if (!cloudName || !apiKey || !apiSecret) {
+      return res.status(500).json({
+        success: false,
+        message: 'חסרה הגדרת Cloudinary בשרת (CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET)'
+      });
+    }
+
+    const folder = (req.query.folder || 'tailorbiz/site').toString();
+    const timestamp = Math.floor(Date.now() / 1000);
+
+    const signature = cloudinary.utils.api_sign_request(
+      { folder, timestamp },
+      apiSecret
+    );
+
+    return res.json({
+      success: true,
+      data: {
+        cloudName,
+        apiKey,
+        folder,
+        timestamp,
+        signature
+      }
+    });
+  } catch (error) {
+    console.error('Error in getCloudinarySignature:', error);
+    return res.status(500).json({ success: false, message: 'שגיאה ביצירת חתימה', error: error.message });
+  }
+};
+

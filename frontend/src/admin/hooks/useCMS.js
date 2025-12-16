@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
+import axios from 'axios';
 import { adminPagesAPI, adminArticlesAPI, adminSiteClientsAPI, uploadsAPI } from '../utils/api';
 
 // Pages (home/about)
@@ -156,7 +157,51 @@ export const useDeleteAdminSiteClient = () => {
 // Uploads
 export const useUploadImage = () =>
   useMutation({
-    mutationFn: (formData) => uploadsAPI.uploadImage(formData),
+    mutationFn: async (formData) => {
+      // העלאה חתומה ישירות ל-Cloudinary כדי לעקוף מגבלות גוף בקשה/403 ב-Vercel
+      const file = formData?.get?.('file');
+      const folder = (formData?.get?.('folder') || 'tailorbiz/site').toString();
+
+      if (!file) {
+        throw new Error('לא נבחר קובץ');
+      }
+
+      try {
+        const sigRes = await uploadsAPI.getSignature(folder);
+        const sig = sigRes?.data?.data;
+        if (!sig?.cloudName || !sig?.apiKey || !sig?.timestamp || !sig?.signature) {
+          throw new Error('לא התקבלה חתימה להעלאה');
+        }
+
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('api_key', sig.apiKey);
+        fd.append('timestamp', String(sig.timestamp));
+        fd.append('signature', sig.signature);
+        fd.append('folder', sig.folder || folder);
+
+        const cloudRes = await axios.post(
+          `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`,
+          fd
+        );
+
+        return {
+          data: {
+            success: true,
+            data: {
+              url: cloudRes.data?.secure_url,
+              publicId: cloudRes.data?.public_id,
+              width: cloudRes.data?.width,
+              height: cloudRes.data?.height,
+              format: cloudRes.data?.format
+            }
+          }
+        };
+      } catch (e) {
+        // תאימות אחורה: אם עדיין אין endpoint חתימה בשרת, ננסה את ההעלאה הישנה דרך השרת
+        return uploadsAPI.uploadImage(formData);
+      }
+    },
     onError: (e) => toast.error(e.response?.data?.message || 'שגיאה בהעלאת תמונה')
   });
 

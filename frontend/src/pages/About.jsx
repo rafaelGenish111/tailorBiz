@@ -15,6 +15,34 @@ import { publicCMS } from '../utils/publicApi';
 const MotionBox = motion(Box);
 const MotionPaper = motion(Paper);
 
+function InViewMotionBox({
+  children,
+  inViewOptions = { triggerOnce: true, threshold: 0.1 },
+  inViewAnimate,
+  ...motionProps
+}) {
+  const [ref, inView] = useInView(inViewOptions);
+  return (
+    <MotionBox ref={ref} animate={inView ? inViewAnimate : {}} {...motionProps}>
+      {children}
+    </MotionBox>
+  );
+}
+
+function InViewMotionPaper({
+  children,
+  inViewOptions = { triggerOnce: true, threshold: 0.1 },
+  inViewAnimate,
+  ...motionProps
+}) {
+  const [ref, inView] = useInView(inViewOptions);
+  return (
+    <MotionPaper ref={ref} animate={inView ? inViewAnimate : {}} {...motionProps}>
+      {children}
+    </MotionPaper>
+  );
+}
+
 function About() {
   const [cmsAbout, setCmsAbout] = React.useState(null);
   const [cmsLoaded, setCmsLoaded] = React.useState(false);
@@ -290,36 +318,33 @@ function About() {
 
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
           <Grid container spacing={4}>
-            {stats.map((stat, index) => {
-              const [ref, inView] = useInView({ triggerOnce: true });
-              return (
-                <Grid item xs={6} md={3} key={index}>
-                  <MotionBox
-                    ref={ref}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={inView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                  >
-                    <Box sx={{ textAlign: 'center' }}>
-                      <Typography
-                        variant="h2"
-                        sx={{
-                          fontWeight: 900,
-                          color: 'white',
-                          mb: 1,
-                          fontSize: { xs: '2.5rem', md: '3.5rem' },
-                        }}
-                      >
-                        {stat.number}
-                      </Typography>
-                      <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.9)' }}>
-                        {stat.label}
-                      </Typography>
-                    </Box>
-                  </MotionBox>
-                </Grid>
-              );
-            })}
+            {stats.map((stat, index) => (
+              <Grid item xs={6} md={3} key={index}>
+                <InViewMotionBox
+                  inViewOptions={{ triggerOnce: true }}
+                  initial={{ opacity: 0, y: 30 }}
+                  inViewAnimate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                >
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography
+                      variant="h2"
+                      sx={{
+                        fontWeight: 900,
+                        color: 'white',
+                        mb: 1,
+                        fontSize: { xs: '2.5rem', md: '3.5rem' },
+                      }}
+                    >
+                      {stat.number}
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                      {stat.label}
+                    </Typography>
+                  </Box>
+                </InViewMotionBox>
+              </Grid>
+            ))}
           </Grid>
         </Container>
       </Box>
@@ -350,15 +375,13 @@ function About() {
 
         <Grid container spacing={4}>
           {values.map((value, index) => {
-            const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
             const Icon = value.icon;
-
             return (
               <Grid item xs={12} md={4} key={index}>
-                <MotionPaper
-                  ref={ref}
+                <InViewMotionPaper
+                  inViewOptions={{ triggerOnce: true, threshold: 0.1 }}
                   initial={{ opacity: 0, y: 50 }}
-                  animate={inView ? { opacity: 1, y: 0 } : {}}
+                  inViewAnimate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: index * 0.1 }}
                   elevation={0}
                   sx={{
@@ -406,7 +429,7 @@ function About() {
                   >
                     {value.description}
                   </Typography>
-                </MotionPaper>
+                </InViewMotionPaper>
               </Grid>
             );
           })}
@@ -440,15 +463,13 @@ function About() {
 
           <Grid container spacing={3}>
             {advantages.map((advantage, index) => {
-              const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
               const Icon = advantage.icon;
-
               return (
                 <Grid item xs={12} sm={6} md={4} key={index}>
-                  <MotionBox
-                    ref={ref}
+                  <InViewMotionBox
+                    inViewOptions={{ triggerOnce: true, threshold: 0.1 }}
                     initial={{ opacity: 0, x: -30 }}
-                    animate={inView ? { opacity: 1, x: 0 } : {}}
+                    inViewAnimate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.05 }}
                     sx={{ height: '100%' }}
                   >
@@ -491,7 +512,7 @@ function About() {
                         {advantage.text}
                       </Typography>
                     </Box>
-                  </MotionBox>
+                  </InViewMotionBox>
                 </Grid>
               );
             })}
