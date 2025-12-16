@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const invoiceController = require('../controllers/invoiceController');
-const { protect, authorize } = require('../middleware/auth.middleware');
+const { protect, requireModule } = require('../middleware/auth.middleware');
 
 // כל ה-routes דורשים אימות
 router.use(protect);
+router.use(requireModule('invoices_docs'));
 
 // Routes כלליים
 router.get('/stats/overview', invoiceController.getInvoiceStats);

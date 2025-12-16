@@ -10,9 +10,10 @@ const {
   deleteTimeEntry,
   addManualEntry
 } = require('../controllers/timeEntryController');
-const { protect } = require('../middleware/auth.middleware');
+const { protect, requireModule } = require('../middleware/auth.middleware');
 
 router.use(protect);
+router.use(requireModule('tasks_calendar'));
 
 // טיימר פעיל
 router.get('/active', getActiveTimer);

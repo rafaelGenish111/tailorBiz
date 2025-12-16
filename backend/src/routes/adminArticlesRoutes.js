@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/auth.middleware');
+const { protect, requireModule } = require('../middleware/auth.middleware');
 const adminArticlesController = require('../controllers/adminArticlesController');
 
 router.use(protect);
+router.use(requireModule('cms'));
 
 router.get('/', adminArticlesController.listArticles);
 router.post('/', adminArticlesController.createArticle);

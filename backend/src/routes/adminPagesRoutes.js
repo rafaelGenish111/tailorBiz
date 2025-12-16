@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/auth.middleware');
+const { protect, requireModule } = require('../middleware/auth.middleware');
 const adminPagesController = require('../controllers/adminPagesController');
 
 router.use(protect);
+router.use(requireModule('cms'));
 
 router.get('/', adminPagesController.listPages);
 router.get('/:slug', adminPagesController.getPage);

@@ -8,9 +8,13 @@ import {
   Button,
   Alert,
   Divider,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
-import { adminSiteSettingsAPI } from '../utils/api';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { adminSiteSettingsAPI, authAPI } from '../utils/api';
 
 const empty = {
   company: { name: '', tagline: '' },
@@ -25,6 +29,13 @@ function SiteSettingsPage() {
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState('');
   const [success, setSuccess] = React.useState('');
+
+  // אבטחה
+  const [currentPassword, setCurrentPassword] = React.useState('');
+  const [newPassword, setNewPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [showPasswords, setShowPasswords] = React.useState(false);
+  const [savingPassword, setSavingPassword] = React.useState(false);
 
   React.useEffect(() => {
     let mounted = true;
@@ -81,6 +92,44 @@ function SiteSettingsPage() {
       setError(e?.response?.data?.message || 'שגיאה בשמירה');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const onChangePassword = async () => {
+    setError('');
+    setSuccess('');
+    if (!currentPassword || !newPassword) {
+      setError('נא למלא סיסמה נוכחית וסיסמה חדשה');
+      return;
+    }
+    if (newPassword.length < 8) {
+      setError('סיסמה חדשה חייבת להיות לפחות 8 תווים');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('אימות סיסמה לא תואם');
+      return;
+    }
+
+    setSavingPassword(true);
+    try {
+      await authAPI.changePassword({ currentPassword, newPassword });
+      setSuccess('הסיסמה עודכנה בהצלחה');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (e) {
+      setError(e?.response?.data?.message || 'שגיאה בשינוי סיסמה');
+    } finally {
+      setSavingPassword(false);
+    }
+  };
+
+  const onLogout = async () => {
+    try {
+      await authAPI.logout();
+    } finally {
+      window.location.href = '/admin/login';
     }
   };
 
@@ -277,6 +326,85 @@ function SiteSettingsPage() {
                 {saving ? 'שומר…' : 'שמירה'}
               </Button>
             </Box>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      <Paper variant="outlined" sx={{ p: 3, borderRadius: 2, mt: 3 }}>
+        <Typography variant="h6" fontWeight={700}>
+          אבטחה
+        </Typography>
+        <Divider sx={{ mt: 1, mb: 2 }} />
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="סיסמה נוכחית"
+              type={showPasswords ? 'text' : 'password'}
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPasswords((p) => !p)} edge="end">
+                      {showPasswords ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="סיסמה חדשה"
+              type={showPasswords ? 'text' : 'password'}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              helperText="לפחות 8 תווים"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPasswords((p) => !p)} edge="end">
+                      {showPasswords ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="אימות סיסמה חדשה"
+              type={showPasswords ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPasswords((p) => !p)} edge="end">
+                      {showPasswords ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, mt: 1, flexWrap: 'wrap' }}>
+            <Button variant="outlined" color="error" onClick={onLogout}>
+              התנתק
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={onChangePassword}
+              disabled={savingPassword}
+            >
+              {savingPassword ? 'מעדכן…' : 'עדכן סיסמה'}
+            </Button>
           </Grid>
         </Grid>
       </Paper>

@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/auth.middleware');
+const { protect, requireModule } = require('../middleware/auth.middleware');
 const upload = require('../middleware/upload.middleware');
 const adminUploadsController = require('../controllers/adminUploadsController');
 
 router.use(protect);
+router.use(requireModule('cms'));
 
 // חתימה להעלאה ישירה ל-Cloudinary (GET /signature?folder=...)
 router.get('/signature', adminUploadsController.getCloudinarySignature);

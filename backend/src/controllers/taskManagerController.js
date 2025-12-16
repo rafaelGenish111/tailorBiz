@@ -10,6 +10,9 @@ const isValidObjectId = (id) => {
   return mongoose.Types.ObjectId.isValid(id) && id !== 'temp-user-id';
 };
 
+const canViewAllTasks = (req) =>
+  req.user?.role === 'admin' || Boolean(req.user?.permissions?.tasks_calendar?.viewAll);
+
 // Normalize subtasks coming from clients (handles legacy "open"/"done" strings)
 const normalizeSubtasks = (subtasks) => {
   if (!Array.isArray(subtasks)) return subtasks;
@@ -278,7 +281,7 @@ exports.getAllTasks = async (req, res) => {
     } else {
       // ברירת מחדל: אם יש userId תקין – רק משימות שלי,
       // אבל אם מסננים לפי projectId – מציגים את כל משימות הפרויקט (גם אם לא הוקצו למשתמש)
-      if (!projectId && isValidObjectId(req.user?.id || req.user?._id)) {
+      if (!projectId && isValidObjectId(req.user?.id || req.user?._id) && !canViewAllTasks(req)) {
         query.assignedTo = req.user.id;
       }
     }
@@ -549,6 +552,8 @@ exports.deleteTask = async (req, res) => {
 exports.getTodayAgenda = async (req, res) => {
   try {
     const hasValidUser = isValidObjectId(req.user?.id || req.user?._id);
+    const viewAll = canViewAllTasks(req);
+    const assigneeFilter = hasValidUser && !viewAll ? { assignedTo: req.user.id } : {};
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -560,7 +565,7 @@ exports.getTodayAgenda = async (req, res) => {
     // 2. כאלה ללא dueDate אבל נוצרו היום (metadata.createdAt)
     const todayBaseFilter = {
       status: { $nin: ['completed', 'cancelled'] },
-      ...(hasValidUser ? { assignedTo: req.user.id } : {}),
+      ...assigneeFilter,
       isRecurring: { $ne: true },
       $or: [
         {
@@ -588,7 +593,7 @@ exports.getTodayAgenda = async (req, res) => {
     // הוספת מופעים של משימות חוזרות להיום
     const recurringTasks = await TaskManager.find({
       status: { $nin: ['completed', 'cancelled'] },
-      ...(hasValidUser ? { assignedTo: req.user.id } : {}),
+      ...assigneeFilter,
       isRecurring: true,
       'recurrence.frequency': { $in: ['daily', 'weekly', 'monthly', 'yearly'] },
       $or: [
@@ -624,7 +629,7 @@ exports.getTodayAgenda = async (req, res) => {
     const overdueFilter = {
       dueDate: { $lt: today },
       status: { $nin: ['completed', 'cancelled'] },
-      ...(hasValidUser ? { assignedTo: req.user.id } : {})
+      ...assigneeFilter
     };
 
     const overdueTasks = await TaskManager.find(overdueFilter)
@@ -636,7 +641,7 @@ exports.getTodayAgenda = async (req, res) => {
     const urgentFilter = {
       priority: 'urgent',
       status: { $nin: ['completed', 'cancelled'] },
-      ...(hasValidUser ? { assignedTo: req.user.id } : {})
+      ...assigneeFilter
     };
 
     const urgentTasks = await TaskManager.find(urgentFilter)
@@ -684,6 +689,8 @@ exports.getCalendarView = async (req, res) => {
   try {
     const { year, month } = req.query;
     const hasValidUser = isValidObjectId(req.user?.id || req.user?._id);
+    const viewAll = canViewAllTasks(req);
+    const assigneeFilter = hasValidUser && !viewAll ? { assignedTo: req.user.id } : {};
 
     // טווח בסיס של החודש הנבחר
     const monthStart = new Date(year, month - 1, 1);
@@ -705,7 +712,7 @@ exports.getCalendarView = async (req, res) => {
         { dueDate: { $gte: startDate, $lte: endDate } },
         { startDate: { $gte: startDate, $lte: endDate } }
       ],
-      ...(hasValidUser ? { assignedTo: req.user.id } : {})
+      ...assigneeFilter
     };
 
     const normalTasks = await TaskManager.find({ ...baseFilter, isRecurring: { $ne: true } })
@@ -714,7 +721,7 @@ exports.getCalendarView = async (req, res) => {
       .sort('dueDate');
 
     const recurringTasks = await TaskManager.find({
-      ...(hasValidUser ? { assignedTo: req.user.id } : {}),
+      ...assigneeFilter,
       isRecurring: true,
       'recurrence.frequency': { $in: ['daily', 'weekly', 'monthly', 'yearly'] },
       $or: [
@@ -813,7 +820,11 @@ exports.getTasksByDay = async (req, res) => {
   try {
     const { date, projectId } = req.query;
 
-    if (!isValidObjectId(req.user.id)) {
+    const hasValidUser = isValidObjectId(req.user?.id || req.user?._id);
+    const viewAll = canViewAllTasks(req);
+    const assigneeFilter = hasValidUser && !viewAll ? { assignedTo: req.user.id } : {};
+
+    if (!hasValidUser && !viewAll) {
       return res.json({
         success: true,
         data: {
@@ -829,7 +840,7 @@ exports.getTasksByDay = async (req, res) => {
     endOfDay.setHours(23, 59, 59, 999);
 
     const query = {
-      assignedTo: req.user.id,
+      ...assigneeFilter,
       status: { $nin: ['completed', 'cancelled'] },
       dueDate: { $gte: baseDate, $lte: endOfDay }
     };
@@ -844,7 +855,7 @@ exports.getTasksByDay = async (req, res) => {
       .sort('dueDate priority');
 
     const recurringTasks = await TaskManager.find({
-      assignedTo: req.user.id,
+      ...assigneeFilter,
       status: { $nin: ['completed', 'cancelled'] },
       isRecurring: true,
       'recurrence.frequency': { $in: ['daily', 'weekly', 'monthly', 'yearly'] },
@@ -919,6 +930,7 @@ exports.getGanttView = async (req, res) => {
     // כאשר יהיה אימות אמיתי, נמשיך להציג משימות של המשתמש + משימות לא משויכות (assignedTo=null).
     const rawUserId = req.user?.id || req.user?._id;
     const hasValidUser = isValidObjectId(rawUserId);
+    const viewAll = canViewAllTasks(req);
     const userId = hasValidUser ? String(rawUserId) : null;
 
     // טווח תאריכים לבניה של הציר
@@ -958,7 +970,7 @@ exports.getGanttView = async (req, res) => {
 
     // אם יש משתמש תקין – מציגים משימות שלו + משימות שלא הוקצו (assignedTo=null/לא קיים)
     // אם אין משתמש תקין – מציגים את כל המשימות
-    if (hasValidUser) {
+    if (hasValidUser && !viewAll) {
       centralQuery.$or = [
         { assignedTo: userId },
         { assignedTo: null },
@@ -1020,7 +1032,7 @@ exports.getGanttView = async (req, res) => {
 
       // אם יש משתמש תקין – נביא רק לקוחות שיש להם לפחות משימה אחת של המשתמש או לא משויכת
       // (הסינון הסופי עדיין מתבצע בלולאה על כל task).
-      if (hasValidUser) {
+      if (hasValidUser && !viewAll) {
         clientQuery.$or = [
           { 'tasks.assignedTo': userId },
           { 'tasks.assignedTo': null },
@@ -1050,7 +1062,7 @@ exports.getGanttView = async (req, res) => {
         (client.tasks || []).forEach((task) => {
           // כאשר יש משתמש תקין – נציג משימות של המשתמש + משימות לא משויכות.
           // כאשר אין משתמש תקין – נציג את כל המשימות.
-          if (hasValidUser && task.assignedTo && String(task.assignedTo) !== String(userId)) return;
+          if (hasValidUser && !viewAll && task.assignedTo && String(task.assignedTo) !== String(userId)) return;
           if (task.status === 'cancelled') return;
 
           // במשימות לקוח יש לנו dueDate ו-createdAt – נשתמש ב-dueDate כברירת מחדל

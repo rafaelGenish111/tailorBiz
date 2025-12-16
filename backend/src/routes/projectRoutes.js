@@ -7,10 +7,11 @@ const {
   getProject,
   getProjects
 } = require('../controllers/projectController');
-const { protect } = require('../middleware/auth.middleware');
+const { protect, requireModule } = require('../middleware/auth.middleware');
 
 // כל הנתיבים דורשים אימות
 router.use(protect);
+router.use(requireModule('tasks_calendar'));
 
 router.route('/')
   .get(getProjects)

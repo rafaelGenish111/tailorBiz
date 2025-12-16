@@ -12,18 +12,6 @@ const api = axios.create({
   withCredentials: true
 });
 
-// Add token to requests
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
 // Handle responses and errors
 api.interceptors.response.use(
   (response) => response,
@@ -35,6 +23,16 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// ========== Auth (Admin) ==========
+export const authAPI = {
+  bootstrapNeeded: () => api.get('/auth/bootstrap-needed'),
+  bootstrap: (data) => api.post('/auth/bootstrap', data),
+  login: (data) => api.post('/auth/login', data),
+  logout: () => api.post('/auth/logout'),
+  me: () => api.get('/auth/me'),
+  changePassword: (data) => api.post('/auth/change-password', data),
+};
 
 // Testimonials API
 export const testimonialsAPI = {
@@ -180,14 +178,6 @@ export const notificationsAPI = {
   delete: (id) => api.delete(`/notifications/${id}`)
 };
 
-// ========== Auth API ==========
-export const authAPI = {
-  login: (credentials) => api.post('/auth/login', credentials),
-  register: (data) => api.post('/auth/register', data),
-  getProfile: () => api.get('/auth/profile'),
-  updateProfile: (data) => api.put('/auth/profile', data)
-};
-
 // ========== CMS (Admin) ==========
 export const adminPagesAPI = {
   list: () => api.get('/admin/pages'),
@@ -229,6 +219,14 @@ export const uploadsAPI = {
 export const adminSiteSettingsAPI = {
   get: () => api.get('/admin/site-settings'),
   update: (data) => api.put('/admin/site-settings', data)
+};
+
+// ========== Employees / Users (Admin) ==========
+export const adminUsersAPI = {
+  list: () => api.get('/admin/users'),
+  create: (data) => api.post('/admin/users', data),
+  update: (id, data) => api.put(`/admin/users/${id}`, data),
+  resetPassword: (id, data) => api.post(`/admin/users/${id}/reset-password`, data),
 };
 
 export default api;

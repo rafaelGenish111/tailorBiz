@@ -9,9 +9,10 @@ const {
   archiveDocument
 } = require('../controllers/documentController');
 const { uploadDocument: uploadMiddleware } = require('../config/cloudinary');
-const { protect } = require('../middleware/auth.middleware');
+const { protect, requireModule } = require('../middleware/auth.middleware');
 
 router.use(protect);
+router.use(requireModule('invoices_docs'));
 
 router.route('/client/:clientId')
   .get(getClientDocuments)

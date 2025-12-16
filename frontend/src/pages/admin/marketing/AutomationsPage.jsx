@@ -67,11 +67,7 @@ const AutomationsPage = () => {
   const fetchAutomations = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/marketing/automations`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await axios.get(`${API_URL}/marketing/automations`, { withCredentials: true });
       setAutomations(response.data.data || []);
     } catch (err) {
       setError(err.response?.data?.message || 'שגיאה בטעינת אוטומציות');
@@ -86,22 +82,14 @@ const AutomationsPage = () => {
         await axios.post(
           `${API_URL}/marketing/automations/${id}/pause`,
           {},
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`
-            }
-          }
+          { withCredentials: true }
         );
         setSnackbar({ open: true, message: 'אוטומציה הושהתה', severity: 'success' });
       } else {
         await axios.post(
           `${API_URL}/marketing/automations/${id}/activate`,
           {},
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`
-            }
-          }
+          { withCredentials: true }
         );
         setSnackbar({ open: true, message: 'אוטומציה הופעלה', severity: 'success' });
       }
@@ -116,11 +104,7 @@ const AutomationsPage = () => {
       await axios.post(
         `${API_URL}/marketing/automations/${id}/test`,
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        }
+        { withCredentials: true }
       );
       setSnackbar({ open: true, message: 'אוטומציה הורצה במצב בדיקה', severity: 'success' });
     } catch (err) {
@@ -134,11 +118,7 @@ const AutomationsPage = () => {
     }
 
     try {
-      await axios.delete(`${API_URL}/marketing/automations/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      await axios.delete(`${API_URL}/marketing/automations/${id}`, { withCredentials: true });
       setSnackbar({ open: true, message: 'אוטומציה נמחקה בהצלחה', severity: 'success' });
       fetchAutomations();
     } catch (err) {

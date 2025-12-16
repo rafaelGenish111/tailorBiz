@@ -2,10 +2,11 @@
 const express = require('express');
 const router = express.Router();
 const notificationController = require('../controllers/notificationController');
-const { protect, authorize } = require('../middleware/auth.middleware');
+const { protect, requireModule } = require('../middleware/auth.middleware');
 
 // כל הנתיבים דורשים אימות
 router.use(protect);
+router.use(requireModule('tasks_calendar'));
 
 // קבלת התראות
 router.get('/', notificationController.getAllNotifications);
