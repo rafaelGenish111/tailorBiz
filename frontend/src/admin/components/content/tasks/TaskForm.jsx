@@ -11,7 +11,9 @@ import {
   Typography,
   Stack,
   Collapse,
-  Divider
+  Divider,
+  ToggleButton,
+  ToggleButtonGroup
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
@@ -73,6 +75,11 @@ const TaskForm = ({
       dueDate: defaultDue,
       projectId: null,
       relatedClient: null,
+      // חזרתיות (UI)
+      recurrenceMode: 'none', // none | daily | weekly | custom
+      recurrenceEveryDays: 1,
+      recurrenceEveryWeeks: 1,
+      recurrenceDaysOfWeek: [],
       subtasks: initialData?.subtasks || [],
       ...initialData
     }
@@ -97,12 +104,40 @@ const TaskForm = ({
     );
 
     if (hasRealData) {
+      const startForRecurrence = parseDate(initialData.startDate) || parseDate(initialData.dueDate) || defaultStart;
+      const recurrence = initialData.recurrence || {};
+      const isRecurring = Boolean(initialData.isRecurring);
+      const freq = recurrence.frequency;
+      const interval = typeof recurrence.interval === 'number' && recurrence.interval > 0 ? recurrence.interval : 1;
+      const daysOfWeek = Array.isArray(recurrence.daysOfWeek) ? recurrence.daysOfWeek : [];
+
+      let recurrenceMode = 'none';
+      let recurrenceEveryDays = 1;
+      let recurrenceEveryWeeks = 1;
+      let recurrenceDaysOfWeek = [];
+
+      if (isRecurring && freq === 'daily') {
+        recurrenceMode = 'daily';
+        recurrenceEveryDays = interval;
+      } else if (isRecurring && freq === 'weekly') {
+        // weekly או custom (ימים מסוימים / כל כמה שבועות)
+        const startDow = startForRecurrence instanceof Date ? startForRecurrence.getDay() : 0;
+        const normalizedDays = daysOfWeek.length ? daysOfWeek : [startDow];
+        recurrenceEveryWeeks = interval;
+        recurrenceDaysOfWeek = normalizedDays;
+        recurrenceMode = (interval > 1 || normalizedDays.length !== 1) ? 'custom' : 'weekly';
+      }
+
       reset({
         ...initialData,
         dueDate: parseDate(initialData.dueDate),
         startDate: parseDate(initialData.startDate),
         relatedClient: initialData.relatedClient || null,
-        subtasks: initialData.subtasks || []
+        subtasks: initialData.subtasks || [],
+        recurrenceMode,
+        recurrenceEveryDays,
+        recurrenceEveryWeeks,
+        recurrenceDaysOfWeek
       });
     }
   }, [initialData, reset]);
@@ -115,6 +150,8 @@ const TaskForm = ({
   // Auto dueDate: רק כאשר dueDate ריק או עדיין במצב "אוטומטי"
   const watchStartDate = watch('startDate');
   const watchDueDate = watch('dueDate');
+  const watchRecurrenceMode = watch('recurrenceMode');
+  const watchRecurrenceDays = watch('recurrenceDaysOfWeek');
   const lastAutoDueRef = useRef(defaultDue);
 
   const [subtasksExpanded, setSubtasksExpanded] = useState(false);
@@ -133,18 +170,50 @@ const TaskForm = ({
         isCloseTo(watchDueDate, lastAutoDueRef.current);
 
       if (canAutoSet) {
-      setValue('dueDate', due);
+        setValue('dueDate', due);
         lastAutoDueRef.current = due;
       }
     }
   }, [watchStartDate, watchDueDate, setValue]);
 
+  // אם בחרו חזרתיות שבועית/מותאמת ואין ימים מסומנים – נבחר את היום של startDate כברירת מחדל
+  useEffect(() => {
+    if (watchRecurrenceMode !== 'weekly' && watchRecurrenceMode !== 'custom') return;
+    const hasDays = Array.isArray(watchRecurrenceDays) && watchRecurrenceDays.length > 0;
+    if (hasDays) return;
+    const start = parseDate(watchStartDate) || parseDate(watchDueDate) || new Date();
+    setValue('recurrenceDaysOfWeek', [start.getDay()]);
+  }, [watchRecurrenceMode, watchRecurrenceDays, watchStartDate, watchDueDate, setValue]);
+
   const handleFormSubmit = (data) => {
-      // Transform relatedClient to ID if it's an object
-      const formattedData = {
-          ...data,
-          relatedClient: data.relatedClient?._id || data.relatedClient,
+    const start = parseDate(data.startDate) || parseDate(data.dueDate) || new Date();
+    const startDow = start instanceof Date ? start.getDay() : 0;
+
+    const recurrenceMode = data.recurrenceMode || 'none';
+    let isRecurring = false;
+    let recurrence = undefined;
+
+    if (recurrenceMode === 'daily') {
+      isRecurring = true;
+      const interval = Math.max(1, parseInt(data.recurrenceEveryDays, 10) || 1);
+      recurrence = { frequency: 'daily', interval, daysOfWeek: [] };
+    } else if (recurrenceMode === 'weekly' || recurrenceMode === 'custom') {
+      isRecurring = true;
+      const interval = Math.max(1, parseInt(data.recurrenceEveryWeeks, 10) || 1);
+      const days = Array.isArray(data.recurrenceDaysOfWeek) && data.recurrenceDaysOfWeek.length
+        ? data.recurrenceDaysOfWeek.map((n) => parseInt(n, 10)).filter((n) => Number.isFinite(n))
+        : [startDow];
+      recurrence = { frequency: 'weekly', interval, daysOfWeek: Array.from(new Set(days)).sort((a, b) => a - b) };
+    }
+
+    // Transform relatedClient to ID if it's an object
+    const formattedData = {
+      ...data,
+      relatedClient: data.relatedClient?._id || data.relatedClient,
       projectId: data.projectId?._id || data.projectId,
+      // חזרתיות - נשמרת בשרת
+      isRecurring,
+      recurrence,
       // נרמול done של תתי-משימות ל-boolean (מגיע מה-select כמחרוזת)
       subtasks: (data.subtasks || []).map((s) => ({
         ...s,
@@ -155,66 +224,73 @@ const TaskForm = ({
           s?.done === '1' ||
           s?.done === 'done'
       }))
-      };
-      onSubmit(formattedData);
+    };
+
+    // ניקוי שדות UI שלא קיימים במודל
+    delete formattedData.recurrenceMode;
+    delete formattedData.recurrenceEveryDays;
+    delete formattedData.recurrenceEveryWeeks;
+    delete formattedData.recurrenceDaysOfWeek;
+
+    onSubmit(formattedData);
   };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
       <Box id={formId} component="form" onSubmit={handleSubmit(handleFormSubmit)} sx={{ mt: 2 }}>
         <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="כותרת המשימה"
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="כותרת המשימה"
               multiline
               minRows={2}
               maxRows={2}
-            {...register('title', { required: 'שדה חובה' })}
-            required
-          />
-        </Grid>
+              {...register('title', { required: 'שדה חובה' })}
+              required
+            />
+          </Grid>
 
-        <Grid item xs={12} md={6}>
-          <TextField
-            select
-            fullWidth
-            label="עדיפות"
-            defaultValue="medium"
-            {...register('priority')}
-          >
-            <MenuItem value="low">נמוכה</MenuItem>
-            <MenuItem value="medium">בינונית</MenuItem>
-            <MenuItem value="high">גבוהה</MenuItem>
-            <MenuItem value="urgent">דחופה</MenuItem>
-          </TextField>
-        </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              select
+              fullWidth
+              label="עדיפות"
+              defaultValue="medium"
+              {...register('priority')}
+            >
+              <MenuItem value="low">נמוכה</MenuItem>
+              <MenuItem value="medium">בינונית</MenuItem>
+              <MenuItem value="high">גבוהה</MenuItem>
+              <MenuItem value="urgent">דחופה</MenuItem>
+            </TextField>
+          </Grid>
 
-        <Grid item xs={12} md={6}>
-          <TextField
-            select
-            fullWidth
-            label="סטטוס"
-            defaultValue="todo"
-            {...register('status')}
-          >
-            <MenuItem value="todo">לביצוע</MenuItem>
-            <MenuItem value="in_progress">בטיפול</MenuItem>
-            <MenuItem value="waiting">ממתין</MenuItem>
-            <MenuItem value="completed">הושלם</MenuItem>
-          </TextField>
-        </Grid>
-        
-        <Grid item xs={12} md={6}>
-          <Controller
-            name="startDate"
-            control={control}
-            render={({ field: { onChange, value } }) => (
+          <Grid item xs={12} md={6}>
+            <TextField
+              select
+              fullWidth
+              label="סטטוס"
+              defaultValue="todo"
+              {...register('status')}
+            >
+              <MenuItem value="todo">לביצוע</MenuItem>
+              <MenuItem value="in_progress">בטיפול</MenuItem>
+              <MenuItem value="waiting">ממתין</MenuItem>
+              <MenuItem value="completed">הושלם</MenuItem>
+            </TextField>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Controller
+              name="startDate"
+              control={control}
+              render={({ field: { onChange, value } }) => (
                 <Grid container spacing={1}>
                   <Grid item xs={7}>
                     <DatePicker
-                label="תאריך התחלה"
-                value={parseDate(value)}
+                      label="תאריך התחלה"
+                      value={parseDate(value)}
                       onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
                       slotProps={{ textField: { fullWidth: true } }}
                     />
@@ -231,18 +307,18 @@ const TaskForm = ({
                         minutes: renderTimeViewClock
                       }}
                       slotProps={{ textField: { fullWidth: true } }}
-              />
+                    />
                   </Grid>
                 </Grid>
-            )}
-          />
-        </Grid>
+              )}
+            />
+          </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Controller
+          <Grid item xs={12} md={6}>
+            <Controller
               name="dueDate"
-            control={control}
-            render={({ field: { onChange, value } }) => (
+              control={control}
+              render={({ field: { onChange, value } }) => (
                 <Grid container spacing={1}>
                   <Grid item xs={7}>
                     <DatePicker
@@ -255,7 +331,7 @@ const TaskForm = ({
                   <Grid item xs={5}>
                     <TimePicker
                       label="שעה"
-                value={parseDate(value)}
+                      value={parseDate(value)}
                       onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
                       ampm={false}
                       views={['hours', 'minutes']}
@@ -264,118 +340,196 @@ const TaskForm = ({
                         minutes: renderTimeViewClock
                       }}
                       slotProps={{ textField: { fullWidth: true } }}
-              />
+                    />
                   </Grid>
                 </Grid>
-            )}
-          />
-        </Grid>
+              )}
+            />
+          </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Controller
-            name="projectId"
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <Autocomplete
-                options={projects}
-                getOptionLabel={(option) => option.name || ''}
-                value={value && typeof value === 'string' ? projects.find(p => p._id === value) : value}
-                onChange={(_, newValue) => onChange(newValue)}
-                renderInput={(params) => (
+          {/* חזרתיות */}
+          <Grid item xs={12}>
+            <Box sx={{ border: '1px solid', borderColor: 'grey.100', borderRadius: 2, p: 2 }}>
+              <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1 }}>
+                חזרתיות
+              </Typography>
+
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} md={4}>
                   <TextField
-                    {...params}
-                    label="פרויקט"
-                  />
-                )}
-              />
-            )}
-          />
-        </Grid>
+                    select
+                    fullWidth
+                    label="חזרה"
+                    defaultValue="none"
+                    {...register('recurrenceMode')}
+                  >
+                    <MenuItem value="none">לא חוזר</MenuItem>
+                    <MenuItem value="daily">כל יום</MenuItem>
+                    <MenuItem value="weekly">כל שבוע</MenuItem>
+                    <MenuItem value="custom">מותאם אישית</MenuItem>
+                  </TextField>
+                </Grid>
 
-        <Grid item xs={12} md={6}>
-           <Controller
-            name="relatedClient"
-            control={control}
-            render={({ field: { onChange, value } }) => (
-              <Autocomplete
-                options={clients}
-                getOptionLabel={(option) => option.personalInfo?.fullName || ''}
-                value={value && typeof value === 'string' ? clients.find(c => c._id === value) : value}
-                onChange={(_, newValue) => onChange(newValue)}
-                loading={isLoadingClients}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="לקוח מקושר"
-                    InputProps={{
-                      ...params.InputProps,
-                      endAdornment: (
-                        <>
-                          {isLoadingClients ? <CircularProgress color="inherit" size={20} /> : null}
-                          {params.InputProps.endAdornment}
-                        </>
-                      ),
-                    }}
-                  />
-                )}
-              />
-            )}
-          />
-        </Grid>
+                {watchRecurrenceMode === 'daily' ? (
+                  <Grid item xs={12} md={8}>
+                    <TextField
+                      type="number"
+                      fullWidth
+                      label="כל כמה ימים"
+                      inputProps={{ min: 1 }}
+                      {...register('recurrenceEveryDays', { valueAsNumber: true })}
+                      helperText="לדוגמה: 1 = כל יום, 2 = כל יומיים"
+                    />
+                  </Grid>
+                ) : null}
 
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            multiline
+                {(watchRecurrenceMode === 'weekly' || watchRecurrenceMode === 'custom') ? (
+                  <>
+                    <Grid item xs={12} md={4}>
+                      <TextField
+                        type="number"
+                        fullWidth
+                        label="כל כמה שבועות"
+                        inputProps={{ min: 1 }}
+                        {...register('recurrenceEveryWeeks', { valueAsNumber: true })}
+                        helperText="לדוגמה: 1 = כל שבוע, 2 = אחת לשבועיים"
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={8}>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                        ימים בשבוע
+                      </Typography>
+                      <Controller
+                        name="recurrenceDaysOfWeek"
+                        control={control}
+                        render={({ field: { value, onChange } }) => (
+                          <ToggleButtonGroup
+                            value={Array.isArray(value) ? value : []}
+                            onChange={(_, next) => onChange(next)}
+                            size="small"
+                          >
+                            <ToggleButton value={0}>א׳</ToggleButton>
+                            <ToggleButton value={1}>ב׳</ToggleButton>
+                            <ToggleButton value={2}>ג׳</ToggleButton>
+                            <ToggleButton value={3}>ד׳</ToggleButton>
+                            <ToggleButton value={4}>ה׳</ToggleButton>
+                            <ToggleButton value={5}>ו׳</ToggleButton>
+                            <ToggleButton value={6}>ש׳</ToggleButton>
+                          </ToggleButtonGroup>
+                        )}
+                      />
+                    </Grid>
+                  </>
+                ) : null}
+              </Grid>
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Controller
+              name="projectId"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Autocomplete
+                  options={projects}
+                  getOptionLabel={(option) => option.name || ''}
+                  value={value && typeof value === 'string' ? projects.find(p => p._id === value) : value}
+                  onChange={(_, newValue) => onChange(newValue)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="פרויקט"
+                    />
+                  )}
+                />
+              )}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Controller
+              name="relatedClient"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Autocomplete
+                  options={clients}
+                  getOptionLabel={(option) => option.personalInfo?.fullName || ''}
+                  value={value && typeof value === 'string' ? clients.find(c => c._id === value) : value}
+                  onChange={(_, newValue) => onChange(newValue)}
+                  loading={isLoadingClients}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="לקוח מקושר"
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                          <>
+                            {isLoadingClients ? <CircularProgress color="inherit" size={20} /> : null}
+                            {params.InputProps.endAdornment}
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              )}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              multiline
               minRows={6}
-            label="תיאור"
-            {...register('description')}
-          />
-        </Grid>
+              label="תיאור"
+              {...register('description')}
+            />
+          </Grid>
 
-        {/* תתי־משימות (צ'קליסט) */}
-        <Grid item xs={12}>
-          <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="subtitle1" fontWeight="bold">
-              תתי־משימות
-            </Typography>
-            <Button
-              size="small"
-              variant="outlined"
+          {/* תתי־משימות (צ'קליסט) */}
+          <Grid item xs={12}>
+            <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="subtitle1" fontWeight="bold">
+                תתי־משימות
+              </Typography>
+              <Button
+                size="small"
+                variant="outlined"
                 onClick={() => {
                   appendSubtask({ title: '', done: false });
                   setSubtasksExpanded(true);
                 }}
-            >
-              הוסף תת־משימה
-            </Button>
-          </Box>
+              >
+                הוסף תת־משימה
+              </Button>
+            </Box>
 
-          {subtaskFields.length === 0 ? (
-            <Typography variant="body2" color="text.secondary">
-              אין תתי־משימות עדיין.
-            </Typography>
+            {subtaskFields.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                אין תתי־משימות עדיין.
+              </Typography>
             ) : null}
 
             <Collapse in={subtasksExpanded && subtaskFields.length > 0}>
               <Divider sx={{ my: 1.5 }} />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {subtaskFields.map((field, index) => (
+                {subtaskFields.map((field, index) => (
                   <Grid container spacing={1} key={field.id} alignItems="flex-start">
                     <Grid item xs={12} md={8}>
-                  <TextField
-                    fullWidth
-                    label={`תת־משימה ${index + 1}`}
+                      <TextField
+                        fullWidth
+                        label={`תת־משימה ${index + 1}`}
                         multiline
                         minRows={2}
-                    {...register(`subtasks.${index}.title`)}
-                  />
+                        {...register(`subtasks.${index}.title`)}
+                      />
                     </Grid>
                     <Grid item xs={12} md={4}>
                       <Stack direction="row" spacing={1} alignItems="stretch">
-                    <TextField
-                      select
-                      label="סטטוס"
+                        <TextField
+                          select
+                          label="סטטוס"
                           fullWidth
                           defaultValue={field.done ? 'true' : 'false'}
                           {...register(`subtasks.${index}.done`, {
@@ -386,41 +540,41 @@ const TaskForm = ({
                               v === '1' ||
                               v === 'done'
                           })}
-                      SelectProps={{
-                        native: true,
-                      }}
-                    >
+                          SelectProps={{
+                            native: true,
+                          }}
+                        >
                           <option value="false">פתוחה</option>
                           <option value="true">בוצעה</option>
-                    </TextField>
-                    <Button
+                        </TextField>
+                        <Button
                           variant="outlined"
-                      color="error"
-                      onClick={() => removeSubtask(index)}
+                          color="error"
+                          onClick={() => removeSubtask(index)}
                           sx={{ whiteSpace: 'nowrap' }}
-                    >
-                      מחק
-                    </Button>
+                        >
+                          מחק
+                        </Button>
                       </Stack>
                     </Grid>
                   </Grid>
-              ))}
-            </Box>
+                ))}
+              </Box>
             </Collapse>
-        </Grid>
+          </Grid>
 
           {showActions ? (
-        <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-          <Button onClick={onCancel} disabled={isLoading}>
-            ביטול
-          </Button>
-          <Button type="submit" variant="contained" disabled={isLoading}>
-            {isLoading ? <CircularProgress size={24} /> : (initialData ? 'עדכן משימה' : 'צור משימה')}
-          </Button>
-        </Grid>
+            <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
+              <Button onClick={onCancel} disabled={isLoading}>
+                ביטול
+              </Button>
+              <Button type="submit" variant="contained" disabled={isLoading}>
+                {isLoading ? <CircularProgress size={24} /> : (initialData ? 'עדכן משימה' : 'צור משימה')}
+              </Button>
+            </Grid>
           ) : null}
-      </Grid>
-    </Box>
+        </Grid>
+      </Box>
     </LocalizationProvider>
   );
 };
