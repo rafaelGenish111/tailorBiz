@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Box,
   Container,
@@ -13,7 +13,9 @@ import SendIcon from '@mui/icons-material/Send';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { COMPANY_INFO } from '../utils/constants';
+import { publicCMS } from '../utils/publicApi';
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -24,6 +26,30 @@ function Contact() {
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [settings, setSettings] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const run = async () => {
+      try {
+        const res = await publicCMS.getSiteSettings();
+        if (!mounted) return;
+        setSettings(res.data?.data || null);
+      } catch (_) {
+        if (!mounted) return;
+        setSettings(null);
+      }
+    };
+    run();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const email = settings?.contact?.email || COMPANY_INFO.email;
+  const phone = settings?.contact?.phone || COMPANY_INFO.phone;
+  const whatsapp = settings?.contact?.whatsapp || '';
+  const address = settings?.contact?.address || COMPANY_INFO.address;
 
   const handleChange = (e) => {
     setFormData({
@@ -36,7 +62,7 @@ function Contact() {
     e.preventDefault();
     console.log('Form submitted:', formData);
     setSubmitted(true);
-    
+
     setTimeout(() => {
       setSubmitted(false);
       setFormData({
@@ -72,7 +98,7 @@ function Contact() {
       <Container maxWidth="lg" sx={{ py: 10 }}>
         <Grid container spacing={6}>
           <Grid item xs={12} md={7}>
-                    <Paper elevation={2} sx={{ p: 4, borderRadius: 1 }}>
+            <Paper elevation={2} sx={{ p: 4, borderRadius: 1 }}>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 שלחו לנו הודעה
               </Typography>
@@ -176,7 +202,7 @@ function Contact() {
                       אימייל
                     </Typography>
                     <Typography variant="h6" fontWeight={600}>
-                      {COMPANY_INFO.email}
+                      {email}
                     </Typography>
                   </Box>
                 </Box>
@@ -200,10 +226,36 @@ function Contact() {
                       טלפון
                     </Typography>
                     <Typography variant="h6" fontWeight={600}>
-                      {COMPANY_INFO.phone}
+                      {phone}
                     </Typography>
                   </Box>
                 </Box>
+
+                {whatsapp ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                    <Box
+                      sx={{
+                        width: 50,
+                        height: 50,
+                        borderRadius: '50%',
+                        bgcolor: 'rgba(0,188,212,0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <WhatsAppIcon sx={{ color: 'secondary.main' }} />
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        ווצאפ
+                      </Typography>
+                      <Typography variant="h6" fontWeight={600}>
+                        {whatsapp}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ) : null}
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Box
@@ -224,7 +276,7 @@ function Contact() {
                       כתובת
                     </Typography>
                     <Typography variant="h6" fontWeight={600}>
-                      {COMPANY_INFO.address}
+                      {address}
                     </Typography>
                   </Box>
                 </Box>
@@ -235,7 +287,7 @@ function Contact() {
                   mt: 6,
                   p: 4,
                   bgcolor: 'grey.50',
-                    borderRadius: 1,
+                  borderRadius: 1,
                 }}
               >
                 <Typography variant="h6" fontWeight={700} gutterBottom>

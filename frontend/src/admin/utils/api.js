@@ -225,4 +225,10 @@ export const uploadsAPI = {
     })
 };
 
+// ========== Site Settings (Admin) ==========
+export const adminSiteSettingsAPI = {
+  get: () => api.get('/admin/site-settings'),
+  update: (data) => api.put('/admin/site-settings', data)
+};
+
 export default api;

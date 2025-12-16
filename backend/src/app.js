@@ -23,6 +23,7 @@ const adminPagesRoutes = require('./routes/adminPagesRoutes');
 const adminArticlesRoutes = require('./routes/adminArticlesRoutes');
 const adminClientsRoutes = require('./routes/adminClientsRoutes');
 const adminUploadsRoutes = require('./routes/adminUploadsRoutes');
+const adminSiteSettingsRoutes = require('./routes/adminSiteSettingsRoutes');
 
 const app = express();
 const isDev = process.env.NODE_ENV === 'development';
@@ -120,6 +121,7 @@ app.use('/api/admin/pages', adminPagesRoutes);
 app.use('/api/admin/articles', adminArticlesRoutes);
 app.use('/api/admin/clients', adminClientsRoutes);
 app.use('/api/admin/uploads', adminUploadsRoutes);
+app.use('/api/admin/site-settings', adminSiteSettingsRoutes);
 
 // Test routes (רק ב-development)
 if (process.env.NODE_ENV === 'development') {
