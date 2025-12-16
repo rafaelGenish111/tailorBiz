@@ -44,7 +44,7 @@ const normalizeRecurrence = (payload) => {
   }
 
   const frequencyRaw = String(rec.frequency || '').toLowerCase();
-  const frequency = (frequencyRaw === 'daily' || frequencyRaw === 'weekly') ? frequencyRaw : null;
+  const frequency = (frequencyRaw === 'daily' || frequencyRaw === 'weekly' || frequencyRaw === 'monthly' || frequencyRaw === 'yearly') ? frequencyRaw : null;
   if (!frequency) {
     return { isRecurring: false, recurrence: undefined };
   }
@@ -65,7 +65,7 @@ const normalizeRecurrence = (payload) => {
     recurrence: {
       frequency,
       interval,
-      ...(daysOfWeek.length ? { daysOfWeek: Array.from(new Set(daysOfWeek)).sort((a, b) => a - b) } : {}),
+      ...(frequency === 'weekly' && daysOfWeek.length ? { daysOfWeek: Array.from(new Set(daysOfWeek)).sort((a, b) => a - b) } : {}),
       ...(endDate ? { endDate } : {})
     }
   };
@@ -78,6 +78,25 @@ const startOfDay = (d) => {
   return x;
 };
 const addDays = (d, n) => new Date(d.getTime() + n * 24 * 60 * 60 * 1000);
+const daysInMonth = (year, monthIndex) => new Date(year, monthIndex + 1, 0).getDate();
+const addMonths = (d, months) => {
+  const x = new Date(d);
+  const day = x.getDate();
+  x.setDate(1);
+  x.setMonth(x.getMonth() + months);
+  const dim = daysInMonth(x.getFullYear(), x.getMonth());
+  x.setDate(Math.min(day, dim));
+  return x;
+};
+const addYears = (d, years) => {
+  const x = new Date(d);
+  const day = x.getDate();
+  const month = x.getMonth();
+  x.setFullYear(x.getFullYear() + years, month, 1);
+  const dim = daysInMonth(x.getFullYear(), month);
+  x.setDate(Math.min(day, dim));
+  return x;
+};
 
 const getTaskBaseStart = (t) => (t.startDate ? new Date(t.startDate) : (t.dueDate ? new Date(t.dueDate) : null));
 const getTaskDurationMs = (t) => {
@@ -158,6 +177,50 @@ const expandRecurringTaskWithinRange = (task, rangeStart, rangeEnd) => {
         start: occStart,
         end: new Date(occStart.getTime() + durationMs)
       });
+    }
+    return occurrences;
+  }
+
+  if (frequency === 'monthly') {
+    let cursor = new Date(baseStart);
+    // קפיצה קדימה לראשון בתוך הטווח
+    if (cursor.getTime() < rs.getTime()) {
+      // נתחיל מהחודש של rs ונחשב כמה חודשים מאז base
+      const monthsSince =
+        (rs.getFullYear() - baseStart.getFullYear()) * 12 +
+        (rs.getMonth() - baseStart.getMonth());
+      const steps = Math.floor(monthsSince / interval);
+      cursor = addMonths(baseStart, steps * interval);
+      while (cursor.getTime() < rs.getTime()) cursor = addMonths(cursor, interval);
+    }
+    while (cursor.getTime() <= re.getTime()) {
+      if (isDayAllowed(startOfDay(cursor))) {
+        occurrences.push({
+          start: new Date(cursor),
+          end: new Date(cursor.getTime() + durationMs)
+        });
+      }
+      cursor = addMonths(cursor, interval);
+    }
+    return occurrences;
+  }
+
+  if (frequency === 'yearly') {
+    let cursor = new Date(baseStart);
+    if (cursor.getTime() < rs.getTime()) {
+      const yearsSince = rs.getFullYear() - baseStart.getFullYear();
+      const steps = Math.floor(yearsSince / interval);
+      cursor = addYears(baseStart, steps * interval);
+      while (cursor.getTime() < rs.getTime()) cursor = addYears(cursor, interval);
+    }
+    while (cursor.getTime() <= re.getTime()) {
+      if (isDayAllowed(startOfDay(cursor))) {
+        occurrences.push({
+          start: new Date(cursor),
+          end: new Date(cursor.getTime() + durationMs)
+        });
+      }
+      cursor = addYears(cursor, interval);
     }
     return occurrences;
   }
@@ -527,7 +590,7 @@ exports.getTodayAgenda = async (req, res) => {
       status: { $nin: ['completed', 'cancelled'] },
       ...(hasValidUser ? { assignedTo: req.user.id } : {}),
       isRecurring: true,
-      'recurrence.frequency': { $in: ['daily', 'weekly'] },
+      'recurrence.frequency': { $in: ['daily', 'weekly', 'monthly', 'yearly'] },
       $or: [
         { 'recurrence.endDate': { $exists: false } },
         { 'recurrence.endDate': null },
@@ -653,7 +716,7 @@ exports.getCalendarView = async (req, res) => {
     const recurringTasks = await TaskManager.find({
       ...(hasValidUser ? { assignedTo: req.user.id } : {}),
       isRecurring: true,
-      'recurrence.frequency': { $in: ['daily', 'weekly'] },
+      'recurrence.frequency': { $in: ['daily', 'weekly', 'monthly', 'yearly'] },
       $or: [
         { 'recurrence.endDate': { $exists: false } },
         { 'recurrence.endDate': null },
@@ -784,7 +847,7 @@ exports.getTasksByDay = async (req, res) => {
       assignedTo: req.user.id,
       status: { $nin: ['completed', 'cancelled'] },
       isRecurring: true,
-      'recurrence.frequency': { $in: ['daily', 'weekly'] },
+      'recurrence.frequency': { $in: ['daily', 'weekly', 'monthly', 'yearly'] },
       $or: [
         { 'recurrence.endDate': { $exists: false } },
         { 'recurrence.endDate': null },
