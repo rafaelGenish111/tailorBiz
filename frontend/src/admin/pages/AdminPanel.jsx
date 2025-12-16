@@ -22,6 +22,7 @@ import SitePagesEditor from '../../pages/admin/cms/SitePagesEditor';
 import ArticlesManager from '../../pages/admin/cms/ArticlesManager';
 import ArticleEditor from '../../pages/admin/cms/ArticleEditor';
 import ClientsManager from '../../pages/admin/cms/ClientsManager';
+import SiteSettingsPage from './SiteSettingsPage';
 import { Box, Typography } from '@mui/material';
 
 function Placeholder({ title }) {
@@ -73,7 +74,7 @@ function AdminPanel() {
         <Route path="clients" element={<ClientsList />} />
         <Route path="clients/:id" element={<ClientCard />} />
         {/* Settings */}
-        <Route path="settings" element={<Placeholder title="הגדרות" />} />
+        <Route path="settings" element={<SiteSettingsPage />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
     </AdminLayout>

@@ -13,7 +13,8 @@ export const publicCMS = {
   getPage: (slug) => api.get(`/public/pages/${slug}`),
   getArticles: (params) => api.get('/public/articles', { params }),
   getArticle: (slug) => api.get(`/public/articles/${slug}`),
-  getClients: () => api.get('/public/clients')
+  getClients: () => api.get('/public/clients'),
+  getSiteSettings: () => api.get('/public/site-settings')
 };
 
 export default api;
