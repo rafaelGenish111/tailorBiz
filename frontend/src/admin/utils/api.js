@@ -218,6 +218,7 @@ export const adminSiteClientsAPI = {
 };
 
 export const uploadsAPI = {
+  getSignature: (folder) => api.get('/admin/uploads/signature', { params: { folder } }),
   uploadImage: (formData) =>
     api.post('/admin/uploads/image', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
