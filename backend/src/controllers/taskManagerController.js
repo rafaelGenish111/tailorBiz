@@ -33,6 +33,138 @@ const normalizeSubtasks = (subtasks) => {
   });
 };
 
+const normalizeRecurrence = (payload) => {
+  const isRecurring = payload?.isRecurring === true || payload?.isRecurring === 'true' || payload?.isRecurring === 1 || payload?.isRecurring === '1';
+  const rec = payload?.recurrence;
+  if (!isRecurring) {
+    return { isRecurring: false, recurrence: undefined };
+  }
+  if (!rec || typeof rec !== 'object') {
+    return { isRecurring: false, recurrence: undefined };
+  }
+
+  const frequencyRaw = String(rec.frequency || '').toLowerCase();
+  const frequency = (frequencyRaw === 'daily' || frequencyRaw === 'weekly') ? frequencyRaw : null;
+  if (!frequency) {
+    return { isRecurring: false, recurrence: undefined };
+  }
+
+  const interval = Math.max(1, parseInt(rec.interval, 10) || 1);
+  const daysOfWeek = Array.isArray(rec.daysOfWeek)
+    ? rec.daysOfWeek.map((n) => parseInt(n, 10)).filter((n) => Number.isFinite(n) && n >= 0 && n <= 6)
+    : [];
+
+  let endDate = undefined;
+  if (rec.endDate) {
+    const d = new Date(rec.endDate);
+    if (!Number.isNaN(d.getTime())) endDate = d;
+  }
+
+  return {
+    isRecurring: true,
+    recurrence: {
+      frequency,
+      interval,
+      ...(daysOfWeek.length ? { daysOfWeek: Array.from(new Set(daysOfWeek)).sort((a, b) => a - b) } : {}),
+      ...(endDate ? { endDate } : {})
+    }
+  };
+};
+
+const dayKey = (d) => new Date(d).toISOString().split('T')[0];
+const startOfDay = (d) => {
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
+  return x;
+};
+const addDays = (d, n) => new Date(d.getTime() + n * 24 * 60 * 60 * 1000);
+
+const getTaskBaseStart = (t) => (t.startDate ? new Date(t.startDate) : (t.dueDate ? new Date(t.dueDate) : null));
+const getTaskDurationMs = (t) => {
+  const s = t.startDate ? new Date(t.startDate) : (t.dueDate ? new Date(t.dueDate) : null);
+  const dueAsEnd = (t.startDate && t.dueDate && new Date(t.dueDate).getTime() > new Date(t.startDate).getTime())
+    ? new Date(t.dueDate)
+    : null;
+  const end = t.endDate ? new Date(t.endDate) : dueAsEnd;
+  if (s && end && end.getTime() > s.getTime()) return end.getTime() - s.getTime();
+  const minutes = (typeof t.actualMinutes === 'number' && t.actualMinutes > 0)
+    ? t.actualMinutes
+    : ((typeof t.estimatedMinutes === 'number' && t.estimatedMinutes > 0) ? t.estimatedMinutes : 60);
+  return Math.max(15, minutes) * 60 * 1000;
+};
+
+const expandRecurringTaskWithinRange = (task, rangeStart, rangeEnd) => {
+  if (!task?.isRecurring || !task?.recurrence?.frequency) return [];
+  const baseStart = getTaskBaseStart(task);
+  if (!baseStart || Number.isNaN(baseStart.getTime())) return [];
+
+  const frequency = task.recurrence.frequency;
+  const interval = Math.max(1, parseInt(task.recurrence.interval, 10) || 1);
+  const until = task.recurrence.endDate ? new Date(task.recurrence.endDate) : null;
+  const durationMs = getTaskDurationMs(task);
+
+  const rs = new Date(rangeStart);
+  const re = new Date(rangeEnd);
+  const rsDay = startOfDay(rs);
+  const reDay = startOfDay(re);
+  const baseDay = startOfDay(baseStart);
+
+  const occurrences = [];
+  const isDayAllowed = (d) => {
+    if (until && d.getTime() > until.getTime()) return false;
+    if (d.getTime() < baseDay.getTime()) return false;
+    return true;
+  };
+
+  if (frequency === 'daily') {
+    let cursor = new Date(baseStart);
+    // קפיצה קדימה לראשון בתוך הטווח
+    if (cursor.getTime() < rs.getTime()) {
+      const diffDays = Math.floor((startOfDay(rs).getTime() - baseDay.getTime()) / (24 * 60 * 60 * 1000));
+      const steps = Math.floor(diffDays / interval);
+      cursor = addDays(baseStart, steps * interval);
+      while (cursor.getTime() < rs.getTime()) cursor = addDays(cursor, interval);
+    }
+    while (cursor.getTime() <= re.getTime()) {
+      if (isDayAllowed(startOfDay(cursor))) {
+        occurrences.push({
+          start: new Date(cursor),
+          end: new Date(cursor.getTime() + durationMs)
+        });
+      }
+      cursor = addDays(cursor, interval);
+    }
+    return occurrences;
+  }
+
+  if (frequency === 'weekly') {
+    const days = Array.isArray(task.recurrence.daysOfWeek) && task.recurrence.daysOfWeek.length
+      ? task.recurrence.daysOfWeek
+      : [baseStart.getDay()];
+
+    for (let d = new Date(rsDay); d.getTime() <= reDay.getTime(); d = addDays(d, 1)) {
+      if (!days.includes(d.getDay())) continue;
+      if (!isDayAllowed(d)) continue;
+
+      // שבועות מאז שבוע ההתחלה
+      const weeksSinceStart = Math.floor((d.getTime() - baseDay.getTime()) / (7 * 24 * 60 * 60 * 1000));
+      if (weeksSinceStart % interval !== 0) continue;
+
+      const occStart = new Date(d);
+      occStart.setHours(baseStart.getHours(), baseStart.getMinutes(), 0, 0);
+      if (occStart.getTime() < rs.getTime() || occStart.getTime() > re.getTime()) continue;
+
+      occurrences.push({
+        start: occStart,
+        end: new Date(occStart.getTime() + durationMs)
+      });
+    }
+    return occurrences;
+  }
+
+  return [];
+};
+
 // קבלת כל המשימות (עם פילטרים)
 exports.getAllTasks = async (req, res) => {
   try {
@@ -203,9 +335,12 @@ exports.createTask = async (req, res) => {
     const rawUserId = req.user?.id || req.user?._id;
     const safeUserId = isValidObjectId(rawUserId) ? rawUserId : null;
 
+    const rec = normalizeRecurrence(req.body);
+
     const taskData = {
       ...req.body,
       subtasks: normalizeSubtasks(req.body?.subtasks),
+      ...rec,
       createdBy: safeUserId,
       assignedTo: req.body.assignedTo || safeUserId
     };
@@ -260,16 +395,24 @@ exports.updateTask = async (req, res) => {
     // שמור סטטוס ישן
     const oldStatus = task.status;
 
+    const rec = normalizeRecurrence(req.body);
+
     // עדכון שדות
     Object.keys(req.body).forEach(key => {
       if (key !== '_id' && key !== 'createdBy') {
         if (key === 'subtasks') {
           task[key] = normalizeSubtasks(req.body[key]);
+        } else if (key === 'isRecurring' || key === 'recurrence') {
+          // נטפל בסוף דרך normalizeRecurrence כדי לשמור עקביות
         } else {
           task[key] = req.body[key];
         }
       }
     });
+
+    task.isRecurring = rec.isRecurring;
+    if (rec.recurrence) task.recurrence = rec.recurrence;
+    else task.recurrence = undefined;
 
     await task.save();
 
@@ -355,6 +498,7 @@ exports.getTodayAgenda = async (req, res) => {
     const todayBaseFilter = {
       status: { $nin: ['completed', 'cancelled'] },
       ...(hasValidUser ? { assignedTo: req.user.id } : {}),
+      isRecurring: { $ne: true },
       $or: [
         {
           dueDate: { $gte: today, $lte: endOfToday }
@@ -377,6 +521,41 @@ exports.getTodayAgenda = async (req, res) => {
       .populate('relatedClient', 'personalInfo businessInfo')
       .populate('projectId', 'name color status')
       .sort('dueDate priority');
+
+    // הוספת מופעים של משימות חוזרות להיום
+    const recurringTasks = await TaskManager.find({
+      status: { $nin: ['completed', 'cancelled'] },
+      ...(hasValidUser ? { assignedTo: req.user.id } : {}),
+      isRecurring: true,
+      'recurrence.frequency': { $in: ['daily', 'weekly'] },
+      $or: [
+        { 'recurrence.endDate': { $exists: false } },
+        { 'recurrence.endDate': null },
+        { 'recurrence.endDate': { $gte: today } }
+      ]
+    })
+      .populate('relatedClient', 'personalInfo businessInfo')
+      .populate('projectId', 'name color status');
+
+    const recurringToday = [];
+    recurringTasks.forEach((t) => {
+      const occs = expandRecurringTaskWithinRange(t, today, endOfToday);
+      occs.forEach((o) => {
+        recurringToday.push({
+          ...t.toObject(),
+          startDate: o.start,
+          endDate: o.end,
+          dueDate: o.end,
+          __occurrence: { start: o.start, end: o.end }
+        });
+      });
+    });
+
+    const todayCombined = [...todayTasks, ...recurringToday].sort((a, b) => {
+      const ad = a.dueDate ? new Date(a.dueDate).getTime() : 0;
+      const bd = b.dueDate ? new Date(b.dueDate).getTime() : 0;
+      return ad - bd;
+    });
 
     // משימות באיחור
     const overdueFilter = {
@@ -414,12 +593,12 @@ exports.getTodayAgenda = async (req, res) => {
     res.json({
       success: true,
       data: {
-        today: todayTasks,
+        today: todayCombined,
         overdue: overdueTasks,
         urgent: urgentTasks,
         notifications: unreadNotifications,
         summary: {
-          todayCount: todayTasks.length,
+          todayCount: todayCombined.length,
           overdueCount: overdueTasks.length,
           urgentCount: urgentTasks.length,
           unreadCount: unreadNotifications.length
@@ -456,10 +635,9 @@ exports.getCalendarView = async (req, res) => {
 
     // משימות לפי משתמש מחובר (אם ה-id תקין), אחרת ללא סינון לפי assignedTo
     // כולל משימות שה-dueDate או ה-startDate שלהן בתוך טווח החודש
-    let tasks = [];
     const tasksByDate = {};
 
-    const taskFilter = {
+    const baseFilter = {
       $or: [
         { dueDate: { $gte: startDate, $lte: endDate } },
         { startDate: { $gte: startDate, $lte: endDate } }
@@ -467,19 +645,49 @@ exports.getCalendarView = async (req, res) => {
       ...(hasValidUser ? { assignedTo: req.user.id } : {})
     };
 
-    tasks = await TaskManager.find(taskFilter)
+    const normalTasks = await TaskManager.find({ ...baseFilter, isRecurring: { $ne: true } })
       .populate('relatedClient', 'personalInfo businessInfo')
       .populate('projectId', 'name color status')
       .sort('dueDate');
 
-    tasks.forEach(task => {
+    const recurringTasks = await TaskManager.find({
+      ...(hasValidUser ? { assignedTo: req.user.id } : {}),
+      isRecurring: true,
+      'recurrence.frequency': { $in: ['daily', 'weekly'] },
+      $or: [
+        { 'recurrence.endDate': { $exists: false } },
+        { 'recurrence.endDate': null },
+        { 'recurrence.endDate': { $gte: startDate } }
+      ]
+    })
+      .populate('relatedClient', 'personalInfo businessInfo')
+      .populate('projectId', 'name color status')
+      .sort('dueDate');
+
+    const pushTaskToDay = (taskObj, dt) => {
+      const k = dayKey(dt);
+      if (!tasksByDate[k]) tasksByDate[k] = [];
+      tasksByDate[k].push(taskObj);
+    };
+
+    normalTasks.forEach((task) => {
       const baseDate = task.startDate || task.dueDate;
       if (!baseDate) return;
-      const dateKey = new Date(baseDate).toISOString().split('T')[0];
-      if (!tasksByDate[dateKey]) {
-        tasksByDate[dateKey] = [];
-      }
-      tasksByDate[dateKey].push(task);
+      pushTaskToDay(task, baseDate);
+    });
+
+    recurringTasks.forEach((task) => {
+      const occs = expandRecurringTaskWithinRange(task, startDate, endDate);
+      occs.forEach((o) => {
+        const cloned = {
+          ...task.toObject(),
+          startDate: o.start,
+          endDate: o.end,
+          dueDate: o.end,
+          __occurrence: { start: o.start, end: o.end }
+        };
+        pushTaskToDay(cloned, o.start);
+      });
     });
 
     // אינטראקציות עם nextFollowUp בטווח התאריכים
@@ -523,7 +731,7 @@ exports.getCalendarView = async (req, res) => {
         month: parseInt(month),
         tasks: tasksByDate,
         interactions: interactionsByDate,
-        totalTasks: tasks.length
+        totalTasks: (normalTasks.length + recurringTasks.length)
       }
     });
 
@@ -567,10 +775,46 @@ exports.getTasksByDay = async (req, res) => {
       query.projectId = projectId;
     }
 
-    const tasks = await TaskManager.find(query)
+    const normalTasks = await TaskManager.find({ ...query, isRecurring: { $ne: true } })
       .populate('projectId', 'name color status')
       .populate('relatedClient', 'personalInfo businessInfo')
       .sort('dueDate priority');
+
+    const recurringTasks = await TaskManager.find({
+      assignedTo: req.user.id,
+      status: { $nin: ['completed', 'cancelled'] },
+      isRecurring: true,
+      'recurrence.frequency': { $in: ['daily', 'weekly'] },
+      $or: [
+        { 'recurrence.endDate': { $exists: false } },
+        { 'recurrence.endDate': null },
+        { 'recurrence.endDate': { $gte: baseDate } }
+      ]
+    })
+      .populate('projectId', 'name color status')
+      .populate('relatedClient', 'personalInfo businessInfo');
+
+    const recurringOccurrences = [];
+    recurringTasks.forEach((t) => {
+      const occs = expandRecurringTaskWithinRange(t, baseDate, endOfDay);
+      occs.forEach((o) => {
+        recurringOccurrences.push({
+          ...t.toObject(),
+          startDate: o.start,
+          endDate: o.end,
+          dueDate: o.end,
+          __occurrence: { start: o.start, end: o.end }
+        });
+      });
+    });
+
+    const tasks = [...normalTasks, ...recurringOccurrences].filter((t) => {
+      if (projectId && isValidObjectId(projectId)) {
+        const pid = t.projectId?._id ? String(t.projectId._id) : (t.projectId ? String(t.projectId) : null);
+        return pid === String(projectId);
+      }
+      return true;
+    });
 
     const groupedByProject = {};
     tasks.forEach(task => {
