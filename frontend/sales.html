@@ -1,0 +1,642 @@
+import React, { useState } from 'react';
+import { BookOpen, Target, Users, Award, ChevronRight, Check, X, Brain, DollarSign, Zap, ChevronDown, ChevronUp, Map, Layout, Lightbulb } from 'lucide-react';
+
+// --- Styles Object ---
+const styles = {
+  container: {
+    minHeight: '100vh',
+    backgroundColor: '#f8fafc', // slate-50
+    fontFamily: 'sans-serif',
+    color: '#334155', // slate-700
+    display: 'flex',
+    direction: 'rtl',
+  },
+  sidebar: {
+    width: '260px',
+    backgroundColor: '#0f172a', // slate-900
+    color: 'white',
+    padding: '24px',
+    display: 'flex',
+    flexDirection: 'column',
+    position: 'fixed',
+    top: 0,
+    right: 0,
+    height: '100%',
+    zIndex: 10,
+    boxShadow: '-4px 0 15px rgba(0,0,0,0.1)',
+  },
+  mainContent: {
+    marginRight: '260px', // Offset for sidebar
+    padding: '48px',
+    maxWidth: '1024px',
+    margin: '0 auto 0 auto', // Center horizontally but keep top margin
+    flex: 1,
+    width: '100%',
+    boxSizing: 'border-box',
+  },
+  mobileHeader: {
+    backgroundColor: '#0f172a',
+    color: 'white',
+    padding: '16px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    position: 'sticky',
+    top: 0,
+    zIndex: 20,
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    padding: '24px',
+    border: '1px solid #f1f5f9', // slate-100
+  },
+  sectionTitle: {
+    fontSize: '1.5rem',
+    fontWeight: 'bold',
+    color: '#1e293b', // slate-800
+    marginBottom: '24px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  button: {
+    cursor: 'pointer',
+    border: 'none',
+    outline: 'none',
+  }
+};
+
+const Card = ({ children, style = {} }) => (
+  <div style={{ ...styles.card, ...style }}>
+    {children}
+  </div>
+);
+
+const SectionTitle = ({ children }) => (
+  <h2 style={styles.sectionTitle}>
+    {children}
+  </h2>
+);
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState('home');
+  const [expandedScript, setExpandedScript] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  // Handle resize for responsiveness (basic)
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'home':
+        return <HomeSection setActiveTab={setActiveTab} />;
+      case 'philosophy':
+        return <PhilosophySection />;
+      case 'product':
+        return <ProductSection />;
+      case 'roadmap':
+        return <RoadmapSection />;
+      case 'icp':
+        return <ICPSection />;
+      case 'playbook':
+        return <PlaybookSection expandedScript={expandedScript} setExpandedScript={setExpandedScript} />;
+      case 'simulation':
+        return <SimulationSection />;
+      default:
+        return <HomeSection setActiveTab={setActiveTab} />;
+    }
+  };
+
+  return (
+    <div style={styles.container}>
+      {/* Sidebar (Desktop) */}
+      {!isMobile && (
+        <div style={styles.sidebar}>
+          <div style={{ marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '12px', color: '#22d3ee' }}>
+            <Zap size={32} />
+            <div>
+              <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', letterSpacing: '0.05em', margin: 0 }}>SYSTEMA</h1>
+              <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: 0 }}>Sales Academy</p>
+            </div>
+          </div>
+          
+          <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto' }}>
+            <NavItem id="home" icon={<BookOpen size={20} />} label="ברוכים הבאים" active={activeTab} set={setActiveTab} />
+            <NavItem id="philosophy" icon={<Brain size={20} />} label="הפילוסופיה שלנו" active={activeTab} set={setActiveTab} />
+            <NavItem id="product" icon={<Zap size={20} />} label="מה אנחנו מוכרים?" active={activeTab} set={setActiveTab} />
+            <NavItem id="roadmap" icon={<Map size={20} />} label="מוצר החדירה (The Hook)" active={activeTab} set={setActiveTab} />
+            <NavItem id="icp" icon={<Target size={20} />} label="הלקוח האידאלי" active={activeTab} set={setActiveTab} />
+            <NavItem id="playbook" icon={<Users size={20} />} label="תסריטי שיחה" active={activeTab} set={setActiveTab} />
+            <NavItem id="simulation" icon={<Award size={20} />} label="סימולטור מכירה" active={activeTab} set={setActiveTab} />
+          </nav>
+
+          <div style={{ marginTop: 'auto', paddingTop: '24px', borderTop: '1px solid #334155' }}>
+            <p style={{ fontSize: '0.875rem', color: '#94a3b8', margin: 0 }}>גרסה 1.3</p>
+            <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>הצלחה היא הרגל.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Header */}
+      {isMobile && (
+        <div style={styles.mobileHeader}>
+          <span style={{ fontWeight: 'bold' }}>SYSTEMA Academy</span>
+          <button onClick={() => setActiveTab('home')} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
+             <BookOpen size={24} />
+          </button>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main style={isMobile ? { ...styles.mainContent, marginRight: 0, padding: '24px' } : styles.mainContent}>
+        {renderContent()}
+      </main>
+    </div>
+  );
+};
+
+const NavItem = ({ id, icon, label, active, set }) => {
+  const isActive = active === id;
+  const itemStyle = {
+    ...styles.button,
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '12px 16px',
+    borderRadius: '8px',
+    transition: 'all 0.2s',
+    backgroundColor: isActive ? '#0891b2' : 'transparent', // cyan-600
+    color: isActive ? 'white' : '#cbd5e1', // slate-300
+    boxShadow: isActive ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : 'none',
+    transform: isActive ? 'translateX(4px)' : 'none',
+  };
+
+  return (
+    <button 
+      onClick={() => set(id)}
+      style={itemStyle}
+      onMouseEnter={(e) => { if(!isActive) { e.currentTarget.style.backgroundColor = '#1e293b'; e.currentTarget.style.color = 'white'; } }}
+      onMouseLeave={(e) => { if(!isActive) { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#cbd5e1'; } }}
+    >
+      {icon}
+      <span style={{ fontWeight: 500 }}>{label}</span>
+    </button>
+  );
+};
+
+// --- Sections ---
+
+const HomeSection = ({ setActiveTab }) => (
+  <div style={{ animation: 'fadeIn 0.5s ease-in' }}>
+    <div style={{
+      background: 'linear-gradient(to left, #0f172a, #1e293b)',
+      color: 'white',
+      borderRadius: '16px',
+      padding: '48px',
+      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+      position: 'relative',
+      overflow: 'hidden',
+      marginBottom: '32px'
+    }}>
+      <div style={{ position: 'relative', zIndex: 10 }}>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '16px' }}>ברוך הבא לצוות המכירות.</h1>
+        <p style={{ fontSize: '1.25rem', color: '#cbd5e1', maxWidth: '600px', lineHeight: 1.6 }}>
+          הכנו עבורך את הפורטל הזה כדי לתת לך את כל הכלים להצליח בתפקיד. 
+          כאן תלמד איך אנחנו ניגשים ללקוחות, איך אנחנו מציגים את הערך הייחודי שלנו, ואיך לסגור עסקאות איכותיות.
+          <br/><br/>
+          המטרה שלך: להבין את השיטה, לשלוט בחומר, ולהביא תוצאות.
+        </p>
+        <div style={{ display: 'flex', gap: '16px', marginTop: '32px' }}>
+          <button 
+            onClick={() => setActiveTab('philosophy')}
+            style={{
+              ...styles.button,
+              backgroundColor: '#06b6d4', // cyan-500
+              color: '#0f172a',
+              fontWeight: 'bold',
+              padding: '12px 32px',
+              borderRadius: '9999px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'background-color 0.2s'
+            }}
+          >
+            התחל הדרכה <ChevronRight size={20} style={{ transform: 'rotate(180deg)' }} />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px' }}>
+      <Card style={{ borderTop: '4px solid #06b6d4' }}>
+        <h3 style={{ fontWeight: 'bold', fontSize: '1.125rem', marginBottom: '8px' }}>המשימה שלך</h3>
+        <p style={{ color: '#475569' }}>לאתר עסקים שסובלים מניהול ידני ולהציע להם פתרון טכנולוגי שחוסך זמן וכסף.</p>
+      </Card>
+      <Card style={{ borderTop: '4px solid #a855f7' }}>
+        <h3 style={{ fontWeight: 'bold', fontSize: '1.125rem', marginBottom: '8px' }}>הכלי המרכזי</h3>
+        <p style={{ color: '#475569' }}>"מוצר החדירה" (מפת הדרכים) - הדרך הקלה ביותר להפוך מתעניין ללקוח משלם.</p>
+      </Card>
+      <Card style={{ borderTop: '4px solid #f97316' }}>
+        <h3 style={{ fontWeight: 'bold', fontSize: '1.125rem', marginBottom: '8px' }}>סגנון המכירה</h3>
+        <p style={{ color: '#475569' }}>מכירה מייעצת (Consultative). אנחנו לא "דוחפים" מוצר, אנחנו מאבחנים בעיות.</p>
+      </Card>
+    </div>
+  </div>
+);
+
+const PhilosophySection = () => (
+  <div style={{ animation: 'fadeIn 0.5s ease-in', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <SectionTitle><Brain color="#9333ea" /> הפילוסופיה: חליפה בתפירה אישית</SectionTitle>
+    
+    <div style={{ ...styles.card, padding: '32px' }}>
+      <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '16px' }}>המסר שלך ללקוח</h3>
+      <p style={{ fontSize: '1.125rem', lineHeight: 1.6, color: '#475569', marginBottom: '24px' }}>
+        כשאתה מדבר עם לקוח, הוא רגיל לשמוע על "תוכנות מדף". התפקיד שלך הוא להסביר לו למה זה לא עובד לו.
+        <br/>
+        <strong>הגישה שלנו:</strong> המערכת צריכה לשרת את העסק, לא להפך.
+      </p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px', marginTop: '32px' }}>
+        <div style={{ backgroundColor: '#fef2f2', padding: '24px', borderRadius: '8px', border: '1px solid #fee2e2' }}>
+          <h4 style={{ fontWeight: 'bold', color: '#b91c1c', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}><X size={20}/> מה הלקוח מכיר (הבעיה)</h4>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#334155', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <li>• המון פיצ'רים שאף אחד לא צריך.</li>
+            <li>• ממשק מסורבל ולא נוח.</li>
+            <li>• תהליכים ידניים מרובים כדי "לעקוף" את המערכת.</li>
+            <li>• תחושה של תסכול בקרב העובדים.</li>
+          </ul>
+        </div>
+        
+        <div style={{ backgroundColor: '#f0fdf4', padding: '24px', borderRadius: '8px', border: '1px solid #dcfce7' }}>
+          <h4 style={{ fontWeight: 'bold', color: '#15803d', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}><Check size={20}/> מה אנחנו מציעים (הפתרון)</h4>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#334155', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <li>• דיוק כירורגי: רק מה שהעסק צריך.</li>
+            <li>• אוטומציה שחוסכת שעות עבודה.</li>
+            <li>• המערכת מתאימה את עצמה לתהליך העבודה הקיים.</li>
+            <li>• התממשקות (Integrations) חלקה לכל כלי אחר.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const ProductSection = () => (
+  <div style={{ animation: 'fadeIn 0.5s ease-in', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <SectionTitle><Zap color="#ca8a04" /> סל המוצרים שלנו</SectionTitle>
+    <p style={{ color: '#475569', marginBottom: '16px' }}>חשוב שתכיר את כל ארבעת הרכיבים שאנחנו מוכרים, כדי לדעת להתאים את הפתרון לשיחה.</p>
+    
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+      {[
+        { icon: <Target size={24} />, color: '#2563eb', bg: '#dbeafe', title: "1. אבחון ומיפוי תהליכים", text: "השלב הראשון. מיפוי זרימת העבודה (Workflow). זה הערך הראשון שהלקוח רואה - אנחנו עושים לו סדר בראש." },
+        { icon: <Zap size={24} />, color: '#4f46e5', bg: '#e0e7ff', title: "2. אוטומציות חכמות", text: "ה\"קסם\". חיבור בין מערכות. ליד נכנס ← עובר ל-CRM ← מקבל SMS ← מנהל מקבל התראה. הכל אוטומטי." },
+        { icon: <BookOpen size={24} />, color: '#0d9488', bg: '#ccfbf1', title: "3. מערכות ניהול (Custom CRM/ERP)", text: "בנייה של מערכות ליבה בהתאמה אישית. דשבורדים ניהוליים בזמן אמת, בדיוק לפי צרכי המנכ\"ל." },
+        { icon: <Users size={24} />, color: '#ea580c', bg: '#ffedd5', title: "4. ליווי והטמעה (Retainer/Project)", text: "אנחנו לא רק מפתחים, אנחנו מטמיעים. אנחנו מלווים את הצוות עד שהם שולטים במערכת." }
+      ].map((item, idx) => (
+        <Card key={idx}>
+          <div style={{ backgroundColor: item.bg, width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: item.color, marginBottom: '16px' }}>
+            {item.icon}
+          </div>
+          <h3 style={{ fontWeight: 'bold', fontSize: '1.25rem', marginBottom: '12px' }}>{item.title}</h3>
+          <p style={{ color: '#475569' }}>{item.text}</p>
+        </Card>
+      ))}
+    </div>
+  </div>
+);
+
+const RoadmapSection = () => (
+  <div style={{ animation: 'fadeIn 0.5s ease-in', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+    <SectionTitle><Map color="#0891b2" /> הכלי שלך לסגירה: מוצר החדירה</SectionTitle>
+
+    {/* Hero / Concept Rebranding */}
+    <div style={{ ...styles.card, borderRight: '4px solid #06b6d4', padding: '32px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+          <div>
+            <span style={{ backgroundColor: '#fee2e2', color: '#dc2626', padding: '4px 12px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>אל תמכור סתם</span>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#94a3b8', textDecoration: 'line-through', marginTop: '8px' }}>פגישת איפיון</h3>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+             <ChevronRight size={32} style={{ color: '#cbd5e1', transform: 'rotate(180deg)' }} />
+          </div>
+          <div>
+            <span style={{ backgroundColor: '#dcfce7', color: '#16a34a', padding: '4px 12px', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>תמכור ערך</span>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#0e7490', marginTop: '8px' }}>סשן ארכיטקטורה עסקית ואוטומציה</h3>
+          </div>
+        </div>
+      </div>
+      <p style={{ fontSize: '1.125rem', color: '#475569', borderTop: '1px solid #f1f5f9', paddingTop: '24px' }}>
+        <strong>טיפ לסוכן:</strong> קשה למכור פרויקט ב-50 אלף ש"ח בשיחה ראשונה. קל הרבה יותר למכור "מפה" ב-2,000 ש"ח.
+        ברגע שהלקוח קנה את זה - הוא כבר שלנו. השתמש במוצר הזה כדי לפתוח דלתות.
+      </p>
+    </div>
+
+    {/* The Value Proposition */}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+      <div style={{ backgroundColor: '#1e293b', color: 'white', padding: '24px', borderRadius: '12px' }}>
+        <h4 style={{ fontWeight: 'bold', fontSize: '1.125rem', marginBottom: '16px', color: '#fb923c', display: 'flex', alignItems: 'center', gap: '8px' }}>
+           <Layout size={20} /> זיהוי הכאב בשיחה
+        </h4>
+        <p style={{ color: '#cbd5e1' }}>
+          חפש משפטים כמו: "העסק עובד בשביל הטכנולוגיה", "אנחנו מבזבזים זמן על העתק-הדבק", "המידע מפוזר באקסלים".
+        </p>
+      </div>
+      <div style={{ backgroundColor: '#ecfeff', color: '#1e293b', padding: '24px', borderRadius: '12px', border: '1px solid #cffafe' }}>
+        <h4 style={{ fontWeight: 'bold', fontSize: '1.125rem', marginBottom: '16px', color: '#0e7490', display: 'flex', alignItems: 'center', gap: '8px' }}>
+           <Zap size={20} /> ההבטחה שאתה נותן
+        </h4>
+        <p style={{ color: '#475569' }}>
+          "אנחנו לא נבנה לך כלום לפני שנמפה את העסק. בסוף הפגישה תהיה לך מפת דרכים ברורה וצפי לחיסכון של 20% בזמן העבודה."
+        </p>
+      </div>
+    </div>
+
+    {/* Methodology / Structure */}
+    <div>
+      <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '16px' }}>מה הלקוח מקבל? (כדי שתדע להסביר)</h3>
+      <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+        {[
+          { step: "1", title: "Deep Dive", desc: "תחקיר עומק ושיקוף המצב הקיים." },
+          { step: "2", title: "Optimization", desc: "זיהוי כפילויות וצווארי בקבוק." },
+          { step: "3", title: "Tech-Stack", desc: "המלצה על טכנולוגיות וארכיטקטורה." },
+          { step: "4", title: "Action Plan", desc: "תוכנית עבודה פרקטית (מסמך PDF)." }
+        ].map((item, idx) => (
+          <div key={idx} style={{ ...styles.card, padding: '20px', position: 'relative' }}>
+            <div style={{ position: 'absolute', top: '-12px', right: '-12px', width: '32px', height: '32px', backgroundColor: '#1e293b', color: 'white', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.875rem' }}>
+              {item.step}
+            </div>
+            <h4 style={{ fontWeight: 'bold', fontSize: '1.125rem', marginBottom: '8px', color: '#0891b2' }}>{item.title}</h4>
+            <p style={{ fontSize: '0.875rem', color: '#64748b' }}>{item.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Pricing & Offer */}
+    <div style={{ background: 'linear-gradient(to bottom right, #f1f5f9, white)', padding: '32px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', md: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' } }}>
+        <div style={{ flex: 1 }}>
+           <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+             <DollarSign style={{ color: '#16a34a' }} /> עלות ללקוח
+           </h3>
+           <p style={{ color: '#475569', maxWidth: '500px' }}>
+             המחיר נקבע לפי גודל העסק:
+             <br/>
+             <strong>1,500 ₪ - 3,500 ₪</strong>.
+           </p>
+        </div>
+        <div style={{ backgroundColor: '#fefce8', border: '2px solid #fef08a', padding: '24px', borderRadius: '12px', maxWidth: '400px', transform: 'rotate(1deg)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+           <h4 style={{ fontWeight: 'bold', color: '#854d0e', marginBottom: '8px', fontSize: '1.125rem' }}>💡 קלף הסגירה שלך ("הג'וקר")</h4>
+           <p style={{ fontSize: '0.875rem', color: '#713f12', fontWeight: 500 }}>
+             תגיד ללקוח: "אם נחליט להתקדם לפרויקט, עלות האפיון <strong>תקוזז במלואה</strong> מהמחיר הסופי."
+           </p>
+           <div style={{ marginTop: '8px', fontSize: '0.75rem', color: '#a16207' }}>
+             * זה מבטל לו את ההתלבטות. תשתמש בזה כדי לסגור.
+           </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Pro Tips for Sales Reps */}
+    <div style={{ marginTop: '16px' }}>
+      <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}><Lightbulb color="#eab308"/> טיפים לשיחת המכירה</h3>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px' }}>
+         <div style={{ padding: '16px' }}>
+           <h4 style={{ fontWeight: 'bold', color: '#334155', marginBottom: '8px' }}>מכור שקט, לא שעות</h4>
+           <p style={{ fontSize: '0.875rem', color: '#64748b' }}>הלקוח לא רוצה לקנות שעות תכנות. הוא רוצה לדעת שהוא יכול לצאת לחופשה והעסק יעבוד לבד. דבר על התוצאה.</p>
+         </div>
+         <div style={{ padding: '16px' }}>
+           <h4 style={{ fontWeight: 'bold', color: '#334155', marginBottom: '8px' }}>מיצוב מול הלקוח</h4>
+           <p style={{ fontSize: '0.875rem', color: '#64748b' }}>כשאתה מציג את עצמך כ"אדריכל מערכות" ולא כאיש טכני פשוט, זה עוזר לנו להסביר ללקוח למה אנחנו יקרים יותר מהמתחרים.</p>
+         </div>
+         <div style={{ padding: '16px' }}>
+           <h4 style={{ fontWeight: 'bold', color: '#334155', marginBottom: '8px' }}>התיעוד ככלי מכירה</h4>
+           <p style={{ fontSize: '0.875rem', color: '#64748b' }}>הבטח ללקוח שבסוף התהליך הוא מקבל מסמך אסטרטגי ממותג. זה נותן לו ביטחון שהוא מקבל תמורה מוחשית לכסף.</p>
+         </div>
+      </div>
+    </div>
+
+  </div>
+);
+
+const ICPSection = () => (
+  <div style={{ animation: 'fadeIn 0.5s ease-in', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <SectionTitle><Target color="#ef4444" /> הלקוח האידאלי (ICP)</SectionTitle>
+    <p style={{ color: '#475569' }}>כדי שלא תבזבז זמן על לידים לא רלוונטיים, אלו העסקים שאנחנו מחפשים:</p>
+    
+    <div style={{ backgroundColor: '#1e293b', color: 'white', borderRadius: '12px', padding: '32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
+        <div>
+           <h3 style={{ fontSize: '1.875rem', fontWeight: 'bold', marginBottom: '24px', color: '#22d3ee' }}>הפרופיל המנצח</h3>
+           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '1.125rem' }}>
+             <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+               <DollarSign color="#4ade80" />
+               <span><strong>מחזור שנתי:</strong> 2 - 10 מיליון ש"ח (יש להם תקציב).</span>
+             </li>
+             <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+               <Users color="#60a5fa" />
+               <span><strong>גודל:</strong> עסק בצמיחה שמתחיל לטבוע בנהלים ובירוקרטיה.</span>
+             </li>
+             <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+               <Brain color="#c084fc" />
+               <span><strong>מנטליות:</strong> מבינים טכנולוגיה, משתמשים בכלים כמו Monday/Priority אבל לא מרוצים.</span>
+             </li>
+             <li style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+               <Zap color="#facc15" />
+               <span><strong>הכאב:</strong> "אני לא בשליטה", "דברים נופלים בין הכיסאות".</span>
+             </li>
+           </ul>
+        </div>
+        
+        <div style={{ backgroundColor: '#334155', padding: '24px', borderRadius: '8px', border: '1px solid #475569' }}>
+           <h4 style={{ fontWeight: 'bold', fontSize: '1.25rem', marginBottom: '16px', borderBottom: '1px solid #475569', paddingBottom: '8px' }}>תחומים מועדפים:</h4>
+           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+             {["חברות לוגיסטיקה", "משרדי עו\"ד/רו\"ח גדולים", "חברות ייצור קל", "סוכנויות דיגיטל", "שירות ואחזקה", "יזמי נדל\"ן"].map(tag => (
+               <span key={tag} style={{ backgroundColor: '#475569', padding: '4px 12px', borderRadius: '9999px', fontSize: '0.875rem' }}>{tag}</span>
+             ))}
+           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const PlaybookSection = ({ expandedScript, setExpandedScript }) => {
+  const scripts = [
+    {
+      id: 1,
+      title: "שיחת היכרות ראשונית (Discovery)",
+      goal: "המטרה שלך: להבין האם יש התאמה ולא למכור עדיין.",
+      content: [
+        { speaker: "אתה", text: "היי [שם הלקוח], אני מדבר מ-[שם החברה]. ראיתי שאתם צומחים יפה בתחום ה-[תחום], ורציתי לשאול שאלה קצת לא שגרתית ברשותך." },
+        { speaker: "לקוח", text: "כן, דבר איתי." },
+        { speaker: "אתה", text: "רוב המנכ\"לים בסדר גודל שלך שאני מדבר איתם, מספרים לי שהם עובדים עם 3-4 מערכות שונות שלא מדברות אחת עם השנייה, וסוף החודש זה סיוט של אקסלים. איך זה עובד אצלך היום?" },
+        { speaker: "עקרון מפתח", text: "שתוק. תן לו לדבר. אנחנו מחפשים את הכאב." },
+      ]
+    },
+    {
+      id: 2,
+      title: "שאלות העמקה (Deep Dive)",
+      goal: "המטרה שלך: לגרום ללקוח להבין שהמצב הנוכחי עולה לו כסף.",
+      content: [
+        { speaker: "אתה", text: "אמרת שאתה משתמש בפריוריטי לניהול מלאי ובמאנדיי למשימות. כשלקוח מבצע הזמנה, איך המידע עובר ביניהן?" },
+        { speaker: "לקוח", text: "המזכירה מעתיקה ידנית..." },
+        { speaker: "אתה", text: "וכמה זמן זה לוקח לה ביום? קרה פעם שהייתה טעות בהעתקה?" },
+        { speaker: "אתה", text: "אם היית יכול ללחוץ על כפתור וזה היה קורה לבד - מה היית עושה עם הזמן שהתפנה?" }
+      ]
+    },
+    {
+      id: 3,
+      title: "טיפול בהתנגדות: \"זה יקר לי\"",
+      goal: "הטכניקה: הסטת הדיון מעלות להשקעה (ROI).",
+      content: [
+        { speaker: "לקוח", text: "שמע, פיתוח מאפס זה יקר. מערכת מדף עולה לי 50$ בחודש." },
+        { speaker: "אתה", text: "אני מסכים איתך, מערכת מדף זולה יותר בחשבונית. אבל בוא נחשוב רגע - כמה עולה לך שעת עובד שמבזבז זמן על עבודה ידנית? כמה עולה ליד שהולך לאיבוד?" },
+        { speaker: "אתה", text: "אנחנו לא בונים לך 'הוצאה', אנחנו בונים לך מכונה שחוסכת כסף. הלקוחות שלנו מחזירים את ההשקעה תוך 3-6 חודשים. רוצה שנבדוק אם זה אפשרי גם אצלך?" }
+      ]
+    }
+  ];
+
+  return (
+    <div style={{ animation: 'fadeIn 0.5s ease-in', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <SectionTitle><Users color="#0891b2" /> תסריטי שיחה ופלייבוק</SectionTitle>
+      <p style={{ fontSize: '1.125rem', color: '#475569', marginBottom: '16px' }}>
+        הכנו עבורך תסריטים למצבים נפוצים. אל תקריא אותם כמו רובוט – תבין את העקרון ותדבר בשפה שלך.
+      </p>
+
+      <div style={{ display: 'grid', gap: '16px' }}>
+        {scripts.map((script) => (
+          <div key={script.id} style={{ backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+            <button 
+              onClick={() => setExpandedScript(expandedScript === script.id ? null : script.id)}
+              style={{ ...styles.button, width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', textAlign: 'right', transition: 'background-color 0.2s' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+            >
+              <div>
+                <h3 style={{ fontWeight: 'bold', fontSize: '1.125rem', color: '#1e293b' }}>{script.title}</h3>
+                <p style={{ fontSize: '0.875rem', color: '#64748b' }}>{script.goal}</p>
+              </div>
+              {expandedScript === script.id ? <ChevronUp color="#06b6d4" /> : <ChevronDown color="#94a3b8" />}
+            </button>
+            
+            {expandedScript === script.id && (
+              <div style={{ padding: '20px', backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {script.content.map((line, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: '16px', backgroundColor: line.speaker === 'עקרון מפתח' ? '#fef9c3' : 'transparent', padding: line.speaker === 'עקרון מפתח' ? '12px' : '0', borderRadius: '4px' }}>
+                    <div style={{ width: '96px', flexShrink: 0, fontWeight: 'bold', color: '#64748b', fontSize: '0.875rem', marginTop: '4px' }}>{line.speaker}:</div>
+                    <div style={{ color: '#1e293b' }}>{line.text}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const SimulationSection = () => {
+  const [score, setScore] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [feedback, setFeedback] = useState(null);
+
+  const steps = [
+    {
+      question: "לקוח אומר לך: 'יש לנו כבר מערכת CRM של Salesforce, למה שנעבור למשהו אחר?'",
+      options: [
+        { text: "Salesforce זו מערכת יקרה ומסובכת, המערכת שלנו יותר טובה וזולה.", isCorrect: false, feedback: "לא טוב. אל תלכלך על מתחרים ואל תניח שהמחיר הוא הבעיה." },
+        { text: "מעולה. Salesforce זו מערכת חזקה. אתם מרגישים שהיא מותאמת ב-100% לתהליך העבודה שלכם, או שאתם עובדים 'מסביב' למערכת?", isCorrect: true, feedback: "מצוין! גישה מכילה ומבררת. במקום למכור, אתה בודק אם יש כאב." },
+        { text: "אני יכול להציע לך תקופת ניסיון במערכת שלנו בחינם.", isCorrect: false, feedback: "מוקדם מדי. עוד לא הבנת אם יש לו בכלל צורך או כאב." }
+      ]
+    },
+    {
+      question: "בשיחת אפיון, הלקוח מתלונן שהעובדים לא ממלאים דוחות בזמן. מה תעשה?",
+      options: [
+        { text: "אספר לו שיש לנו פיצ'ר של התראות אוטומטיות.", isCorrect: false, feedback: "קפצת לפתרון מהר מדי. תחקור עוד את הכאב." },
+        { text: "אשאל אותו: 'למה לדעתך זה קורה? האם זה עניין של משמעת או שהתהליך מסורבל?'", isCorrect: true, feedback: "בול. אנחנו רוצים להבין את שורש הבעיה לפני שמציעים פתרון." }
+      ]
+    }
+  ];
+
+  const handleAnswer = (isCorrect, feedbackText) => {
+    setFeedback({ isCorrect, text: feedbackText });
+    if (isCorrect) setScore(score + 1);
+  };
+
+  const nextStep = () => {
+    setFeedback(null);
+    setCurrentStep(currentStep + 1);
+  };
+
+  if (currentStep >= steps.length) {
+    return (
+      <div style={{ textAlign: 'center', padding: '80px 0', backgroundColor: 'white', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+          <Award size={64} color="#eab308" />
+        </div>
+        <h2 style={{ fontSize: '1.875rem', fontWeight: 'bold', marginBottom: '8px' }}>כל הכבוד!</h2>
+        <p style={{ fontSize: '1.25rem', color: '#475569' }}>סיימת את הסימולציה הבסיסית.</p>
+        <button onClick={() => {setCurrentStep(0); setScore(0);}} style={{ ...styles.button, marginTop: '24px', color: '#0891b2', textDecoration: 'underline' }}>התחל מחדש</button>
+      </div>
+    );
+  }
+
+  const step = steps[currentStep];
+
+  return (
+    <div style={{ animation: 'fadeIn 0.5s ease-in', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <SectionTitle><Award color="#16a34a" /> סימולטור: האם אתה מוכן?</SectionTitle>
+      
+      <div style={{ ...styles.card, padding: '32px', maxWidth: '672px', margin: '0 auto' }}>
+        <div style={{ marginBottom: '32px' }}>
+          <span style={{ fontSize: '0.875rem', fontWeight: 'bold', color: '#94a3b8', marginBottom: '8px', display: 'block' }}>שאלה {currentStep + 1} מתוך {steps.length}</span>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1e293b' }}>{step.question}</h3>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {!feedback ? (
+            step.options.map((opt, idx) => (
+              <button 
+                key={idx}
+                onClick={() => handleAnswer(opt.isCorrect, opt.feedback)}
+                style={{ ...styles.button, width: '100%', textAlign: 'right', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0', transition: 'all 0.2s' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#06b6d4'; e.currentTarget.style.backgroundColor = '#ecfeff'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.backgroundColor = 'transparent'; }}
+              >
+                {opt.text}
+              </button>
+            ))
+          ) : (
+            <div style={{ padding: '24px', borderRadius: '8px', textAlign: 'center', backgroundColor: feedback.isCorrect ? '#f0fdf4' : '#fef2f2', border: `1px solid ${feedback.isCorrect ? '#bbf7d0' : '#fecaca'}` }}>
+              <div style={{ fontWeight: 'bold', fontSize: '1.125rem', marginBottom: '8px', color: feedback.isCorrect ? '#166534' : '#991b1b' }}>
+                {feedback.isCorrect ? 'נכון מאוד! 👏' : 'פחות מדויק... 😕'}
+              </div>
+              <p style={{ color: '#334155', marginBottom: '16px' }}>{feedback.text}</p>
+              <button 
+                onClick={nextStep}
+                style={{ ...styles.button, backgroundColor: '#1e293b', color: 'white', padding: '8px 24px', borderRadius: '9999px' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#334155'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1e293b'}
+              >
+                המשך לשאלה הבאה
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;

@@ -19,6 +19,8 @@ import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 
+const LOGO_SRC = '/assets/images/image-removebg-preview.png';
+
 function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [articlesAnchorEl, setArticlesAnchorEl] = useState(null);
@@ -65,22 +67,27 @@ function Header() {
             sx={{
               display: 'flex',
               alignItems: 'center',
+              gap: 1.25,
               textDecoration: 'none',
               color: 'primary.main',
             }}
           >
             <Box
+              component="img"
+              src={LOGO_SRC}
+              alt="לוגו"
+              loading="eager"
               sx={{
-                fontSize: '2rem',
-                fontWeight: 800,
-                background: 'linear-gradient(135deg, #1a237e 0%, #00bcd4 100%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                height: { xs: 44, sm: 52 },
+                width: 'auto',
+                display: 'block',
+                objectFit: 'contain',
               }}
-            >
-              TailorBiz
-            </Box>
+              onError={(e) => {
+                // אם הקובץ לא קיים עדיין – לא לשבור את ההדר
+                e.currentTarget.style.display = 'none';
+              }}
+            />
           </Box>
 
           {!isMobile && (
