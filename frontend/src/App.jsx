@@ -4,6 +4,7 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+
 // Import themes
 import { theme } from './theme/theme';
 import adminTheme from './admin/styles/adminTheme';
@@ -22,6 +23,7 @@ import AdminPanel from './admin/pages/AdminPanel';
 import LoginPage from './admin/pages/LoginPage';
 import BootstrapAdminPage from './admin/pages/BootstrapAdminPage';
 import RequireAdminAuth from './admin/components/auth/RequireAdminAuth';
+import SalesOnboarding from './pages/SalesOnboarding';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,6 +42,17 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Routes>
+        {/* Standalone (no Header/Footer) */}
+        <Route
+          path="/sales-training"
+          element={
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <SalesOnboarding />
+            </ThemeProvider>
+          }
+        />
+
         {/* Public Routes */}
         <Route
           path="/*"

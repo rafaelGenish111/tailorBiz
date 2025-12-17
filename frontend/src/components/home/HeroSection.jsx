@@ -6,6 +6,8 @@ import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { Link } from 'react-router-dom';
 import { publicCMS } from '../../utils/publicApi';
 
+const LOGO_SRC = '/assets/images/image-removebg-preview.png';
+
 function HeroSection() {
   const [cmsHero, setCmsHero] = React.useState(null);
 
@@ -85,6 +87,32 @@ function HeroSection() {
             textAlign: 'center',
           }}
         >
+          {/* Logo גדול */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Box
+              component="img"
+              src={LOGO_SRC}
+              alt="לוגו"
+              loading="eager"
+              sx={{
+                height: { xs: 140, sm: 180, md: 240 },
+                width: 'auto',
+                mx: 'auto',
+                display: 'block',
+                mb: 4,
+                objectFit: 'contain',
+                filter: 'drop-shadow(0px 10px 30px rgba(11,31,51,0.10))',
+              }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </motion.div>
+
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
