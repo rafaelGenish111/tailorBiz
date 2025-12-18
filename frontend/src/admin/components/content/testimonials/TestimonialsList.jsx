@@ -10,6 +10,9 @@ import {
   Chip,
   Avatar,
   Rating,
+  Stack,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -39,6 +42,8 @@ function TestimonialsList() {
   const [selectedTestimonial, setSelectedTestimonial] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [testimonialToDelete, setTestimonialToDelete] = useState(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Queries
   const { data, isLoading } = useTestimonials({
@@ -69,6 +74,7 @@ function TestimonialsList() {
   };
 
   const handleDeleteConfirm = async () => {
+    if (!testimonialToDelete?._id) return;
     await deleteMutation.mutateAsync(testimonialToDelete._id);
     setDeleteDialogOpen(false);
     setTestimonialToDelete(null);
@@ -264,33 +270,138 @@ function TestimonialsList() {
       </Paper>
 
       {/* Table */}
-      <Paper sx={{ height: 600, width: '100%' }}>
-        <DataGrid
-          rows={data?.data || []}
-          columns={columns}
-          getRowId={(row) => row._id}
-          loading={isLoading}
-          pagination
-          paginationMode="server"
-          page={page}
-          pageSize={pageSize}
-          rowCount={data?.pagination?.total || 0}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
-          rowsPerPageOptions={[5, 10, 25, 50]}
-          disableSelectionOnClick
-          sx={{
-            width: '100%',
-            '& .MuiDataGrid-cell': {
-              display: 'flex',
-              alignItems: 'center',
-            },
-          }}
-        />
-      </Paper>
+      {isMobile ? (
+        <Stack spacing={1.5}>
+          {(data?.data || []).map((t) => {
+            const status = STATUS_LABELS[t.status] || { label: t.status, color: 'default' };
+            let imageSrc;
+            if (t.image) {
+              if (t.image.startsWith('http://') || t.image.startsWith('https://')) {
+                imageSrc = t.image;
+              } else {
+                imageSrc = `${window.location.origin}${t.image.startsWith('/') ? t.image : `/${t.image}`}`;
+              }
+            }
+
+            return (
+              <Paper key={t._id} variant="outlined" sx={{ borderRadius: 3, p: 1.5 }}>
+                <Box sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start' }}>
+                  <Avatar src={imageSrc} alt={t.clientName} sx={{ width: 54, height: 54, flexShrink: 0 }}>
+                    {t.clientName?.charAt(0)}
+                  </Avatar>
+
+                  <Box sx={{ minWidth: 0, flex: 1 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, alignItems: 'flex-start' }}>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography fontWeight={800} noWrap>
+                          {t.clientName}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" noWrap>
+                          {t.companyName || '—'} {t.clientRole ? `• ${t.clientRole}` : ''}
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
+                        <Chip label={status.label} color={status.color} size="small" />
+                        {t.isVisible ? <VisibilityIcon color="success" fontSize="small" /> : null}
+                      </Box>
+                    </Box>
+
+                    <Box sx={{ mt: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
+                      <Rating value={Number(t.rating) || 0} readOnly size="small" />
+                      <Typography variant="caption" color="text.secondary">
+                        {t.createdAt ? new Date(t.createdAt).toLocaleDateString('he-IL') : ''}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+
+                <Stack direction="row" spacing={1} sx={{ mt: 1.25, flexWrap: 'wrap' }}>
+                  {t.status === 'pending' && (
+                    <>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="success"
+                        onClick={() => handleStatusChange(t._id, 'approved')}
+                        sx={{ flex: '1 1 140px' }}
+                      >
+                        אשר
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        onClick={() => handleStatusChange(t._id, 'rejected')}
+                        sx={{ flex: '1 1 140px' }}
+                      >
+                        דחה
+                      </Button>
+                    </>
+                  )}
+
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => handleEdit(t)}
+                    sx={{ flex: '1 1 140px' }}
+                  >
+                    ערוך
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="error"
+                    onClick={() => handleDeleteClick(t)}
+                    sx={{ flex: '1 1 140px' }}
+                  >
+                    מחק
+                  </Button>
+                </Stack>
+              </Paper>
+            );
+          })}
+
+          {!isLoading && (data?.data || []).length === 0 ? (
+            <Paper variant="outlined" sx={{ borderRadius: 3, p: 3, textAlign: 'center' }}>
+              <Typography color="text.secondary">אין המלצות להצגה.</Typography>
+            </Paper>
+          ) : null}
+        </Stack>
+      ) : (
+        <Paper sx={{ height: 600, width: '100%' }}>
+          <DataGrid
+            rows={data?.data || []}
+            columns={columns}
+            getRowId={(row) => row._id}
+            loading={isLoading}
+            pagination
+            paginationMode="server"
+            page={page}
+            pageSize={pageSize}
+            rowCount={data?.pagination?.total || 0}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            disableSelectionOnClick
+            sx={{
+              width: '100%',
+              '& .MuiDataGrid-cell': {
+                display: 'flex',
+                alignItems: 'center',
+              },
+            }}
+          />
+        </Paper>
+      )}
 
       {/* Form Dialog */}
-      <TestimonialForm open={formOpen} onClose={handleFormClose} testimonial={selectedTestimonial} />
+      <TestimonialForm
+        key={selectedTestimonial?._id || 'new-testimonial'}
+        open={formOpen}
+        onClose={handleFormClose}
+        testimonial={selectedTestimonial}
+      />
 
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
