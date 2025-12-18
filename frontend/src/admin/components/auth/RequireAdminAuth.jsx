@@ -2,10 +2,13 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Box, CircularProgress, Typography, Button, Paper } from '@mui/material';
 import { authAPI } from '../../utils/api';
+import { useQueryClient } from '@tanstack/react-query';
+import { CURRENT_USER_QUERY_KEY } from '../../hooks/useCurrentUser';
 
 const RequireAdminAuth = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const [checking, setChecking] = React.useState(true);
   const [fatalError, setFatalError] = React.useState('');
 
@@ -15,7 +18,9 @@ const RequireAdminAuth = ({ children }) => {
       setChecking(true);
       setFatalError('');
       try {
-        await authAPI.me();
+        const meRes = await authAPI.me();
+        // Prime React Query cache so the rest of the UI can read it without refetch
+        queryClient.setQueryData(CURRENT_USER_QUERY_KEY, meRes.data);
         if (!mounted) return;
         setChecking(false);
       } catch (e) {
@@ -30,7 +35,7 @@ const RequireAdminAuth = ({ children }) => {
               navigate('/admin/setup', { replace: true });
               return;
             }
-          } catch (_) {
+          } catch {
             // ignore
           }
           navigate('/admin/login', { replace: true, state: { from: location.pathname } });
@@ -52,7 +57,7 @@ const RequireAdminAuth = ({ children }) => {
     return () => {
       mounted = false;
     };
-  }, [navigate, location.pathname]);
+  }, [navigate, location.pathname, queryClient]);
 
   if (checking) {
     return (
