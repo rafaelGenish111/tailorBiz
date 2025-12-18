@@ -795,11 +795,11 @@ export default function SalesOnboarding({ variant = 'standalone' }) {
 
   if (isEmbedded) {
     return (
-      <Box sx={{ width: '100%' }}>
-        {/* Mobile: compact horizontal navigation */}
+      <Box sx={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
+        {/* Mobile: compact navigation (wrap, no page overflow) */}
         {!isMdUp ? (
-          <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 3, mb: 2, overflowX: 'auto' }}>
-            <Stack direction="row" spacing={1} sx={{ width: 'max-content' }}>
+          <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 3, mb: 2 }}>
+            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }} useFlexGap>
               {NAV.map((it) => (
                 <Chip
                   key={it.id}
@@ -819,14 +819,16 @@ export default function SalesOnboarding({ variant = 'standalone' }) {
         <Box
           sx={{
             display: { xs: 'block', md: 'grid' },
-            gridTemplateColumns: { md: `${drawerWidth}px 1fr` },
+            // Prevent horizontal overflow on mid-width screens
+            gridTemplateColumns: { md: `minmax(240px, ${drawerWidth}px) minmax(0, 1fr)` },
             gap: 2,
             alignItems: 'start',
+            minWidth: 0,
           }}
         >
           {/* Desktop: side navigation (not a Drawer) */}
           {isMdUp ? (
-            <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
+            <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden', minWidth: 0 }}>
               <Box sx={{ p: 2 }}>
                 <Typography fontWeight={900}>Sales Academy</Typography>
                 <Typography variant="body2" color="text.secondary">
