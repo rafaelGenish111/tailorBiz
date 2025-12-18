@@ -262,13 +262,13 @@ ${clientName},
 
   // תבניות SMS
   sms: {
-    reminderShort: (clientName, action) => 
+    reminderShort: (clientName, action) =>
       `${clientName}, תזכורת: ${action}. BizFlow`,
 
-    meetingReminder: (clientName, time) => 
+    meetingReminder: (clientName, time) =>
       `${clientName}, תזכורת לפגישה מחר ב-${time}. BizFlow`,
 
-    paymentReminder: (amount, dueDate) => 
+    paymentReminder: (amount, dueDate) =>
       `תזכורת: תשלום ₪${amount} עד ${dueDate}. BizFlow`
   }
 };
@@ -290,15 +290,15 @@ function fillTemplate(template, variables) {
  */
 function getTemplateForEvent(eventType, clientData) {
   const { status, personalInfo, assessmentForm } = clientData;
-  
+
   const eventTemplates = {
     'client_created': templates.whatsapp.welcomeNewLead(personalInfo.fullName),
-    'assessment_scheduled': templates.whatsapp.assessmentScheduled(
+    'meeting_set': templates.whatsapp.assessmentScheduled(
       personalInfo.fullName,
       'בקרוב',
       'בתיאום'
     ),
-    'assessment_completed': templates.whatsapp.followUpAfterAssessment(personalInfo.fullName),
+    'engaged': templates.whatsapp.followUpAfterAssessment(personalInfo.fullName),
     'proposal_sent': templates.whatsapp.proposalSent(personalInfo.fullName),
     'payment_reminder': templates.whatsapp.paymentReminder(
       personalInfo.fullName,
@@ -307,7 +307,7 @@ function getTemplateForEvent(eventType, clientData) {
     ),
     'project_completed': templates.whatsapp.projectCompleted(personalInfo.fullName)
   };
-  
+
   return eventTemplates[eventType] || null;
 }
 

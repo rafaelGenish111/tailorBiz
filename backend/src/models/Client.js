@@ -3,29 +3,29 @@ const mongoose = require('mongoose');
 const ClientSchema = new mongoose.Schema({
   // פרטים אישיים (נלקחים משאלון האפיון)
   personalInfo: {
-    fullName: { 
-      type: String, 
+    fullName: {
+      type: String,
       required: [true, 'שם מלא הוא שדה חובה'],
       trim: true
     },
-    phone: { 
-      type: String, 
+    phone: {
+      type: String,
       required: [true, 'מספר טלפון הוא שדה חובה'],
       unique: true,
       trim: true
     },
-    email: { 
+    email: {
       type: String,
       trim: true,
       lowercase: true,
       match: [/^\S+@\S+\.\S+$/, 'כתובת אימייל לא תקינה']
     },
-    whatsappPhone: { 
+    whatsappPhone: {
       type: String,
       trim: true
     },
-    preferredContactMethod: { 
-      type: String, 
+    preferredContactMethod: {
+      type: String,
       enum: ['phone', 'whatsapp', 'email'],
       default: 'whatsapp'
     }
@@ -33,28 +33,28 @@ const ClientSchema = new mongoose.Schema({
 
   // פרטי העסק (נלקחים משאלון האפיון)
   businessInfo: {
-    businessName: { 
-      type: String, 
+    businessName: {
+      type: String,
       required: [true, 'שם העסק הוא שדה חובה'],
       trim: true
     },
-    businessType: { 
+    businessType: {
       type: String,
       trim: true
     },
-    numberOfEmployees: { 
+    numberOfEmployees: {
       type: Number,
       min: 0
     },
-    industry: { 
+    industry: {
       type: String,
       trim: true
     },
-    website: { 
+    website: {
       type: String,
       trim: true
     },
-    address: { 
+    address: {
       type: String,
       trim: true
     },
@@ -76,13 +76,13 @@ const ClientSchema = new mongoose.Schema({
   // שאלון אפיון מלא
   assessmentForm: {
     filledAt: Date,
-    
+
     // שאלה 1-2: היכרות בסיסית
     basicInfo: {
       businessDescription: String,
       numberOfEmployees: Number
     },
-    
+
     // שאלה 3: המצב הקיים
     currentSystems: {
       managementMethod: String, // איך מנהלים היום
@@ -90,72 +90,72 @@ const ClientSchema = new mongoose.Schema({
       whatWorksWell: String,
       whatDoesntWork: String
     },
-    
+
     // שאלה 4: נקודות כאב
     painPoints: {
       timeWasters: [String], // איפה נוצר בזבוז זמן
       customerLoss: String, // מצבים של איבוד לקוחות
       processesToAutomate: [String] // תהליכים לאוטומציה
     },
-    
+
     // שאלה 5: תהליכים לשיפור
     processesToImprove: {
-      queueManagement: { 
+      queueManagement: {
         needed: Boolean,
         priority: { type: Number, min: 1, max: 5 },
-        notes: String 
+        notes: String
       },
-      customerTracking: { 
+      customerTracking: {
         needed: Boolean,
         priority: { type: Number, min: 1, max: 5 },
-        notes: String 
+        notes: String
       },
-      billingPayments: { 
+      billingPayments: {
         needed: Boolean,
         priority: { type: Number, min: 1, max: 5 },
-        notes: String 
+        notes: String
       },
-      inventory: { 
+      inventory: {
         needed: Boolean,
         priority: { type: Number, min: 1, max: 5 },
-        notes: String 
+        notes: String
       },
-      communication: { 
+      communication: {
         needed: Boolean,
         priority: { type: Number, min: 1, max: 5 },
-        notes: String 
+        notes: String
       },
-      production: { 
+      production: {
         needed: Boolean,
         priority: { type: Number, min: 1, max: 5 },
-        notes: String 
+        notes: String
       },
-      fieldTeams: { 
+      fieldTeams: {
         needed: Boolean,
         priority: { type: Number, min: 1, max: 5 },
-        notes: String 
+        notes: String
       },
-      documents: { 
+      documents: {
         needed: Boolean,
         priority: { type: Number, min: 1, max: 5 },
-        notes: String 
+        notes: String
       },
       mostUrgent: String // מה הכי דחוף לפתור
     },
-    
+
     // שאלה 6: מטרות ויעדים
     goalsAndObjectives: {
       desiredOutcomes: [String], // מה היית רוצה שיקרה
       successCriteria: [String], // מה ייחשב הצלחה
       expectedTimeSaving: String
     },
-    
+
     // שאלה 7: דרישות מיוחדות
     specialRequirements: {
       externalIntegrations: [String], // כלים חיצוניים להתחבר
       uniqueProcesses: [String] // תהליכים ייחודיים
     },
-    
+
     // שאלה 8: תקציב וזמנים
     budgetAndTimeline: {
       budgetRange: {
@@ -163,13 +163,13 @@ const ClientSchema = new mongoose.Schema({
         enum: ['עד 10,000', '10,000-20,000', '20,000-40,000', '40,000-60,000', '60,000+', 'לא בטוח']
       },
       desiredImplementationDate: Date,
-      urgencyLevel: { 
-        type: String, 
+      urgencyLevel: {
+        type: String,
         enum: ['low', 'medium', 'high', 'urgent'],
         default: 'medium'
       }
     },
-    
+
     // שאלה 9: סיכום והמשך
     nextSteps: {
       proposalPresentation: Boolean, // נקבע פגישת הצגה?
@@ -182,21 +182,15 @@ const ClientSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: [
-      'lead', // ליד חדש
-      'contacted', // יצרנו קשר
-      'assessment_scheduled', // נקבעה פגישת אפיון
-      'assessment_completed', // אפיון הושלם
-      'proposal_sent', // נשלחה הצעת מחיר
-      'negotiation', // במשא ומתן
-      'won', // הפך ללקוח
-      'lost', // הפסדנו
-      'on_hold', // בהמתנה
-      'active_client', // לקוח פעיל
-      'in_development', // בפיתוח
-      'completed', // פרויקט הושלם
-      'churned' // לקוח שעזב
+      'new_lead',          // New Lead
+      'contacted',         // Contacted
+      'engaged',           // Engaged
+      'meeting_set',       // Meeting Booked
+      'proposal_sent',     // Proposal Sent
+      'won',               // Won
+      'lost'               // Lost
     ],
-    default: 'lead'
+    default: 'new_lead'
   },
 
   // סיבת הפסד (אם הסטטוס lost)
@@ -243,17 +237,17 @@ const ClientSchema = new mongoose.Schema({
       type: String,
       trim: true
     },
-    content: { 
-      type: String, 
-      required: true 
+    content: {
+      type: String,
+      required: true
     },
-    timestamp: { 
-      type: Date, 
-      default: Date.now 
+    timestamp: {
+      type: Date,
+      default: Date.now
     },
-    createdBy: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'User' 
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
     },
     attachments: [{
       filename: String,
@@ -317,9 +311,9 @@ const ClientSchema = new mongoose.Schema({
   // לוח תשלומים
   paymentPlan: {
     totalAmount: Number,
-    currency: { 
-      type: String, 
-      default: 'ILS' 
+    currency: {
+      type: String,
+      default: 'ILS'
     },
     paymentStructure: {
       type: String,
@@ -343,9 +337,9 @@ const ClientSchema = new mongoose.Schema({
         enum: ['העברה בנקאית', 'אשראי', 'מזומן', 'צ\'ק', 'PayPal', 'bit', 'אחר']
       },
       transactionId: String,
-      invoiceId: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Invoice' 
+      invoiceId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Invoice'
       },
       notes: String,
       reminderSent: { type: Boolean, default: false },
@@ -389,21 +383,21 @@ const ClientSchema = new mongoose.Schema({
       type: String,
       enum: ['client', 'us']
     },
-    unreadCount: { 
-      type: Number, 
-      default: 0 
+    unreadCount: {
+      type: Number,
+      default: 0
     },
-    archived: { 
-      type: Boolean, 
-      default: false 
+    archived: {
+      type: Boolean,
+      default: false
     }
   }],
 
   // משימות ותזכורות
   tasks: [{
-    title: { 
-      type: String, 
-      required: true 
+    title: {
+      type: String,
+      required: true
     },
     description: String,
     dueDate: Date,
@@ -422,18 +416,18 @@ const ClientSchema = new mongoose.Schema({
       enum: ['call', 'meeting', 'email', 'follow_up', 'demo', 'proposal', 'other'],
       default: 'other'
     },
-    assignedTo: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'User' 
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
     },
     completedDate: Date,
-    createdBy: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'User' 
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
     },
-    createdAt: { 
-      type: Date, 
-      default: Date.now 
+    createdAt: {
+      type: Date,
+      default: Date.now
     },
     notes: String
   }],
@@ -454,25 +448,25 @@ const ClientSchema = new mongoose.Schema({
 
   // מטאדאטה
   metadata: {
-    createdAt: { 
-      type: Date, 
-      default: Date.now 
+    createdAt: {
+      type: Date,
+      default: Date.now
     },
-    updatedAt: { 
-      type: Date, 
-      default: Date.now 
+    updatedAt: {
+      type: Date,
+      default: Date.now
     },
-    createdBy: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'User' 
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
     },
     lastContactedAt: Date,
     lastInteractionType: String,
-    assignedTo: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'User' 
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
     },
-    
+
     // סטטיסטיקות
     stats: {
       totalInteractions: { type: Number, default: 0 },
@@ -499,25 +493,25 @@ ClientSchema.index({ 'metadata.createdAt': -1 });
 ClientSchema.index({ 'metadata.lastContactedAt': -1 });
 
 // Virtual לשם מלא של הלקוח
-ClientSchema.virtual('fullDisplayName').get(function() {
+ClientSchema.virtual('fullDisplayName').get(function () {
   return `${this.personalInfo.fullName} - ${this.businessInfo.businessName}`;
 });
 
 // Helper methods לבדיקת סוג הלקוח
-ClientSchema.methods.isLead = function() {
-  const leadStatuses = ['lead', 'contacted', 'assessment_scheduled', 'assessment_completed', 'proposal_sent', 'negotiation', 'on_hold', 'lost', 'churned'];
+ClientSchema.methods.isLead = function () {
+  const leadStatuses = ['new_lead', 'contacted', 'engaged', 'meeting_set', 'proposal_sent', 'lost'];
   return leadStatuses.includes(this.status);
 };
 
-ClientSchema.methods.isActiveClient = function() {
-  const clientStatuses = ['won', 'active_client', 'in_development', 'completed'];
+ClientSchema.methods.isActiveClient = function () {
+  const clientStatuses = ['won'];
   return clientStatuses.includes(this.status);
 };
 
 // פונקציה לחישוב Lead Score אוטומטית
-ClientSchema.methods.calculateLeadScore = function() {
+ClientSchema.methods.calculateLeadScore = function () {
   let score = 0;
-  
+
   // מקור הליד
   const sourceScores = {
     'referral': 25,
@@ -531,7 +525,7 @@ ClientSchema.methods.calculateLeadScore = function() {
     'other': 5
   };
   score += sourceScores[this.leadSource] || 0;
-  
+
   // רמת תקציב
   if (this.assessmentForm?.budgetAndTimeline?.budgetRange) {
     const budgetScores = {
@@ -544,7 +538,7 @@ ClientSchema.methods.calculateLeadScore = function() {
     };
     score += budgetScores[this.assessmentForm.budgetAndTimeline.budgetRange] || 0;
   }
-  
+
   // דחיפות
   const urgencyScores = {
     'urgent': 20,
@@ -553,7 +547,7 @@ ClientSchema.methods.calculateLeadScore = function() {
     'low': 5
   };
   score += urgencyScores[this.assessmentForm?.budgetAndTimeline?.urgencyLevel] || 0;
-  
+
   // מספר תהליכים לשיפור
   if (this.assessmentForm?.processesToImprove) {
     const processes = this.assessmentForm.processesToImprove;
@@ -561,57 +555,57 @@ ClientSchema.methods.calculateLeadScore = function() {
       .filter(p => typeof p === 'object' && p.needed === true).length;
     score += Math.min(processCount * 4, 20);
   }
-  
+
   // שאלון אפיון מולא
   if (this.assessmentForm?.filledAt) {
     score += 10;
   }
-  
+
   // רמת מעורבות (אינטראקציות)
   const interactionScore = Math.min(this.interactions.length * 2, 15);
   score += interactionScore;
-  
+
   // יש אימייל
   if (this.personalInfo.email) {
     score += 5;
   }
-  
+
   // מידע עסקי מלא
   if (this.businessInfo.website) {
     score += 3;
   }
-  
+
   this.leadScore = Math.min(score, 100);
   return this.leadScore;
 };
 
 // עדכון סטטיסטיקות
-ClientSchema.methods.updateStats = function() {
+ClientSchema.methods.updateStats = function () {
   this.metadata.stats.totalInteractions = this.interactions.length;
   this.metadata.stats.totalOrders = this.orders.length;
-  
+
   // חישוב הכנסות
   const totalRevenue = this.orders
     .filter(o => o.status !== 'cancelled')
     .reduce((sum, order) => sum + (order.totalAmount || 0), 0);
   this.metadata.stats.totalRevenue = totalRevenue;
-  
+
   // חישוב תשלומים
   const totalPaid = this.paymentPlan?.installments
     ?.filter(i => i.status === 'paid')
     .reduce((sum, inst) => sum + (inst.paidAmount || inst.amount || 0), 0) || 0;
   this.metadata.stats.totalPaid = totalPaid;
-  
+
   this.metadata.stats.outstandingBalance = totalRevenue - totalPaid;
 };
 
 // פונקציה לקבלת הפעולה הבאה המומלצת
-ClientSchema.methods.getNextAction = function() {
+ClientSchema.methods.getNextAction = function () {
   // אם יש משימה פעילה עם תאריך יעד קרוב
   const upcomingTasks = this.tasks
     .filter(t => t.status !== 'completed' && t.status !== 'cancelled')
     .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-  
+
   if (upcomingTasks.length > 0 && upcomingTasks[0].dueDate) {
     return {
       action: upcomingTasks[0].title,
@@ -619,31 +613,30 @@ ClientSchema.methods.getNextAction = function() {
       priority: upcomingTasks[0].priority
     };
   }
-  
+
   // המלצות לפי סטטוס
   const recommendations = {
-    'lead': { action: 'צור קשר ראשוני', priority: 'high' },
-    'contacted': { action: 'קבע פגישת אפיון', priority: 'high' },
-    'assessment_scheduled': { action: 'הכן לפגישת אפיון', priority: 'medium' },
-    'assessment_completed': { action: 'שלח הצעת מחיר', priority: 'high' },
-    'proposal_sent': { action: 'עקוב אחרי הצעת המחיר', priority: 'high' },
-    'negotiation': { action: 'קדם משא ומתן', priority: 'urgent' }
+    'new_lead': { action: 'צור קשר ראשוני', priority: 'high' },
+    'contacted': { action: 'העמק שיחה ואפיין צורך', priority: 'high' },
+    'engaged': { action: 'קבע פגישה', priority: 'high' },
+    'meeting_set': { action: 'הכן לפגישה / בצע פגישה', priority: 'medium' },
+    'proposal_sent': { action: 'עקוב אחרי ההצעה', priority: 'high' }
   };
-  
+
   return recommendations[this.status] || { action: 'עדכן סטטוס', priority: 'low' };
 };
 
 // Middleware - עדכון אוטומטי לפני שמירה
-ClientSchema.pre('save', function(next) {
+ClientSchema.pre('save', function (next) {
   // עדכון תאריך עדכון
   this.metadata.updatedAt = new Date();
-  
+
   // חישוב Lead Score
   this.calculateLeadScore();
-  
+
   // עדכון סטטיסטיקות
   this.updateStats();
-  
+
   // עדכון תאריך קשר אחרון
   if (this.interactions.length > 0) {
     const sortedInteractions = [...this.interactions].sort(
@@ -652,12 +645,12 @@ ClientSchema.pre('save', function(next) {
     this.metadata.lastContactedAt = sortedInteractions[0].timestamp;
     this.metadata.lastInteractionType = sortedInteractions[0].type;
   }
-  
+
   next();
 });
 
 // פונקציה סטטית לחיפוש לקוחות
-ClientSchema.statics.searchClients = function(searchTerm) {
+ClientSchema.statics.searchClients = function (searchTerm) {
   return this.find({
     $or: [
       { 'personalInfo.fullName': { $regex: searchTerm, $options: 'i' } },

@@ -55,19 +55,13 @@ import DocumentsTab from '../../../../components/documents/DocumentsTab';
 import QuotesTab from '../../../../components/quotes/QuotesTab';
 
 const STATUS_LABELS = {
-  lead: { label: 'ליד חדש', color: 'info' },
+  new_lead: { label: 'ליד חדש', color: 'info' },
   contacted: { label: 'יצרנו קשר', color: 'primary' },
-  assessment_scheduled: { label: 'פגישת אפיון נקבעה', color: 'warning' },
-  assessment_completed: { label: 'אפיון הושלם', color: 'info' },
-  proposal_sent: { label: 'הצעת מחיר נשלחה', color: 'warning' },
-  negotiation: { label: 'משא ומתן', color: 'warning' },
+  engaged: { label: 'מעורבות', color: 'warning' },
+  meeting_set: { label: 'פגישה נקבעה', color: 'warning' },
+  proposal_sent: { label: 'הצעה נשלחה', color: 'secondary' },
   won: { label: 'נסגר', color: 'success' },
   lost: { label: 'הפסדנו', color: 'error' },
-  on_hold: { label: 'בהמתנה', color: 'default' },
-  active_client: { label: 'לקוח פעיל', color: 'success' },
-  in_development: { label: 'בפיתוח', color: 'info' },
-  completed: { label: 'הושלם', color: 'success' },
-  churned: { label: 'עזב', color: 'error' },
 };
 
 const LEAD_SOURCE_LABELS = {
@@ -163,7 +157,7 @@ function ClientDetail({ open, onClose, client }) {
         address: client.businessInfo?.address || '',
         numberOfEmployees:
           client.businessInfo?.numberOfEmployees !== undefined &&
-          client.businessInfo?.numberOfEmployees !== null
+            client.businessInfo?.numberOfEmployees !== null
             ? String(client.businessInfo.numberOfEmployees)
             : '',
         description:
@@ -172,7 +166,7 @@ function ClientDetail({ open, onClose, client }) {
           '',
         yearsInBusiness:
           client.businessInfo?.yearsInBusiness !== undefined &&
-          client.businessInfo?.yearsInBusiness !== null
+            client.businessInfo?.yearsInBusiness !== null
             ? String(client.businessInfo.yearsInBusiness)
             : '',
         revenueRange: client.businessInfo?.revenueRange || '',
@@ -269,14 +263,14 @@ function ClientDetail({ open, onClose, client }) {
       (newInteraction.businessType === 'followup'
         ? 'מעקב'
         : newInteraction.businessType === 'deal_closing'
-        ? 'שיחת סגירה'
-        : newInteraction.businessType === 'proposal'
-        ? 'הצעת מחיר'
-        : newInteraction.businessType === 'pause'
-        ? 'הפסקת תהליך'
-        : newInteraction.businessType === 'end_contract'
-        ? 'סיום התקשרות'
-        : '');
+          ? 'שיחת סגירה'
+          : newInteraction.businessType === 'proposal'
+            ? 'הצעת מחיר'
+            : newInteraction.businessType === 'pause'
+              ? 'הפסקת תהליך'
+              : newInteraction.businessType === 'end_contract'
+                ? 'סיום התקשרות'
+                : '');
 
     await addInteraction.mutateAsync({
       clientId,
@@ -303,42 +297,42 @@ function ClientDetail({ open, onClose, client }) {
     if (dealData.finalPrice) formData.append('finalPrice', dealData.finalPrice);
     if (dealData.notes) formData.append('notes', dealData.notes);
     if (dealData.file) formData.append('contract', dealData.file);
-    
+
     await convertLead.mutateAsync({ clientId: client._id, data: formData });
     setCloseDealOpen(false);
   };
 
-  const isLead = ['lead', 'contacted', 'assessment_scheduled', 'assessment_completed', 'proposal_sent', 'negotiation'].includes(client.status);
+  const isLead = ['new_lead', 'contacted', 'engaged', 'meeting_set', 'proposal_sent'].includes(client.status);
 
   const tabsConfig = isLead
     ? [
-        { key: 'personal', label: 'פרטים אישיים' },
-        { key: 'business', label: 'מידע עסקי' },
-        { key: 'interactions', label: 'אינטראקציות' },
-        { key: 'quotes', label: 'הצעות מחיר', icon: <ReceiptIcon />, iconPosition: 'start' },
-        { key: 'documents', label: 'מסמכים', icon: <FolderIcon />, iconPosition: 'start' },
-        { key: 'assessment', label: 'אפיון מוצר' },
-        { key: 'contract', label: 'חוזה' },
-      ]
+      { key: 'personal', label: 'פרטים אישיים' },
+      { key: 'business', label: 'מידע עסקי' },
+      { key: 'interactions', label: 'אינטראקציות' },
+      { key: 'quotes', label: 'הצעות מחיר', icon: <ReceiptIcon />, iconPosition: 'start' },
+      { key: 'documents', label: 'מסמכים', icon: <FolderIcon />, iconPosition: 'start' },
+      { key: 'assessment', label: 'אפיון מוצר' },
+      { key: 'contract', label: 'חוזה' },
+    ]
     : [
-        { key: 'personal', label: 'פרטים אישיים' },
-        { key: 'business', label: 'מידע עסקי' },
-        { key: 'interactions', label: 'אינטראקציות' },
-        { key: 'quotes', label: 'הצעות מחיר', icon: <ReceiptIcon />, iconPosition: 'start' },
-        { key: 'documents', label: 'מסמכים', icon: <FolderIcon />, iconPosition: 'start' },
-        { key: 'assessment', label: 'אפיון מוצר' },
-        { key: 'contract', label: 'חוזה' },
-        { key: 'time', label: 'זמנים', icon: <TimerIcon />, iconPosition: 'start' },
-        { key: 'tasks', label: 'משימות' },
-      ];
+      { key: 'personal', label: 'פרטים אישיים' },
+      { key: 'business', label: 'מידע עסקי' },
+      { key: 'interactions', label: 'אינטראקציות' },
+      { key: 'quotes', label: 'הצעות מחיר', icon: <ReceiptIcon />, iconPosition: 'start' },
+      { key: 'documents', label: 'מסמכים', icon: <FolderIcon />, iconPosition: 'start' },
+      { key: 'assessment', label: 'אפיון מוצר' },
+      { key: 'contract', label: 'חוזה' },
+      { key: 'time', label: 'זמנים', icon: <TimerIcon />, iconPosition: 'start' },
+      { key: 'tasks', label: 'משימות' },
+    ];
 
   const currentTabKey = tabsConfig[tabValue]?.key || 'personal';
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose} 
-      maxWidth="lg" 
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="lg"
       fullWidth
       PaperProps={{
         sx: { height: '90vh' }
@@ -361,16 +355,16 @@ function ClientDetail({ open, onClose, client }) {
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {isLead && (
-              <Button 
-                variant="contained" 
-                color="success" 
+              <Button
+                variant="contained"
+                color="success"
                 onClick={() => {
-                   setDealData({ 
-                     finalPrice: client.proposal?.finalPrice || client.proposal?.initialPrice || '', 
-                     notes: '', 
-                     file: null 
-                   });
-                   setCloseDealOpen(true);
+                  setDealData({
+                    finalPrice: client.proposal?.finalPrice || client.proposal?.initialPrice || '',
+                    notes: '',
+                    file: null
+                  });
+                  setCloseDealOpen(true);
                 }}
               >
                 סגור עסקה
@@ -812,9 +806,9 @@ function ClientDetail({ open, onClose, client }) {
                   <Paper key={index} variant="outlined" sx={{ p: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="subtitle2">{task.title}</Typography>
-                      <Chip 
-                        label={task.status} 
-                        size="small" 
+                      <Chip
+                        label={task.status}
+                        size="small"
                         color={task.status === 'completed' ? 'success' : 'default'}
                       />
                     </Box>
@@ -864,129 +858,17 @@ function ClientDetail({ open, onClose, client }) {
           maxWidth="sm"
           fullWidth
         >
-        <DialogTitle>אינטראקציה חדשה</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-            <FormControl fullWidth size="small">
-              <InputLabel>ערוץ</InputLabel>
-              <Select
-                value={newInteraction.type}
-                label="ערוץ"
-                onChange={(e) =>
-                  setNewInteraction((prev) => ({ ...prev, type: e.target.value }))
-                }
-              >
-                <MenuItem value="call">שיחה</MenuItem>
-                <MenuItem value="email">אימייל</MenuItem>
-                <MenuItem value="whatsapp">WhatsApp</MenuItem>
-                <MenuItem value="meeting">פגישה</MenuItem>
-                <MenuItem value="note">הערה</MenuItem>
-                <MenuItem value="task">משימה</MenuItem>
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth size="small">
-              <InputLabel>סוג אינטראקציה</InputLabel>
-              <Select
-                value={newInteraction.businessType}
-                label="סוג אינטראקציה"
-                onChange={(e) =>
-                  setNewInteraction((prev) => ({ ...prev, businessType: e.target.value }))
-                }
-              >
-                <MenuItem value="followup">מעקב</MenuItem>
-                <MenuItem value="deal_closing">סגירת עסקה</MenuItem>
-                <MenuItem value="proposal">הצעת מחיר</MenuItem>
-                <MenuItem value="pause">הפסקה</MenuItem>
-                <MenuItem value="end_contract">סיום התקשרות</MenuItem>
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth size="small">
-              <InputLabel>כיוון</InputLabel>
-              <Select
-                value={newInteraction.direction}
-                label="כיוון"
-                onChange={(e) =>
-                  setNewInteraction((prev) => ({ ...prev, direction: e.target.value }))
-                }
-              >
-                <MenuItem value="outbound">יוצא</MenuItem>
-                <MenuItem value="inbound">נכנס</MenuItem>
-              </Select>
-            </FormControl>
-
-            <TextField
-              label="נושא"
-              fullWidth
-              size="small"
-              value={newInteraction.subject}
-              onChange={(e) =>
-                setNewInteraction((prev) => ({ ...prev, subject: e.target.value }))
-              }
-            />
-
-            <TextField
-              label="תוכן"
-              fullWidth
-              multiline
-              rows={4}
-              size="small"
-              value={newInteraction.content}
-              onChange={(e) =>
-                setNewInteraction((prev) => ({ ...prev, content: e.target.value }))
-              }
-            />
-
-            <DateTimePicker
-              label="Follow-up הבא (תאריך ושעה)"
-              value={newInteraction.nextFollowUp}
-              onChange={(newValue) =>
-                setNewInteraction((prev) => ({ ...prev, nextFollowUp: newValue }))
-              }
-              slotProps={{
-                textField: {
-                  fullWidth: true,
-                  size: 'small'
-                }
-              }}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setInteractionDialogOpen(false)}>ביטול</Button>
-          <Button
-            variant="contained"
-            onClick={handleAddInteraction}
-            disabled={!newInteraction.content}
-          >
-            הוסף
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Edit Interaction Dialog */}
-      <Dialog
-        open={editInteractionDialogOpen}
-        onClose={() => {
-          setEditInteractionDialogOpen(false);
-          setEditingInteraction(null);
-        }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>ערוך אינטראקציה</DialogTitle>
-        <DialogContent>
-          {editingInteraction && (
+          <DialogTitle>אינטראקציה חדשה</DialogTitle>
+          <DialogContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
               <FormControl fullWidth size="small">
-                <InputLabel>סוג</InputLabel>
+                <InputLabel>ערוץ</InputLabel>
                 <Select
-                  value={editingInteraction.type}
+                  value={newInteraction.type}
+                  label="ערוץ"
                   onChange={(e) =>
-                    setEditingInteraction({ ...editingInteraction, type: e.target.value })
+                    setNewInteraction((prev) => ({ ...prev, type: e.target.value }))
                   }
-                  label="סוג"
                 >
                   <MenuItem value="call">שיחה</MenuItem>
                   <MenuItem value="email">אימייל</MenuItem>
@@ -998,13 +880,30 @@ function ClientDetail({ open, onClose, client }) {
               </FormControl>
 
               <FormControl fullWidth size="small">
+                <InputLabel>סוג אינטראקציה</InputLabel>
+                <Select
+                  value={newInteraction.businessType}
+                  label="סוג אינטראקציה"
+                  onChange={(e) =>
+                    setNewInteraction((prev) => ({ ...prev, businessType: e.target.value }))
+                  }
+                >
+                  <MenuItem value="followup">מעקב</MenuItem>
+                  <MenuItem value="deal_closing">סגירת עסקה</MenuItem>
+                  <MenuItem value="proposal">הצעת מחיר</MenuItem>
+                  <MenuItem value="pause">הפסקה</MenuItem>
+                  <MenuItem value="end_contract">סיום התקשרות</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth size="small">
                 <InputLabel>כיוון</InputLabel>
                 <Select
-                  value={editingInteraction.direction}
-                  onChange={(e) =>
-                    setEditingInteraction({ ...editingInteraction, direction: e.target.value })
-                  }
+                  value={newInteraction.direction}
                   label="כיוון"
+                  onChange={(e) =>
+                    setNewInteraction((prev) => ({ ...prev, direction: e.target.value }))
+                  }
                 >
                   <MenuItem value="outbound">יוצא</MenuItem>
                   <MenuItem value="inbound">נכנס</MenuItem>
@@ -1015,9 +914,9 @@ function ClientDetail({ open, onClose, client }) {
                 label="נושא"
                 fullWidth
                 size="small"
-                value={editingInteraction.subject || ''}
+                value={newInteraction.subject}
                 onChange={(e) =>
-                  setEditingInteraction({ ...editingInteraction, subject: e.target.value })
+                  setNewInteraction((prev) => ({ ...prev, subject: e.target.value }))
                 }
               />
 
@@ -1027,18 +926,17 @@ function ClientDetail({ open, onClose, client }) {
                 multiline
                 rows={4}
                 size="small"
-                value={editingInteraction.content || editingInteraction.notes || ''}
+                value={newInteraction.content}
                 onChange={(e) =>
-                  setEditingInteraction({ ...editingInteraction, content: e.target.value })
+                  setNewInteraction((prev) => ({ ...prev, content: e.target.value }))
                 }
-                required
               />
 
               <DateTimePicker
                 label="Follow-up הבא (תאריך ושעה)"
-                value={editingInteraction.nextFollowUp}
+                value={newInteraction.nextFollowUp}
                 onChange={(newValue) =>
-                  setEditingInteraction({ ...editingInteraction, nextFollowUp: newValue })
+                  setNewInteraction((prev) => ({ ...prev, nextFollowUp: newValue }))
                 }
                 slotProps={{
                   textField: {
@@ -1048,35 +946,131 @@ function ClientDetail({ open, onClose, client }) {
                 }}
               />
             </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => {
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setInteractionDialogOpen(false)}>ביטול</Button>
+            <Button
+              variant="contained"
+              onClick={handleAddInteraction}
+              disabled={!newInteraction.content}
+            >
+              הוסף
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Edit Interaction Dialog */}
+        <Dialog
+          open={editInteractionDialogOpen}
+          onClose={() => {
             setEditInteractionDialogOpen(false);
             setEditingInteraction(null);
-          }}>
-            ביטול
-          </Button>
-          <Button
-            variant="contained"
-            onClick={async () => {
-              await updateInteraction.mutateAsync({
-                clientId,
-                interactionId: editingInteraction._id,
-                data: {
-                  ...editingInteraction,
-                  nextFollowUp: editingInteraction.nextFollowUp?.toISOString() || null
-                }
-              });
+          }}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>ערוך אינטראקציה</DialogTitle>
+          <DialogContent>
+            {editingInteraction && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>סוג</InputLabel>
+                  <Select
+                    value={editingInteraction.type}
+                    onChange={(e) =>
+                      setEditingInteraction({ ...editingInteraction, type: e.target.value })
+                    }
+                    label="סוג"
+                  >
+                    <MenuItem value="call">שיחה</MenuItem>
+                    <MenuItem value="email">אימייל</MenuItem>
+                    <MenuItem value="whatsapp">WhatsApp</MenuItem>
+                    <MenuItem value="meeting">פגישה</MenuItem>
+                    <MenuItem value="note">הערה</MenuItem>
+                    <MenuItem value="task">משימה</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth size="small">
+                  <InputLabel>כיוון</InputLabel>
+                  <Select
+                    value={editingInteraction.direction}
+                    onChange={(e) =>
+                      setEditingInteraction({ ...editingInteraction, direction: e.target.value })
+                    }
+                    label="כיוון"
+                  >
+                    <MenuItem value="outbound">יוצא</MenuItem>
+                    <MenuItem value="inbound">נכנס</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <TextField
+                  label="נושא"
+                  fullWidth
+                  size="small"
+                  value={editingInteraction.subject || ''}
+                  onChange={(e) =>
+                    setEditingInteraction({ ...editingInteraction, subject: e.target.value })
+                  }
+                />
+
+                <TextField
+                  label="תוכן"
+                  fullWidth
+                  multiline
+                  rows={4}
+                  size="small"
+                  value={editingInteraction.content || editingInteraction.notes || ''}
+                  onChange={(e) =>
+                    setEditingInteraction({ ...editingInteraction, content: e.target.value })
+                  }
+                  required
+                />
+
+                <DateTimePicker
+                  label="Follow-up הבא (תאריך ושעה)"
+                  value={editingInteraction.nextFollowUp}
+                  onChange={(newValue) =>
+                    setEditingInteraction({ ...editingInteraction, nextFollowUp: newValue })
+                  }
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      size: 'small'
+                    }
+                  }}
+                />
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => {
               setEditInteractionDialogOpen(false);
               setEditingInteraction(null);
-            }}
-            disabled={!editingInteraction?.content && !editingInteraction?.notes}
-          >
-            שמור שינויים
-          </Button>
-        </DialogActions>
-      </Dialog>
+            }}>
+              ביטול
+            </Button>
+            <Button
+              variant="contained"
+              onClick={async () => {
+                await updateInteraction.mutateAsync({
+                  clientId,
+                  interactionId: editingInteraction._id,
+                  data: {
+                    ...editingInteraction,
+                    nextFollowUp: editingInteraction.nextFollowUp?.toISOString() || null
+                  }
+                });
+                setEditInteractionDialogOpen(false);
+                setEditingInteraction(null);
+              }}
+              disabled={!editingInteraction?.content && !editingInteraction?.notes}
+            >
+              שמור שינויים
+            </Button>
+          </DialogActions>
+        </Dialog>
       </LocalizationProvider>
 
       <DialogActions>
@@ -1092,60 +1086,60 @@ function ClientDetail({ open, onClose, client }) {
       >
         <DialogTitle>🎉 סגירת עסקה</DialogTitle>
         <DialogContent>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-                <Typography variant="body1">
-                    מזל טוב! בוא נעדכן את פרטי העסקה והחוזה.
-                </Typography>
-                
-                <TextField
-                    label="סכום סגירה סופי"
-                    type="number"
-                    fullWidth
-                    value={dealData.finalPrice}
-                    onChange={(e) => setDealData({ ...dealData, finalPrice: e.target.value })}
-                    InputProps={{
-                        startAdornment: <Typography sx={{ mr: 1 }}>₪</Typography>
-                    }}
-                />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            <Typography variant="body1">
+              מזל טוב! בוא נעדכן את פרטי העסקה והחוזה.
+            </Typography>
 
-                <TextField
-                    label="הערות לחוזה / סגירה"
-                    multiline
-                    rows={3}
-                    fullWidth
-                    value={dealData.notes}
-                    onChange={(e) => setDealData({ ...dealData, notes: e.target.value })}
-                />
+            <TextField
+              label="סכום סגירה סופי"
+              type="number"
+              fullWidth
+              value={dealData.finalPrice}
+              onChange={(e) => setDealData({ ...dealData, finalPrice: e.target.value })}
+              InputProps={{
+                startAdornment: <Typography sx={{ mr: 1 }}>₪</Typography>
+              }}
+            />
 
-                <Button
-                    variant="outlined"
-                    component="label"
-                    startIcon={dealData.file ? <CheckCircleIcon color="success" /> : <UploadIcon />}
-                >
-                    {dealData.file ? dealData.file.name : 'העלה קובץ חוזה חתום (PDF/תמונה)'}
-                    <input
-                        type="file"
-                        hidden
-                        accept="application/pdf,image/*,.doc,.docx"
-                        onChange={(e) => {
-                            if (e.target.files && e.target.files[0]) {
-                                setDealData({ ...dealData, file: e.target.files[0] });
-                            }
-                        }}
-                    />
-                </Button>
-            </Box>
+            <TextField
+              label="הערות לחוזה / סגירה"
+              multiline
+              rows={3}
+              fullWidth
+              value={dealData.notes}
+              onChange={(e) => setDealData({ ...dealData, notes: e.target.value })}
+            />
+
+            <Button
+              variant="outlined"
+              component="label"
+              startIcon={dealData.file ? <CheckCircleIcon color="success" /> : <UploadIcon />}
+            >
+              {dealData.file ? dealData.file.name : 'העלה קובץ חוזה חתום (PDF/תמונה)'}
+              <input
+                type="file"
+                hidden
+                accept="application/pdf,image/*,.doc,.docx"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    setDealData({ ...dealData, file: e.target.files[0] });
+                  }
+                }}
+              />
+            </Button>
+          </Box>
         </DialogContent>
         <DialogActions>
-            <Button onClick={() => setCloseDealOpen(false)}>ביטול</Button>
-            <Button 
-                variant="contained" 
-                color="success" 
-                onClick={handleConvertLead}
-                disabled={!dealData.finalPrice}
-            >
-                אישור וסגירת עסקה
-            </Button>
+          <Button onClick={() => setCloseDealOpen(false)}>ביטול</Button>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleConvertLead}
+            disabled={!dealData.finalPrice}
+          >
+            אישור וסגירת עסקה
+          </Button>
         </DialogActions>
       </Dialog>
     </Dialog>

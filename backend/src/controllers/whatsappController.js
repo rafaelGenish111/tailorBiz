@@ -36,7 +36,7 @@ exports.handleWebhook = async (req, res) => {
         businessInfo: {
           businessName: 'ממתין למידע'
         },
-        status: 'lead',
+        status: 'new_lead',
         leadSource: 'whatsapp',
         interactions: [{
           type: 'whatsapp',
@@ -58,7 +58,7 @@ exports.handleWebhook = async (req, res) => {
 
       // התראה על ליד חדש
       console.log(`🆕 ליד חדש מ-WhatsApp: ${from}`);
-      
+
     } else {
       // הוספת אינטראקציה ללקוח קיים
       client.interactions.push({
@@ -117,7 +117,7 @@ exports.handleWebhook = async (req, res) => {
 // אימות Webhook (נדרש עבור WhatsApp Business API)
 exports.verifyWebhook = (req, res) => {
   const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'bizflow-verify-token';
-  
+
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];

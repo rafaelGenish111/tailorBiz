@@ -94,7 +94,7 @@ const NurturingDashboard = () => {
       new_lead: '🆕 ליד חדש',
       no_response: '❄️ ללא תגובה',
       status_change: '🔄 שינוי סטטוס',
-      assessment_completed: '📋 אפיון הושלם',
+      engaged: '📋 מעורבות',
       proposal_sent: '💼 הצעה נשלחה',
       manual: '👤 ידני'
     };

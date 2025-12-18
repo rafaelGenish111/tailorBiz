@@ -24,6 +24,7 @@ import ArticleEditor from '../../pages/admin/cms/ArticleEditor';
 import ClientsManager from '../../pages/admin/cms/ClientsManager';
 import SiteSettingsPage from './SiteSettingsPage';
 import EmployeesPage from './EmployeesPage';
+import SalesPipelineBoard from '../../components/leads/SalesPipelineBoard';
 import { Box, Typography } from '@mui/material';
 
 function Placeholder({ title }) {
@@ -74,6 +75,7 @@ function AdminPanel() {
         <Route path="customers" element={<ClientsList viewMode="clients" />} />
         <Route path="clients" element={<ClientsList />} />
         <Route path="clients/:id" element={<ClientCard />} />
+        <Route path="pipeline" element={<SalesPipelineBoard />} />
         {/* Settings */}
         <Route path="settings" element={<SiteSettingsPage />} />
         <Route path="employees" element={<EmployeesPage />} />

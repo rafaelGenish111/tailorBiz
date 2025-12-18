@@ -63,38 +63,26 @@ const ClientList = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      lead: 'info',
+      new_lead: 'info',
       contacted: 'primary',
-      assessment_scheduled: 'warning',
-      assessment_completed: 'warning',
+      engaged: 'warning',
+      meeting_set: 'warning',
       proposal_sent: 'secondary',
-      negotiation: 'warning',
       won: 'success',
       lost: 'error',
-      on_hold: 'default',
-      active_client: 'success',
-      in_development: 'info',
-      completed: 'success',
-      churned: 'error'
     };
     return colors[status] || 'default';
   };
 
   const getStatusLabel = (status) => {
     const labels = {
-      lead: 'ליד חדש',
-      contacted: 'יצירת קשר',
-      assessment_scheduled: 'אפיון מתוזמן',
-      assessment_completed: 'אפיון הושלם',
+      new_lead: 'ליד חדש',
+      contacted: 'יצרנו קשר',
+      engaged: 'מעורבות',
+      meeting_set: 'פגישה נקבעה',
       proposal_sent: 'הצעה נשלחה',
-      negotiation: 'משא ומתן',
       won: 'נסגר',
       lost: 'הפסד',
-      on_hold: 'בהמתנה',
-      active_client: 'לקוח פעיל',
-      in_development: 'בפיתוח',
-      completed: 'הושלם',
-      churned: 'עזב'
     };
     return labels[status] || status;
   };
@@ -158,13 +146,13 @@ const ClientList = () => {
               label="סטטוס"
             >
               <MenuItem value="">הכל</MenuItem>
-              <MenuItem value="lead">ליד חדש</MenuItem>
-              <MenuItem value="contacted">יצירת קשר</MenuItem>
-              <MenuItem value="assessment_completed">אפיון הושלם</MenuItem>
+              <MenuItem value="new_lead">ליד חדש</MenuItem>
+              <MenuItem value="contacted">יצרנו קשר</MenuItem>
+              <MenuItem value="engaged">מעורבות</MenuItem>
+              <MenuItem value="meeting_set">פגישה נקבעה</MenuItem>
               <MenuItem value="proposal_sent">הצעה נשלחה</MenuItem>
-              <MenuItem value="negotiation">משא ומתן</MenuItem>
               <MenuItem value="won">נסגר</MenuItem>
-              <MenuItem value="active_client">לקוח פעיל</MenuItem>
+              <MenuItem value="lost">הפסדנו</MenuItem>
             </Select>
           </FormControl>
 

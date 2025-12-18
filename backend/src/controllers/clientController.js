@@ -149,7 +149,7 @@ exports.createClient = async (req, res) => {
     });
 
     // === NEW: Auto-generate project for active clients ===
-    const activeClientStatuses = ['won', 'active_client', 'in_development', 'completed'];
+    const activeClientStatuses = ['won'];
     console.log(`🔍 Checking project generation - Client status: ${client.status}, Active statuses:`, activeClientStatuses);
     if (activeClientStatuses.includes(client.status)) {
       const userId = req.user?.id || req.user?._id;
@@ -231,8 +231,8 @@ exports.updateClient = async (req, res) => {
     }
 
     // === NEW: Auto-generate project if status changed to active client status ===
-    const activeClientStatuses = ['won', 'active_client', 'in_development', 'completed'];
-    const leadStatuses = ['lead', 'contacted', 'assessment_scheduled', 'assessment_completed', 'proposal_sent', 'negotiation', 'lost', 'on_hold', 'churned'];
+    const activeClientStatuses = ['won'];
+    const leadStatuses = ['new_lead', 'contacted', 'engaged', 'meeting_set', 'proposal_sent', 'lost'];
 
     // בדוק אם הסטטוס השתנה מליד ללקוח פעיל
     const changedToActiveClient =
@@ -574,9 +574,9 @@ exports.fillAssessmentForm = async (req, res) => {
       }
     }
 
-    // עדכון סטטוס אם זה אפיון ראשון
-    if (client.status === 'lead' || client.status === 'contacted') {
-      client.status = 'assessment_completed';
+    // עדכון סטטוס אם זה אפיון ראשון (Sales OS)
+    if (client.status === 'new_lead' || client.status === 'contacted') {
+      client.status = 'engaged';
     }
 
     // הוספת אינטראקציה
@@ -831,8 +831,8 @@ exports.createOrder = async (req, res) => {
 
     client.orders.push(order);
 
-    // עדכון סטטוס אם זו הזמנה ראשונה
-    if (client.status === 'proposal_sent' || client.status === 'negotiation') {
+    // עדכון סטטוס אם זו הזמנה ראשונה (Sales OS)
+    if (client.status === 'proposal_sent') {
       client.status = 'won';
     }
 
@@ -1262,14 +1262,14 @@ exports.getOverviewStats = async (req, res) => {
       // ספירות בסיסיות
       totalClients: await Client.countDocuments(),
       activeLeads: await Client.countDocuments({
-        status: { $in: ['lead', 'contacted', 'assessment_scheduled', 'assessment_completed'] }
+        status: { $in: ['new_lead', 'contacted', 'engaged', 'meeting_set'] }
       }),
       activeDeals: await Client.countDocuments({
-        status: { $in: ['proposal_sent', 'negotiation'] }
+        status: { $in: ['proposal_sent'] }
       }),
       wonDeals: await Client.countDocuments({ status: 'won' }),
       activeClients: await Client.countDocuments({
-        status: { $in: ['active_client', 'in_development'] }
+        status: { $in: ['won'] }
       }),
 
       // הכנסות
@@ -1303,7 +1303,7 @@ exports.getOverviewStats = async (req, res) => {
 
     // חישוב הכנסות
     const revenueData = await Client.aggregate([
-      { $match: { status: { $in: ['won', 'active_client', 'in_development', 'completed'] } } },
+      { $match: { status: { $in: ['won'] } } },
       {
         $group: {
           _id: null,
@@ -1342,9 +1342,9 @@ exports.getPipelineStats = async (req, res) => {
   try {
     const pipeline = [
       {
-        stage: 'lead',
-        name: 'לידים חדשים',
-        count: await Client.countDocuments({ status: 'lead' }),
+        stage: 'new_lead',
+        name: 'ליד חדש',
+        count: await Client.countDocuments({ status: 'new_lead' }),
         value: 0
       },
       {
@@ -1354,29 +1354,33 @@ exports.getPipelineStats = async (req, res) => {
         value: 0
       },
       {
-        stage: 'assessment',
-        name: 'אפיון',
-        count: await Client.countDocuments({
-          status: { $in: ['assessment_scheduled', 'assessment_completed'] }
-        }),
+        stage: 'engaged',
+        name: 'מעורבות',
+        count: await Client.countDocuments({ status: 'engaged' }),
         value: 0
       },
       {
-        stage: 'proposal',
-        name: 'הצעת מחיר',
+        stage: 'meeting_set',
+        name: 'פגישה נקבעה',
+        count: await Client.countDocuments({ status: 'meeting_set' }),
+        value: 0
+      },
+      {
+        stage: 'proposal_sent',
+        name: 'הצעה נשלחה',
         count: await Client.countDocuments({ status: 'proposal_sent' }),
-        value: 0
-      },
-      {
-        stage: 'negotiation',
-        name: 'משא ומתן',
-        count: await Client.countDocuments({ status: 'negotiation' }),
         value: 0
       },
       {
         stage: 'won',
         name: 'נסגר',
         count: await Client.countDocuments({ status: 'won' }),
+        value: 0
+      },
+      {
+        stage: 'lost',
+        name: 'אבוד',
+        count: await Client.countDocuments({ status: 'lost' }),
         value: 0
       }
     ];
@@ -1385,11 +1389,7 @@ exports.getPipelineStats = async (req, res) => {
     for (const stage of pipeline) {
       let statusFilter = {};
 
-      if (stage.stage === 'assessment') {
-        statusFilter = { status: { $in: ['assessment_scheduled', 'assessment_completed'] } };
-      } else {
-        statusFilter = { status: stage.stage };
-      }
+      statusFilter = { status: stage.stage };
 
       const clients = await Client.find(statusFilter)
         .select('paymentPlan.totalAmount orders.totalAmount');
@@ -1403,7 +1403,9 @@ exports.getPipelineStats = async (req, res) => {
     }
 
     // חישוב conversion rates
-    const totalLeads = await Client.countDocuments();
+    const totalLeads = await Client.countDocuments({
+      status: { $in: ['new_lead', 'contacted', 'engaged', 'meeting_set', 'proposal_sent', 'won', 'lost'] }
+    });
     const wonCount = await Client.countDocuments({ status: 'won' });
     const conversionRate = totalLeads > 0 ? ((wonCount / totalLeads) * 100).toFixed(2) : 0;
 
@@ -1438,7 +1440,7 @@ exports.getMorningFocus = async (req, res) => {
 
     const leads = await Client.find({
       // רק לידים פעילים שעדיין לא לקוחות ולא אבודים
-      status: { $in: ['lead', 'contacted', 'assessment_scheduled', 'proposal_sent'] },
+      status: { $in: ['new_lead', 'contacted', 'engaged', 'meeting_set', 'proposal_sent'] },
       // לוגיקה: או שלא יצרו איתם קשר מעולם, או שהקשר האחרון היה לפני יותר מ-24 שעות
       $or: [
         { 'metadata.lastContactedAt': { $lt: yesterday } },

@@ -10,6 +10,7 @@ import {
   Typography,
   Collapse,
 } from '@mui/material';
+import { FaChartLine } from 'react-icons/fa';
 import {
   Dashboard as DashboardIcon,
   RateReview as TestimonialsIcon,
@@ -76,6 +77,7 @@ const menuItems = [
   { text: 'מוצרים', icon: <ProductsIcon />, path: '/admin/products' },
   { divider: true, label: 'ניהול לידים ולקוחות' },
   { text: 'לידים', icon: <ClientsIcon />, path: '/admin/leads' },
+  { text: 'Sales Pipeline', icon: <FaChartLine />, path: '/admin/pipeline' },
   { text: 'לקוחות', icon: <ClientsIcon />, path: '/admin/customers' },
   { divider: true, label: 'הגדרות' },
   { text: 'עובדים', icon: <ClientsIcon />, path: '/admin/employees' },
