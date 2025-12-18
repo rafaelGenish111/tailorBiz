@@ -13,12 +13,21 @@ import {
   IconButton,
   FormControlLabel,
   Switch,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { Close as CloseIcon, CloudUpload as UploadIcon } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useCreateTestimonial, useUpdateTestimonial } from '../../../hooks/useTestimonials';
+
+function getImageUrlFromTestimonial(testimonial) {
+  const img = testimonial?.image;
+  if (!img) return null;
+  if (img.startsWith('http://') || img.startsWith('https://')) return img;
+  return `${window.location.origin}${img.startsWith('/') ? img : `/${img}`}`;
+}
 
 // Validation schema
 const schema = yup.object().shape({
@@ -51,10 +60,13 @@ const schema = yup.object().shape({
 });
 
 function TestimonialForm({ open, onClose, testimonial }) {
+  // preview של תמונה שהועלתה מקומית (אם לא הועלתה - נציג את תמונת ה-testimonial)
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
 
   const isEdit = Boolean(testimonial);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const createMutation = useCreateTestimonial();
   const updateMutation = useUpdateTestimonial();
@@ -87,14 +99,6 @@ function TestimonialForm({ open, onClose, testimonial }) {
         rating: testimonial.rating,
         isVisible: testimonial.isVisible,
       });
-      if (testimonial.image) {
-        // אם קיבלנו URL מלא (למשל Cloudinary) – נשתמש בו כמו שהוא, אחרת נתבסס על הדומיין הנוכחי
-        if (testimonial.image.startsWith('http://') || testimonial.image.startsWith('https://')) {
-          setImagePreview(testimonial.image);
-        } else {
-          setImagePreview(`${window.location.origin}${testimonial.image.startsWith('/') ? testimonial.image : `/${testimonial.image}`}`);
-        }
-      }
     } else {
       reset({
         clientName: '',
@@ -104,8 +108,6 @@ function TestimonialForm({ open, onClose, testimonial }) {
         rating: 5,
         isVisible: false,
       });
-      setImagePreview(null);
-      setImageFile(null);
     }
   }, [testimonial, reset]);
 
@@ -171,8 +173,17 @@ function TestimonialForm({ open, onClose, testimonial }) {
     onClose();
   };
 
+  const effectiveImagePreview = imagePreview || getImageUrlFromTestimonial(testimonial);
+
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth dir="rtl">
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+      fullScreen={isMobile}
+      dir="rtl"
+    >
       <DialogTitle>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h6">{isEdit ? 'עריכת המלצה' : 'הוספת המלצה חדשה'}</Typography>
@@ -196,7 +207,7 @@ function TestimonialForm({ open, onClose, testimonial }) {
               />
               <label htmlFor="image-upload">
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                  <Avatar src={imagePreview} sx={{ width: 120, height: 120, cursor: 'pointer' }} />
+                  <Avatar src={effectiveImagePreview} sx={{ width: 120, height: 120, cursor: 'pointer' }} />
                   <Button component="span" variant="outlined" startIcon={<UploadIcon />}>
                     העלה תמונת לקוח
                   </Button>
@@ -315,11 +326,14 @@ function TestimonialForm({ open, onClose, testimonial }) {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={handleClose}>ביטול</Button>
+          <Button onClick={handleClose} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+            ביטול
+          </Button>
           <Button
             type="submit"
             variant="contained"
             disabled={createMutation.isPending || updateMutation.isPending}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
           >
             {isEdit ? 'עדכן' : 'צור המלצה'}
           </Button>

@@ -1,8 +1,8 @@
 import React from 'react';
-import { Box, Typography, Tooltip } from '@mui/material';
+import { Box, Typography, Tooltip, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { addDays, differenceInDays, eachDayOfInterval, isSameDay, isSameMonth } from 'date-fns';
 
-const LABEL_COL_WIDTH = 320;
 const ROW_HEIGHT = 44;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -41,6 +41,11 @@ const statusLabel = (status) => {
 
 // תצוגת גאנט "נורמלית" (כותרות דביקות + סקאלה עם תאריכים אמיתיים) ללא תלות חיצונית
 const ProjectGantt = ({ projects = [], range }) => {
+  const theme = useTheme();
+  const isNarrow = useMediaQuery(theme.breakpoints.down('md'));
+  const labelColWidth = isNarrow ? 240 : 320;
+  const minTableWidth = isNarrow ? 900 : 1100;
+
   if (!projects.length) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
@@ -169,6 +174,7 @@ const ProjectGantt = ({ projects = [], range }) => {
     <Box
       sx={{
         width: '100%',
+        maxWidth: '100%',
         border: '1px solid',
         borderColor: 'divider',
         borderRadius: 2,
@@ -176,11 +182,11 @@ const ProjectGantt = ({ projects = [], range }) => {
         bgcolor: 'background.paper'
       }}
     >
-      <Box sx={{ minWidth: 1100 }}>
+      <Box sx={{ minWidth: minTableWidth }}>
         {/* Sticky header */}
         <Box sx={{ position: 'sticky', top: 0, zIndex: 5, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
           {/* Months row */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: `${LABEL_COL_WIDTH}px 1fr` }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: `${labelColWidth}px 1fr` }}>
             <Box
               sx={{
                 position: 'sticky',
@@ -219,7 +225,7 @@ const ProjectGantt = ({ projects = [], range }) => {
           </Box>
 
           {/* Days row */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: `${LABEL_COL_WIDTH}px 1fr` }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: `${labelColWidth}px 1fr` }}>
             <Box
               sx={{
                 position: 'sticky',
@@ -311,7 +317,7 @@ const ProjectGantt = ({ projects = [], range }) => {
                 <Box
                   sx={{
                     display: 'grid',
-                    gridTemplateColumns: `${LABEL_COL_WIDTH}px 1fr`,
+                    gridTemplateColumns: `${labelColWidth}px 1fr`,
                     borderBottom: '1px solid',
                     borderColor: 'divider',
                     bgcolor: 'grey.50'
@@ -386,7 +392,7 @@ const ProjectGantt = ({ projects = [], range }) => {
                         key={task._id}
                         sx={{
                           display: 'grid',
-                          gridTemplateColumns: `${LABEL_COL_WIDTH}px 1fr`,
+                          gridTemplateColumns: `${labelColWidth}px 1fr`,
                           borderBottom: '1px solid',
                           borderColor: 'divider',
                           bgcolor: rowIdx % 2 === 0 ? 'background.paper' : 'grey.25'
