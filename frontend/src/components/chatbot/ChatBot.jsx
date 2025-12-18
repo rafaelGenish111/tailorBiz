@@ -23,6 +23,7 @@ import ChatForm from './ChatForm';
 import TypingIndicator from './TypingIndicator';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale/he';
+import { publicLeads } from '../../utils/publicApi';
 
 function ChatBot() {
   const [open, setOpen] = useState(false);
@@ -123,9 +124,9 @@ function ChatBot() {
   const handleQuickReply = (value, label) => {
     // בודק אם ה-value הוא intent name ישיר (קיים ב-intents)
     // אם כן, משתמש בו ישירות; אחרת שולח את ה-label בעברית ל-findIntent
-    const validIntents = ['greeting', 'features', 'pricing', 'demo', 'crm', 'reminders', 
-                          'scheduling', 'professional', 'human', 'thanks', 'bye', 'fallback'];
-    
+    const validIntents = ['greeting', 'features', 'pricing', 'demo', 'crm', 'reminders',
+      'scheduling', 'professional', 'human', 'thanks', 'bye', 'fallback'];
+
     if (validIntents.includes(value)) {
       // משתמש ב-intent ישיר עם הטקסט בעברית (ה-label) שיוצג למשתמש
       handleSend(label, value);
@@ -135,7 +136,7 @@ function ChatBot() {
     }
   };
 
-  const handleFormSubmit = (formData) => {
+  const handleFormSubmit = async (formData) => {
     setShowForm(false);
     addMessage(
       `פרטים שנשלחו:\n${Object.entries(formData)
@@ -144,19 +145,40 @@ function ChatBot() {
       'user'
     );
 
-    setTimeout(() => {
-      addMessage(
-        'תודה רבה! 🎉\n\nקיבלנו את הפרטים שלך.\nנציג יחזור אליך תוך 24 שעות.\n\nבינתיים, יש עוד משהו שאוכל לעזור בו?',
-        'bot',
-        [
-          { label: 'לא, זה הכל', value: 'bye' },
-          { label: 'כן, עוד שאלה', value: 'yes' },
-        ]
-      );
-      setIsTyping(false);
-    }, 1500);
+    setIsTyping(true);
+    try {
+      await publicLeads.submit({
+        name: formData?.name || '',
+        email: formData?.email || '',
+        phone: formData?.phone || '',
+        company: formData?.company || '',
+        message: formData?.message || '',
+      });
 
-    console.log('Form submitted:', formData);
+      setTimeout(() => {
+        addMessage(
+          'תודה רבה!\n\nקיבלנו את הפרטים שלך.\nנציג יחזור אליך תוך 24 שעות.\n\nבינתיים, יש עוד משהו שאוכל לעזור בו?',
+          'bot',
+          [
+            { label: 'לא, זה הכל', value: 'bye' },
+            { label: 'כן, עוד שאלה', value: 'yes' },
+          ]
+        );
+        setIsTyping(false);
+      }, 900);
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.errors?.[0]?.msg ||
+        'לא הצלחתי לשמור את הפרטים כרגע. אפשר לנסות שוב או להשאיר הודעה כאן בצ׳אט.';
+      setTimeout(() => {
+        addMessage(`מצטער, הייתה תקלה בשמירה: ${msg}`, 'bot', [
+          { label: 'לנסות שוב', value: 'human' },
+          { label: 'צור קשר', value: 'contact' },
+        ]);
+        setIsTyping(false);
+      }, 900);
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -189,8 +211,7 @@ function ChatBot() {
     const historyText = messages
       .map(
         (msg) =>
-          `[${format(new Date(msg.timestamp), 'dd/MM/yyyy HH:mm', { locale: he })}] ${
-            msg.sender === 'user' ? 'אתה' : 'TailorBiz'
+          `[${format(new Date(msg.timestamp), 'dd/MM/yyyy HH:mm', { locale: he })}] ${msg.sender === 'user' ? 'אתה' : 'TailorBiz'
           }: ${msg.text}`
       )
       .join('\n\n');

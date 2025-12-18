@@ -25,6 +25,7 @@ import ClientsManager from '../../pages/admin/cms/ClientsManager';
 import SiteSettingsPage from './SiteSettingsPage';
 import EmployeesPage from './EmployeesPage';
 import SalesPipelineBoard from '../../components/leads/SalesPipelineBoard';
+import HuntingPoolsPage from './HuntingPoolsPage';
 import { Box, Typography } from '@mui/material';
 
 function Placeholder({ title }) {
@@ -76,6 +77,7 @@ function AdminPanel() {
         <Route path="clients" element={<ClientsList />} />
         <Route path="clients/:id" element={<ClientCard />} />
         <Route path="pipeline" element={<SalesPipelineBoard />} />
+        <Route path="hunting-pools" element={<HuntingPoolsPage />} />
         {/* Settings */}
         <Route path="settings" element={<SiteSettingsPage />} />
         <Route path="employees" element={<EmployeesPage />} />

@@ -15,7 +15,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { COMPANY_INFO } from '../utils/constants';
-import { publicCMS } from '../utils/publicApi';
+import { publicCMS, publicLeads } from '../utils/publicApi';
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -26,6 +26,8 @@ function Contact() {
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [settings, setSettings] = useState(null);
 
   useEffect(() => {
@@ -58,13 +60,15 @@ function Contact() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    setSubmitted(true);
+    setSubmitError('');
+    setSubmitting(true);
 
-    setTimeout(() => {
-      setSubmitted(false);
+    try {
+      await publicLeads.submit(formData);
+      setSubmitted(true);
+      setTimeout(() => setSubmitted(false), 3000);
       setFormData({
         name: '',
         email: '',
@@ -72,7 +76,15 @@ function Contact() {
         company: '',
         message: '',
       });
-    }, 3000);
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.errors?.[0]?.msg ||
+        'שגיאה בשליחת הטופס. נסו שוב.';
+      setSubmitError(msg);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -111,6 +123,11 @@ function Contact() {
                   תודה על פנייתך! נחזור אליך בהקדם האפשרי.
                 </Alert>
               )}
+              {!!submitError && (
+                <Alert severity="error" sx={{ mb: 3 }}>
+                  {submitError}
+                </Alert>
+              )}
 
               <Box component="form" onSubmit={handleSubmit}>
                 <TextField
@@ -138,6 +155,7 @@ function Contact() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
+                  required
                   sx={{ mb: 3 }}
                 />
                 <TextField
@@ -166,8 +184,9 @@ function Contact() {
                   size="large"
                   fullWidth
                   endIcon={<SendIcon />}
+                  disabled={submitting}
                 >
-                  שלחו הודעה
+                  {submitting ? 'שולח...' : 'שלחו הודעה'}
                 </Button>
               </Box>
             </Paper>
