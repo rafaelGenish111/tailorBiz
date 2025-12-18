@@ -1389,7 +1389,7 @@ exports.getPipelineStats = async (req, res) => {
     for (const stage of pipeline) {
       let statusFilter = {};
 
-      statusFilter = { status: stage.stage };
+        statusFilter = { status: stage.stage };
 
       const clients = await Client.find(statusFilter)
         .select('paymentPlan.totalAmount orders.totalAmount');

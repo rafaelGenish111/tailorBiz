@@ -27,3 +27,4 @@ export function hasAnyModuleAccess(user, moduleKeys) {
   if (!Array.isArray(moduleKeys)) return false;
   return moduleKeys.some((k) => Boolean(user.permissions?.[k]?.enabled));
 }
+
