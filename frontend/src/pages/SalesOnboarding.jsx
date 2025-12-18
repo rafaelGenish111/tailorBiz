@@ -677,7 +677,19 @@ const SimulationSection = () => {
           {!feedback ? (
             <Stack spacing={1.25}>
               {step.options.map((opt, idx) => (
-                <Button key={idx} variant="outlined" onClick={() => handleAnswer(opt)} sx={{ justifyContent: 'flex-start', textAlign: 'right' }}>
+                <Button
+                  key={idx}
+                  variant="outlined"
+                  onClick={() => handleAnswer(opt)}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    textAlign: 'right',
+                    whiteSpace: 'normal',
+                    alignItems: 'flex-start',
+                    lineHeight: 1.35,
+                    py: 1.1,
+                  }}
+                >
                   {opt.text}
                 </Button>
               ))}
