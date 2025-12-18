@@ -19,6 +19,7 @@ const testRoutes = require('./routes/testRoutes');
 const timeEntryRoutes = require('./routes/timeEntryRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const quoteRoutes = require('./routes/quoteRoutes');
+const huntingPoolRoutes = require('./routes/huntingPoolRoutes');
 const authRoutes = require('./routes/authRoutes');
 const publicCmsRoutes = require('./routes/publicCmsRoutes');
 const adminPagesRoutes = require('./routes/adminPagesRoutes');
@@ -117,6 +118,7 @@ app.use('/api/marketing', marketingRoutes);
 app.use('/api/time-entries', timeEntryRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/quotes', quoteRoutes);
+app.use('/api/hunting-pools', huntingPoolRoutes);
 
 // Public CMS
 app.use('/api/public', publicCmsRoutes);

@@ -10,7 +10,7 @@ import {
   Typography,
   Collapse,
 } from '@mui/material';
-import { FaChartLine } from 'react-icons/fa';
+import { FaChartLine, FaCrosshairs } from 'react-icons/fa';
 import {
   Dashboard as DashboardIcon,
   RateReview as TestimonialsIcon,
@@ -78,6 +78,7 @@ const menuItems = [
   { divider: true, label: 'ניהול לידים ולקוחות' },
   { text: 'לידים', icon: <ClientsIcon />, path: '/admin/leads' },
   { text: 'Sales Pipeline', icon: <FaChartLine />, path: '/admin/pipeline' },
+  { text: 'Hunting Pools', icon: <FaCrosshairs />, path: '/admin/hunting-pools' },
   { text: 'לקוחות', icon: <ClientsIcon />, path: '/admin/customers' },
   { divider: true, label: 'הגדרות' },
   { text: 'עובדים', icon: <ClientsIcon />, path: '/admin/employees' },

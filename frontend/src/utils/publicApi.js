@@ -17,5 +17,9 @@ export const publicCMS = {
   getSiteSettings: () => api.get('/public/site-settings')
 };
 
+export const publicLeads = {
+  submit: (data) => api.post('/public/leads', data),
+};
+
 export default api;
 
