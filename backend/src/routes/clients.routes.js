@@ -30,6 +30,7 @@ router.route('/')
 router.route('/:id')
   .get(clientController.getClientById)
   .put(clientController.updateClient)
+  .patch(clientController.updateClient)
   .delete(clientController.deleteClient);
 
 // המרת ליד ללקוח (סגירת עסקה)

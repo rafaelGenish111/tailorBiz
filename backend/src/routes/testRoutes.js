@@ -6,12 +6,12 @@ const router = express.Router();
 router.get('/run-nurturing', async (req, res) => {
   try {
     console.log('🧪 Running manual Lead Nurturing check...');
-    
+
     const leadNurturingService = require('../services/leadNurturingService');
-    
+
     await leadNurturingService.checkTriggers();
     await leadNurturingService.executeScheduledActions();
-    
+
     res.json({
       success: true,
       message: 'Manual check completed. Check server logs for details.'
@@ -29,10 +29,10 @@ router.get('/run-nurturing', async (req, res) => {
 router.get('/run-reminders', async (req, res) => {
   try {
     console.log('🧪 Running manual Reminder check...');
-    
+
     const reminderService = require('../services/reminderService');
     await reminderService.runManualCheck();
-    
+
     res.json({
       success: true,
       message: 'Manual check completed. Check server logs for details.'
@@ -51,7 +51,7 @@ router.get('/automation-status', (req, res) => {
   try {
     const reminderService = require('../services/reminderService');
     const leadNurturingService = require('../services/leadNurturingService');
-    
+
     res.json({
       success: true,
       data: {
@@ -77,14 +77,14 @@ router.get('/automation-status', (req, res) => {
 router.get('/check-new-leads', async (req, res) => {
   try {
     const Client = require('../models/Client');
-    
+
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    
+
     const newLeads = await Client.find({
-      status: 'lead',
+      status: 'new_lead',
       'metadata.createdAt': { $gte: oneDayAgo }
     }).select('personalInfo businessInfo leadSource leadScore metadata.createdAt');
-    
+
     res.json({
       success: true,
       count: newLeads.length,
@@ -102,11 +102,11 @@ router.get('/check-new-leads', async (req, res) => {
 router.get('/check-instances', async (req, res) => {
   try {
     const LeadNurturingInstance = require('../models/LeadNurturingInstance');
-    
+
     const instances = await LeadNurturingInstance.find({ status: 'active' })
       .populate('nurturingTemplate', 'name')
       .populate('client', 'personalInfo');
-    
+
     res.json({
       success: true,
       count: instances.length,

@@ -135,7 +135,7 @@ class ReminderService {
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
             const inactiveClients = await Client.find({
-                status: { $in: ['lead', 'contacted', 'assessment_scheduled'] },
+                status: { $in: ['new_lead', 'contacted', 'engaged'] },
                 'metadata.lastContactedAt': { $lt: thirtyDaysAgo }
             }).populate('metadata.assignedTo', 'name email');
 

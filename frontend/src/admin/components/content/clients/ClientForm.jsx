@@ -59,8 +59,8 @@ const schema = yup.object().shape({
     .oneOf(['whatsapp', 'website_form', 'referral', 'cold_call', 'social_media', 'linkedin', 'facebook', 'google_ads', 'other']),
   status: yup
     .string()
-    .oneOf(['lead', 'contacted', 'assessment_scheduled', 'assessment_completed', 'proposal_sent', 'negotiation', 'won', 'lost', 'on_hold', 'active_client', 'in_development', 'completed', 'churned'])
-    .default('lead'),
+    .oneOf(['new_lead', 'contacted', 'engaged', 'meeting_set', 'proposal_sent', 'won', 'lost'])
+    .default('new_lead'),
 });
 
 const LEAD_SOURCE_OPTIONS = [
@@ -76,19 +76,13 @@ const LEAD_SOURCE_OPTIONS = [
 ];
 
 const STATUS_OPTIONS = [
-  { value: 'lead', label: 'ליד חדש' },
+  { value: 'new_lead', label: 'ליד חדש' },
   { value: 'contacted', label: 'יצרנו קשר' },
-  { value: 'assessment_scheduled', label: 'פגישת אפיון נקבעה' },
-  { value: 'assessment_completed', label: 'אפיון הושלם' },
-  { value: 'proposal_sent', label: 'הצעת מחיר נשלחה' },
-  { value: 'negotiation', label: 'משא ומתן' },
+  { value: 'engaged', label: 'מעורבות' },
+  { value: 'meeting_set', label: 'פגישה נקבעה' },
+  { value: 'proposal_sent', label: 'הצעה נשלחה' },
   { value: 'won', label: 'נסגר' },
   { value: 'lost', label: 'הפסדנו' },
-  { value: 'on_hold', label: 'בהמתנה' },
-  { value: 'active_client', label: 'לקוח פעיל' },
-  { value: 'in_development', label: 'בפיתוח' },
-  { value: 'completed', label: 'הושלם' },
-  { value: 'churned', label: 'עזב' },
 ];
 
 const CONTACT_METHOD_OPTIONS = [
@@ -127,7 +121,7 @@ function ClientForm({ open, onClose, client }) {
         address: '',
       },
       leadSource: 'whatsapp',
-      status: 'lead',
+      status: 'new_lead',
     },
   });
 
@@ -151,7 +145,7 @@ function ClientForm({ open, onClose, client }) {
           address: client.businessInfo?.address || '',
         },
         leadSource: client.leadSource || 'whatsapp',
-        status: client.status || 'lead',
+        status: client.status || 'new_lead',
       });
     } else {
       reset({
@@ -171,7 +165,7 @@ function ClientForm({ open, onClose, client }) {
           address: '',
         },
         leadSource: 'whatsapp',
-        status: 'lead',
+        status: 'new_lead',
       });
     }
   }, [client, reset]);

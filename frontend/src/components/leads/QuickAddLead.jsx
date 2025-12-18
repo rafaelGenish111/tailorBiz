@@ -23,7 +23,7 @@ import { useCreateClient } from '../../admin/hooks/useClients';
 
 const QuickAddLead = ({ open, onClose, preSelectedSource = 'whatsapp' }) => {
   const createClient = useCreateClient();
-  
+
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
@@ -89,14 +89,14 @@ const QuickAddLead = ({ open, onClose, preSelectedSource = 'whatsapp' }) => {
           fullName: formData.fullName,
           phone: formData.phone,
           whatsappPhone: formData.leadSource === 'whatsapp' ? formData.phone : '',
-          preferredContactMethod: formData.leadSource === 'whatsapp' ? 'whatsapp' : 
-                                   formData.leadSource === 'phone' ? 'phone' : 'email'
+          preferredContactMethod: formData.leadSource === 'whatsapp' ? 'whatsapp' :
+            formData.leadSource === 'phone' ? 'phone' : 'email'
         },
         businessInfo: {
           businessName: formData.businessName || 'לא צוין'
         },
         leadSource: formData.leadSource,
-        status: 'lead',
+        status: 'new_lead',
         tags: ['ליד חדש', formData.leadSource],
         interactions: formData.initialMessage ? [{
           type: formData.leadSource === 'whatsapp' ? 'whatsapp' : 'note',
@@ -111,7 +111,7 @@ const QuickAddLead = ({ open, onClose, preSelectedSource = 'whatsapp' }) => {
       };
 
       await createClient.mutateAsync(clientData);
-      
+
       // איפוס הטופס
       setFormData({
         fullName: '',
@@ -121,7 +121,7 @@ const QuickAddLead = ({ open, onClose, preSelectedSource = 'whatsapp' }) => {
         initialMessage: '',
         notes: ''
       });
-      
+
       onClose();
     } catch (error) {
       console.error('Error creating lead:', error);
@@ -131,8 +131,8 @@ const QuickAddLead = ({ open, onClose, preSelectedSource = 'whatsapp' }) => {
   const selectedSource = leadSources.find(s => s.value === formData.leadSource);
 
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onClose={onClose}
       maxWidth="sm"
       fullWidth
@@ -194,8 +194,8 @@ const QuickAddLead = ({ open, onClose, preSelectedSource = 'whatsapp' }) => {
             placeholder="050-1234567"
             fullWidth
             InputProps={{
-              startAdornment: formData.leadSource === 'whatsapp' ? 
-                <WhatsAppIcon sx={{ color: '#25D366', mr: 1 }} /> : 
+              startAdornment: formData.leadSource === 'whatsapp' ?
+                <WhatsAppIcon sx={{ color: '#25D366', mr: 1 }} /> :
                 <PhoneIcon sx={{ color: 'primary.main', mr: 1 }} />
             }}
           />

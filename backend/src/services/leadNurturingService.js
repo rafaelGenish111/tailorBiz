@@ -51,11 +51,11 @@ class LeadNurturingService {
           case 'new_lead':
             await this.triggerNewLeads(template);
             break;
-          
+
           case 'no_response':
             await this.triggerNoResponse(template);
             break;
-          
+
           case 'status_change':
             await this.triggerStatusChange(template);
             break;
@@ -91,13 +91,13 @@ class LeadNurturingService {
       }
 
       // קבל כל התבניות הפעילות עם טריגר של new_lead
-      const templates = await LeadNurturing.find({ 
+      const templates = await LeadNurturing.find({
         isActive: true,
         'trigger.type': 'new_lead'
       });
 
       console.log(`  📊 Found ${templates.length} active templates with new_lead trigger`);
-      
+
       if (templates.length === 0) {
         console.log(`  ⚠️ No active templates found! Make sure to run: npm run seed:nurturing`);
       }
@@ -105,7 +105,7 @@ class LeadNurturingService {
       for (const template of templates) {
         console.log(`  🔎 Checking template: ${template.name}`);
         const conditions = template.trigger.conditions || {};
-        
+
         // בדוק תנאים
         let shouldTrigger = true;
 
@@ -143,13 +143,13 @@ class LeadNurturingService {
             const lastInteraction = client.interactions
               .filter(int => int.nextFollowUp)
               .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
-            
+
             let baseTime = new Date();
             if (lastInteraction && lastInteraction.nextFollowUp) {
               baseTime = new Date(lastInteraction.nextFollowUp);
               console.log(`    📅 Using nextFollowUp from interaction as base time: ${baseTime.toISOString()}`);
             }
-            
+
             // צור מופע חדש
             const instance = new LeadNurturingInstance({
               nurturingTemplate: template._id,
@@ -162,7 +162,7 @@ class LeadNurturingService {
             await instance.save();
             template.stats.totalTriggered += 1;
             await template.save();
-            
+
             console.log(`    ✨ Started nurturing for ${client.personalInfo.fullName} (template: ${template.name})`);
 
             // הרץ את הפעולה הראשונה מיד אם אין delay
@@ -414,12 +414,12 @@ class LeadNurturingService {
   async triggerNewLeads(template) {
     try {
       const conditions = template.trigger.conditions || {};
-      
+
       // מצא לידים חדשים (נוצרו ב-24 השעות האחרונות)
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      
+
       let query = {
-        status: 'lead',
+        status: 'new_lead',
         'metadata.createdAt': { $gte: oneDayAgo }
       };
 
@@ -447,12 +447,12 @@ class LeadNurturingService {
           const lastInteraction = lead.interactions
             .filter(int => int.nextFollowUp)
             .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
-          
+
           let baseTime = new Date();
           if (lastInteraction && lastInteraction.nextFollowUp) {
             baseTime = new Date(lastInteraction.nextFollowUp);
           }
-          
+
           // צור מופע חדש
           const instance = new LeadNurturingInstance({
             nurturingTemplate: template._id,
@@ -464,7 +464,7 @@ class LeadNurturingService {
 
           await instance.save();
           template.stats.totalTriggered += 1;
-          
+
           console.log(`  ✨ Started nurturing for ${lead.personalInfo.fullName}`);
         }
       }
@@ -484,11 +484,11 @@ class LeadNurturingService {
     try {
       const conditions = template.trigger.conditions || {};
       const daysWithoutContact = conditions.daysWithoutContact || 3;
-      
+
       const thresholdDate = new Date(Date.now() - daysWithoutContact * 24 * 60 * 60 * 1000);
 
       let query = {
-        status: { $in: ['lead', 'contacted'] },
+        status: { $in: ['new_lead', 'contacted'] },
         'metadata.lastContactedAt': { $lt: thresholdDate }
       };
 
@@ -511,12 +511,12 @@ class LeadNurturingService {
           const lastInteraction = lead.interactions
             .filter(int => int.nextFollowUp)
             .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
-          
+
           let baseTime = new Date();
           if (lastInteraction && lastInteraction.nextFollowUp) {
             baseTime = new Date(lastInteraction.nextFollowUp);
           }
-          
+
           const instance = new LeadNurturingInstance({
             nurturingTemplate: template._id,
             client: lead._id,
@@ -527,7 +527,7 @@ class LeadNurturingService {
 
           await instance.save();
           template.stats.totalTriggered += 1;
-          
+
           console.log(`  ❄️ Started re-engagement for ${lead.personalInfo.fullName}`);
         }
       }
@@ -729,7 +729,7 @@ class LeadNurturingService {
         template.stats.totalCompleted += 1;
         await instance.save();
         await template.save();
-        
+
         console.log(`  ✅ Completed nurturing for ${client.personalInfo.fullName}`);
         return;
       }
@@ -746,7 +746,7 @@ class LeadNurturingService {
           template.stats.totalStopped += 1;
           await instance.save();
           await template.save();
-          
+
           console.log(`  ⏸️ Stopped nurturing for ${client.personalInfo.fullName} - got response`);
           return;
         }
@@ -766,22 +766,22 @@ class LeadNurturingService {
 
       // עבור לשלב הבא
       instance.currentStep += 1;
-      
+
       if (instance.currentStep < template.sequence.length) {
         const nextStep = template.sequence[instance.currentStep];
-        
+
         // בדוק אם יש אינטראקציה אחרונה עם nextFollowUp
         // אם כן, השתמש בו כבסיס לחישוב הזמן הבא
         const lastInteraction = client.interactions
           .filter(int => int.nextFollowUp)
           .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
-        
+
         let baseTime = new Date();
         if (lastInteraction && lastInteraction.nextFollowUp) {
           baseTime = new Date(lastInteraction.nextFollowUp);
           console.log(`  📅 Using nextFollowUp from interaction as base time: ${baseTime.toISOString()}`);
         }
-        
+
         instance.nextActionAt = this.calculateNextActionTime(nextStep, baseTime);
       }
 
@@ -803,31 +803,31 @@ class LeadNurturingService {
       switch (step.actionType) {
         case 'send_whatsapp':
           return await this.sendWhatsAppMessage(step, client);
-        
+
         case 'create_task':
           return await this.createTask(step, client);
-        
+
         case 'send_email':
           return await this.sendEmail(step, client);
-        
+
         case 'change_status':
           return await this.changeStatus(step, client);
-        
+
         case 'update_lead_score':
           return await this.updateLeadScore(step, client);
-        
+
         case 'update_client_status':
           return await this.updateClientStatus(step, client);
-        
+
         case 'schedule_followup':
           return await this.scheduleFollowup(step, client);
-        
+
         case 'add_tag':
           return await this.addTag(step, client);
-        
+
         case 'create_notification':
           return await this.createNotification(step, client);
-        
+
         default:
           return { success: false, error: 'Unknown action type' };
       }
@@ -842,7 +842,7 @@ class LeadNurturingService {
   async sendWhatsAppMessage(step, client) {
     try {
       const phone = client.personalInfo.whatsappPhone || client.personalInfo.phone;
-      
+
       if (!phone) {
         return { success: false, error: 'No phone number' };
       }
@@ -867,7 +867,7 @@ class LeadNurturingService {
       await client.save();
 
       console.log(`    💬 Sent WhatsApp to ${client.personalInfo.fullName}`);
-      
+
       return { success: true, message: 'WhatsApp sent' };
     } catch (error) {
       return { success: false, error: error.message };
@@ -894,7 +894,7 @@ class LeadNurturingService {
       await task.save();
 
       console.log(`    ✅ Created task for ${client.personalInfo.fullName}`);
-      
+
       return { success: true, message: 'Task created' };
     } catch (error) {
       return { success: false, error: error.message };
@@ -1028,7 +1028,7 @@ class LeadNurturingService {
       await client.save();
 
       console.log(`    🔄 Changed status for ${client.personalInfo.fullName}: ${oldStatus} → ${step.content.newStatus}`);
-      
+
       return { success: true, message: `Status changed to ${step.content.newStatus}` };
     } catch (error) {
       return { success: false, error: error.message };
@@ -1046,7 +1046,7 @@ class LeadNurturingService {
       }
 
       console.log(`    🏷️ Added tag "${step.content.tagName}" to ${client.personalInfo.fullName}`);
-      
+
       return { success: true, message: 'Tag added' };
     } catch (error) {
       return { success: false, error: error.message };
@@ -1059,7 +1059,7 @@ class LeadNurturingService {
   async createNotification(step, client) {
     try {
       const assignedUserId = client.metadata.assignedTo;
-      
+
       if (!assignedUserId) {
         return { success: false, error: 'No assigned user' };
       }
@@ -1077,7 +1077,7 @@ class LeadNurturingService {
       });
 
       console.log(`    🔔 Created notification for ${client.personalInfo.fullName}`);
-      
+
       return { success: true, message: 'Notification created' };
     } catch (error) {
       return { success: false, error: error.message };
@@ -1089,10 +1089,10 @@ class LeadNurturingService {
    */
   async checkForRecentResponse(client) {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    
+
     const recentInbound = client.interactions.find(
-      int => int.direction === 'inbound' && 
-             new Date(int.timestamp) > oneDayAgo
+      int => int.direction === 'inbound' &&
+        new Date(int.timestamp) > oneDayAgo
     );
 
     return !!recentInbound;
@@ -1110,13 +1110,13 @@ class LeadNurturingService {
         subject: interaction.subject,
         hasDirection: !!interaction.direction
       });
-      
+
       // בדוק אם זו אינטראקציה inbound (תגובה מהלקוח)
       // אם אין direction או שהיא inbound - נניח שזו תגובה מהלקוח
       // אם היא outbound - לא נעצור (זו הודעה שלנו ללקוח)
       const isInbound = interaction.direction === 'inbound' || !interaction.direction;
       const isOutbound = interaction.direction === 'outbound';
-      
+
       if (isOutbound) {
         console.log(`  ℹ️ Interaction is outbound - no need to stop nurturing`);
         return;
@@ -1150,13 +1150,13 @@ class LeadNurturingService {
         // אבל גם אם לא - אם יש תגובה מהלקוח, נעצור את הרצף (זה יותר הגיוני)
         if (currentStepIndex < template.sequence.length) {
           const currentStep = template.sequence[currentStepIndex];
-          
+
           console.log(`    📋 Current step: ${currentStep.actionType}, stopIfResponse: ${currentStep.stopIfResponse}`);
-          
+
           // אם הליד מגיב, נעצור את הרצף האוטומטי
           // אלא אם כן השלב הנוכחי כולל במפורש stopIfResponse: false
           const shouldStop = !currentStep || currentStep.stopIfResponse !== false;
-          
+
           if (shouldStop) {
             console.log(`  ⏸️ Stopping instance for ${instance.client.personalInfo.fullName} - client responded`);
             instance.status = 'stopped';
@@ -1187,9 +1187,9 @@ class LeadNurturingService {
    */
   calculateNextActionTime(step, baseTime = null) {
     if (!step) return new Date();
-    
+
     const now = baseTime || new Date();
-    
+
     // אם יש delayTime (תאריך ושעה ספציפיים), השתמש בו
     if (step.delayTime) {
       const scheduledTime = new Date(step.delayTime);
@@ -1200,19 +1200,19 @@ class LeadNurturingService {
       }
       return scheduledTime;
     }
-    
+
     // אם יש delayDays, חשב לפי ימים
     if (step.delayDays !== undefined && step.delayDays !== null) {
       const delayMs = step.delayDays * 24 * 60 * 60 * 1000;
       return new Date(now.getTime() + delayMs);
     }
-    
+
     // אם יש delayHours, חשב לפי שעות
     if (step.delayHours !== undefined && step.delayHours !== null) {
       const delayMs = step.delayHours * 60 * 60 * 1000;
       return new Date(now.getTime() + delayMs);
     }
-    
+
     // ברירת מחדל - עכשיו
     return new Date();
   }
@@ -1225,7 +1225,7 @@ class LeadNurturingService {
       const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
 
       const leadsWithoutResponse = await Client.find({
-        status: { $in: ['lead', 'contacted'] },
+        status: { $in: ['new_lead', 'contacted'] },
         'metadata.lastContactedAt': { $lt: threeDaysAgo }
       });
 
@@ -1240,10 +1240,10 @@ class LeadNurturingService {
 
         if (!activeInstance) {
           console.log(`  ⚠️ Lead needs attention: ${lead.personalInfo.fullName}`);
-          
+
           // צור התראה
           const assignedUserId = lead.metadata.assignedTo;
-          
+
           if (assignedUserId) {
             await Notification.create({
               type: 'follow_up',

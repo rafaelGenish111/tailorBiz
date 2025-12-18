@@ -60,13 +60,13 @@ const InteractionsTab = ({ clientId }) => {
   const { data: response, isLoading } = useClientInteractions(clientId);
   const { data: clientData } = useClient(clientId);
   const client = clientData?.data;
-  
+
   const addInteraction = useAddInteraction();
   const updateInteraction = useUpdateInteraction();
   const deleteInteraction = useDeleteInteraction();
 
   const interactions = response?.data || [];
-  const isLead = ['lead', 'contacted', 'assessment_scheduled', 'assessment_completed', 'proposal_sent', 'negotiation', 'on_hold', 'lost', 'churned'].includes(client?.status);
+  const isLead = ['new_lead', 'contacted', 'engaged', 'meeting_set', 'proposal_sent', 'lost'].includes(client?.status);
 
   const handleAddInteraction = async () => {
     let defaultSubject = '';
@@ -294,136 +294,17 @@ const InteractionsTab = ({ clientId }) => {
           maxWidth="sm"
           fullWidth
         >
-        <DialogTitle>אינטראקציה חדשה</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-            <FormControl fullWidth>
-              <InputLabel>ערוץ</InputLabel>
-              <Select
-                value={newInteraction.type}
-                onChange={(e) =>
-                  setNewInteraction({ ...newInteraction, type: e.target.value })
-                }
-                label="ערוץ"
-              >
-                <MenuItem value="call">שיחה</MenuItem>
-                <MenuItem value="email">אימייל</MenuItem>
-                <MenuItem value="whatsapp">WhatsApp</MenuItem>
-                <MenuItem value="meeting">פגישה</MenuItem>
-                <MenuItem value="note">הערה</MenuItem>
-                <MenuItem value="task">משימה</MenuItem>
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel>סוג אינטראקציה</InputLabel>
-              <Select
-                value={newInteraction.businessType}
-                onChange={(e) =>
-                  setNewInteraction({ ...newInteraction, businessType: e.target.value })
-                }
-                label="סוג אינטראקציה"
-              >
-                <MenuItem value="followup">מעקב</MenuItem>
-                {isLead ? [
-                  <MenuItem key="proposal" value="proposal">הצעת מחיר</MenuItem>,
-                  <MenuItem key="deal_closing" value="deal_closing">שיחת סגירה</MenuItem>
-                ] : [
-                  <MenuItem key="project_update" value="project_update">עדכון פרויקט</MenuItem>,
-                  <MenuItem key="support" value="support">תמיכה</MenuItem>,
-                  <MenuItem key="invoice" value="invoice">חשבונית/תשלום</MenuItem>,
-                  <MenuItem key="end_contract" value="end_contract">סיום התקשרות</MenuItem>
-                ]}
-                <MenuItem value="pause">הפסקה</MenuItem>
-                <MenuItem value="other">אחר</MenuItem>
-              </Select>
-            </FormControl>
-
-            <FormControl fullWidth>
-              <InputLabel>כיוון</InputLabel>
-              <Select
-                value={newInteraction.direction}
-                onChange={(e) =>
-                  setNewInteraction({ ...newInteraction, direction: e.target.value })
-                }
-                label="כיוון"
-              >
-                <MenuItem value="outbound">יוצא</MenuItem>
-                <MenuItem value="inbound">נכנס</MenuItem>
-              </Select>
-            </FormControl>
-
-            <TextField
-              label="נושא"
-              value={newInteraction.subject}
-              onChange={(e) =>
-                setNewInteraction({ ...newInteraction, subject: e.target.value })
-              }
-              fullWidth
-            />
-
-            <TextField
-              label="תוכן"
-              value={newInteraction.content}
-              onChange={(e) =>
-                setNewInteraction({ ...newInteraction, content: e.target.value })
-              }
-              multiline
-              rows={4}
-              fullWidth
-              required
-            />
-
-            <DateTimePicker
-              label="Follow-up הבא (תאריך ושעה)"
-              value={newInteraction.nextFollowUp}
-              onChange={(newValue) =>
-                setNewInteraction({ ...newInteraction, nextFollowUp: newValue })
-              }
-              slotProps={{
-                textField: {
-                  fullWidth: true
-                }
-              }}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>ביטול</Button>
-          <Button
-            variant="contained"
-            onClick={handleAddInteraction}
-            disabled={!newInteraction.content}
-          >
-            הוסף
-          </Button>
-        </DialogActions>
-      </Dialog>
-      </LocalizationProvider>
-
-      {/* Edit Interaction Dialog */}
-      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
-        <Dialog
-          open={editDialog}
-        onClose={() => {
-          setEditDialog(false);
-          setEditingInteraction(null);
-        }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>ערוך אינטראקציה</DialogTitle>
-        <DialogContent>
-          {editingInteraction && (
+          <DialogTitle>אינטראקציה חדשה</DialogTitle>
+          <DialogContent>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
               <FormControl fullWidth>
-                <InputLabel>סוג</InputLabel>
+                <InputLabel>ערוץ</InputLabel>
                 <Select
-                  value={editingInteraction.type}
+                  value={newInteraction.type}
                   onChange={(e) =>
-                    setEditingInteraction({ ...editingInteraction, type: e.target.value })
+                    setNewInteraction({ ...newInteraction, type: e.target.value })
                   }
-                  label="סוג"
+                  label="ערוץ"
                 >
                   <MenuItem value="call">שיחה</MenuItem>
                   <MenuItem value="email">אימייל</MenuItem>
@@ -435,11 +316,35 @@ const InteractionsTab = ({ clientId }) => {
               </FormControl>
 
               <FormControl fullWidth>
+                <InputLabel>סוג אינטראקציה</InputLabel>
+                <Select
+                  value={newInteraction.businessType}
+                  onChange={(e) =>
+                    setNewInteraction({ ...newInteraction, businessType: e.target.value })
+                  }
+                  label="סוג אינטראקציה"
+                >
+                  <MenuItem value="followup">מעקב</MenuItem>
+                  {isLead ? [
+                    <MenuItem key="proposal" value="proposal">הצעת מחיר</MenuItem>,
+                    <MenuItem key="deal_closing" value="deal_closing">שיחת סגירה</MenuItem>
+                  ] : [
+                    <MenuItem key="project_update" value="project_update">עדכון פרויקט</MenuItem>,
+                    <MenuItem key="support" value="support">תמיכה</MenuItem>,
+                    <MenuItem key="invoice" value="invoice">חשבונית/תשלום</MenuItem>,
+                    <MenuItem key="end_contract" value="end_contract">סיום התקשרות</MenuItem>
+                  ]}
+                  <MenuItem value="pause">הפסקה</MenuItem>
+                  <MenuItem value="other">אחר</MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth>
                 <InputLabel>כיוון</InputLabel>
                 <Select
-                  value={editingInteraction.direction}
+                  value={newInteraction.direction}
                   onChange={(e) =>
-                    setEditingInteraction({ ...editingInteraction, direction: e.target.value })
+                    setNewInteraction({ ...newInteraction, direction: e.target.value })
                   }
                   label="כיוון"
                 >
@@ -450,18 +355,18 @@ const InteractionsTab = ({ clientId }) => {
 
               <TextField
                 label="נושא"
-                value={editingInteraction.subject || ''}
+                value={newInteraction.subject}
                 onChange={(e) =>
-                  setEditingInteraction({ ...editingInteraction, subject: e.target.value })
+                  setNewInteraction({ ...newInteraction, subject: e.target.value })
                 }
                 fullWidth
               />
 
               <TextField
                 label="תוכן"
-                value={editingInteraction.content || editingInteraction.notes || ''}
+                value={newInteraction.content}
                 onChange={(e) =>
-                  setEditingInteraction({ ...editingInteraction, content: e.target.value })
+                  setNewInteraction({ ...newInteraction, content: e.target.value })
                 }
                 multiline
                 rows={4}
@@ -471,9 +376,9 @@ const InteractionsTab = ({ clientId }) => {
 
               <DateTimePicker
                 label="Follow-up הבא (תאריך ושעה)"
-                value={editingInteraction.nextFollowUp}
+                value={newInteraction.nextFollowUp}
                 onChange={(newValue) =>
-                  setEditingInteraction({ ...editingInteraction, nextFollowUp: newValue })
+                  setNewInteraction({ ...newInteraction, nextFollowUp: newValue })
                 }
                 slotProps={{
                   textField: {
@@ -482,24 +387,119 @@ const InteractionsTab = ({ clientId }) => {
                 }}
               />
             </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => {
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenDialog(false)}>ביטול</Button>
+            <Button
+              variant="contained"
+              onClick={handleAddInteraction}
+              disabled={!newInteraction.content}
+            >
+              הוסף
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </LocalizationProvider>
+
+      {/* Edit Interaction Dialog */}
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
+        <Dialog
+          open={editDialog}
+          onClose={() => {
             setEditDialog(false);
             setEditingInteraction(null);
-          }}>
-            ביטול
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleUpdateInteraction}
-            disabled={!editingInteraction?.content && !editingInteraction?.notes}
-          >
-            שמור שינויים
-          </Button>
-        </DialogActions>
-      </Dialog>
+          }}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>ערוך אינטראקציה</DialogTitle>
+          <DialogContent>
+            {editingInteraction && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+                <FormControl fullWidth>
+                  <InputLabel>סוג</InputLabel>
+                  <Select
+                    value={editingInteraction.type}
+                    onChange={(e) =>
+                      setEditingInteraction({ ...editingInteraction, type: e.target.value })
+                    }
+                    label="סוג"
+                  >
+                    <MenuItem value="call">שיחה</MenuItem>
+                    <MenuItem value="email">אימייל</MenuItem>
+                    <MenuItem value="whatsapp">WhatsApp</MenuItem>
+                    <MenuItem value="meeting">פגישה</MenuItem>
+                    <MenuItem value="note">הערה</MenuItem>
+                    <MenuItem value="task">משימה</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <FormControl fullWidth>
+                  <InputLabel>כיוון</InputLabel>
+                  <Select
+                    value={editingInteraction.direction}
+                    onChange={(e) =>
+                      setEditingInteraction({ ...editingInteraction, direction: e.target.value })
+                    }
+                    label="כיוון"
+                  >
+                    <MenuItem value="outbound">יוצא</MenuItem>
+                    <MenuItem value="inbound">נכנס</MenuItem>
+                  </Select>
+                </FormControl>
+
+                <TextField
+                  label="נושא"
+                  value={editingInteraction.subject || ''}
+                  onChange={(e) =>
+                    setEditingInteraction({ ...editingInteraction, subject: e.target.value })
+                  }
+                  fullWidth
+                />
+
+                <TextField
+                  label="תוכן"
+                  value={editingInteraction.content || editingInteraction.notes || ''}
+                  onChange={(e) =>
+                    setEditingInteraction({ ...editingInteraction, content: e.target.value })
+                  }
+                  multiline
+                  rows={4}
+                  fullWidth
+                  required
+                />
+
+                <DateTimePicker
+                  label="Follow-up הבא (תאריך ושעה)"
+                  value={editingInteraction.nextFollowUp}
+                  onChange={(newValue) =>
+                    setEditingInteraction({ ...editingInteraction, nextFollowUp: newValue })
+                  }
+                  slotProps={{
+                    textField: {
+                      fullWidth: true
+                    }
+                  }}
+                />
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => {
+              setEditDialog(false);
+              setEditingInteraction(null);
+            }}>
+              ביטול
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleUpdateInteraction}
+              disabled={!editingInteraction?.content && !editingInteraction?.notes}
+            >
+              שמור שינויים
+            </Button>
+          </DialogActions>
+        </Dialog>
       </LocalizationProvider>
     </Box>
   );

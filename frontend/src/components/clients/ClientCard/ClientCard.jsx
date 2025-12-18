@@ -68,29 +68,26 @@ const ClientCard = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      lead: 'info',
+      new_lead: 'info',
       contacted: 'primary',
-      assessment_completed: 'warning',
+      engaged: 'warning',
+      meeting_set: 'warning',
       proposal_sent: 'secondary',
-      negotiation: 'warning',
       won: 'success',
-      active_client: 'success'
+      lost: 'error',
     };
     return colors[status] || 'default';
   };
 
   const getStatusLabel = (status) => {
     const labels = {
-      lead: 'ליד חדש',
-      contacted: 'יצירת קשר',
-      assessment_scheduled: 'אפיון מתוזמן',
-      assessment_completed: 'אפיון הושלם',
+      new_lead: 'ליד חדש',
+      contacted: 'יצרנו קשר',
+      engaged: 'מעורבות',
+      meeting_set: 'פגישה נקבעה',
       proposal_sent: 'הצעה נשלחה',
-      negotiation: 'משא ומתן',
       won: 'נסגר',
-      active_client: 'לקוח פעיל',
-      in_development: 'בפיתוח',
-      completed: 'הושלם'
+      lost: 'הפסדנו',
     };
     return labels[status] || status;
   };
@@ -137,7 +134,7 @@ const ClientCard = () => {
                     <EditIcon fontSize="small" />
                   </IconButton>
                 </Box>
-                
+
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                   {client.businessInfo?.businessName || 'ללא שם עסק'}
                 </Typography>
@@ -258,8 +255,8 @@ const ClientCard = () => {
 
       {/* Timer */}
       <Box sx={{ mb: 3 }}>
-        <ClientTimer 
-          clientId={client._id} 
+        <ClientTimer
+          clientId={client._id}
           clientName={client.personalInfo?.fullName || client.businessInfo?.businessName}
         />
       </Box>

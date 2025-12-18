@@ -22,7 +22,7 @@ const LeadNurturingSchema = new mongoose.Schema({
         'new_lead',              // ליד חדש נוצר
         'no_response',           // אין תגובה X ימים
         'status_change',         // שינוי סטטוס
-        'assessment_completed',  // אפיון הושלם
+        'engaged',               // ליד הפך ל-engaged
         'proposal_sent',         // הצעה נשלחה
         'interaction',           // אינטראקציה חדשה (שיחה, וואטסאפ, פגישה וכו')
         'time_based',            // טריגר זמן כללי (ימים מאז קשר אחרון וכו')
@@ -55,10 +55,10 @@ const LeadNurturingSchema = new mongoose.Schema({
   sequence: [{
     // שלב ברצף
     step: { type: Number, required: true },
-    
+
     // עיכוב מהשלב הקודם (בימים)
     delayDays: { type: Number, default: 0 },
-    
+
     // סוג הפעולה
     actionType: {
       type: String,
@@ -81,12 +81,12 @@ const LeadNurturingSchema = new mongoose.Schema({
       // להודעת WhatsApp/Email
       message: String,
       templateName: String,
-      
+
       // למשימה
       taskTitle: String,
       taskDescription: String,
       taskPriority: String,
-      
+
       // לשינוי סטטוס
       newStatus: String,
 
@@ -98,10 +98,10 @@ const LeadNurturingSchema = new mongoose.Schema({
       followupType: String,      // call / whatsapp / note / task
       followupSubject: String,
       followupContent: String,
-      
+
       // לתג
       tagName: String,
-      
+
       // להתראה
       notificationTitle: String,
       notificationMessage: String
@@ -109,7 +109,7 @@ const LeadNurturingSchema = new mongoose.Schema({
 
     // האם להפסיק אם יש תגובה?
     stopIfResponse: { type: Boolean, default: true },
-    
+
     // סטטוס ביצוע
     executed: { type: Boolean, default: false },
     executedAt: Date

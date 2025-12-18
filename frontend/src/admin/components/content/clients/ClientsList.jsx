@@ -31,19 +31,13 @@ import ClientForm from './ClientForm';
 import ClientDetail from './ClientDetail';
 
 const STATUS_LABELS = {
-  lead: { label: 'ליד חדש', color: 'info' },
+  new_lead: { label: 'ליד חדש', color: 'info' },
   contacted: { label: 'יצרנו קשר', color: 'primary' },
-  assessment_scheduled: { label: 'פגישת אפיון נקבעה', color: 'warning' },
-  assessment_completed: { label: 'אפיון הושלם', color: 'info' },
-  proposal_sent: { label: 'הצעת מחיר נשלחה', color: 'warning' },
-  negotiation: { label: 'משא ומתן', color: 'warning' },
+  engaged: { label: 'מעורבות', color: 'warning' },
+  meeting_set: { label: 'פגישה נקבעה', color: 'warning' },
+  proposal_sent: { label: 'הצעה נשלחה', color: 'secondary' },
   won: { label: 'נסגר', color: 'success' },
   lost: { label: 'הפסדנו', color: 'error' },
-  on_hold: { label: 'בהמתנה', color: 'default' },
-  active_client: { label: 'לקוח פעיל', color: 'success' },
-  in_development: { label: 'בפיתוח', color: 'info' },
-  completed: { label: 'הושלם', color: 'success' },
-  churned: { label: 'עזב', color: 'error' },
 };
 
 const LEAD_SOURCE_LABELS = {
@@ -58,8 +52,8 @@ const LEAD_SOURCE_LABELS = {
   other: 'אחר',
 };
 
-const LEAD_STATUSES = ['lead', 'contacted', 'assessment_scheduled', 'assessment_completed', 'proposal_sent', 'negotiation', 'on_hold', 'lost'];
-const CLIENT_STATUSES = ['won', 'active_client', 'in_development', 'completed', 'churned'];
+const LEAD_STATUSES = ['new_lead', 'contacted', 'engaged', 'meeting_set', 'proposal_sent', 'lost'];
+const CLIENT_STATUSES = ['won'];
 
 function ClientsList({ viewMode }) {
   const theme = useTheme();
@@ -208,9 +202,9 @@ function ClientsList({ viewMode }) {
       headerName: 'מקור ליד',
       width: 150,
       renderCell: (params) => (
-        <Chip 
-          label={LEAD_SOURCE_LABELS[params.value] || params.value} 
-          size="small" 
+        <Chip
+          label={LEAD_SOURCE_LABELS[params.value] || params.value}
+          size="small"
           variant="outlined"
         />
       ),
@@ -232,10 +226,10 @@ function ClientsList({ viewMode }) {
         const score = params.value || 0;
         const color = score >= 80 ? 'success' : score >= 60 ? 'warning' : 'default';
         return (
-          <Chip 
-            label={score} 
-            color={color} 
-            size="small" 
+          <Chip
+            label={score}
+            color={color}
+            size="small"
             variant="outlined"
           />
         );
@@ -497,10 +491,10 @@ function ClientsList({ viewMode }) {
       )}
 
       {/* Form Dialog */}
-      <ClientForm 
-        open={formOpen} 
-        onClose={handleFormClose} 
-        client={selectedClient} 
+      <ClientForm
+        open={formOpen}
+        onClose={handleFormClose}
+        client={selectedClient}
       />
 
       {/* Client Detail Dialog */}
