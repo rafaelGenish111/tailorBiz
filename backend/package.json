@@ -9,7 +9,8 @@
     "seed": "node scripts/seed.js",
     "seed:nurturing": "node scripts/seedNurturing.js",
     "fix:index": "node scripts/fixOrderNumberIndex.js",
-    "fix:duplicate-indexes": "node scripts/fixDuplicateIndexes.js"
+    "fix:duplicate-indexes": "node scripts/fixDuplicateIndexes.js",
+    "migrate:sales-os-statuses": "node scripts/migrateSalesOsStatuses.js"
   },
   "keywords": [],
   "author": "",

@@ -5,7 +5,9 @@ import { toast } from 'react-toastify';
 export const useClients = (filters) => {
   return useQuery({
     queryKey: ['clients', filters],
-    queryFn: () => clientAPI.getAll(filters).then(res => res.data)
+    queryFn: () => clientAPI.getAll(filters).then(res => res.data),
+    // חשוב: בגלל staleTime גלובלי + refetchOnMount=false, רשימות יכולות "להיתקע" ריקות אחרי שינויי סטטוס/מיגרציות
+    refetchOnMount: 'always',
   });
 };
 
@@ -119,7 +121,7 @@ export const useUpdateInteraction = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ clientId, interactionId, data }) => 
+    mutationFn: ({ clientId, interactionId, data }) =>
       clientAPI.updateInteraction(clientId, interactionId, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries(['client-interactions', variables.clientId]);
@@ -136,7 +138,7 @@ export const useDeleteInteraction = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ clientId, interactionId }) => 
+    mutationFn: ({ clientId, interactionId }) =>
       clientAPI.deleteInteraction(clientId, interactionId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries(['client-interactions', variables.clientId]);
@@ -177,7 +179,7 @@ export const useUpdateTask = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ clientId, taskId, data }) => 
+    mutationFn: ({ clientId, taskId, data }) =>
       clientAPI.updateTask(clientId, taskId, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries(['client-tasks', variables.clientId]);
