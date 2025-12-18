@@ -9,6 +9,7 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  TableContainer,
   Stack,
   Dialog,
   DialogTitle,
@@ -191,50 +192,52 @@ const HuntingPoolsPage = () => {
 
       {/* Main table (כמו מאמרים) */}
       <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>סקטור</TableCell>
-              <TableCell>ממתינים</TableCell>
-              <TableCell>סה״כ חברות</TableCell>
-              <TableCell>תיאור</TableCell>
-              <TableCell align="left">פעולות</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {pools.map((p) => (
-              <TableRow key={p._id} hover>
-                <TableCell>{p.sectorName}</TableCell>
-                <TableCell><Chip size="small" label={countPending(p)} /></TableCell>
-                <TableCell>{(p.prospects || []).length}</TableCell>
-                <TableCell sx={{ maxWidth: 420, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {p.description || '—'}
-                </TableCell>
-                <TableCell align="left">
-                  <Stack direction="row" spacing={1}>
-                    <Button size="small" variant="outlined" onClick={() => openPool(p)}>
-                      פתח
-                    </Button>
-                  </Stack>
-                </TableCell>
-              </TableRow>
-            ))}
-            {!loading && pools.length === 0 ? (
+        <TableContainer sx={{ width: '100%', overflowX: 'auto' }}>
+          <Table sx={{ minWidth: 720 }}>
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={5} align="center">
-                  <Typography color="text.secondary" sx={{ py: 3 }}>אין Pools עדיין.</Typography>
-                </TableCell>
+                <TableCell>סקטור</TableCell>
+                <TableCell>ממתינים</TableCell>
+                <TableCell>סה״כ חברות</TableCell>
+                <TableCell>תיאור</TableCell>
+                <TableCell align="left">פעולות</TableCell>
               </TableRow>
-            ) : null}
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={5} align="center">
-                  <Typography color="text.secondary" sx={{ py: 3 }}>טוען...</Typography>
-                </TableCell>
-              </TableRow>
-            ) : null}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {pools.map((p) => (
+                <TableRow key={p._id} hover>
+                  <TableCell>{p.sectorName}</TableCell>
+                  <TableCell><Chip size="small" label={countPending(p)} /></TableCell>
+                  <TableCell>{(p.prospects || []).length}</TableCell>
+                  <TableCell sx={{ maxWidth: 420, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {p.description || '—'}
+                  </TableCell>
+                  <TableCell align="left">
+                    <Stack direction="row" spacing={1}>
+                      <Button size="small" variant="outlined" onClick={() => openPool(p)}>
+                        פתח
+                      </Button>
+                    </Stack>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {!loading && pools.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} align="center">
+                    <Typography color="text.secondary" sx={{ py: 3 }}>אין Pools עדיין.</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : null}
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} align="center">
+                    <Typography color="text.secondary" sx={{ py: 3 }}>טוען...</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : null}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Paper>
 
       {/* Create dialog (זהה להתנהגות דף מאמרים) */}
@@ -279,129 +282,131 @@ const HuntingPoolsPage = () => {
           <Stack spacing={2}>
             {/* Quick Add row (Excel-like) */}
             <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Company Name</TableCell>
-                    <TableCell>Contact</TableCell>
-                    <TableCell>Phone</TableCell>
-                    <TableCell>Notes</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell align="left">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>
-                      <TextField
-                        value={quickRow.companyName}
-                        onChange={(e) => setQuickRow((p) => ({ ...p, companyName: e.target.value }))}
-                        size="small"
-                        placeholder="שם חברה (Enter להוספה)"
-                        fullWidth
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') { e.preventDefault(); addProspect(); }
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <TextField
-                        value={quickRow.contactPerson}
-                        onChange={(e) => setQuickRow((p) => ({ ...p, contactPerson: e.target.value }))}
-                        size="small"
-                        placeholder="איש קשר"
-                        fullWidth
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') { e.preventDefault(); addProspect(); }
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <TextField
-                        value={quickRow.phone}
-                        onChange={(e) => setQuickRow((p) => ({ ...p, phone: e.target.value }))}
-                        size="small"
-                        placeholder="טלפון"
-                        fullWidth
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') { e.preventDefault(); addProspect(); }
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <TextField
-                        value={quickRow.notes}
-                        onChange={(e) => setQuickRow((p) => ({ ...p, notes: e.target.value }))}
-                        size="small"
-                        placeholder="הערות"
-                        fullWidth
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') { e.preventDefault(); addProspect(); }
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Chip size="small" label="pending" />
-                    </TableCell>
-                    <TableCell align="left">
-                      <Button size="small" variant="contained" onClick={addProspect} disabled={!quickRow.companyName.trim()}>
-                        הוסף
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-
-                  {(activePool?.prospects || []).map((pr) => (
-                    <TableRow key={pr._id} hover>
-                      <TableCell>{pr.companyName}</TableCell>
-                      <TableCell>{pr.contactPerson}</TableCell>
-                      <TableCell>{pr.phone}</TableCell>
-                      <TableCell>{pr.notes}</TableCell>
+              <TableContainer sx={{ width: '100%', overflowX: 'auto' }}>
+                <Table size="small" sx={{ minWidth: 980 }}>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Company Name</TableCell>
+                      <TableCell>Contact</TableCell>
+                      <TableCell>Phone</TableCell>
+                      <TableCell>Notes</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell align="left">Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    <TableRow>
                       <TableCell>
                         <TextField
-                          select
+                          value={quickRow.companyName}
+                          onChange={(e) => setQuickRow((p) => ({ ...p, companyName: e.target.value }))}
                           size="small"
-                          value={pr.status}
-                          onChange={(e) => updateProspect(pr._id, { status: e.target.value })}
-                          disabled={updatingProspectId === pr._id}
-                        >
-                          {PROSPECT_STATUSES.map((opt) => (
-                            <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
-                          ))}
-                        </TextField>
+                          placeholder="שם חברה (Enter להוספה)"
+                          fullWidth
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') { e.preventDefault(); addProspect(); }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          value={quickRow.contactPerson}
+                          onChange={(e) => setQuickRow((p) => ({ ...p, contactPerson: e.target.value }))}
+                          size="small"
+                          placeholder="איש קשר"
+                          fullWidth
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') { e.preventDefault(); addProspect(); }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          value={quickRow.phone}
+                          onChange={(e) => setQuickRow((p) => ({ ...p, phone: e.target.value }))}
+                          size="small"
+                          placeholder="טלפון"
+                          fullWidth
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') { e.preventDefault(); addProspect(); }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          value={quickRow.notes}
+                          onChange={(e) => setQuickRow((p) => ({ ...p, notes: e.target.value }))}
+                          size="small"
+                          placeholder="הערות"
+                          fullWidth
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') { e.preventDefault(); addProspect(); }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Chip size="small" label="pending" />
                       </TableCell>
                       <TableCell align="left">
-                        <Stack direction="row" spacing={1}>
-                          <Button
+                        <Button size="small" variant="contained" onClick={addProspect} disabled={!quickRow.companyName.trim()}>
+                          הוסף
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+
+                    {(activePool?.prospects || []).map((pr) => (
+                      <TableRow key={pr._id} hover>
+                        <TableCell>{pr.companyName}</TableCell>
+                        <TableCell>{pr.contactPerson}</TableCell>
+                        <TableCell>{pr.phone}</TableCell>
+                        <TableCell>{pr.notes}</TableCell>
+                        <TableCell>
+                          <TextField
+                            select
                             size="small"
-                            variant="outlined"
-                            onClick={() => updateProspect(pr._id, { status: 'contacted' })}
+                            value={pr.status}
+                            onChange={(e) => updateProspect(pr._id, { status: e.target.value })}
                             disabled={updatingProspectId === pr._id}
                           >
-                            Contacted
-                          </Button>
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="success"
-                            onClick={() => convertToLead(pr)}
-                            disabled={pr.status === 'converted_to_lead' || updatingProspectId === pr._id}
-                          >
-                            Convert to Lead
-                          </Button>
-                        </Stack>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                            {PROSPECT_STATUSES.map((opt) => (
+                              <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+                            ))}
+                          </TextField>
+                        </TableCell>
+                        <TableCell align="left">
+                          <Stack direction="row" spacing={1}>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => updateProspect(pr._id, { status: 'contacted' })}
+                              disabled={updatingProspectId === pr._id}
+                            >
+                              Contacted
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="success"
+                              onClick={() => convertToLead(pr)}
+                              disabled={pr.status === 'converted_to_lead' || updatingProspectId === pr._id}
+                            >
+                              Convert to Lead
+                            </Button>
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    ))}
 
-                  {(activePool?.prospects || []).length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center">
-                        <Typography color="text.secondary" sx={{ py: 2 }}>אין חברות עדיין.</Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : null}
-                </TableBody>
-              </Table>
+                    {(activePool?.prospects || []).length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} align="center">
+                          <Typography color="text.secondary" sx={{ py: 2 }}>אין חברות עדיין.</Typography>
+                        </TableCell>
+                      </TableRow>
+                    ) : null}
+                  </TableBody>
+                </Table>
+              </TableContainer>
             </Paper>
 
             <Divider />

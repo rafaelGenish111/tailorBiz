@@ -151,7 +151,7 @@ export default function SalesPipelineBoard() {
   };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 } }}>
+    <Box sx={{ p: { xs: 2, md: 3 }, maxWidth: '100%', overflowX: 'hidden' }}>
       <Box sx={{ mb: 2 }}>
         <Typography variant="h4" sx={{ fontWeight: 700 }}>
           Sales Pipeline
@@ -172,6 +172,9 @@ export default function SalesPipelineBoard() {
               display: 'flex',
               gap: 2,
               overflowX: 'auto',
+              maxWidth: '100%',
+              minWidth: 0,
+              boxSizing: 'border-box',
               pb: 1,
               scrollSnapType: { xs: 'x mandatory', md: 'none' },
               WebkitOverflowScrolling: 'touch',
@@ -186,8 +189,9 @@ export default function SalesPipelineBoard() {
                   key={stage.id}
                   elevation={0}
                   sx={{
-                    minWidth: { xs: '86vw', sm: 280 },
-                    width: { xs: '86vw', sm: 300 },
+                    // Use container-based widths to avoid page-level horizontal overflow inside admin layout
+                    minWidth: { xs: '100%', sm: 280 },
+                    width: { xs: '100%', sm: 300 },
                     border: '1px solid rgba(0,0,0,0.08)',
                     borderRadius: 2,
                     backgroundColor: '#fff',
