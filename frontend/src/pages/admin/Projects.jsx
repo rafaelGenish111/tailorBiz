@@ -146,7 +146,7 @@ const Projects = () => {
           </Grid>
         ) : (
           projects.map((project) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={project._id}>
+            <Grid item xs={12} sm={6} md={4} lg={3} key={project._id} sx={{ display: 'flex' }}>
               <Card
                 onClick={(e) => {
                   e.preventDefault();
@@ -154,7 +154,11 @@ const Projects = () => {
                 }}
                 sx={{
                   borderTop: `4px solid ${project.color || '#1976d2'}`,
-                  height: 320,
+                  width: '100%',
+                  // במובייל/טאבלט קטן - חשוב שכרטיסים יהיו בגודל אחיד (ללא תלות באורך הטקסט)
+                  height: { xs: 300, sm: 320 },
+                  minHeight: { xs: 300, sm: 320 },
+                  maxHeight: { xs: 300, sm: 320 },
                   display: 'flex',
                   flexDirection: 'column',
                   cursor: 'pointer',
@@ -165,72 +169,77 @@ const Projects = () => {
                   }
                 }}
               >
-              <CardHeader
-                title={
-                  <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                    <Typography variant="h6" sx={{ flex: 1, minWidth: 0 }}>
-                      {project.name}
-                    </Typography>
-                    {getStatusChip(project.status)}
-                  </Stack>
-                }
-                subheader={
-                  project.startDate && project.endDate
-                    ? `${new Date(project.startDate).toLocaleDateString('he-IL')} - ${new Date(
+                <CardHeader
+                  title={
+                    <Stack direction="row" spacing={1} alignItems="center" flexWrap="nowrap" sx={{ minWidth: 0 }}>
+                      <Typography
+                        variant="h6"
+                        noWrap
+                        sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
+                      >
+                        {project.name}
+                      </Typography>
+                      {getStatusChip(project.status)}
+                    </Stack>
+                  }
+                  subheader={
+                    project.startDate && project.endDate
+                      ? `${new Date(project.startDate).toLocaleDateString('he-IL')} - ${new Date(
                         project.endDate
                       ).toLocaleDateString('he-IL')}`
-                    : null
-                }
-              />
-              <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                {project.description ? (
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{
-                      mb: 2,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      flexGrow: 1
-                    }}
+                      : null
+                  }
+                  subheaderTypographyProps={{ noWrap: true }}
+                />
+                <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                  {project.description ? (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        mb: 2,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        flexGrow: 1
+                      }}
+                    >
+                      {project.description}
+                    </Typography>
+                  ) : (
+                    <Box sx={{ flexGrow: 1 }} />
+                  )}
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    justifyContent="flex-end"
+                    sx={{ mt: 'auto', flexShrink: 0 }}
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    {project.description}
-                  </Typography>
-                ) : (
-                  <Box sx={{ flexGrow: 1 }} />
-                )}
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  justifyContent="flex-end"
-                  sx={{ mt: 'auto', flexShrink: 0 }}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <IconButton
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openEdit(project);
-                    }}
-                    color="primary"
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(project);
-                    }}
-                    color="error"
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Stack>
-              </CardContent>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEdit(project);
+                      }}
+                      color="primary"
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(project);
+                      }}
+                      color="error"
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Stack>
+                </CardContent>
               </Card>
             </Grid>
           ))
