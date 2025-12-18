@@ -76,6 +76,39 @@ const LEAD_SOURCE_LABELS = {
   other: 'אחר',
 };
 
+function extractWebsiteMessageFromInteraction(content) {
+  if (!content) return '';
+  const text = String(content);
+  // ה-controller שלנו שומר את ההודעה ואז מפריד עם "---" לפרטי קשר.
+  const idx = text.indexOf('\n---');
+  const before = (idx >= 0 ? text.slice(0, idx) : text).trim();
+  if (!before || before === '---') return '';
+  return before;
+}
+
+function findLatestWebsiteInquiry(interactions) {
+  if (!Array.isArray(interactions) || interactions.length === 0) return null;
+
+  const candidates = interactions.filter((i) => {
+    const subject = String(i?.subject || '');
+    const isInbound = i?.direction === 'inbound';
+    const isNote = i?.type === 'note';
+    const looksLikeWebsite = subject.includes('פניה') || subject.includes('פנייה') || subject.includes('מהאתר') || subject.includes('האתר');
+    return isInbound && isNote && looksLikeWebsite;
+  });
+
+  const list = candidates.length > 0 ? candidates : interactions;
+
+  const getTime = (i) => {
+    const t = i?.timestamp || i?.date;
+    const d = t ? new Date(t) : null;
+    const ms = d && !Number.isNaN(d.getTime()) ? d.getTime() : 0;
+    return ms;
+  };
+
+  return list.reduce((latest, cur) => (getTime(cur) >= getTime(latest) ? cur : latest), list[0]);
+}
+
 function ClientDetail({ open, onClose, client }) {
   const [tabValue, setTabValue] = useState(0);
   const [personalForm, setPersonalForm] = useState({
@@ -127,6 +160,12 @@ function ClientDetail({ open, onClose, client }) {
   const { data: interactionsResponse, isLoading: interactionsLoading } =
     useClientInteractions(clientId);
   const interactions = interactionsResponse?.data || client?.interactions || [];
+
+  const websiteInquiry =
+    client?.leadSource === 'website_form' ? findLatestWebsiteInquiry(interactions) : null;
+  const websiteMessage = websiteInquiry
+    ? extractWebsiteMessageFromInteraction(websiteInquiry.content || websiteInquiry.notes)
+    : '';
 
   const { data: nurturingInstancesResponse } = useClientNurturingInstances(clientId);
   const nurturingInstances = nurturingInstancesResponse?.data || [];
@@ -385,6 +424,23 @@ function ClientDetail({ open, onClose, client }) {
             clientName={client.personalInfo?.fullName || client.businessInfo?.businessName}
           />
         </Box>
+
+        {/* Website inquiry message (when lead came from website) */}
+        {client?.leadSource === 'website_form' && websiteMessage && (
+          <Paper variant="outlined" sx={{ p: 2, mb: 2, bgcolor: 'rgba(156, 39, 176, 0.04)', borderColor: 'rgba(156, 39, 176, 0.25)' }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 0.5 }}>
+              🌐 הודעה מהאתר
+            </Typography>
+            <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+              {websiteMessage}
+            </Typography>
+            {(websiteInquiry?.timestamp || websiteInquiry?.date) && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                התקבלה: {new Date(websiteInquiry.timestamp || websiteInquiry.date).toLocaleString('he-IL')}
+              </Typography>
+            )}
+          </Paper>
+        )}
 
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
           <Tabs
@@ -723,8 +779,8 @@ function ClientDetail({ open, onClose, client }) {
                       <Typography variant="subtitle2">{interaction.type}</Typography>
                       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                         <Typography variant="caption" color="text.secondary">
-                          {interaction.date &&
-                            new Date(interaction.date).toLocaleDateString('he-IL')}
+                          {(interaction.timestamp || interaction.date) &&
+                            new Date(interaction.timestamp || interaction.date).toLocaleDateString('he-IL')}
                         </Typography>
                         <IconButton
                           size="small"
