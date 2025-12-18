@@ -793,14 +793,14 @@ export default function SalesOnboarding({ variant = 'standalone' }) {
       </List>
 
       {!isEmbedded ? (
-        <Box sx={{ mt: 'auto', p: 2.5, borderTop: '1px solid', borderColor: 'grey.200' }}>
-          <Stack spacing={1}>
-            <Button variant="outlined" color="primary" onClick={() => navigate('/')}>חזרה לאתר</Button>
-            <Typography variant="caption" color="text.secondary">
-              עמוד פנימי (ללא Header/Footer)
-            </Typography>
-          </Stack>
-        </Box>
+      <Box sx={{ mt: 'auto', p: 2.5, borderTop: '1px solid', borderColor: 'grey.200' }}>
+        <Stack spacing={1}>
+          <Button variant="outlined" color="primary" onClick={() => navigate('/')}>חזרה לאתר</Button>
+          <Typography variant="caption" color="text.secondary">
+            עמוד פנימי (ללא Header/Footer)
+          </Typography>
+        </Stack>
+      </Box>
       ) : null}
     </Box>
   );
