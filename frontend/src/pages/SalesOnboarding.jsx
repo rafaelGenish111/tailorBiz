@@ -727,10 +727,11 @@ const Content = ({ tab, onGo }) => {
   }
 };
 
-export default function SalesOnboarding() {
+export default function SalesOnboarding({ variant = 'standalone' }) {
   const theme = useTheme();
   const navigate = useNavigate();
   const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const isEmbedded = variant === 'embedded';
 
   const [tab, setTab] = React.useState('home');
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -779,16 +780,85 @@ export default function SalesOnboarding() {
         ))}
       </List>
 
-      <Box sx={{ mt: 'auto', p: 2.5, borderTop: '1px solid', borderColor: 'grey.200' }}>
-        <Stack spacing={1}>
-          <Button variant="outlined" color="primary" onClick={() => navigate('/')}>חזרה לאתר</Button>
-          <Typography variant="caption" color="text.secondary">
-            עמוד פנימי (ללא Header/Footer)
-          </Typography>
-        </Stack>
-      </Box>
+      {!isEmbedded ? (
+        <Box sx={{ mt: 'auto', p: 2.5, borderTop: '1px solid', borderColor: 'grey.200' }}>
+          <Stack spacing={1}>
+            <Button variant="outlined" color="primary" onClick={() => navigate('/')}>חזרה לאתר</Button>
+            <Typography variant="caption" color="text.secondary">
+              עמוד פנימי (ללא Header/Footer)
+            </Typography>
+          </Stack>
+        </Box>
+      ) : null}
     </Box>
   );
+
+  if (isEmbedded) {
+    return (
+      <Box sx={{ width: '100%' }}>
+        {/* Mobile: compact horizontal navigation */}
+        {!isMdUp ? (
+          <Paper variant="outlined" sx={{ p: 1.25, borderRadius: 3, mb: 2, overflowX: 'auto' }}>
+            <Stack direction="row" spacing={1} sx={{ width: 'max-content' }}>
+              {NAV.map((it) => (
+                <Chip
+                  key={it.id}
+                  clickable
+                  icon={it.icon}
+                  label={it.label}
+                  onClick={() => onGo(it.id)}
+                  color={tab === it.id ? 'secondary' : 'default'}
+                  variant={tab === it.id ? 'filled' : 'outlined'}
+                  sx={{ fontWeight: tab === it.id ? 900 : 700 }}
+                />
+              ))}
+            </Stack>
+          </Paper>
+        ) : null}
+
+        <Box
+          sx={{
+            display: { xs: 'block', md: 'grid' },
+            gridTemplateColumns: { md: `${drawerWidth}px 1fr` },
+            gap: 2,
+            alignItems: 'start',
+          }}
+        >
+          {/* Desktop: side navigation (not a Drawer) */}
+          {isMdUp ? (
+            <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
+              <Box sx={{ p: 2 }}>
+                <Typography fontWeight={900}>Sales Academy</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  בחר נושא
+                </Typography>
+              </Box>
+              <Divider />
+              <List sx={{ px: 1, py: 1 }}>
+                {NAV.map((it) => (
+                  <ListItemButton
+                    key={it.id}
+                    selected={tab === it.id}
+                    onClick={() => onGo(it.id)}
+                    sx={{ borderRadius: 2, mb: 0.5 }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 40, color: tab === it.id ? 'secondary.main' : 'text.secondary' }}>
+                      {it.icon}
+                    </ListItemIcon>
+                    <ListItemText primary={<Typography fontWeight={tab === it.id ? 900 : 700}>{it.label}</Typography>} />
+                  </ListItemButton>
+                ))}
+              </List>
+            </Paper>
+          ) : null}
+
+          <Box sx={{ minWidth: 0 }}>
+            <Content tab={tab} onGo={onGo} />
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>

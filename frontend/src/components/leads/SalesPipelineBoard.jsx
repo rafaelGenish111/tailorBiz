@@ -8,7 +8,9 @@ import {
   Paper,
   Tooltip,
   Typography,
+  useMediaQuery,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { toast } from 'react-toastify';
 import { FaFire, FaWhatsapp } from 'react-icons/fa';
 import api from '../../admin/utils/api';
@@ -56,6 +58,11 @@ function getClientScore(client) {
 export default function SalesPipelineBoard() {
   const [columns, setColumns] = useState(buildEmptyColumns);
   const [loading, setLoading] = useState(true);
+
+  const theme = useTheme();
+  // משאיר לנו אפשרות להרחבות UX לנייד (כפתורי ניווט/טאבינג וכו')
+  // eslint-disable-next-line no-unused-vars
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const stageMeta = useMemo(() => Object.fromEntries(STAGES.map((s) => [s.id, s])), []);
 
@@ -166,6 +173,9 @@ export default function SalesPipelineBoard() {
               gap: 2,
               overflowX: 'auto',
               pb: 1,
+              scrollSnapType: { xs: 'x mandatory', md: 'none' },
+              WebkitOverflowScrolling: 'touch',
+              px: { xs: 0.5, md: 0 },
             }}
           >
             {STAGES.map((stage) => {
@@ -176,19 +186,20 @@ export default function SalesPipelineBoard() {
                   key={stage.id}
                   elevation={0}
                   sx={{
-                    minWidth: 280,
-                    width: 300,
+                    minWidth: { xs: '86vw', sm: 280 },
+                    width: { xs: '86vw', sm: 300 },
                     border: '1px solid rgba(0,0,0,0.08)',
                     borderRadius: 2,
                     backgroundColor: '#fff',
                     display: 'flex',
                     flexDirection: 'column',
-                    maxHeight: 'calc(100vh - 210px)',
+                    maxHeight: { xs: 'calc(100vh - 220px)', md: 'calc(100vh - 210px)' },
+                    scrollSnapAlign: { xs: 'start', md: 'none' },
                   }}
                 >
                   <Box
                     sx={{
-                      p: 1.5,
+                      p: { xs: 1.25, md: 1.5 },
                       borderBottom: '1px solid rgba(0,0,0,0.08)',
                       display: 'flex',
                       justifyContent: 'space-between',
@@ -196,7 +207,9 @@ export default function SalesPipelineBoard() {
                       gap: 1,
                     }}
                   >
-                    <Typography sx={{ fontWeight: 700 }}>{stage.title}</Typography>
+                    <Typography sx={{ fontWeight: 700, fontSize: { xs: '0.95rem', md: '1rem' } }}>
+                      {stage.title}
+                    </Typography>
                     <Chip size="small" label={items.length} />
                   </Box>
 
@@ -206,7 +219,7 @@ export default function SalesPipelineBoard() {
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                         sx={{
-                          p: 1.5,
+                          p: { xs: 1.25, md: 1.5 },
                           flex: 1,
                           overflowY: 'auto',
                           backgroundColor: snapshot.isDraggingOver ? 'rgba(25, 118, 210, 0.04)' : 'transparent',
@@ -229,7 +242,7 @@ export default function SalesPipelineBoard() {
                                   {...dragProvided.dragHandleProps}
                                   elevation={0}
                                   sx={{
-                                    p: 1.25,
+                                    p: { xs: 1.25, md: 1.25 },
                                     mb: 1.25,
                                     borderRadius: 2,
                                     border: '1px solid rgba(0,0,0,0.10)',
@@ -261,6 +274,7 @@ export default function SalesPipelineBoard() {
                                         <Tooltip title="פתח WhatsApp">
                                           <IconButton
                                             size="small"
+                                            sx={{ width: 36, height: 36 }}
                                             onClick={(e) => {
                                               e.stopPropagation();
                                               window.open(`https://wa.me/${waPhone}`, '_blank', 'noopener,noreferrer');
