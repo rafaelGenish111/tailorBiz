@@ -170,13 +170,14 @@ export default function SalesPipelineBoard() {
           <Box
             sx={{
               display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
               gap: 2,
-              overflowX: 'auto',
+              overflowX: { xs: 'hidden', md: 'auto' },
               maxWidth: '100%',
               minWidth: 0,
               boxSizing: 'border-box',
               pb: 1,
-              scrollSnapType: { xs: 'x mandatory', md: 'none' },
+              scrollSnapType: { xs: 'none', md: 'none' },
               WebkitOverflowScrolling: 'touch',
               px: { xs: 0.5, md: 0 },
             }}
@@ -197,8 +198,11 @@ export default function SalesPipelineBoard() {
                     backgroundColor: '#fff',
                     display: 'flex',
                     flexDirection: 'column',
-                    maxHeight: { xs: 'calc(100vh - 220px)', md: 'calc(100vh - 210px)' },
-                    scrollSnapAlign: { xs: 'start', md: 'none' },
+                    // במובייל אנחנו מציגים את כל הסטייג'ים אנכית, לכן שומרים על גובה אחיד לכל עמודה
+                    height: { xs: 'clamp(340px, 55vh, 520px)', md: 'calc(100vh - 210px)' },
+                    minHeight: { xs: 'clamp(340px, 55vh, 520px)', md: 'calc(100vh - 210px)' },
+                    maxHeight: { xs: 'clamp(340px, 55vh, 520px)', md: 'calc(100vh - 210px)' },
+                    scrollSnapAlign: { xs: 'none', md: 'none' },
                   }}
                 >
                   <Box
