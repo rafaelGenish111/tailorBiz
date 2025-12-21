@@ -76,7 +76,8 @@ function AdminPanel() {
         {/* Clients & Leads */}
         <Route path="leads" element={<RequireModuleAccess requiredModule="leads"><ClientsList viewMode="leads" /></RequireModuleAccess>} />
         <Route path="customers" element={<RequireModuleAccess requiredModule="clients"><ClientsList viewMode="clients" /></RequireModuleAccess>} />
-        <Route path="clients" element={<RequireModuleAccess anyOfModules={['clients', 'leads']}><ClientsList /></RequireModuleAccess>} />
+        {/* Combined view (clients+leads) should be clients-only to avoid lead-only employees seeing customers */}
+        <Route path="clients" element={<RequireModuleAccess requiredModule="clients"><ClientsList /></RequireModuleAccess>} />
         <Route path="clients/:id" element={<RequireModuleAccess anyOfModules={['clients', 'leads']}><ClientCard /></RequireModuleAccess>} />
         <Route path="pipeline" element={<RequireModuleAccess anyOfModules={['leads', 'clients']}><SalesPipelineBoard /></RequireModuleAccess>} />
         <Route path="hunting-pools" element={<RequireModuleAccess anyOfModules={['leads', 'clients']}><HuntingPoolsPage /></RequireModuleAccess>} />

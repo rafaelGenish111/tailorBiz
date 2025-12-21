@@ -6,6 +6,47 @@ const mongoose = require('mongoose');
 const leadNurturingService = require('../services/leadNurturingService');
 const projectGeneratorService = require('../services/projectGeneratorService');
 
+const LEAD_STATUSES = ['new_lead', 'contacted', 'engaged', 'meeting_set', 'proposal_sent', 'lost'];
+const CLIENT_STATUSES = ['won'];
+
+function getAllowedStatusesForUser(user) {
+  if (!user) return [];
+  if (user.role === 'admin') return null; // null = unrestricted
+
+  const canLeads = Boolean(user.permissions?.leads?.enabled);
+  const canClients = Boolean(user.permissions?.clients?.enabled);
+
+  if (canLeads && canClients) return null; // unrestricted
+  if (canLeads) return LEAD_STATUSES;
+  if (canClients) return CLIENT_STATUSES;
+  return [];
+}
+
+function enforceClientStatusAccessOnQuery(query, user, requestedStatuses) {
+  const allowed = getAllowedStatusesForUser(user);
+  if (allowed === null) return query; // unrestricted
+
+  // If nothing allowed, block
+  if (!allowed.length) {
+    const err = new Error('אין הרשאה ללקוחות/לידים');
+    err.statusCode = 403;
+    throw err;
+  }
+
+  const reqStatuses = Array.isArray(requestedStatuses) ? requestedStatuses.filter(Boolean) : [];
+  const finalStatuses = reqStatuses.length ? reqStatuses.filter((s) => allowed.includes(s)) : allowed;
+
+  // If request asked for statuses the user isn't allowed to see -> return empty result
+  if (reqStatuses.length && finalStatuses.length === 0) {
+    // Put an impossible condition
+    query.status = '__no_such_status__';
+    return query;
+  }
+
+  query.status = finalStatuses.length === 1 ? finalStatuses[0] : { $in: finalStatuses };
+  return query;
+}
+
 // Helper function to check if string is valid ObjectId
 const isValidObjectId = (id) => {
   if (!id) return false;
@@ -29,14 +70,10 @@ exports.getAllClients = async (req, res) => {
     // בניית query
     let query = {};
 
-    if (status) {
-      const statuses = status.split(',');
-      if (statuses.length > 1) {
-        query.status = { $in: statuses };
-      } else {
-        query.status = status;
-      }
-    }
+    // RBAC: employees with leads-only must not see customers, and vice versa.
+    // We enforce by restricting status values returned from this endpoint.
+    const requestedStatuses = status ? String(status).split(',').map((s) => s.trim()).filter(Boolean) : [];
+    enforceClientStatusAccessOnQuery(query, req.user, requestedStatuses);
 
     if (leadSource) {
       query.leadSource = leadSource;
@@ -102,6 +139,21 @@ exports.getClientById = async (req, res) => {
         success: false,
         message: 'לקוח לא נמצא'
       });
+    }
+
+    // RBAC: don't allow employees to access a client record outside their module (leads vs clients)
+    if (req.user?.role !== 'admin') {
+      const st = String(client.status || '');
+      const isLead = LEAD_STATUSES.includes(st);
+      const isClient = CLIENT_STATUSES.includes(st);
+
+      if (isLead && !req.user?.permissions?.leads?.enabled) {
+        return res.status(403).json({ success: false, message: 'אין הרשאה ללידים' });
+      }
+      if (isClient && !req.user?.permissions?.clients?.enabled) {
+        return res.status(403).json({ success: false, message: 'אין הרשאה ללקוחות' });
+      }
+      // For unknown statuses, keep existing behavior (allow) – can be tightened later.
     }
 
     res.json({
@@ -1389,7 +1441,7 @@ exports.getPipelineStats = async (req, res) => {
     for (const stage of pipeline) {
       let statusFilter = {};
 
-        statusFilter = { status: stage.stage };
+      statusFilter = { status: stage.stage };
 
       const clients = await Client.find(statusFilter)
         .select('paymentPlan.totalAmount orders.totalAmount');
