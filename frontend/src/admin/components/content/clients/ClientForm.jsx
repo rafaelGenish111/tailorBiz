@@ -18,6 +18,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useCreateClient, useUpdateClient } from '../../../hooks/useClients';
+import api from '../../../utils/api';
 
 // Validation schema
 const schema = yup.object().shape({
@@ -61,6 +62,12 @@ const schema = yup.object().shape({
     .string()
     .oneOf(['new_lead', 'contacted', 'engaged', 'meeting_set', 'proposal_sent', 'won', 'lost'])
     .default('new_lead'),
+  referrer: yup
+    .object()
+    .shape({
+      referrerId: yup.string().nullable(),
+    })
+    .nullable(),
 });
 
 const LEAD_SOURCE_OPTIONS = [
@@ -97,6 +104,9 @@ function ClientForm({ open, onClose, client }) {
   const createMutation = useCreateClient();
   const updateMutation = useUpdateClient();
 
+  const [referrers, setReferrers] = useState([]);
+  const [referrersLoading, setReferrersLoading] = useState(false);
+
   const {
     control,
     handleSubmit,
@@ -122,8 +132,33 @@ function ClientForm({ open, onClose, client }) {
       },
       leadSource: 'whatsapp',
       status: 'new_lead',
+      referrer: { referrerId: '' },
     },
   });
+
+  // Load referrers when opening the form
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setReferrersLoading(true);
+        const res = await api.get('/referrer-partners');
+        const list = res?.data?.data || [];
+        if (!cancelled) setReferrers(list);
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) setReferrers([]);
+      } finally {
+        if (!cancelled) setReferrersLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   // Load client data when editing
   useEffect(() => {
@@ -146,6 +181,7 @@ function ClientForm({ open, onClose, client }) {
         },
         leadSource: client.leadSource || 'whatsapp',
         status: client.status || 'new_lead',
+        referrer: { referrerId: client.referrer?.referrerId || '' },
       });
     } else {
       reset({
@@ -166,12 +202,21 @@ function ClientForm({ open, onClose, client }) {
         },
         leadSource: 'whatsapp',
         status: 'new_lead',
+        referrer: { referrerId: '' },
       });
     }
   }, [client, reset]);
 
   const onSubmit = async (data) => {
     try {
+      const referrerId = (data.referrer?.referrerId || '').trim();
+      const referrerObj = referrerId
+        ? {
+          referrerId,
+          referrerNameSnapshot: referrers.find((r) => r._id === referrerId)?.displayName || undefined,
+        }
+        : null;
+
       // Convert empty strings to null for optional fields
       const cleanedData = {
         ...data,
@@ -188,6 +233,7 @@ function ClientForm({ open, onClose, client }) {
           website: data.businessInfo.website || null,
           address: data.businessInfo.address || null,
         },
+        referrer: referrerObj,
       };
 
       if (isEdit) {
@@ -453,6 +499,33 @@ function ClientForm({ open, onClose, client }) {
                       {STATUS_OPTIONS.map((option) => (
                         <MenuItem key={option.value} value={option.value}>
                           {option.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Controller
+                  name="referrer.referrerId"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      select
+                      label="מפנה"
+                      fullWidth
+                      disabled={referrersLoading}
+                      helperText={
+                        (field.value || '').trim()
+                          ? ''
+                          : (client?.leadSource === 'referral' ? 'מומלץ לבחור מפנה כשמקור הליד הוא המלצה' : '')
+                      }
+                    >
+                      <MenuItem value="">— ללא —</MenuItem>
+                      {referrers.map((r) => (
+                        <MenuItem key={r._id} value={r._id}>
+                          {r.displayName}
                         </MenuItem>
                       ))}
                     </TextField>

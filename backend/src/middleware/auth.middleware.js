@@ -60,7 +60,7 @@ const authorize = (...roles) => {
     if (!req.user) {
       return res.status(401).json({ success: false, message: 'לא מחובר' });
     }
-    if (req.user.role === 'admin') return next();
+    if (req.user.role === 'admin' || req.user.role === 'super_admin') return next();
     if (!roles || roles.length === 0) return next();
     if (roles.includes(req.user.role)) return next();
     return res.status(403).json({ success: false, message: 'אין הרשאה' });
@@ -72,7 +72,7 @@ const requireModule = (moduleKey) => {
     if (!req.user) {
       return res.status(401).json({ success: false, message: 'לא מחובר' });
     }
-    if (req.user.role === 'admin') return next();
+    if (req.user.role === 'admin' || req.user.role === 'super_admin') return next();
     const perm = req.user.permissions?.[moduleKey];
     if (perm?.enabled) return next();
     return res.status(403).json({ success: false, message: 'אין הרשאה למודול זה' });
@@ -85,7 +85,7 @@ const requireAnyModule = (moduleKeys) => {
     if (!req.user) {
       return res.status(401).json({ success: false, message: 'לא מחובר' });
     }
-    if (req.user.role === 'admin') return next();
+    if (req.user.role === 'admin' || req.user.role === 'super_admin') return next();
     for (const k of keys) {
       const perm = req.user.permissions?.[k];
       if (perm?.enabled) return next();

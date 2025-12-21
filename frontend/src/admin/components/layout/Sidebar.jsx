@@ -104,7 +104,7 @@ function isItemAllowedForUser(item, user) {
 
   if (!user) return false;
 
-  if (item.adminOnly && user.role !== 'admin') return false;
+  if (item.adminOnly && user.role !== 'admin' && user.role !== 'super_admin') return false;
   if (item.employeeOnly && user.role !== 'employee') return false;
 
   if (item.requiredModule && !hasModuleAccess(user, item.requiredModule)) return false;

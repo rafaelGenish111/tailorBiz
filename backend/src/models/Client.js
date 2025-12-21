@@ -207,6 +207,18 @@ const ClientSchema = new mongoose.Schema({
     required: true
   },
 
+  // מפנה (יועץ/רו"ח וכו') - אינו הלקוח עצמו אלא מי שמפנה לידים
+  referrer: {
+    referrerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ReferrerPartner',
+    },
+    referrerNameSnapshot: {
+      type: String,
+      trim: true,
+    },
+  },
+
   // ציון איכות ליד (Lead Scoring) - מחושב אוטומטית
   leadScore: {
     type: Number,
@@ -488,6 +500,7 @@ ClientSchema.index({ 'businessInfo.businessName': 'text', 'personalInfo.fullName
 ClientSchema.index({ status: 1 });
 ClientSchema.index({ leadSource: 1 });
 ClientSchema.index({ tags: 1 });
+ClientSchema.index({ 'referrer.referrerId': 1 });
 ClientSchema.index({ leadScore: -1 });
 ClientSchema.index({ 'metadata.createdAt': -1 });
 ClientSchema.index({ 'metadata.lastContactedAt': -1 });

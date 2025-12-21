@@ -1,6 +1,7 @@
 const Client = require('../models/Client');
 const Invoice = require('../models/Invoice');
 const Project = require('../models/Project');
+const ReferrerPartner = require('../models/ReferrerPartner');
 const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const leadNurturingService = require('../services/leadNurturingService');
@@ -11,7 +12,7 @@ const CLIENT_STATUSES = ['won'];
 
 function getAllowedStatusesForUser(user) {
   if (!user) return [];
-  if (user.role === 'admin') return null; // null = unrestricted
+  if (user.role === 'admin' || user.role === 'super_admin') return null; // null = unrestricted
 
   const canLeads = Boolean(user.permissions?.leads?.enabled);
   const canClients = Boolean(user.permissions?.clients?.enabled);
@@ -40,11 +41,70 @@ function enforceClientStatusAccessOnQuery(query, user, requestedStatuses) {
   if (reqStatuses.length && finalStatuses.length === 0) {
     // Put an impossible condition
     query.status = '__no_such_status__';
-    return query;
+    return { query, finalStatuses: [] };
   }
 
   query.status = finalStatuses.length === 1 ? finalStatuses[0] : { $in: finalStatuses };
+  return { query, finalStatuses };
+}
+
+function enforceLeadOwnershipOnQuery(query, user, effectiveStatuses) {
+  if (!user || user.role === 'admin' || user.role === 'super_admin') return query;
+
+  const leadsPerm = user.permissions?.leads;
+  const canLeads = Boolean(leadsPerm?.enabled);
+  const canViewAllLeads = Boolean(leadsPerm?.viewAll);
+  if (!canLeads || canViewAllLeads) return query;
+
+  // Apply only when we're effectively querying leads (not clients).
+  const statuses = Array.isArray(effectiveStatuses) ? effectiveStatuses : [];
+  const isLeadQuery = statuses.length > 0 && statuses.every((s) => LEAD_STATUSES.includes(s));
+  if (!isLeadQuery) return query;
+
+  const ownershipOr = {
+    $or: [
+      { 'metadata.createdBy': user._id },
+      { 'metadata.assignedTo': user._id },
+    ],
+  };
+
+  // If query already has an $or (e.g. search), combine safely via $and
+  if (Array.isArray(query.$and)) {
+    query.$and.push(ownershipOr);
+    return query;
+  }
+  if (Array.isArray(query.$or)) {
+    query.$and = [{ $or: query.$or }, ownershipOr];
+    delete query.$or;
+    return query;
+  }
+
+  query.$and = [ownershipOr];
   return query;
+}
+
+function enforceLeadOwnershipOnRecord(user, client) {
+  if (!user || user.role === 'admin' || user.role === 'super_admin') return;
+  if (!client) return;
+
+  const status = String(client.status || '');
+  const isLead = LEAD_STATUSES.includes(status);
+  if (!isLead) return;
+
+  const leadsPerm = user.permissions?.leads;
+  const canLeads = Boolean(leadsPerm?.enabled);
+  const canViewAllLeads = Boolean(leadsPerm?.viewAll);
+  if (!canLeads || canViewAllLeads) return;
+
+  const createdBy = client?.metadata?.createdBy ? String(client.metadata.createdBy) : null;
+  const assignedTo = client?.metadata?.assignedTo ? String(client.metadata.assignedTo) : null;
+  const uid = String(user._id);
+  const ok = (createdBy && createdBy === uid) || (assignedTo && assignedTo === uid);
+  if (!ok) {
+    const err = new Error('אין הרשאה לצפות בליד זה');
+    err.statusCode = 403;
+    throw err;
+  }
 }
 
 // Helper function to check if string is valid ObjectId
@@ -52,6 +112,73 @@ const isValidObjectId = (id) => {
   if (!id) return false;
   return mongoose.Types.ObjectId.isValid(id) && id !== 'temp-user-id';
 };
+
+function normalizeTagsToArray(tags) {
+  if (!tags) return [];
+  if (Array.isArray(tags)) return tags.map((t) => String(t).trim()).filter(Boolean);
+  // allow comma-separated string in rare cases
+  if (typeof tags === 'string') {
+    return tags.split(',').map((t) => t.trim()).filter(Boolean);
+  }
+  return [];
+}
+
+function syncReferrerTag(tags, referrerId) {
+  const list = normalizeTagsToArray(tags);
+  const cleaned = list.filter((t) => !String(t).startsWith('referrer:'));
+  const rid = referrerId ? String(referrerId) : '';
+  if (rid) cleaned.push(`referrer:${rid}`);
+  // unique preserve order
+  return Array.from(new Set(cleaned));
+}
+
+async function normalizeReferrerInput(referrerInput) {
+  // allow: null => clear
+  if (referrerInput === null) return null;
+
+  // allow: "id"
+  if (typeof referrerInput === 'string') {
+    const id = referrerInput.trim();
+    if (!id) return null;
+    if (!isValidObjectId(id)) {
+      const err = new Error('referrerId לא תקין');
+      err.statusCode = 400;
+      throw err;
+    }
+    const r = await ReferrerPartner.findById(id).select('displayName');
+    if (!r) {
+      const err = new Error('מפנה לא נמצא');
+      err.statusCode = 400;
+      throw err;
+    }
+    return { referrerId: r._id, referrerNameSnapshot: r.displayName };
+  }
+
+  // allow: { referrerId, referrerNameSnapshot? }
+  if (referrerInput && typeof referrerInput === 'object') {
+    const idRaw = referrerInput.referrerId;
+    if (!idRaw) return null;
+
+    const id = String(idRaw).trim();
+    if (!isValidObjectId(id)) {
+      const err = new Error('referrerId לא תקין');
+      err.statusCode = 400;
+      throw err;
+    }
+    const r = await ReferrerPartner.findById(id).select('displayName');
+    if (!r) {
+      const err = new Error('מפנה לא נמצא');
+      err.statusCode = 400;
+      throw err;
+    }
+    return {
+      referrerId: r._id,
+      referrerNameSnapshot: String(referrerInput.referrerNameSnapshot || r.displayName || '').trim() || r.displayName,
+    };
+  }
+
+  return null;
+}
 
 // קבלת כל הלקוחות עם פילטרים וסינון
 exports.getAllClients = async (req, res) => {
@@ -73,7 +200,9 @@ exports.getAllClients = async (req, res) => {
     // RBAC: employees with leads-only must not see customers, and vice versa.
     // We enforce by restricting status values returned from this endpoint.
     const requestedStatuses = status ? String(status).split(',').map((s) => s.trim()).filter(Boolean) : [];
-    enforceClientStatusAccessOnQuery(query, req.user, requestedStatuses);
+    const { finalStatuses } = enforceClientStatusAccessOnQuery(query, req.user, requestedStatuses);
+    // RBAC (ownership): leads viewAll=false => only leads created by that employee
+    enforceLeadOwnershipOnQuery(query, req.user, finalStatuses);
 
     if (leadSource) {
       query.leadSource = leadSource;
@@ -98,12 +227,21 @@ exports.getAllClients = async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    const clients = await Client.find(query)
+    let q = Client.find(query)
       .sort(sortBy)
       .skip(skip)
       .limit(parseInt(limit))
       .populate('invoices')
       .select('-__v');
+
+    // For super/admin: show lead ownership in UI (createdBy/assignedTo username)
+    if (req.user?.role === 'admin' || req.user?.role === 'super_admin') {
+      q = q
+        .populate('metadata.createdBy', 'username')
+        .populate('metadata.assignedTo', 'username');
+    }
+
+    const clients = await q;
 
     const total = await Client.countDocuments(query);
 
@@ -131,8 +269,13 @@ exports.getAllClients = async (req, res) => {
 // קבלת לקוח בודד
 exports.getClientById = async (req, res) => {
   try {
-    const client = await Client.findById(req.params.id)
-      .populate('invoices');
+    let clientQuery = Client.findById(req.params.id).populate('invoices');
+    if (req.user?.role === 'admin' || req.user?.role === 'super_admin') {
+      clientQuery = clientQuery
+        .populate('metadata.createdBy', 'username')
+        .populate('metadata.assignedTo', 'username');
+    }
+    const client = await clientQuery;
 
     if (!client) {
       return res.status(404).json({
@@ -154,6 +297,13 @@ exports.getClientById = async (req, res) => {
         return res.status(403).json({ success: false, message: 'אין הרשאה ללקוחות' });
       }
       // For unknown statuses, keep existing behavior (allow) – can be tightened later.
+    }
+
+    // RBAC (ownership): leads viewAll=false => only allow leads created by that employee
+    try {
+      enforceLeadOwnershipOnRecord(req.user, client);
+    } catch (e) {
+      return res.status(e.statusCode || 403).json({ success: false, message: e.message || 'אין הרשאה' });
     }
 
     res.json({
@@ -182,8 +332,14 @@ exports.createClient = async (req, res) => {
       });
     }
 
+    const normalizedReferrer = await normalizeReferrerInput(
+      Object.prototype.hasOwnProperty.call(req.body || {}, 'referrer') ? req.body.referrer : undefined
+    );
+
     const clientData = {
       ...req.body,
+      referrer: normalizedReferrer,
+      tags: syncReferrerTag(req.body?.tags, normalizedReferrer?.referrerId),
       metadata: {
         createdBy: isValidObjectId(req.user?.id) ? req.user.id : null,
         assignedTo: isValidObjectId(req.body.assignedTo)
@@ -259,7 +415,32 @@ exports.updateClient = async (req, res) => {
       });
     }
 
+    // RBAC (ownership): leads viewAll=false => cannot modify leads not created by this employee
+    enforceLeadOwnershipOnRecord(req.user, client);
+
+    // Allow privileged users to (re)assign lead visibility without breaking metadata object
+    const canAssign = req.user?.role === 'admin' || req.user?.role === 'super_admin';
+    if (canAssign && Object.prototype.hasOwnProperty.call(req.body || {}, 'assignedTo')) {
+      const raw = req.body.assignedTo;
+      if (raw === null || raw === '' || raw === undefined) {
+        client.metadata = client.metadata || {};
+        client.metadata.assignedTo = null;
+      } else if (isValidObjectId(raw)) {
+        client.metadata = client.metadata || {};
+        client.metadata.assignedTo = raw;
+      }
+      // Remove so generic loop won't create a stray field
+      delete req.body.assignedTo;
+    }
+
     const oldStatus = client.status;
+
+    // Handle referrer explicitly (so we can validate and also keep tags consistent)
+    if (Object.prototype.hasOwnProperty.call(req.body || {}, 'referrer')) {
+      const normalizedReferrer = await normalizeReferrerInput(req.body.referrer);
+      client.referrer = normalizedReferrer;
+      delete req.body.referrer;
+    }
 
     // עדכון שדות
     Object.keys(req.body).forEach(key => {
@@ -267,6 +448,9 @@ exports.updateClient = async (req, res) => {
         client[key] = req.body[key];
       }
     });
+
+    // Ensure tags are consistent with referrer selection
+    client.tags = syncReferrerTag(client.tags, client.referrer?.referrerId);
 
     await client.save();
 
@@ -341,6 +525,9 @@ exports.convertLeadToClient = async (req, res) => {
     if (!client) {
       return res.status(404).json({ success: false, message: 'לקוח לא נמצא' });
     }
+
+    // RBAC (ownership): leads viewAll=false => cannot convert leads not created by this employee
+    enforceLeadOwnershipOnRecord(req.user, client);
 
     const { finalPrice, notes, signedAt } = req.body;
     const contractFile = req.file;
@@ -473,6 +660,8 @@ exports.uploadContract = async (req, res) => {
       });
     }
 
+    enforceLeadOwnershipOnRecord(req.user, client);
+
     const contractFile = req.file;
     const { signed, signedAt, notes } = req.body;
 
@@ -555,6 +744,8 @@ exports.getContract = async (req, res) => {
       });
     }
 
+    enforceLeadOwnershipOnRecord(req.user, client);
+
     res.json({
       success: true,
       data: client.contract || null
@@ -580,6 +771,8 @@ exports.deleteClient = async (req, res) => {
         message: 'לקוח לא נמצא'
       });
     }
+
+    enforceLeadOwnershipOnRecord(req.user, client);
 
     await client.deleteOne();
 
@@ -609,6 +802,8 @@ exports.fillAssessmentForm = async (req, res) => {
         message: 'לקוח לא נמצא'
       });
     }
+
+    enforceLeadOwnershipOnRecord(req.user, client);
 
     // עדכון שאלון אפיון
     client.assessmentForm = {
@@ -673,6 +868,8 @@ exports.getAssessmentForm = async (req, res) => {
       });
     }
 
+    enforceLeadOwnershipOnRecord(req.user, client);
+
     res.json({
       success: true,
       data: {
@@ -703,6 +900,8 @@ exports.addInteraction = async (req, res) => {
         message: 'לקוח לא נמצא'
       });
     }
+
+    enforceLeadOwnershipOnRecord(req.user, client);
 
     const interaction = {
       ...req.body,
@@ -753,6 +952,8 @@ exports.getInteractions = async (req, res) => {
       });
     }
 
+    enforceLeadOwnershipOnRecord(req.user, client);
+
     // מיון לפי תאריך (החדש ביותר ראשון)
     const sortedInteractions = client.interactions.sort(
       (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
@@ -784,6 +985,8 @@ exports.updateInteraction = async (req, res) => {
         message: 'לקוח לא נמצא'
       });
     }
+
+    enforceLeadOwnershipOnRecord(req.user, client);
 
     const interaction = client.interactions.id(req.params.interactionId);
 
@@ -833,6 +1036,8 @@ exports.deleteInteraction = async (req, res) => {
       });
     }
 
+    enforceLeadOwnershipOnRecord(req.user, client);
+
     const interaction = client.interactions.id(req.params.interactionId);
 
     if (!interaction) {
@@ -871,6 +1076,8 @@ exports.createOrder = async (req, res) => {
         message: 'לקוח לא נמצא'
       });
     }
+
+    enforceLeadOwnershipOnRecord(req.user, client);
 
     // יצירת מספר הזמנה אוטומטי
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 11).toUpperCase()}`;
@@ -930,6 +1137,8 @@ exports.getOrders = async (req, res) => {
       });
     }
 
+    enforceLeadOwnershipOnRecord(req.user, client);
+
     res.json({
       success: true,
       data: client.orders
@@ -956,6 +1165,8 @@ exports.updateOrder = async (req, res) => {
         message: 'לקוח לא נמצא'
       });
     }
+
+    enforceLeadOwnershipOnRecord(req.user, client);
 
     const order = client.orders.id(req.params.orderId);
 
@@ -1006,6 +1217,8 @@ exports.createPaymentPlan = async (req, res) => {
       });
     }
 
+    enforceLeadOwnershipOnRecord(req.user, client);
+
     client.paymentPlan = req.body;
     await client.save();
 
@@ -1036,6 +1249,8 @@ exports.updateInstallment = async (req, res) => {
         message: 'לקוח לא נמצא'
       });
     }
+
+    enforceLeadOwnershipOnRecord(req.user, client);
 
     const installment = client.paymentPlan.installments.id(req.params.installmentId);
 
@@ -1086,6 +1301,8 @@ exports.createInvoice = async (req, res) => {
         message: 'לקוח לא נמצא'
       });
     }
+
+    enforceLeadOwnershipOnRecord(req.user, client);
 
     // יצירת מספר חשבונית אוטומטי
     const invoiceNumber = await Invoice.generateInvoiceNumber();
@@ -1155,6 +1372,8 @@ exports.getInvoices = async (req, res) => {
       });
     }
 
+    enforceLeadOwnershipOnRecord(req.user, client);
+
     res.json({
       success: true,
       data: client.invoices
@@ -1181,6 +1400,8 @@ exports.createTask = async (req, res) => {
         message: 'לקוח לא נמצא'
       });
     }
+
+    enforceLeadOwnershipOnRecord(req.user, client);
 
     const task = {
       ...req.body,
@@ -1223,6 +1444,8 @@ exports.getTasks = async (req, res) => {
         message: 'לקוח לא נמצא'
       });
     }
+
+    enforceLeadOwnershipOnRecord(req.user, client);
 
     let tasks = client.tasks;
 
@@ -1269,6 +1492,8 @@ exports.updateTask = async (req, res) => {
         message: 'לקוח לא נמצא'
       });
     }
+
+    enforceLeadOwnershipOnRecord(req.user, client);
 
     const task = client.tasks.id(req.params.taskId);
 
@@ -1392,6 +1617,8 @@ exports.getOverviewStats = async (req, res) => {
 // סטטיסטיקות Pipeline
 exports.getPipelineStats = async (req, res) => {
   try {
+    const allowedStatuses = getAllowedStatusesForUser(req.user);
+
     const pipeline = [
       {
         stage: 'new_lead',
@@ -1437,11 +1664,32 @@ exports.getPipelineStats = async (req, res) => {
       }
     ];
 
+    // RBAC: אם אין הרשאה לשלב, נאפס אותו (כדי לא לדלוף ספירות/ערכים).
+    if (allowedStatuses !== null) {
+      for (const stage of pipeline) {
+        if (!allowedStatuses.includes(stage.stage)) {
+          stage.count = 0;
+          stage.value = 0;
+        }
+      }
+    }
+
     // חישוב ערך פוטנציאלי לכל שלב
     for (const stage of pipeline) {
-      let statusFilter = {};
-
-      statusFilter = { status: stage.stage };
+      if (allowedStatuses !== null && !allowedStatuses.includes(stage.stage)) {
+        // Skip DB work for blocked stages
+        continue;
+      }
+      let statusFilter = { status: stage.stage };
+      // RBAC (ownership): leads viewAll=false => employee sees only their own leads in pipeline stats
+      if (req.user?.role !== 'admin') {
+        const leadsPerm = req.user?.permissions?.leads;
+        const canLeads = Boolean(leadsPerm?.enabled);
+        const canViewAllLeads = Boolean(leadsPerm?.viewAll);
+        if (canLeads && !canViewAllLeads && LEAD_STATUSES.includes(stage.stage)) {
+          statusFilter['metadata.createdBy'] = req.user._id;
+        }
+      }
 
       const clients = await Client.find(statusFilter)
         .select('paymentPlan.totalAmount orders.totalAmount');
@@ -1455,10 +1703,31 @@ exports.getPipelineStats = async (req, res) => {
     }
 
     // חישוב conversion rates
-    const totalLeads = await Client.countDocuments({
-      status: { $in: ['new_lead', 'contacted', 'engaged', 'meeting_set', 'proposal_sent', 'won', 'lost'] }
-    });
-    const wonCount = await Client.countDocuments({ status: 'won' });
+    const conversionStatuses =
+      allowedStatuses === null
+        ? ['new_lead', 'contacted', 'engaged', 'meeting_set', 'proposal_sent', 'won', 'lost']
+        : allowedStatuses;
+
+    const totalLeadsFilter = { status: { $in: conversionStatuses } };
+    // אם זה עובד לידים בלבד בלי viewAll, נחשב/נחזיר נתונים רק על הלידים שלו
+    if (req.user?.role !== 'admin') {
+      const leadsPerm = req.user?.permissions?.leads;
+      const canLeads = Boolean(leadsPerm?.enabled);
+      const canViewAllLeads = Boolean(leadsPerm?.viewAll);
+      const isLeadOnlyScope =
+        Array.isArray(allowedStatuses) &&
+        allowedStatuses.length > 0 &&
+        allowedStatuses.every((s) => LEAD_STATUSES.includes(s));
+      if (canLeads && !canViewAllLeads && isLeadOnlyScope) {
+        totalLeadsFilter['metadata.createdBy'] = req.user._id;
+      }
+    }
+    const totalLeads = await Client.countDocuments(totalLeadsFilter);
+
+    let wonCount = 0;
+    if (allowedStatuses === null || allowedStatuses.includes('won')) {
+      wonCount = await Client.countDocuments({ status: 'won' });
+    }
     const conversionRate = totalLeads > 0 ? ((wonCount / totalLeads) * 100).toFixed(2) : 0;
 
     res.json({
@@ -1490,7 +1759,7 @@ exports.getMorningFocus = async (req, res) => {
     const yesterday = new Date();
     yesterday.setHours(yesterday.getHours() - 24);
 
-    const leads = await Client.find({
+    const focusQuery = {
       // רק לידים פעילים שעדיין לא לקוחות ולא אבודים
       status: { $in: ['new_lead', 'contacted', 'engaged', 'meeting_set', 'proposal_sent'] },
       // לוגיקה: או שלא יצרו איתם קשר מעולם, או שהקשר האחרון היה לפני יותר מ-24 שעות
@@ -1499,7 +1768,19 @@ exports.getMorningFocus = async (req, res) => {
         { 'metadata.lastContactedAt': { $exists: false } },
         { 'metadata.lastContactedAt': null }
       ]
-    })
+    };
+
+    // RBAC (ownership): leads viewAll=false => employee sees only their own leads
+    if (req.user?.role !== 'admin') {
+      const leadsPerm = req.user?.permissions?.leads;
+      const canLeads = Boolean(leadsPerm?.enabled);
+      const canViewAllLeads = Boolean(leadsPerm?.viewAll);
+      if (canLeads && !canViewAllLeads) {
+        focusQuery['metadata.createdBy'] = req.user._id;
+      }
+    }
+
+    const leads = await Client.find(focusQuery)
       .sort({ leadScore: -1, 'metadata.createdAt': -1 }) // קודם בעלי הניקוד הגבוה, ואז החדשים ביותר
       .limit(3)
       .select('personalInfo businessInfo leadScore status metadata.lastContactedAt interactions');

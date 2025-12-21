@@ -85,7 +85,7 @@ const EmployeesPage = () => {
       await adminUsersAPI.create({
         username: createForm.username,
         password: createForm.password,
-        role: 'employee',
+        role: createForm.role || 'employee',
         isActive: Boolean(createForm.isActive),
         permissions: createForm.permissions
       });
@@ -239,6 +239,20 @@ const EmployeesPage = () => {
             />
           </Grid>
           <Grid item xs={12} md={4}>
+            <TextField
+              select
+              fullWidth
+              label="תפקיד"
+              value={createForm.role}
+              onChange={(e) => setCreateForm((p) => ({ ...p, role: e.target.value }))}
+              disabled={loading}
+            >
+              <MenuItem value="employee">עובד</MenuItem>
+              <MenuItem value="admin">אדמין</MenuItem>
+              <MenuItem value="super_admin">סופר אדמין</MenuItem>
+            </TextField>
+          </Grid>
+          <Grid item xs={12} md={4}>
             <FormControlLabel
               control={
                 <Switch
@@ -284,7 +298,11 @@ const EmployeesPage = () => {
                   <Box sx={{ minWidth: 0 }}>
                     <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
                       <Typography fontWeight={800}>{u.username}</Typography>
-                      <Chip size="small" label={u.role === 'admin' ? 'אדמין' : 'עובד'} color={u.role === 'admin' ? 'primary' : 'default'} />
+                      <Chip
+                        size="small"
+                        label={u.role === 'super_admin' ? 'סופר אדמין' : u.role === 'admin' ? 'אדמין' : 'עובד'}
+                        color={u.role === 'super_admin' ? 'secondary' : u.role === 'admin' ? 'primary' : 'default'}
+                      />
                       <Chip size="small" label={u.isActive ? 'פעיל' : 'לא פעיל'} color={u.isActive ? 'success' : 'warning'} />
                     </Stack>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -331,6 +349,7 @@ const EmployeesPage = () => {
                 >
                   <MenuItem value="employee">עובד</MenuItem>
                   <MenuItem value="admin">אדמין</MenuItem>
+                  <MenuItem value="super_admin">סופר אדמין</MenuItem>
                 </TextField>
               </Grid>
               <Grid item xs={12} md={4}>

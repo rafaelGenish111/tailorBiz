@@ -37,6 +37,9 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { he } from 'date-fns/locale';
 import { useEffect, useState } from 'react';
+import api from '../../../utils/api';
+import { getCurrentUserFromQueryData, useCurrentUserQuery } from '../../../hooks/useCurrentUser';
+import { useAdminUsers } from '../../../hooks/useAdminUsers';
 import {
   useUpdateClient,
   useClientInteractions,
@@ -133,8 +136,12 @@ function ClientDetail({ open, onClose, client }) {
     status: '',
     leadSource: '',
     leadScore: 0,
+    referrerId: '',
   });
   const [tagsInput, setTagsInput] = useState('');
+
+  const [referrers, setReferrers] = useState([]);
+  const [referrersLoading, setReferrersLoading] = useState(false);
 
   const [interactionDialogOpen, setInteractionDialogOpen] = useState(false);
   const [editInteractionDialogOpen, setEditInteractionDialogOpen] = useState(false);
@@ -155,6 +162,14 @@ function ClientDetail({ open, onClose, client }) {
     paymentTerms: '',
     contractNotes: '',
   });
+
+  const { data: meData } = useCurrentUserQuery();
+  const me = getCurrentUserFromQueryData(meData);
+  const canAssignLead = me?.role === 'admin' || me?.role === 'super_admin';
+  const { data: usersRes } = useAdminUsers();
+  const users = usersRes?.data || [];
+  const employeeUsers = users.filter((u) => u?.role === 'employee');
+  const [assignedTo, setAssignedTo] = useState('');
 
   const clientId = client?._id;
   const { data: interactionsResponse, isLoading: interactionsLoading } =
@@ -181,6 +196,8 @@ function ClientDetail({ open, onClose, client }) {
 
   useEffect(() => {
     if (client) {
+      const currentAssigned = client?.metadata?.assignedTo?._id || client?.metadata?.assignedTo || '';
+      setAssignedTo(currentAssigned ? String(currentAssigned) : '');
       setPersonalForm({
         fullName: client.personalInfo?.fullName || '',
         phone: client.personalInfo?.phone || '',
@@ -214,6 +231,7 @@ function ClientDetail({ open, onClose, client }) {
         status: client.status || '',
         leadSource: client.leadSource || '',
         leadScore: client.leadScore || 0,
+        referrerId: client.referrer?.referrerId || '',
       });
       setTagsInput((client.tags || []).join(', '));
       setProposalForm({
@@ -225,6 +243,29 @@ function ClientDetail({ open, onClose, client }) {
       });
     }
   }, [client]);
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setReferrersLoading(true);
+        const res = await api.get('/referrer-partners');
+        const list = res?.data?.data || [];
+        if (!cancelled) setReferrers(list);
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) setReferrers([]);
+      } finally {
+        if (!cancelled) setReferrersLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   if (!client) return null;
 
@@ -243,6 +284,12 @@ function ClientDetail({ open, onClose, client }) {
         .map((t) => t.trim())
         .filter(Boolean) || [];
 
+    const referrerId = String(statusForm.referrerId || '').trim();
+    const selectedReferrer = referrerId ? referrers.find((r) => r._id === referrerId) : null;
+    const referrer = referrerId
+      ? { referrerId, referrerNameSnapshot: selectedReferrer?.displayName || client?.referrer?.referrerNameSnapshot || undefined }
+      : null;
+
     await updateClient.mutateAsync({
       id: client._id,
       data: {
@@ -251,6 +298,7 @@ function ClientDetail({ open, onClose, client }) {
         leadSource: statusForm.leadSource,
         leadScore: statusForm.leadScore,
         tags,
+        referrer,
       },
     });
   };
@@ -390,6 +438,11 @@ function ClientDetail({ open, onClose, client }) {
               <Typography variant="body2" color="text.secondary">
                 {client.businessInfo?.businessName || 'ללא שם עסק'}
               </Typography>
+              {me?.role === 'super_admin' ? (
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
+                  עובד: {client?.metadata?.assignedTo?.username || client?.metadata?.createdBy?.username || '—'}
+                </Typography>
+              ) : null}
             </Box>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -417,6 +470,44 @@ function ClientDetail({ open, onClose, client }) {
       </DialogTitle>
 
       <DialogContent dividers>
+        {isLead && canAssignLead ? (
+          <Paper variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 3 }}>
+            <Typography fontWeight={800} sx={{ mb: 1 }}>
+              הרשאת צפייה לליד (שיוך לעובד)
+            </Typography>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ xs: 'stretch', sm: 'center' }}>
+              <FormControl fullWidth size="small" sx={{ minWidth: 220 }}>
+                <InputLabel>עובד</InputLabel>
+                <Select
+                  label="עובד"
+                  value={assignedTo}
+                  onChange={(e) => setAssignedTo(e.target.value)}
+                >
+                  <MenuItem value="">לא משויך</MenuItem>
+                  {employeeUsers.map((u) => (
+                    <MenuItem key={u._id} value={String(u._id)}>
+                      {u.username}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={async () => {
+                  if (!clientId) return;
+                  await updateClient.mutateAsync({ id: clientId, data: { assignedTo: assignedTo || null } });
+                }}
+              >
+                שמור שיוך
+              </Button>
+            </Stack>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+              עובד ללא \"רואה הכל\" יוכל לראות ליד אם הוא יצר אותו או אם הוא משויך אליו.
+            </Typography>
+          </Paper>
+        ) : null}
+
         {/* Timer */}
         <Box sx={{ mb: 3 }}>
           <ClientTimer
@@ -588,6 +679,30 @@ function ClientDetail({ open, onClose, client }) {
                     ))}
                   </Select>
                 </FormControl>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <FormControl fullWidth size="small" disabled={referrersLoading}>
+                  <InputLabel>מפנה</InputLabel>
+                  <Select
+                    value={statusForm.referrerId}
+                    label="מפנה"
+                    onChange={(e) =>
+                      setStatusForm((prev) => ({ ...prev, referrerId: e.target.value }))
+                    }
+                  >
+                    <MenuItem value="">— ללא —</MenuItem>
+                    {referrers.map((r) => (
+                      <MenuItem key={r._id} value={r._id}>
+                        {r.displayName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                {statusForm.leadSource === 'referral' && !String(statusForm.referrerId || '').trim() ? (
+                  <Typography variant="caption" color="warning.main" sx={{ display: 'block', mt: 0.5 }}>
+                    מומלץ לבחור מפנה כשמקור הליד הוא המלצה
+                  </Typography>
+                ) : null}
               </Grid>
               <Grid item xs={12} md={4}>
                 <TextField

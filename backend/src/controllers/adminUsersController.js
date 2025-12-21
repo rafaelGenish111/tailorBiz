@@ -30,7 +30,7 @@ exports.create = async (req, res) => {
     const { username, password, role, permissions, isActive } = req.body || {};
     const u = String(username || '').trim().toLowerCase();
     const p = String(password || '');
-    const r = role === 'admin' ? 'admin' : 'employee';
+    const r = role === 'super_admin' ? 'super_admin' : role === 'admin' ? 'admin' : 'employee';
 
     if (!u || u.length < 3) {
       return res.status(400).json({ success: false, message: 'שם משתמש קצר מדי' });
@@ -82,7 +82,7 @@ exports.update = async (req, res) => {
       user.username = u;
     }
 
-    if (role === 'admin' || role === 'employee') {
+    if (role === 'admin' || role === 'super_admin' || role === 'employee') {
       user.role = role;
     }
 
