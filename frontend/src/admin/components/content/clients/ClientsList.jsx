@@ -29,6 +29,7 @@ import { useClients, useDeleteClient, useClient } from '../../../hooks/useClient
 import ConfirmDialog from '../../common/ConfirmDialog';
 import ClientForm from './ClientForm';
 import ClientDetail from './ClientDetail';
+import { getCurrentUserFromQueryData, useCurrentUserQuery } from '../../../hooks/useCurrentUser';
 
 const STATUS_LABELS = {
   new_lead: { label: 'ליד חדש', color: 'info' },
@@ -58,6 +59,9 @@ const CLIENT_STATUSES = ['won'];
 function ClientsList({ viewMode }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { data: meData } = useCurrentUserQuery();
+  const me = getCurrentUserFromQueryData(meData);
+  const canSeeOwner = (me?.role === 'super_admin' || me?.role === 'admin') && viewMode === 'leads';
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
@@ -132,6 +136,21 @@ function ClientsList({ viewMode }) {
 
   // Columns (לטבלה בדסקטופ)
   const columns = [
+    ...(canSeeOwner
+      ? [
+        {
+          field: 'owner',
+          headerName: 'עובד',
+          width: 160,
+          valueGetter: (params) => {
+            const row = params.row;
+            const assigned = row?.metadata?.assignedTo?.username;
+            const created = row?.metadata?.createdBy?.username;
+            return assigned || created || '—';
+          }
+        },
+      ]
+      : []),
     {
       field: 'personalInfo',
       headerName: 'לקוח',
@@ -208,6 +227,19 @@ function ClientsList({ viewMode }) {
           variant="outlined"
         />
       ),
+    },
+    {
+      field: 'referrer',
+      headerName: 'מפנה',
+      width: 180,
+      renderCell: (params) => {
+        const name = params.row?.referrer?.referrerNameSnapshot;
+        return name ? (
+          <Chip label={name} size="small" variant="outlined" />
+        ) : (
+          <Typography variant="body2" color="text.secondary">—</Typography>
+        );
+      },
     },
     {
       field: 'status',
@@ -371,10 +403,16 @@ function ClientsList({ viewMode }) {
               const email = client.personalInfo?.email;
               const statusInfo = STATUS_LABELS[client.status] || { label: client.status, color: 'default' };
               const leadSourceLabel = LEAD_SOURCE_LABELS[client.leadSource] || client.leadSource;
+              const referrerName = client?.referrer?.referrerNameSnapshot;
 
               return (
                 <Card key={client._id} variant="outlined">
                   <CardContent sx={{ p: 2 }}>
+                    {canSeeOwner ? (
+                      <Typography variant="caption" color="text.secondary">
+                        עובד: {client?.metadata?.assignedTo?.username || client?.metadata?.createdBy?.username || '—'}
+                      </Typography>
+                    ) : null}
                     <Stack direction="row" spacing={2} alignItems="center">
                       <Avatar sx={{ bgcolor: 'primary.main' }}>
                         {fullName.charAt(0) || '?'}
@@ -408,6 +446,13 @@ function ClientsList({ viewMode }) {
                       {leadSourceLabel && (
                         <Chip
                           label={`מקור: ${leadSourceLabel}`}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                      {referrerName && (
+                        <Chip
+                          label={`מפנה: ${referrerName}`}
                           size="small"
                           variant="outlined"
                         />

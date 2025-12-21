@@ -20,7 +20,7 @@ const UserSchema = new mongoose.Schema(
       index: true
     },
     passwordHash: { type: String, required: true },
-    role: { type: String, enum: ['admin', 'employee'], default: 'employee', index: true },
+    role: { type: String, enum: ['admin', 'super_admin', 'employee'], default: 'employee', index: true },
     isActive: { type: Boolean, default: true, index: true },
 
     // RBAC בסיסי: On/Off לכל מודול + אופציה "רואה הכל"

@@ -20,6 +20,7 @@ const timeEntryRoutes = require('./routes/timeEntryRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const quoteRoutes = require('./routes/quoteRoutes');
 const huntingPoolRoutes = require('./routes/huntingPoolRoutes');
+const referrerPartnersRoutes = require('./routes/referrerPartnersRoutes');
 const authRoutes = require('./routes/authRoutes');
 const publicCmsRoutes = require('./routes/publicCmsRoutes');
 const adminPagesRoutes = require('./routes/adminPagesRoutes');
@@ -119,6 +120,7 @@ app.use('/api/time-entries', timeEntryRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/hunting-pools', huntingPoolRoutes);
+app.use('/api/referrer-partners', referrerPartnersRoutes);
 
 // Public CMS
 app.use('/api/public', publicCmsRoutes);

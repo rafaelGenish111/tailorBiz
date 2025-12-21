@@ -22,7 +22,7 @@ export default function RequireModuleAccess({
     );
   }
 
-  if (adminOnly && user.role !== 'admin') {
+  if (adminOnly && user.role !== 'admin' && user.role !== 'super_admin') {
     return (
       <Box sx={{ minHeight: '40vh', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
         <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, maxWidth: 560, width: '100%' }}>
@@ -41,7 +41,7 @@ export default function RequireModuleAccess({
   }
 
   const ok =
-    user.role === 'admin' ||
+    user.role === 'admin' || user.role === 'super_admin' ||
     (requiredModule ? hasModuleAccess(user, requiredModule) : true) &&
     (anyOfModules ? hasAnyModuleAccess(user, anyOfModules) : true);
 

@@ -6,7 +6,7 @@ const { protect, authorize } = require('../middleware/auth.middleware');
 
 // Admin-only
 router.use(protect);
-router.use(authorize('admin'));
+router.use(authorize('admin', 'super_admin'));
 
 router.get('/', adminUsersController.list);
 router.post('/', adminUsersController.create);

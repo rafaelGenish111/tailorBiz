@@ -1,6 +1,6 @@
 // frontend/src/components/clients/ClientCard/ClientCard.jsx
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Card,
@@ -13,7 +13,12 @@ import {
   Avatar,
   Divider,
   IconButton,
-  Paper
+  Paper,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
 } from '@mui/material';
 import {
   Phone as PhoneIcon,
@@ -25,7 +30,9 @@ import {
   TrendingUp as TrendingUpIcon
 } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useClient } from '../../../admin/hooks/useClients';
+import { useClient, useUpdateClient } from '../../../admin/hooks/useClients';
+import { getCurrentUserFromQueryData, useCurrentUserQuery } from '../../../admin/hooks/useCurrentUser';
+import { useAdminUsers } from '../../../admin/hooks/useAdminUsers';
 
 import PersonalInfoTab from './tabs/PersonalInfoTab';
 import BusinessInfoTab from './tabs/BusinessInfoTab';
@@ -49,6 +56,14 @@ const ClientCard = () => {
 
   const { data: response, isLoading } = useClient(id);
   const client = response?.data;
+  const { data: meData } = useCurrentUserQuery();
+  const me = getCurrentUserFromQueryData(meData);
+  const canAssignLead = me?.role === 'admin' || me?.role === 'super_admin';
+  const { data: usersRes } = useAdminUsers();
+  const users = usersRes?.data || [];
+  const employeeUsers = users.filter((u) => u?.role === 'employee');
+  const updateClientMutation = useUpdateClient();
+  const [assignedTo, setAssignedTo] = useState('');
 
   if (isLoading) {
     return (
@@ -65,6 +80,14 @@ const ClientCard = () => {
       </Box>
     );
   }
+
+  const isLead = client.status && client.status !== 'won';
+
+  useEffect(() => {
+    const currentAssigned = client?.metadata?.assignedTo?._id || client?.metadata?.assignedTo || '';
+    setAssignedTo(currentAssigned ? String(currentAssigned) : '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [client?._id]);
 
   const getStatusColor = (status) => {
     const colors = {
@@ -176,6 +199,42 @@ const ClientCard = () => {
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                   {client.businessInfo?.businessName || 'ללא שם עסק'}
                 </Typography>
+
+                {me?.role === 'super_admin' ? (
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                    עובד: {client?.metadata?.assignedTo?.username || client?.metadata?.createdBy?.username || '—'}
+                  </Typography>
+                ) : null}
+
+                {isLead && canAssignLead ? (
+                  <Paper variant="outlined" sx={{ p: 1.5, mt: 1.5, borderRadius: 3 }}>
+                    <Typography fontWeight={800} sx={{ mb: 1 }}>
+                      שיוך ליד לעובד
+                    </Typography>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ xs: 'stretch', sm: 'center' }}>
+                      <FormControl fullWidth size="small" sx={{ minWidth: 220 }}>
+                        <InputLabel>עובד</InputLabel>
+                        <Select label="עובד" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
+                          <MenuItem value="">לא משויך</MenuItem>
+                          {employeeUsers.map((u) => (
+                            <MenuItem key={u._id} value={String(u._id)}>
+                              {u.username}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={async () => {
+                          await updateClientMutation.mutateAsync({ id, data: { assignedTo: assignedTo || null } });
+                        }}
+                      >
+                        שמור שיוך
+                      </Button>
+                    </Stack>
+                  </Paper>
+                ) : null}
 
                 {/* Contact Info */}
                 <Box

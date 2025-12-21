@@ -88,8 +88,8 @@ export default function AdminPathGuard({ children }) {
   }
 
   const rules = getRulesForPath(location.pathname);
-  // Admin: allow everything inside /admin (server will still enforce sensitive endpoints)
-  if (user.role === 'admin') return children;
+  // Admin/Super admin: allow everything inside /admin (server will still enforce sensitive endpoints)
+  if (user.role === 'admin' || user.role === 'super_admin') return children;
   if (rules.allow) return children;
 
   if (rules.adminOnly && user.role !== 'admin') {

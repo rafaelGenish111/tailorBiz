@@ -17,13 +17,13 @@ export function getCurrentUserFromQueryData(queryData) {
 
 export function hasModuleAccess(user, moduleKey) {
   if (!user) return false;
-  if (user.role === 'admin') return true;
+  if (user.role === 'admin' || user.role === 'super_admin') return true;
   return Boolean(user.permissions?.[moduleKey]?.enabled);
 }
 
 export function hasAnyModuleAccess(user, moduleKeys) {
   if (!user) return false;
-  if (user.role === 'admin') return true;
+  if (user.role === 'admin' || user.role === 'super_admin') return true;
   if (!Array.isArray(moduleKeys)) return false;
   return moduleKeys.some((k) => Boolean(user.permissions?.[k]?.enabled));
 }
