@@ -142,12 +142,12 @@ function ClientsList({ viewMode }) {
           field: 'owner',
           headerName: 'עובד',
           width: 160,
-          valueGetter: (params) => {
-            const row = params.row;
+          // DataGrid v8 valueGetter signature: (value, row, column, apiRef)
+          valueGetter: (_value, row) => {
             const assigned = row?.metadata?.assignedTo?.username;
             const created = row?.metadata?.createdBy?.username;
             return assigned || created || '—';
-          }
+          },
         },
       ]
       : []),

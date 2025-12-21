@@ -25,7 +25,16 @@ function getAllowedStatusesForUser(user) {
 
 function enforceClientStatusAccessOnQuery(query, user, requestedStatuses) {
   const allowed = getAllowedStatusesForUser(user);
-  if (allowed === null) return query; // unrestricted
+  const reqStatuses = Array.isArray(requestedStatuses) ? requestedStatuses.filter(Boolean) : [];
+
+  // Unrestricted user (admin/super_admin): still respect explicit status filter from query params
+  if (allowed === null) {
+    if (reqStatuses.length) {
+      query.status = reqStatuses.length === 1 ? reqStatuses[0] : { $in: reqStatuses };
+      return { query, finalStatuses: reqStatuses };
+    }
+    return { query, finalStatuses: [] };
+  }
 
   // If nothing allowed, block
   if (!allowed.length) {
@@ -34,7 +43,6 @@ function enforceClientStatusAccessOnQuery(query, user, requestedStatuses) {
     throw err;
   }
 
-  const reqStatuses = Array.isArray(requestedStatuses) ? requestedStatuses.filter(Boolean) : [];
   const finalStatuses = reqStatuses.length ? reqStatuses.filter((s) => allowed.includes(s)) : allowed;
 
   // If request asked for statuses the user isn't allowed to see -> return empty result
