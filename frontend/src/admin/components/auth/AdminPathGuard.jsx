@@ -57,16 +57,19 @@ function getRulesForPath(pathname) {
   if (p.startsWith('/admin/customers')) {
     return { requiredModule: 'clients' };
   }
-  if (p.startsWith('/admin/clients')) {
+  // NOTE: combined list page should be clients-only; client detail is handled by route-level + API RBAC
+  if (p === '/admin/clients' || p === '/admin/clients/') {
+    return { requiredModule: 'clients' };
+  }
+  if (p.startsWith('/admin/clients/')) {
     return { anyOfModules: ['clients', 'leads'] };
   }
   if (p.startsWith('/admin/pipeline') || p.startsWith('/admin/hunting-pools')) {
     return { anyOfModules: ['leads', 'clients'] };
   }
 
-  // Unknown admin route: be safe and allow (so we don't break future additions)
-  // Individual routes can still be guarded at route-level.
-  return { allow: true };
+  // Unknown admin route: deny by default for employees (whitelist).
+  return { allow: false };
 }
 
 export default function AdminPathGuard({ children }) {
@@ -85,6 +88,8 @@ export default function AdminPathGuard({ children }) {
   }
 
   const rules = getRulesForPath(location.pathname);
+  // Admin: allow everything inside /admin (server will still enforce sensitive endpoints)
+  if (user.role === 'admin') return children;
   if (rules.allow) return children;
 
   if (rules.adminOnly && user.role !== 'admin') {
@@ -106,9 +111,8 @@ export default function AdminPathGuard({ children }) {
   }
 
   const ok =
-    user.role === 'admin' ||
-    (rules.requiredModule ? hasModuleAccess(user, rules.requiredModule) : true) &&
-    (rules.anyOfModules ? hasAnyModuleAccess(user, rules.anyOfModules) : true);
+    (rules.requiredModule ? hasModuleAccess(user, rules.requiredModule) : false) ||
+    (rules.anyOfModules ? hasAnyModuleAccess(user, rules.anyOfModules) : false);
 
   if (!ok) {
     return (
