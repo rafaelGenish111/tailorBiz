@@ -48,7 +48,9 @@ function App() {
           element={
             <ThemeProvider theme={theme}>
               <CssBaseline />
-              <SalesOnboarding />
+              <RequireAdminAuth>
+                <SalesOnboarding />
+              </RequireAdminAuth>
             </ThemeProvider>
           }
         />
