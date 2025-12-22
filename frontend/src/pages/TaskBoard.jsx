@@ -170,14 +170,13 @@ const TaskBoard = () => {
   return (
     <Box 
       sx={{ 
-        pb: 4, 
         width: '100%',
-        maxWidth: '100%',
+        height: 'calc(100vh - 200px)', // Minus header and padding
         bgcolor: '#f8f9fa',
-        height: '100vh',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
+        position: 'relative',
       }}
     >
       {/* Header */}
@@ -191,7 +190,8 @@ const TaskBoard = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: 2
+          gap: 2,
+          minHeight: 'fit-content',
         }}
       >
         <Box sx={{ minWidth: 220, flex: '1 1 auto' }}>
@@ -285,11 +285,19 @@ const TaskBoard = () => {
         sx={{
           flex: 1,
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
           gap: 3,
           p: 3,
           overflow: 'hidden',
           minHeight: 0,
+          width: '100%',
+          height: '100%',
+          boxSizing: 'border-box',
+          '& > *': {
+            minWidth: 0,
+            maxWidth: '100%',
+            width: '100%',
+          },
         }}
       >
         {columns.map((column) => {
@@ -304,11 +312,15 @@ const TaskBoard = () => {
                 flexDirection: 'column',
                 height: '100%',
                 minHeight: 0,
+                minWidth: 0,
+                width: '100%',
+                maxWidth: '100%',
                 bgcolor: '#ffffff',
                 borderRadius: '12px',
                 border: '1px solid #e5e7eb',
                 boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
                 overflow: 'hidden',
+                boxSizing: 'border-box',
               }}
             >
               {/* Column Header - Fixed */}
