@@ -311,24 +311,21 @@ const TaskForm = ({
     ];
 
     return (
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-600">עדיפות</label>
-        <div className="flex flex-wrap gap-2">
-          {priorities.map((priority) => (
-            <button
-              key={priority.value}
-              type="button"
-              onClick={() => onChange(priority.value)}
-              className={`px-4 py-2 rounded-lg border-2 transition-all text-sm font-medium ${
-                value === priority.value
-                  ? `${priority.color} ring-2 ring-offset-2 ring-offset-white`
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              {priority.label}
-            </button>
-          ))}
-        </div>
+      <div className="flex flex-wrap gap-2">
+        {priorities.map((priority) => (
+          <button
+            key={priority.value}
+            type="button"
+            onClick={() => onChange(priority.value)}
+            className={`px-4 py-2.5 rounded-lg border-2 transition-all text-sm font-medium h-11 ${
+              value === priority.value
+                ? `${priority.color} ring-2 ring-offset-2 ring-offset-white`
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            {priority.label}
+          </button>
+        ))}
       </div>
     );
   };
@@ -343,35 +340,45 @@ const TaskForm = ({
     ];
 
     return (
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-600">סטטוס</label>
-        <div className="flex flex-wrap gap-2">
-          {statuses.map((status) => (
-            <button
-              key={status.value}
-              type="button"
-              onClick={() => onChange(status.value)}
-              className={`px-4 py-2 rounded-lg border-2 transition-all text-sm font-medium ${
-                value === status.value
-                  ? `${status.color} ring-2 ring-offset-2 ring-offset-white`
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              {status.label}
-            </button>
-          ))}
-        </div>
+      <div className="flex flex-wrap gap-2">
+        {statuses.map((status) => (
+          <button
+            key={status.value}
+            type="button"
+            onClick={() => onChange(status.value)}
+            className={`px-4 py-2.5 rounded-lg border-2 transition-all text-sm font-medium h-11 ${
+              value === status.value
+                ? `${status.color} ring-2 ring-offset-2 ring-offset-white`
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            {status.label}
+          </button>
+        ))}
       </div>
     );
   };
 
   // Helper component for Form Section
-  const FormSection = ({ title, children, className = '' }) => (
-    <div className={`space-y-4 ${className}`}>
+  const FormSection = ({ title, children, className = '', showDivider = false }) => (
+    <div className={`space-y-6 ${className}`}>
+      {showDivider && <hr className="my-8 border-gray-100" />}
       {title && (
-        <h3 className="text-base font-semibold text-gray-900 border-b border-gray-200 pb-2">
+        <h3 className="text-lg font-semibold text-gray-900 mb-6">
           {title}
         </h3>
+      )}
+      {children}
+    </div>
+  );
+
+  // Helper component for Form Field with label above
+  const FormField = ({ label, children, className = '' }) => (
+    <div className={`flex flex-col gap-1.5 ${className}`}>
+      {label && (
+        <label className="text-sm font-medium text-gray-700">
+          {label}
+        </label>
       )}
       {children}
     </div>
@@ -392,169 +399,262 @@ const TaskForm = ({
           maxHeight: { xs: 'calc(100vh - 100px)', md: '80vh' }
         }}
       >
-            <div className="p-6 space-y-8 overflow-y-auto flex-1 min-h-0">
+            <div className="p-8 overflow-y-auto flex-1 min-h-0">
+              <div className="max-w-3xl mx-auto space-y-8">
               {/* Task Details Section */}
               <FormSection title="פרטי המשימה">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div className="space-y-6">
                   {/* Title - Full Width */}
-                  <div className="col-span-12">
+                  <FormField label="כותרת המשימה *">
                     <TextField
                       fullWidth
-                      label="כותרת המשימה"
                       multiline
                       minRows={2}
                       maxRows={2}
                       {...register('title', { required: 'שדה חובה' })}
                       required
                       className="w-full"
-                      slotProps={{
-                        root: {
-                          className: 'rounded-lg border-gray-200 focus-within:ring-2 focus-within:ring-[#ec7211]'
-                        }
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          height: 'auto',
+                          minHeight: '60px',
+                          borderRadius: '8px',
+                          backgroundColor: '#f9fafb',
+                          '& fieldset': {
+                            borderColor: '#e5e7eb',
+                          },
+                          '&:hover fieldset': {
+                            borderColor: '#d1d5db',
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: '#ec7211',
+                            borderWidth: '2px',
+                          },
+                        },
                       }}
                     />
-                  </div>
+                  </FormField>
 
                   {/* Priority and Status - Side by Side */}
-                  <div className="col-span-12 md:col-span-6">
-                    <Controller
-                      name="priority"
-                      control={control}
-                      render={({ field: { onChange, value } }) => (
-                        <PriorityBadge value={value || 'medium'} onChange={onChange} />
-                      )}
-                    />
-                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField label="עדיפות">
+                      <Controller
+                        name="priority"
+                        control={control}
+                        render={({ field: { onChange, value } }) => (
+                          <PriorityBadge value={value || 'medium'} onChange={onChange} />
+                        )}
+                      />
+                    </FormField>
 
-                  <div className="col-span-12 md:col-span-6">
-                    <Controller
-                      name="status"
-                      control={control}
-                      render={({ field: { onChange, value } }) => (
-                        <StatusBadge value={value || 'todo'} onChange={onChange} />
-                      )}
-                    />
+                    <FormField label="סטטוס">
+                      <Controller
+                        name="status"
+                        control={control}
+                        render={({ field: { onChange, value } }) => (
+                          <StatusBadge value={value || 'todo'} onChange={onChange} />
+                        )}
+                      />
+                    </FormField>
                   </div>
 
                   {/* Color Picker */}
-                  <div className="col-span-12 md:col-span-6">
+                  <FormField label="צבע המשימה">
                     <Controller
                       name="color"
                       control={control}
                       render={({ field: { onChange, value } }) => (
-                        <div className="space-y-2">
-                          <label className="block text-sm font-medium text-gray-600">צבע המשימה</label>
-                          <div className="flex flex-wrap gap-2">
-                            {[
-                              { value: '#1976d2', label: 'כחול' },
-                              { value: '#d32f2f', label: 'אדום' },
-                              { value: '#388e3c', label: 'ירוק' },
-                              { value: '#f57c00', label: 'כתום' },
-                              { value: '#7b1fa2', label: 'סגול' },
-                              { value: '#0288d1', label: 'תכלת' },
-                              { value: '#c2185b', label: 'ורוד' },
-                              { value: '#5d4037', label: 'חום' },
-                              { value: '#455a64', label: 'אפור כהה' },
-                              { value: '#0097a7', label: 'ציאן' }
-                            ].map((color) => (
-                              <button
-                                key={color.value}
-                                type="button"
-                                onClick={() => onChange(color.value)}
-                                className={`w-10 h-10 rounded-lg transition-all hover:scale-110 ${
-                                  value === color.value
-                                    ? 'ring-2 ring-[#ec7211] ring-offset-2 ring-offset-white border-2 border-[#ec7211]'
-                                    : 'border-2 border-gray-200 hover:border-gray-300'
-                                }`}
-                                style={{ backgroundColor: color.value }}
-                                title={color.label}
-                              >
-                                {value === color.value && (
-                                  <span className="text-white text-lg font-bold drop-shadow-md">✓</span>
-                                )}
-                              </button>
-                            ))}
-                          </div>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { value: '#1976d2', label: 'כחול' },
+                            { value: '#d32f2f', label: 'אדום' },
+                            { value: '#388e3c', label: 'ירוק' },
+                            { value: '#f57c00', label: 'כתום' },
+                            { value: '#7b1fa2', label: 'סגול' },
+                            { value: '#0288d1', label: 'תכלת' },
+                            { value: '#c2185b', label: 'ורוד' },
+                            { value: '#5d4037', label: 'חום' },
+                            { value: '#455a64', label: 'אפור כהה' },
+                            { value: '#0097a7', label: 'ציאן' }
+                          ].map((color) => (
+                            <button
+                              key={color.value}
+                              type="button"
+                              onClick={() => onChange(color.value)}
+                              className={`w-11 h-11 rounded-lg transition-all hover:scale-110 ${
+                                value === color.value
+                                  ? 'ring-2 ring-[#ec7211] ring-offset-2 ring-offset-white border-2 border-[#ec7211]'
+                                  : 'border-2 border-gray-200 hover:border-gray-300'
+                              }`}
+                              style={{ backgroundColor: color.value }}
+                              title={color.label}
+                            >
+                              {value === color.value && (
+                                <span className="text-white text-lg font-bold drop-shadow-md">✓</span>
+                              )}
+                            </button>
+                          ))}
                         </div>
                       )}
                     />
-                  </div>
+                  </FormField>
                 </div>
               </FormSection>
 
               {/* Schedule Section */}
-              <FormSection title="לוח זמנים">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                  {/* Start Date - Side by Side with Due Date */}
-                  <div className="col-span-12 md:col-span-6">
-                    <Controller
-                      name="startDate"
-                      control={control}
-                      render={({ field: { onChange, value } }) => (
-                        <div className="grid grid-cols-12 gap-2">
-                          <div className="col-span-7">
-                            <DatePicker
-                              label="תאריך התחלה"
-                              value={parseDate(value)}
-                              onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
-                              slotProps={{ textField: { fullWidth: true } }}
-                            />
+              <FormSection title="לוח זמנים" showDivider>
+                <div className="space-y-6">
+                  {/* Start Date and Due Date - Side by Side */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField label="תאריך התחלה">
+                      <Controller
+                        name="startDate"
+                        control={control}
+                        render={({ field: { onChange, value } }) => (
+                          <div className="grid grid-cols-12 gap-2">
+                            <div className="col-span-7">
+                              <DatePicker
+                                value={parseDate(value)}
+                                onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
+                                slotProps={{ 
+                                  textField: { 
+                                    fullWidth: true,
+                                    sx: {
+                                      '& .MuiOutlinedInput-root': {
+                                        height: '44px',
+                                        borderRadius: '8px',
+                                        backgroundColor: '#f9fafb',
+                                        '& fieldset': {
+                                          borderColor: '#e5e7eb',
+                                        },
+                                        '&:hover fieldset': {
+                                          borderColor: '#d1d5db',
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                          borderColor: '#ec7211',
+                                          borderWidth: '2px',
+                                        },
+                                      },
+                                    }
+                                  } 
+                                }}
+                              />
+                            </div>
+                            <div className="col-span-5">
+                              <TimePicker
+                                value={parseDate(value)}
+                                onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
+                                ampm={false}
+                                views={['hours', 'minutes']}
+                                viewRenderers={{
+                                  hours: renderTimeViewClock,
+                                  minutes: renderTimeViewClock
+                                }}
+                                slotProps={{ 
+                                  textField: { 
+                                    fullWidth: true,
+                                    sx: {
+                                      '& .MuiOutlinedInput-root': {
+                                        height: '44px',
+                                        borderRadius: '8px',
+                                        backgroundColor: '#f9fafb',
+                                        '& fieldset': {
+                                          borderColor: '#e5e7eb',
+                                        },
+                                        '&:hover fieldset': {
+                                          borderColor: '#d1d5db',
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                          borderColor: '#ec7211',
+                                          borderWidth: '2px',
+                                        },
+                                      },
+                                    }
+                                  } 
+                                }}
+                              />
+                            </div>
                           </div>
-                          <div className="col-span-5">
-                            <TimePicker
-                              label="שעה"
-                              value={parseDate(value)}
-                              onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
-                              ampm={false}
-                              views={['hours', 'minutes']}
-                              viewRenderers={{
-                                hours: renderTimeViewClock,
-                                minutes: renderTimeViewClock
-                              }}
-                              slotProps={{ textField: { fullWidth: true } }}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    />
-                  </div>
+                        )}
+                      />
+                    </FormField>
 
-                  {/* Due Date - Side by Side with Start Date */}
-                  <div className="col-span-12 md:col-span-6">
-                    <Controller
-                      name="dueDate"
-                      control={control}
-                      render={({ field: { onChange, value } }) => (
-                        <div className="grid grid-cols-12 gap-2">
-                          <div className="col-span-7">
-                            <DatePicker
-                              label="תאריך יעד"
-                              value={parseDate(value)}
-                              onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
-                              slotProps={{ textField: { fullWidth: true } }}
-                            />
+                    <FormField label="תאריך יעד">
+                      <Controller
+                        name="dueDate"
+                        control={control}
+                        render={({ field: { onChange, value } }) => (
+                          <div className="grid grid-cols-12 gap-2">
+                            <div className="col-span-7">
+                              <DatePicker
+                                value={parseDate(value)}
+                                onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
+                                slotProps={{ 
+                                  textField: { 
+                                    fullWidth: true,
+                                    sx: {
+                                      '& .MuiOutlinedInput-root': {
+                                        height: '44px',
+                                        borderRadius: '8px',
+                                        backgroundColor: '#f9fafb',
+                                        '& fieldset': {
+                                          borderColor: '#e5e7eb',
+                                        },
+                                        '&:hover fieldset': {
+                                          borderColor: '#d1d5db',
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                          borderColor: '#ec7211',
+                                          borderWidth: '2px',
+                                        },
+                                      },
+                                    }
+                                  } 
+                                }}
+                              />
+                            </div>
+                            <div className="col-span-5">
+                              <TimePicker
+                                value={parseDate(value)}
+                                onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
+                                ampm={false}
+                                views={['hours', 'minutes']}
+                                viewRenderers={{
+                                  hours: renderTimeViewClock,
+                                  minutes: renderTimeViewClock
+                                }}
+                                slotProps={{ 
+                                  textField: { 
+                                    fullWidth: true,
+                                    sx: {
+                                      '& .MuiOutlinedInput-root': {
+                                        height: '44px',
+                                        borderRadius: '8px',
+                                        backgroundColor: '#f9fafb',
+                                        '& fieldset': {
+                                          borderColor: '#e5e7eb',
+                                        },
+                                        '&:hover fieldset': {
+                                          borderColor: '#d1d5db',
+                                        },
+                                        '&.Mui-focused fieldset': {
+                                          borderColor: '#ec7211',
+                                          borderWidth: '2px',
+                                        },
+                                      },
+                                    }
+                                  } 
+                                }}
+                              />
+                            </div>
                           </div>
-                          <div className="col-span-5">
-                            <TimePicker
-                              label="שעה"
-                              value={parseDate(value)}
-                              onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
-                              ampm={false}
-                              views={['hours', 'minutes']}
-                              viewRenderers={{
-                                hours: renderTimeViewClock,
-                                minutes: renderTimeViewClock
-                              }}
-                              slotProps={{ textField: { fullWidth: true } }}
-                            />
-                          </div>
-                        </div>
-                      )}
-                    />
+                        )}
+                      />
+                    </FormField>
                   </div>
 
                   {/* Recurrence */}
-                  <div className="col-span-12">
+                  <FormField label="חזרתיות">
                     <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                       {(() => {
                         const start = parseDate(watchStartDate) || parseDate(watchDueDate) || new Date();
@@ -769,14 +869,14 @@ const TaskForm = ({
                         );
                       })()}
                     </div>
-                  </div>
+                  </FormField>
                 </div>
               </FormSection>
 
               {/* Assignment Section */}
-              <FormSection title="הקצאה">
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                  <div className="col-span-12 md:col-span-6">
+              <FormSection title="הקצאה" showDivider>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField label="פרויקט">
                     <Controller
                       name="projectId"
                       control={control}
@@ -789,15 +889,31 @@ const TaskForm = ({
                           renderInput={(params) => (
                             <TextField
                               {...params}
-                              label="פרויקט"
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  height: '44px',
+                                  borderRadius: '8px',
+                                  backgroundColor: '#f9fafb',
+                                  '& fieldset': {
+                                    borderColor: '#e5e7eb',
+                                  },
+                                  '&:hover fieldset': {
+                                    borderColor: '#d1d5db',
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#ec7211',
+                                    borderWidth: '2px',
+                                  },
+                                },
+                              }}
                             />
                           )}
                         />
                       )}
                     />
-                  </div>
+                  </FormField>
 
-                  <div className="col-span-12 md:col-span-6">
+                  <FormField label="לקוח מקושר">
                     <Controller
                       name="relatedClient"
                       control={control}
@@ -811,7 +927,6 @@ const TaskForm = ({
                           renderInput={(params) => (
                             <TextField
                               {...params}
-                              label="לקוח מקושר"
                               InputProps={{
                                 ...params.InputProps,
                                 endAdornment: (
@@ -821,31 +936,63 @@ const TaskForm = ({
                                   </>
                                 ),
                               }}
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  height: '44px',
+                                  borderRadius: '8px',
+                                  backgroundColor: '#f9fafb',
+                                  '& fieldset': {
+                                    borderColor: '#e5e7eb',
+                                  },
+                                  '&:hover fieldset': {
+                                    borderColor: '#d1d5db',
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#ec7211',
+                                    borderWidth: '2px',
+                                  },
+                                },
+                              }}
                             />
                           )}
                         />
                       )}
                     />
-                  </div>
+                  </FormField>
                 </div>
               </FormSection>
 
               {/* Description Section */}
-              <FormSection title="תיאור">
-                <div className="col-span-12">
+              <FormSection title="תיאור" showDivider>
+                <FormField>
                   <TextField
                     fullWidth
                     multiline
-                    minRows={6}
-                    label="תיאור"
+                    rows={5}
                     {...register('description')}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                        backgroundColor: '#f9fafb',
+                        '& fieldset': {
+                          borderColor: '#e5e7eb',
+                        },
+                        '&:hover fieldset': {
+                          borderColor: '#d1d5db',
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: '#ec7211',
+                          borderWidth: '2px',
+                        },
+                      },
+                    }}
                   />
-                </div>
+                </FormField>
               </FormSection>
 
               {/* Subtasks Section */}
-              <FormSection title="תתי־משימות">
-                <div className="space-y-4">
+              <FormSection title="תתי־משימות" showDivider>
+                <div className="space-y-6">
                   <div className="flex justify-end">
                     <Button
                       size="small"
@@ -866,57 +1013,92 @@ const TaskForm = ({
                   ) : null}
 
                   <Collapse in={subtasksExpanded && subtaskFields.length > 0}>
-                    <Divider sx={{ my: 1.5 }} />
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-6">
                       {subtaskFields.map((field, index) => (
-                        <Grid container spacing={1} key={field.id} alignItems="flex-start">
-                          <Grid item xs={12} md={8}>
+                        <div key={field.id} className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                          <FormField label={`תת־משימה ${index + 1}`}>
                             <TextField
                               fullWidth
-                              label={`תת־משימה ${index + 1}`}
                               multiline
                               minRows={2}
                               {...register(`subtasks.${index}.title`)}
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  borderRadius: '8px',
+                                  backgroundColor: '#ffffff',
+                                  '& fieldset': {
+                                    borderColor: '#e5e7eb',
+                                  },
+                                  '&:hover fieldset': {
+                                    borderColor: '#d1d5db',
+                                  },
+                                  '&.Mui-focused fieldset': {
+                                    borderColor: '#ec7211',
+                                    borderWidth: '2px',
+                                  },
+                                },
+                              }}
                             />
-                          </Grid>
-                          <Grid item xs={12} md={4}>
-                            <Stack direction="row" spacing={1} alignItems="stretch">
-                              <TextField
-                                select
-                                label="סטטוס"
-                                fullWidth
-                                defaultValue={field.done ? 'true' : 'false'}
-                                {...register(`subtasks.${index}.done`, {
-                                  setValueAs: (v) =>
-                                    v === true ||
-                                    v === 'true' ||
-                                    v === 1 ||
-                                    v === '1' ||
-                                    v === 'done'
-                                })}
-                                SelectProps={{
-                                  native: true,
-                                }}
-                              >
-                                <option value="false">פתוחה</option>
-                                <option value="true">בוצעה</option>
-                              </TextField>
+                          </FormField>
+                          <div className="flex gap-3">
+                            <div className="flex-1">
+                              <FormField label="סטטוס">
+                                <TextField
+                                  select
+                                  fullWidth
+                                  defaultValue={field.done ? 'true' : 'false'}
+                                  {...register(`subtasks.${index}.done`, {
+                                    setValueAs: (v) =>
+                                      v === true ||
+                                      v === 'true' ||
+                                      v === 1 ||
+                                      v === '1' ||
+                                      v === 'done'
+                                  })}
+                                  SelectProps={{
+                                    native: true,
+                                  }}
+                                  sx={{
+                                    '& .MuiOutlinedInput-root': {
+                                      height: '44px',
+                                      borderRadius: '8px',
+                                      backgroundColor: '#ffffff',
+                                      '& fieldset': {
+                                        borderColor: '#e5e7eb',
+                                      },
+                                      '&:hover fieldset': {
+                                        borderColor: '#d1d5db',
+                                      },
+                                      '&.Mui-focused fieldset': {
+                                        borderColor: '#ec7211',
+                                        borderWidth: '2px',
+                                      },
+                                    },
+                                  }}
+                                >
+                                  <option value="false">פתוחה</option>
+                                  <option value="true">בוצעה</option>
+                                </TextField>
+                              </FormField>
+                            </div>
+                            <div className="flex items-end pb-1">
                               <Button
                                 variant="outlined"
                                 color="error"
                                 onClick={() => removeSubtask(index)}
-                                sx={{ whiteSpace: 'nowrap' }}
+                                sx={{ whiteSpace: 'nowrap', height: '44px' }}
                               >
                                 מחק
                               </Button>
-                            </Stack>
-                          </Grid>
-                        </Grid>
+                            </div>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </Collapse>
                 </div>
               </FormSection>
+              </div>
             </div>
 
             {/* Footer Actions - Fixed at bottom */}
