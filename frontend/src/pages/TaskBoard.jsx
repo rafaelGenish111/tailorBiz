@@ -14,7 +14,12 @@ import {
   Avatar,
   TextField,
   MenuItem,
-  InputAdornment
+  InputAdornment,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -29,7 +34,8 @@ import {
   Campaign as CampaignIcon,
   Science as ScienceIcon,
   AttachMoney as DollarIcon,
-  VolumeUp as MegaphoneIcon
+  VolumeUp as MegaphoneIcon,
+  ExpandMore as ExpandMoreIcon
 } from '@mui/icons-material';
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useProjects } from '../admin/hooks/useTasks';
 import { format } from 'date-fns';
@@ -42,6 +48,8 @@ import TaskModal from '../components/tasks/TaskModal';
 const TaskBoard = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { id: taskIdFromUrl } = useParams();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editTask, setEditTask] = useState(null);
@@ -56,6 +64,20 @@ const TaskBoard = () => {
   const [contextFilter, setContextFilter] = useState('all'); // 'all', 'client', 'marketing', 'internal' - Default: 'all'
   const [timeframeFilter, setTimeframeFilter] = useState('this_week'); // 'today', 'this_week', 'this_month', 'backlog' - Default: 'this_week'
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Accordion state for mobile - tracks which columns are expanded
+  const [expandedColumns, setExpandedColumns] = useState(() => {
+    // Load from localStorage if exists, otherwise all closed
+    const saved = localStorage.getItem('taskBoardExpandedColumns');
+    return saved ? JSON.parse(saved) : {};
+  });
+  
+  const handleAccordionChange = (columnId) => (event, isExpanded) => {
+    const newExpanded = { ...expandedColumns, [columnId]: isExpanded };
+    setExpandedColumns(newExpanded);
+    // Save to localStorage
+    localStorage.setItem('taskBoardExpandedColumns', JSON.stringify(newExpanded));
+  };
 
   const { data: taskByIdResponse } = useTask(taskIdFromUrl);
   const taskFromUrl = taskIdFromUrl ? taskByIdResponse?.data : null;
@@ -423,26 +445,341 @@ const TaskBoard = () => {
         </Box>
       </Box>
 
-      {/* Kanban Board - 4 Equal Columns with Internal Scroll */}
-      <Box
-        sx={{
-          flex: 1,
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-          gap: 3,
-          p: 3,
-          overflow: 'hidden',
-          minHeight: 0,
-          width: '100%',
-          height: '100%',
-          boxSizing: 'border-box',
-          '& > *': {
-            minWidth: 0,
-            maxWidth: '100%',
+      {/* Kanban Board - Desktop: Grid, Mobile: Accordion */}
+      {isMobile ? (
+        // Mobile: Accordion Layout
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: 'auto',
+            p: 2,
+          }}
+        >
+          {columns.map((column) => {
+            const tasksInColumn = tasksByStatus[column.id];
+            const isEmpty = tasksInColumn.length === 0;
+            const isExpanded = expandedColumns[column.id] || false;
+            
+            return (
+              <Accordion
+                key={column.id}
+                expanded={isExpanded}
+                onChange={handleAccordionChange(column.id)}
+                sx={{
+                  mb: 2,
+                  borderRadius: '12px !important',
+                  border: '1px solid #e5e7eb',
+                  boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                  '&:before': {
+                    display: 'none',
+                  },
+                  '&.Mui-expanded': {
+                    margin: '0 0 16px 0',
+                  },
+                }}
+              >
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon sx={{ color: column.color }} />}
+                  sx={{
+                    borderTop: `4px solid ${column.color}`,
+                    borderRadius: '12px',
+                    '&.Mui-expanded': {
+                      borderBottomLeftRadius: 0,
+                      borderBottomRightRadius: 0,
+                    },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', pr: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box sx={{ color: column.color, display: 'flex', alignItems: 'center' }}>
+                        {column.icon}
+                      </Box>
+                      <Typography 
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: '1rem',
+                          color: '#16191f',
+                        }}
+                      >
+                        {column.title}
+                      </Typography>
+                    </Box>
+                    <Chip 
+                      label={tasksInColumn.length} 
+                      size="small" 
+                      sx={{ 
+                        bgcolor: `${column.color}15`,
+                        color: column.color,
+                        fontWeight: 600,
+                        height: 24,
+                        fontSize: '0.75rem',
+                        border: `1px solid ${column.color}30`,
+                      }}
+                    />
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails sx={{ p: 2, pt: 0 }}>
+                  {isEmpty ? (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        py: 4,
+                        textAlign: 'center',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: '50%',
+                          bgcolor: `${column.color}15`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          mb: 1.5,
+                        }}
+                      >
+                        {React.cloneElement(column.icon, { sx: { fontSize: '1.5rem', color: column.color } })}
+                      </Box>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: '#6b7280',
+                          fontWeight: 500,
+                          mb: 0.5,
+                        }}
+                      >
+                        אין משימות
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: '#9ca3af',
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        גרור משימות לכאן
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      {tasksInColumn.map((task) => {
+                        const priorityColors = {
+                          urgent: '#ef4444',
+                          high: '#f59e0b',
+                          medium: '#3b82f6',
+                          low: '#9ca3af',
+                        };
+                        const priorityBorderColor = priorityColors[task.priority] || '#9ca3af';
+                        const taskContext = getTaskContext(task);
+                        const contextColors = {
+                          client: '#3b82f6',
+                          marketing: '#7c3aed',
+                          internal: '#10b981',
+                        };
+                        const projectTagColor = task.projectId?.color || contextColors[taskContext] || '#6366f1';
+                        const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed';
+                        
+                        return (
+                          <Card
+                            key={task._id}
+                            elevation={0}
+                            sx={{
+                              p: 2.5,
+                              cursor: 'pointer',
+                              borderRadius: '12px',
+                              border: '1px solid #f3f4f6',
+                              bgcolor: '#ffffff',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                              transition: 'all 0.2s ease-in-out',
+                              position: 'relative',
+                              '&:hover': {
+                                transform: 'translateY(-2px)',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                                borderColor: '#d1d5db',
+                              }
+                            }}
+                            onClick={() => openTaskModal(task._id)}
+                          >
+                            {/* Context Border Strip (Left side) */}
+                            <Box 
+                              sx={{ 
+                                position: 'absolute', 
+                                left: 0, 
+                                top: 0, 
+                                bottom: 0, 
+                                width: 4, 
+                                bgcolor: taskContext === 'client' ? '#3b82f6' : 
+                                        taskContext === 'marketing' ? '#7c3aed' : 
+                                        '#10b981',
+                                borderTopLeftRadius: '12px',
+                                borderBottomLeftRadius: '12px',
+                              }} 
+                            />
+                            
+                            {/* Priority Border Strip (Right side) */}
+                            <Box 
+                              sx={{ 
+                                position: 'absolute', 
+                                right: 0, 
+                                top: 0, 
+                                bottom: 0, 
+                                width: 4, 
+                                bgcolor: priorityBorderColor,
+                                borderTopRightRadius: '12px',
+                                borderBottomRightRadius: '12px',
+                              }} 
+                            />
+
+                            {/* Top: Context Icon + Project Tag */}
+                            <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                              {taskContext === 'client' && (
+                                <DollarIcon 
+                                  sx={{ 
+                                    fontSize: '1rem', 
+                                    color: '#3b82f6',
+                                    flexShrink: 0,
+                                  }} 
+                                />
+                              )}
+                              {taskContext === 'marketing' && (
+                                <MegaphoneIcon 
+                                  sx={{ 
+                                    fontSize: '1rem', 
+                                    color: '#7c3aed',
+                                    flexShrink: 0,
+                                  }} 
+                                />
+                              )}
+                              
+                              {task.projectId && (
+                                <Chip
+                                  label={task.projectId.name}
+                                  size="small"
+                                  sx={{
+                                    bgcolor: projectTagColor,
+                                    color: '#ffffff',
+                                    fontSize: '0.7rem',
+                                    height: 22,
+                                    fontWeight: 600,
+                                    border: 'none',
+                                  }}
+                                />
+                              )}
+                            </Box>
+
+                            {/* Middle: Title (Truncate to 2 lines) */}
+                            <Typography 
+                              variant="subtitle1" 
+                              sx={{
+                                fontWeight: 700,
+                                fontSize: '0.9375rem',
+                                color: '#16191f',
+                                mb: 1.5,
+                                pr: 1,
+                                lineHeight: 1.4,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                              }}
+                            >
+                              {task.title}
+                            </Typography>
+
+                            {/* Bottom: Due Date + Avatar */}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
+                              {task.dueDate && (
+                                <Chip
+                                  icon={<ScheduleIcon sx={{ fontSize: '0.75rem !important' }} />}
+                                  label={format(new Date(task.dueDate), 'dd/MM', { locale: he })}
+                                  size="small"
+                                  sx={{
+                                    fontSize: '0.7rem',
+                                    height: 20,
+                                    bgcolor: isOverdue ? '#fee2e2' : '#f3f4f6',
+                                    color: isOverdue ? '#991b1b' : '#6b7280',
+                                    border: isOverdue ? '1px solid #fecaca' : 'none',
+                                    fontWeight: isOverdue ? 600 : 400,
+                                  }}
+                                />
+                              )}
+                              {task.relatedClient && (
+                                <Avatar 
+                                  sx={{ 
+                                    width: 24, 
+                                    height: 24, 
+                                    fontSize: '0.7rem', 
+                                    bgcolor: '#6366f1',
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {task.relatedClient.personalInfo?.fullName?.charAt(0) || '?'}
+                                </Avatar>
+                              )}
+                            </Box>
+                          </Card>
+                        );
+                      })}
+                    </Box>
+                  )}
+                  
+                  {/* Add Task Button */}
+                  <Box sx={{ mt: 2 }}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      startIcon={<AddIcon />}
+                      sx={{
+                        border: '1px dashed #d1d5db',
+                        borderColor: '#d1d5db',
+                        color: '#6b7280',
+                        textTransform: 'none',
+                        fontWeight: 500,
+                        '&:hover': {
+                          borderColor: column.color,
+                          bgcolor: `${column.color}10`,
+                          color: column.color,
+                        }
+                      }}
+                      onClick={() => {
+                        setSelectedStatus(column.id);
+                        setCreateDialogOpen(true);
+                      }}
+                    >
+                      הוסף משימה
+                    </Button>
+                  </Box>
+                </AccordionDetails>
+              </Accordion>
+            );
+          })}
+        </Box>
+      ) : (
+        // Desktop: Grid Layout
+        <Box
+          sx={{
+            flex: 1,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+            gap: 3,
+            p: 3,
+            overflow: 'hidden',
+            minHeight: 0,
             width: '100%',
-          },
-        }}
-      >
+            height: '100%',
+            boxSizing: 'border-box',
+            '& > *': {
+              minWidth: 0,
+              maxWidth: '100%',
+              width: '100%',
+            },
+          }}
+        >
         {columns.map((column) => {
           const tasksInColumn = tasksByStatus[column.id];
           const isEmpty = tasksInColumn.length === 0;
