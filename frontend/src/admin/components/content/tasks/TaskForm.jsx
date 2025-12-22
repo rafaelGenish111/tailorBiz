@@ -76,6 +76,7 @@ const TaskForm = ({
       description: '',
       priority: 'medium',
       status: 'todo',
+      color: '#1976d2', // ברירת מחדל כחול
       // ברירת מחדל: התחלה עכשיו
       startDate: defaultStart,
       // ברירת מחדל: יעד שעה קדימה
@@ -344,6 +345,70 @@ const TaskForm = ({
               <MenuItem value="waiting">ממתין</MenuItem>
               <MenuItem value="completed">הושלם</MenuItem>
             </TextField>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Controller
+              name="color"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Box>
+                  <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
+                    צבע המשימה
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {[
+                      { value: '#1976d2', label: 'כחול' },
+                      { value: '#d32f2f', label: 'אדום' },
+                      { value: '#388e3c', label: 'ירוק' },
+                      { value: '#f57c00', label: 'כתום' },
+                      { value: '#7b1fa2', label: 'סגול' },
+                      { value: '#0288d1', label: 'תכלת' },
+                      { value: '#c2185b', label: 'ורוד' },
+                      { value: '#5d4037', label: 'חום' },
+                      { value: '#455a64', label: 'אפור כהה' },
+                      { value: '#0097a7', label: 'ציאן' }
+                    ].map((color) => (
+                      <Box
+                        key={color.value}
+                        onClick={() => onChange(color.value)}
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 1,
+                          bgcolor: color.value,
+                          cursor: 'pointer',
+                          border: value === color.value ? '3px solid' : '2px solid',
+                          borderColor: value === color.value ? 'primary.main' : 'divider',
+                          transition: 'all 0.2s',
+                          '&:hover': {
+                            transform: 'scale(1.1)',
+                            boxShadow: 2
+                          },
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          position: 'relative'
+                        }}
+                        title={color.label}
+                      >
+                        {value === color.value && (
+                          <Box
+                            sx={{
+                              color: 'white',
+                              fontSize: '1.2rem',
+                              textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                            }}
+                          >
+                            ✓
+                          </Box>
+                        )}
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              )}
+            />
           </Grid>
 
           <Grid item xs={12} md={6}>

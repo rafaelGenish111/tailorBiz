@@ -95,7 +95,14 @@ const TaskModal = ({ open, taskId, onClose }) => {
       maxWidth="sm"
       fullWidth
     >
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+      <DialogTitle sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between', 
+        gap: 2,
+        borderRight: task?.color ? `4px solid ${task.color}` : 'none',
+        pr: task?.color ? 1 : 0
+      }}>
         <Box sx={{ minWidth: 0 }}>
           <Typography variant="h6" fontWeight="bold" sx={{ wordBreak: 'break-word' }}>
             {task?.title || 'משימה'}
@@ -109,6 +116,19 @@ const TaskModal = ({ open, taskId, onClose }) => {
             )}
             {typeof totalCount === 'number' && totalCount > 0 && (
               <Chip size="small" variant="outlined" label={`תתי־משימות: ${completedCount}/${totalCount}`} />
+            )}
+            {task?.color && (
+              <Box
+                sx={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  bgcolor: task.color,
+                  border: '2px solid',
+                  borderColor: 'divider'
+                }}
+                title="צבע המשימה"
+              />
             )}
           </Stack>
         </Box>
