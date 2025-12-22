@@ -35,7 +35,8 @@ import {
   Science as ScienceIcon,
   AttachMoney as DollarIcon,
   VolumeUp as MegaphoneIcon,
-  ExpandMore as ExpandMoreIcon
+  ExpandMore as ExpandMoreIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useProjects } from '../admin/hooks/useTasks';
 import { format } from 'date-fns';
@@ -1137,6 +1138,12 @@ const TaskBoard = () => {
         onClose={closeCreateDialog}
         maxWidth="md"
         fullWidth
+        PaperProps={{
+          sx: {
+            maxWidth: '672px', // max-w-2xl equivalent
+            borderRadius: '12px',
+          }
+        }}
       >
         <DialogTitle
           sx={{
@@ -1144,22 +1151,30 @@ const TaskBoard = () => {
             alignItems: 'center',
             justifyContent: 'space-between',
             flexDirection: 'row-reverse',
-            gap: 2
+            gap: 2,
+            p: 3,
+            pb: 2,
+            borderBottom: '1px solid #f3f4f6'
           }}
         >
-          <Typography variant="h6" fontWeight="bold">
+          <Typography variant="h6" fontWeight="bold" sx={{ fontSize: '1.25rem' }}>
             משימה חדשה
           </Typography>
-          <Button
-            type="submit"
-            form={createFormId}
-            variant="contained"
-            disabled={createTask.isPending}
+          <IconButton
+            onClick={closeCreateDialog}
+            sx={{
+              position: 'absolute',
+              left: 16,
+              color: 'text.secondary',
+              '&:hover': {
+                backgroundColor: 'rgba(0, 0, 0, 0.04)'
+              }
+            }}
           >
-            {createTask.isPending ? 'שומר…' : 'צור משימה'}
-          </Button>
+            <CloseIcon />
+          </IconButton>
         </DialogTitle>
-        <DialogContent dividers>
+        <DialogContent sx={{ p: 0 }}>
           <TaskForm 
             formId={createFormId}
             showActions={false}
@@ -1169,9 +1184,36 @@ const TaskBoard = () => {
             isLoading={createTask.isPending}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={closeCreateDialog} disabled={createTask.isPending}>
+        <DialogActions
+          sx={{
+            p: 3,
+            pt: 2,
+            borderTop: '1px solid #f3f4f6',
+            justifyContent: 'flex-start', // RTL: left aligned
+            gap: 2
+          }}
+        >
+          <Button 
+            onClick={closeCreateDialog} 
+            disabled={createTask.isPending}
+            variant="text"
+            sx={{ color: 'text.secondary' }}
+          >
             ביטול
+          </Button>
+          <Button
+            type="submit"
+            form={createFormId}
+            variant="contained"
+            disabled={createTask.isPending}
+            sx={{
+              backgroundColor: '#ec7211',
+              '&:hover': {
+                backgroundColor: '#c75e0c'
+              }
+            }}
+          >
+            {createTask.isPending ? 'שומר…' : 'צור משימה'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1182,6 +1224,12 @@ const TaskBoard = () => {
         onClose={closeEditDialog}
         maxWidth="md"
         fullWidth
+        PaperProps={{
+          sx: {
+            maxWidth: '672px', // max-w-2xl equivalent
+            borderRadius: '12px',
+          }
+        }}
       >
         <DialogTitle
           sx={{
@@ -1189,22 +1237,30 @@ const TaskBoard = () => {
             alignItems: 'center',
             justifyContent: 'space-between',
             flexDirection: 'row-reverse',
-            gap: 2
+            gap: 2,
+            p: 3,
+            pb: 2,
+            borderBottom: '1px solid #f3f4f6'
           }}
         >
-          <Typography variant="h6" fontWeight="bold">
+          <Typography variant="h6" fontWeight="bold" sx={{ fontSize: '1.25rem' }}>
             עדכן משימה
           </Typography>
-          <Button
-            type="submit"
-            form={editFormId}
-            variant="contained"
-            disabled={updateTask.isPending}
+          <IconButton
+            onClick={closeEditDialog}
+            sx={{
+              position: 'absolute',
+              left: 16,
+              color: 'text.secondary',
+              '&:hover': {
+                backgroundColor: 'rgba(0, 0, 0, 0.04)'
+              }
+            }}
           >
-            {updateTask.isPending ? 'שומר…' : 'עדכן משימה'}
-          </Button>
+            <CloseIcon />
+          </IconButton>
         </DialogTitle>
-        <DialogContent dividers>
+        <DialogContent sx={{ p: 0 }}>
           <TaskForm 
             initialData={effectiveEditTask}
             onSubmit={handleUpdate}
@@ -1214,9 +1270,36 @@ const TaskBoard = () => {
             showActions={false}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={closeEditDialog} disabled={updateTask.isPending}>
+        <DialogActions
+          sx={{
+            p: 3,
+            pt: 2,
+            borderTop: '1px solid #f3f4f6',
+            justifyContent: 'flex-start', // RTL: left aligned
+            gap: 2
+          }}
+        >
+          <Button 
+            onClick={closeEditDialog} 
+            disabled={updateTask.isPending}
+            variant="text"
+            sx={{ color: 'text.secondary' }}
+          >
             ביטול
+          </Button>
+          <Button
+            type="submit"
+            form={editFormId}
+            variant="contained"
+            disabled={updateTask.isPending}
+            sx={{
+              backgroundColor: '#ec7211',
+              '&:hover': {
+                backgroundColor: '#c75e0c'
+              }
+            }}
+          >
+            {updateTask.isPending ? 'שומר…' : 'עדכן משימה'}
           </Button>
         </DialogActions>
       </Dialog>
