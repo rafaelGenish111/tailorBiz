@@ -13,7 +13,8 @@ import {
   DialogActions,
   Avatar,
   TextField,
-  MenuItem
+  MenuItem,
+  InputAdornment
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -22,7 +23,11 @@ import {
   Assignment as AssignmentIcon,
   CheckCircle as CheckCircleIcon,
   Pending as PendingIcon,
-  Schedule as ScheduleIcon
+  Schedule as ScheduleIcon,
+  Search as SearchIcon,
+  Work as WorkIcon,
+  Campaign as CampaignIcon,
+  Science as ScienceIcon
 } from '@mui/icons-material';
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useProjects } from '../admin/hooks/useTasks';
 import { format } from 'date-fns';
@@ -44,6 +49,11 @@ const TaskBoard = () => {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [taskModalId, setTaskModalId] = useState(null);
+  
+  // Advanced Filters
+  const [contextFilter, setContextFilter] = useState('all'); // 'all', 'client', 'marketing', 'internal'
+  const [timeframeFilter, setTimeframeFilter] = useState('this_week'); // 'today', 'this_week', 'this_month', 'backlog'
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: taskByIdResponse } = useTask(taskIdFromUrl);
   const taskFromUrl = taskIdFromUrl ? taskByIdResponse?.data : null;
@@ -89,8 +99,79 @@ const TaskBoard = () => {
     clearRouteContext();
   };
 
-  // סינון לפי עדיפות וטווח תאריכים (בצד הלקוח)
+  // Helper: Get task context based on project or tags
+  const getTaskContext = (task) => {
+    const projectName = task.projectId?.name?.toLowerCase() || '';
+    const taskTitle = (task.title || '').toLowerCase();
+    const taskDescription = (task.description || '').toLowerCase();
+    
+    if (projectName.includes('marketing') || projectName.includes('קמפיין') || 
+        taskTitle.includes('marketing') || taskTitle.includes('שיווק') ||
+        taskDescription.includes('marketing') || taskDescription.includes('שיווק')) {
+      return 'marketing';
+    }
+    if (projectName.includes('internal') || projectName.includes('r&d') || projectName.includes('פנימי') ||
+        taskTitle.includes('internal') || taskTitle.includes('פנימי') ||
+        taskDescription.includes('internal') || taskDescription.includes('פנימי')) {
+      return 'internal';
+    }
+    // Default to client work if has relatedClient or project
+    if (task.relatedClient || task.projectId) {
+      return 'client';
+    }
+    return 'client'; // Default
+  };
+
+  // Helper: Check if task is in timeframe
+  const isInTimeframe = (task, timeframe) => {
+    if (!task.dueDate) return timeframe === 'backlog';
+    
+    const now = new Date();
+    const dueDate = new Date(task.dueDate);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const taskDate = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+    
+    switch (timeframe) {
+      case 'today':
+        return taskDate.getTime() === today.getTime();
+      case 'this_week': {
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6); // End of week
+        return taskDate >= weekStart && taskDate <= weekEnd;
+      }
+      case 'this_month':
+        return taskDate.getMonth() === today.getMonth() && taskDate.getFullYear() === today.getFullYear();
+      case 'backlog':
+        return taskDate > new Date(today.getFullYear(), today.getMonth(), today.getDate() + 30); // More than 30 days
+      default:
+        return true;
+    }
+  };
+
+  // Advanced filtering logic
   const filteredTasks = tasks.filter((t) => {
+    // Context filter
+    if (contextFilter !== 'all') {
+      const taskContext = getTaskContext(t);
+      if (taskContext !== contextFilter) return false;
+    }
+    
+    // Timeframe filter
+    if (!isInTimeframe(t, timeframeFilter)) return false;
+    
+    // Search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesTitle = (t.title || '').toLowerCase().includes(query);
+      const matchesDescription = (t.description || '').toLowerCase().includes(query);
+      const matchesClient = t.relatedClient?.personalInfo?.fullName?.toLowerCase().includes(query);
+      const matchesProject = t.projectId?.name?.toLowerCase().includes(query);
+      if (!matchesTitle && !matchesDescription && !matchesClient && !matchesProject) return false;
+    }
+    
+    // Legacy filters (priority, date range)
     if (priorityFilter && t.priority !== priorityFilter) return false;
     if (dateFrom) {
       const fromTs = new Date(dateFrom).getTime();
@@ -102,6 +183,7 @@ const TaskBoard = () => {
       const dueTs = t.dueDate ? new Date(t.dueDate).getTime() : 0;
       if (dueTs > toTs) return false;
     }
+    
     return true;
   });
 
@@ -122,10 +204,10 @@ const TaskBoard = () => {
   };
 
   const columns = [
-    { id: 'todo', title: 'לעשות', color: '#607d8b', icon: <AssignmentIcon /> },
-    { id: 'in_progress', title: 'בביצוע', color: '#2196f3', icon: <ScheduleIcon /> },
-    { id: 'waiting', title: 'ממתין', color: '#ff9800', icon: <PendingIcon /> },
-    { id: 'completed', title: 'הושלם', color: '#4caf50', icon: <CheckCircleIcon /> }
+    { id: 'todo', title: 'To Do', color: '#607d8b', icon: <AssignmentIcon /> },
+    { id: 'in_progress', title: 'In Progress', color: '#2196f3', icon: <ScheduleIcon /> },
+    { id: 'waiting', title: 'Review/Pending', color: '#ff9800', icon: <PendingIcon /> },
+    { id: 'completed', title: 'Done', color: '#4caf50', icon: <CheckCircleIcon /> }
   ];
 
   const getPriorityColor = (priority) => {
@@ -186,97 +268,140 @@ const TaskBoard = () => {
           flexShrink: 0,
           bgcolor: '#ffffff',
           borderBottom: '1px solid #e5e7eb',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 2,
-          minHeight: 'fit-content',
         }}
       >
-        <Box sx={{ minWidth: 220, flex: '1 1 auto' }}>
-          <Typography variant="h4" gutterBottom fontWeight="bold">
-            📊 לוח משימות
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            ניהול משימות ומעקב ביצוע
-          </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Box>
+            <Typography 
+              variant="h4" 
+              sx={{
+                fontWeight: 700,
+                fontSize: { xs: '1.5rem', md: '2rem' },
+                color: '#16191f',
+                letterSpacing: '-0.02em',
+                mb: 0.5,
+              }}
+            >
+              📊 לוח משימות
+            </Typography>
+            <Typography 
+              variant="body1" 
+              sx={{
+                color: '#6b7280',
+                fontSize: '0.95rem',
+              }}
+            >
+              ניהול משימות ומעקב ביצוע
+            </Typography>
+          </Box>
+          <Button
+            startIcon={<AddIcon />}
+            variant="contained"
+            onClick={() => {
+              setSelectedStatus('todo');
+              setCreateDialogOpen(true);
+            }}
+            sx={{
+              borderRadius: '12px',
+              px: 3,
+              py: 1.5,
+              fontWeight: 600,
+              textTransform: 'none',
+              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+              '&:hover': {
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+              }
+            }}
+          >
+            משימה חדשה
+          </Button>
         </Box>
 
+        {/* Advanced Filter Bar */}
         <Box
           sx={{
             display: 'flex',
             gap: 2,
             alignItems: 'center',
             flexWrap: 'wrap',
-            justifyContent: { xs: 'flex-start', md: 'flex-end' },
-            width: { xs: '100%', md: 'auto' }
           }}
         >
-          {projects.length > 0 && (
-            <TextField
-              select
-              size="small"
-              label="סינון לפי פרויקט"
-              value={selectedProjectId}
-              onChange={(e) => setSelectedProjectId(e.target.value)}
-              sx={{ minWidth: { xs: '100%', sm: 220 } }}
-            >
-              <MenuItem value="">כל הפרויקטים</MenuItem>
-              {projects.map((p) => (
-                <MenuItem key={p._id} value={p._id}>
-                  {p.name}
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
-
+          {/* Context Filter */}
           <TextField
             select
             size="small"
-            label="עדיפות"
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            sx={{ minWidth: { xs: '100%', sm: 160 } }}
+            label="Context"
+            value={contextFilter}
+            onChange={(e) => setContextFilter(e.target.value)}
+            sx={{ 
+              minWidth: { xs: '100%', sm: 180 },
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '8px',
+              }
+            }}
           >
-            <MenuItem value="">כל העדיפויות</MenuItem>
-            <MenuItem value="urgent">דחופה</MenuItem>
-            <MenuItem value="high">גבוהה</MenuItem>
-            <MenuItem value="medium">בינונית</MenuItem>
-            <MenuItem value="low">נמוכה</MenuItem>
+            <MenuItem value="all">All</MenuItem>
+            <MenuItem value="client">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <WorkIcon sx={{ fontSize: '1rem', color: '#3b82f6' }} />
+                Client Work (Billable)
+              </Box>
+            </MenuItem>
+            <MenuItem value="marketing">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CampaignIcon sx={{ fontSize: '1rem', color: '#7c3aed' }} />
+                Marketing (Growth)
+              </Box>
+            </MenuItem>
+            <MenuItem value="internal">
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <ScienceIcon sx={{ fontSize: '1rem', color: '#10b981' }} />
+                Internal/R&D
+              </Box>
+            </MenuItem>
           </TextField>
 
+          {/* Timeframe Filter */}
           <TextField
+            select
             size="small"
-            type="date"
-            label="מתאריך"
-            InputLabelProps={{ shrink: true }}
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            sx={{ minWidth: { xs: '100%', sm: 180 } }}
-          />
-          <TextField
-            size="small"
-            type="date"
-            label="עד תאריך"
-            InputLabelProps={{ shrink: true }}
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            sx={{ minWidth: { xs: '100%', sm: 180 } }}
-          />
-
-          <Button
-            startIcon={<AddIcon />}
-            variant="contained"
-            size="large"
-            onClick={() => {
-              setSelectedStatus('todo');
-              setCreateDialogOpen(true);
+            label="Timeframe"
+            value={timeframeFilter}
+            onChange={(e) => setTimeframeFilter(e.target.value)}
+            sx={{ 
+              minWidth: { xs: '100%', sm: 160 },
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '8px',
+              }
             }}
-            sx={{ width: { xs: '100%', md: 'auto' } }}
           >
-            משימה חדשה
-          </Button>
+            <MenuItem value="today">Today</MenuItem>
+            <MenuItem value="this_week">This Week</MenuItem>
+            <MenuItem value="this_month">This Month</MenuItem>
+            <MenuItem value="backlog">Backlog (Future)</MenuItem>
+          </TextField>
+
+          {/* Search Box */}
+          <TextField
+            size="small"
+            placeholder="Search tasks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: '#9ca3af', fontSize: '1.2rem' }} />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ 
+              flex: 1,
+              minWidth: { xs: '100%', sm: 200 },
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '8px',
+              }
+            }}
+          />
         </Box>
       </Box>
 
@@ -449,6 +574,18 @@ const TaskBoard = () => {
                       };
                       const priorityBorderColor = priorityColors[task.priority] || '#9ca3af';
                       
+                      // Get context color for project tag
+                      const taskContext = getTaskContext(task);
+                      const contextColors = {
+                        client: '#3b82f6', // Blue
+                        marketing: '#7c3aed', // Purple
+                        internal: '#10b981', // Green
+                      };
+                      const projectTagColor = task.projectId?.color || contextColors[taskContext] || '#6366f1';
+                      
+                      // Check if overdue
+                      const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed';
+                      
                       return (
                         <Card
                           key={task._id}
@@ -484,63 +621,25 @@ const TaskBoard = () => {
                             }} 
                           />
 
-                          {/* Top: Priority Badge + Actions */}
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
-                            <Chip
-                              label={task.priority === 'urgent' ? 'דחוף' : 
-                                     task.priority === 'high' ? 'גבוה' : 
-                                     task.priority === 'medium' ? 'בינוני' : 'נמוך'}
-                              size="small"
-                              sx={{
-                                bgcolor: `${priorityBorderColor}15`,
-                                color: priorityBorderColor,
-                                fontWeight: 600,
-                                height: 22,
-                                fontSize: '0.7rem',
-                                border: `1px solid ${priorityBorderColor}30`,
-                              }}
-                            />
-                            <Box sx={{ display: 'flex', gap: 0.5 }}>
-                              <IconButton 
+                          {/* Top: Project Tag */}
+                          {task.projectId && (
+                            <Box sx={{ mb: 1.5 }}>
+                              <Chip
+                                label={task.projectId.name}
                                 size="small"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditTask(task);
-                                }}
                                 sx={{
-                                  width: 28,
-                                  height: 28,
-                                  color: '#6366f1',
-                                  bgcolor: '#eef2ff',
-                                  '&:hover': {
-                                    bgcolor: '#e0e7ff',
-                                  }
+                                  bgcolor: projectTagColor,
+                                  color: '#ffffff',
+                                  fontSize: '0.7rem',
+                                  height: 22,
+                                  fontWeight: 600,
+                                  border: 'none',
                                 }}
-                              >
-                                <EditIcon sx={{ fontSize: '0.875rem' }} />
-                              </IconButton>
-                              <IconButton
-                                size="small"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteTask(task._id);
-                                }}
-                                sx={{
-                                  width: 28,
-                                  height: 28,
-                                  color: '#ef4444',
-                                  bgcolor: '#fee2e2',
-                                  '&:hover': {
-                                    bgcolor: '#fecaca',
-                                  }
-                                }}
-                              >
-                                <DeleteIcon sx={{ fontSize: '0.875rem' }} />
-                              </IconButton>
+                              />
                             </Box>
-                          </Box>
+                          )}
 
-                          {/* Middle: Title */}
+                          {/* Middle: Title (Truncate to 2 lines) */}
                           <Typography 
                             variant="subtitle1" 
                             sx={{
@@ -550,69 +649,45 @@ const TaskBoard = () => {
                               mb: 1.5,
                               pr: 1,
                               lineHeight: 1.4,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
                             }}
                           >
                             {task.title}
                           </Typography>
 
-                          {/* Bottom: Tags + Date + Avatar */}
-                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 'auto' }}>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                              {task.projectId && (
-                                <Chip
-                                  label={task.projectId.name}
-                                  size="small"
-                                  sx={{
-                                    bgcolor: task.projectId.color || '#6366f1',
-                                    color: '#ffffff',
-                                    fontSize: '0.7rem',
-                                    height: 20,
-                                    fontWeight: 500,
-                                  }}
-                                />
-                              )}
-                              {task.dueDate && (
-                                <Chip
-                                  icon={<ScheduleIcon sx={{ fontSize: '0.75rem !important' }} />}
-                                  label={format(new Date(task.dueDate), 'dd/MM', { locale: he })}
-                                  size="small"
-                                  sx={{
-                                    fontSize: '0.7rem',
-                                    height: 20,
-                                    bgcolor: '#f3f4f6',
-                                    color: '#6b7280',
-                                    border: 'none',
-                                  }}
-                                />
-                              )}
-                            </Box>
+                          {/* Bottom: Due Date + Avatar */}
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
+                            {task.dueDate && (
+                              <Chip
+                                icon={<ScheduleIcon sx={{ fontSize: '0.75rem !important' }} />}
+                                label={format(new Date(task.dueDate), 'dd/MM', { locale: he })}
+                                size="small"
+                                sx={{
+                                  fontSize: '0.7rem',
+                                  height: 20,
+                                  bgcolor: isOverdue ? '#fee2e2' : '#f3f4f6',
+                                  color: isOverdue ? '#991b1b' : '#6b7280',
+                                  border: isOverdue ? '1px solid #fecaca' : 'none',
+                                  fontWeight: isOverdue ? 600 : 400,
+                                }}
+                              />
+                            )}
                             {task.relatedClient && (
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Avatar 
-                                  sx={{ 
-                                    width: 24, 
-                                    height: 24, 
-                                    fontSize: '0.7rem', 
-                                    bgcolor: '#6366f1',
-                                    fontWeight: 600,
-                                  }}
-                                >
-                                  {task.relatedClient.personalInfo?.fullName?.charAt(0) || '?'}
-                                </Avatar>
-                                <Typography 
-                                  variant="caption" 
-                                  sx={{ 
-                                    color: '#6b7280',
-                                    fontSize: '0.75rem',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                    maxWidth: 120,
-                                  }}
-                                >
-                                  {task.relatedClient.personalInfo?.fullName}
-                                </Typography>
-                              </Box>
+                              <Avatar 
+                                sx={{ 
+                                  width: 24, 
+                                  height: 24, 
+                                  fontSize: '0.7rem', 
+                                  bgcolor: '#6366f1',
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {task.relatedClient.personalInfo?.fullName?.charAt(0) || '?'}
+                              </Avatar>
                             )}
                           </Box>
                         </Card>
