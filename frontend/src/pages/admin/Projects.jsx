@@ -17,7 +17,15 @@ import {
   Stack,
   IconButton
 } from '@mui/material';
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { 
+  Add as AddIcon, 
+  Edit as EditIcon, 
+  Delete as DeleteIcon,
+  Description as DocumentIcon,
+  LocalShipping as LogisticsIcon,
+  Business as AssetsIcon,
+  Event as EventsIcon
+} from '@mui/icons-material';
 import { useProjects, useCreateProject, useUpdateProject, useDeleteProject } from '../../admin/hooks/useTasks';
 import ProjectModal from '../../components/projects/ProjectModal';
 
@@ -41,21 +49,41 @@ const Projects = () => {
 
   const projectsRaw = projectsResponse?.data || [];
   
-  // Add mock goal data for "5 לקוחות משלמים" project
-  const projects = projectsRaw.map((project) => {
-    // Mock goal data for projects with "5 לקוחות" or "לקוחות משלמים" in the name
+  // Helper to determine sector icon based on project/client name
+  const getSectorIcon = (projectName) => {
+    const name = (projectName || '').toLowerCase();
+    if (name.includes('לוגיסט') || name.includes('משלוח') || name.includes('הובלה')) {
+      return <LogisticsIcon sx={{ fontSize: '1rem' }} />;
+    }
+    if (name.includes('נכס') || name.includes('נדל') || name.includes('רכוש')) {
+      return <AssetsIcon sx={{ fontSize: '1rem' }} />;
+    }
+    if (name.includes('אירוע') || name.includes('אירועים') || name.includes('חתונה')) {
+      return <EventsIcon sx={{ fontSize: '1rem' }} />;
+    }
+    return null;
+  };
+
+  // Add mock data: stage and goal for projects
+  const projects = projectsRaw.map((project, index) => {
+    const updated = { ...project };
+    
+    // Add mock stage data (random assignment for visualization)
+    if (!updated.stage) {
+      const stages = ['audit', 'core', 'retainer'];
+      updated.stage = stages[index % stages.length]; // Cycle through stages
+    }
+    
+    // Add mock goal data for "5 לקוחות משלמים" project
     if (project.name && (project.name.includes('5 לקוחות') || project.name.includes('לקוחות משלמים'))) {
-      return {
-        ...project,
-        goal: {
-          current: 2,
-          target: 5,
-          unit: 'לקוחות'
-        }
+      updated.goal = {
+        current: 2,
+        target: 5,
+        unit: 'לקוחות'
       };
     }
-    // Return project as-is if it already has goal data, or null if no goal
-    return project;
+    
+    return updated;
   });
 
   const [form, setForm] = useState({
@@ -182,6 +210,55 @@ const Projects = () => {
           />
         </Box>
       </Box>
+    );
+  };
+
+  // Helper to get stage badge configuration
+  const getStageBadge = (stage) => {
+    const configs = {
+      audit: {
+        label: 'אפיון (חדירה)',
+        bgcolor: '#ede9fe',
+        color: '#7c3aed',
+        borderColor: '#c4b5fd',
+      },
+      core: {
+        label: 'פרויקט ליבה',
+        bgcolor: '#dbeafe',
+        color: '#1e40af',
+        borderColor: '#93c5fd',
+      },
+      retainer: {
+        label: 'ריטיינר',
+        bgcolor: '#d1fae5',
+        color: '#065f46',
+        borderColor: '#6ee7b7',
+      },
+    };
+    
+    const config = configs[stage] || {
+      label: stage || 'לא מוגדר',
+      bgcolor: '#f3f4f6',
+      color: '#374151',
+      borderColor: '#e5e7eb',
+    };
+    
+    return (
+      <Chip
+        label={config.label}
+        size="small"
+        sx={{
+          bgcolor: config.bgcolor,
+          color: config.color,
+          border: `1px solid ${config.borderColor}`,
+          height: 22,
+          fontSize: '0.7rem',
+          fontWeight: 600,
+          '& .MuiChip-label': {
+            px: 1,
+          },
+        }}
+      />
     );
   };
 
@@ -392,27 +469,36 @@ const Projects = () => {
                     mb: 1,
                   }}
                 >
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      flex: 1,
-                      minWidth: 0,
-                      fontWeight: 700,
-                      fontSize: '1.125rem',
-                      color: '#16191f',
-                      letterSpacing: '-0.01em',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    {project.name}
-                  </Typography>
-                  <Box sx={{ flexShrink: 0 }}>
+                  <Box sx={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {/* Sector Icon (optional) */}
+                    {getSectorIcon(project.name) && (
+                      <Box sx={{ color: '#9ca3af', flexShrink: 0 }}>
+                        {getSectorIcon(project.name)}
+                      </Box>
+                    )}
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        flex: 1,
+                        minWidth: 0,
+                        fontWeight: 700,
+                        fontSize: '1.125rem',
+                        color: '#16191f',
+                        letterSpacing: '-0.01em',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {project.name}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-end' }}>
                     {getStatusChip(project.status)}
+                    {project.stage && getStageBadge(project.stage)}
                   </Box>
                 </Stack>
                 {project.startDate && project.endDate && (
@@ -480,15 +566,58 @@ const Projects = () => {
                   flexShrink: 0,
                   mt: 'auto',
                   display: 'flex',
-                  justifyContent: 'flex-end',
+                  justifyContent: 'space-between',
                   alignItems: 'center',
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
+                {/* Generate Report Button */}
+                {project.stage && (
+                  <Button
+                    size="small"
+                    variant={project.stage === 'audit' ? 'contained' : 'outlined'}
+                    startIcon={<DocumentIcon sx={{ fontSize: '0.875rem' }} />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Handle report generation - can be implemented later
+                      console.log('Generate report for:', project.name, 'Stage:', project.stage);
+                    }}
+                    sx={{
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                      px: 1.5,
+                      py: 0.5,
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      ...(project.stage === 'audit' ? {
+                        bgcolor: '#7c3aed',
+                        color: '#ffffff',
+                        '&:hover': {
+                          bgcolor: '#6d28d9',
+                        }
+                      } : project.stage === 'retainer' ? {
+                        borderColor: '#10b981',
+                        color: '#059669',
+                        '&:hover': {
+                          bgcolor: '#d1fae5',
+                        }
+                      } : {
+                        borderColor: '#6366f1',
+                        color: '#4f46e5',
+                        '&:hover': {
+                          bgcolor: '#eef2ff',
+                        }
+                      }),
+                    }}
+                  >
+                    {project.stage === 'retainer' ? 'דוח חודשי' : 'הפק דוח'}
+                  </Button>
+                )}
+                
                 <Stack
                   direction="row"
                   spacing={0.5}
-                  sx={{ flexShrink: 0 }}
+                  sx={{ flexShrink: 0, ml: 'auto' }}
                 >
                   <IconButton
                     size="small"
