@@ -27,7 +27,9 @@ import {
   Search as SearchIcon,
   Work as WorkIcon,
   Campaign as CampaignIcon,
-  Science as ScienceIcon
+  Science as ScienceIcon,
+  AttachMoney as DollarIcon,
+  VolumeUp as MegaphoneIcon
 } from '@mui/icons-material';
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useProjects } from '../admin/hooks/useTasks';
 import { format } from 'date-fns';
@@ -51,8 +53,8 @@ const TaskBoard = () => {
   const [taskModalId, setTaskModalId] = useState(null);
   
   // Advanced Filters
-  const [contextFilter, setContextFilter] = useState('all'); // 'all', 'client', 'marketing', 'internal'
-  const [timeframeFilter, setTimeframeFilter] = useState('this_week'); // 'today', 'this_week', 'this_month', 'backlog'
+  const [contextFilter, setContextFilter] = useState('all'); // 'all', 'client', 'marketing', 'internal' - Default: 'all'
+  const [timeframeFilter, setTimeframeFilter] = useState('this_week'); // 'today', 'this_week', 'this_month', 'backlog' - Default: 'this_week'
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: taskByIdResponse } = useTask(taskIdFromUrl);
@@ -99,27 +101,43 @@ const TaskBoard = () => {
     clearRouteContext();
   };
 
-  // Helper: Get task context based on project or tags
+  // Helper: Get task context based on deterministic logic
   const getTaskContext = (task) => {
-    const projectName = task.projectId?.name?.toLowerCase() || '';
+    // Condition B: Marketing - Check for marketing keywords first
+    const projectName = (task.projectId?.name || '').toLowerCase();
     const taskTitle = (task.title || '').toLowerCase();
     const taskDescription = (task.description || '').toLowerCase();
+    const taskTags = (task.tags || []).map(t => t.toLowerCase()).join(' ');
     
-    if (projectName.includes('marketing') || projectName.includes('קמפיין') || 
-        taskTitle.includes('marketing') || taskTitle.includes('שיווק') ||
-        taskDescription.includes('marketing') || taskDescription.includes('שיווק')) {
+    const marketingKeywords = [
+      'marketing', 'sales', 'networking', 'linkedin', 'facebook', 
+      'שיווק', 'מכירות', 'קמפיין', 'פרסום', 'רשתות חברתיות'
+    ];
+    
+    const hasMarketingKeyword = marketingKeywords.some(keyword => 
+      projectName.includes(keyword) || 
+      taskTitle.includes(keyword) || 
+      taskDescription.includes(keyword) ||
+      taskTags.includes(keyword)
+    );
+    
+    if (hasMarketingKeyword) {
       return 'marketing';
     }
-    if (projectName.includes('internal') || projectName.includes('r&d') || projectName.includes('פנימי') ||
-        taskTitle.includes('internal') || taskTitle.includes('פנימי') ||
-        taskDescription.includes('internal') || taskDescription.includes('פנימי')) {
-      return 'internal';
-    }
-    // Default to client work if has relatedClient or project
-    if (task.relatedClient || task.projectId) {
+    
+    // Condition A: Client Work - Check if project has clientId or task has relatedClient
+    // Also check for known client names in project name
+    const knownClientNames = ['sensa', 'amics', 'tailorbiz', 'glass dynamics', 'glassdynamics'];
+    const hasKnownClientName = knownClientNames.some(clientName => 
+      projectName.includes(clientName)
+    );
+    
+    if (task.projectId?.clientId || task.relatedClient || hasKnownClientName) {
       return 'client';
     }
-    return 'client'; // Default
+    
+    // Condition C: Internal - Everything else
+    return 'internal';
   };
 
   // Helper: Check if task is in timeframe
@@ -607,7 +625,23 @@ const TaskBoard = () => {
                           }}
                           onClick={() => openTaskModal(task._id)}
                         >
-                          {/* Priority Border Strip */}
+                          {/* Context Border Strip (Left side) - Visual indicator */}
+                          <Box 
+                            sx={{ 
+                              position: 'absolute', 
+                              left: 0, 
+                              top: 0, 
+                              bottom: 0, 
+                              width: 4, 
+                              bgcolor: taskContext === 'client' ? '#3b82f6' : 
+                                      taskContext === 'marketing' ? '#7c3aed' : 
+                                      '#10b981',
+                              borderTopLeftRadius: '12px',
+                              borderBottomLeftRadius: '12px',
+                            }} 
+                          />
+                          
+                          {/* Priority Border Strip (Right side) */}
                           <Box 
                             sx={{ 
                               position: 'absolute', 
@@ -621,9 +655,30 @@ const TaskBoard = () => {
                             }} 
                           />
 
-                          {/* Top: Project Tag */}
-                          {task.projectId && (
-                            <Box sx={{ mb: 1.5 }}>
+                          {/* Top: Context Icon + Project Tag */}
+                          <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {/* Context Icon */}
+                            {taskContext === 'client' && (
+                              <DollarIcon 
+                                sx={{ 
+                                  fontSize: '1rem', 
+                                  color: '#3b82f6',
+                                  flexShrink: 0,
+                                }} 
+                              />
+                            )}
+                            {taskContext === 'marketing' && (
+                              <MegaphoneIcon 
+                                sx={{ 
+                                  fontSize: '1rem', 
+                                  color: '#7c3aed',
+                                  flexShrink: 0,
+                                }} 
+                              />
+                            )}
+                            
+                            {/* Project Tag */}
+                            {task.projectId && (
                               <Chip
                                 label={task.projectId.name}
                                 size="small"
@@ -636,8 +691,8 @@ const TaskBoard = () => {
                                   border: 'none',
                                 }}
                               />
-                            </Box>
-                          )}
+                            )}
+                          </Box>
 
                           {/* Middle: Title (Truncate to 2 lines) */}
                           <Typography 
