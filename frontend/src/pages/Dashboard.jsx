@@ -32,6 +32,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useClientStats, usePipelineStats } from '../admin/hooks/useClients';
 import axios from 'axios';
+import { getCurrentUserFromQueryData, useCurrentUserQuery } from '../admin/hooks/useCurrentUser';
 import {
   BarChart,
   Bar,
@@ -51,6 +52,10 @@ const Dashboard = () => {
   const theme = useTheme();
   const { data: statsResponse } = useClientStats();
   const { data: pipelineResponse } = usePipelineStats();
+  const { data: meData } = useCurrentUserQuery();
+  const me = getCurrentUserFromQueryData(meData);
+  const isEmployee = me?.role === 'employee';
+  const canSeeClients = Boolean(me?.permissions?.clients?.enabled) || me?.role === 'admin' || me?.role === 'super_admin';
 
   // State עבור מיקוד בוקר
   const [morningFocus, setMorningFocus] = useState([]);
@@ -93,7 +98,7 @@ const Dashboard = () => {
 
   const statCards = [
     {
-      title: 'סה"כ לקוחות',
+      title: isEmployee ? (canSeeClients ? 'סה"כ לקוחות שלי' : 'סה"כ לידים שלי') : 'סה"כ לקוחות',
       value: stats.totalClients || 0,
       icon: <PeopleIcon fontSize="large" />,
       color: theme.palette.primary.main,
@@ -101,7 +106,7 @@ const Dashboard = () => {
       trend: 'up',
     },
     {
-      title: 'לידים פעילים',
+      title: isEmployee ? 'לידים פעילים שלי' : 'לידים פעילים',
       value: stats.activeLeads || 0,
       icon: <TrendingUpIcon fontSize="large" />,
       color: '#2e7d32',
@@ -109,21 +114,25 @@ const Dashboard = () => {
       trend: 'up',
     },
     {
-      title: 'עסקאות פתוחות',
+      title: isEmployee ? 'עסקאות פתוחות שלי' : 'עסקאות פתוחות',
       value: stats.activeDeals || 0,
       icon: <AssignmentIcon fontSize="large" />,
       color: '#ed6c02',
       change: '-2%',
       trend: 'down',
     },
-    {
-      title: 'הכנסות חודש זה',
-      value: `₪${(stats.totalRevenue || 0).toLocaleString()}`,
-      icon: <MoneyIcon fontSize="large" />,
-      color: '#9c27b0',
-      change: '+23%',
-      trend: 'up',
-    },
+    ...(canSeeClients
+      ? [
+        {
+          title: isEmployee ? 'הכנסות שלי (לקוחות)' : 'הכנסות חודש זה',
+          value: `₪${(stats.totalRevenue || 0).toLocaleString()}`,
+          icon: <MoneyIcon fontSize="large" />,
+          color: '#9c27b0',
+          change: '+23%',
+          trend: 'up',
+        },
+      ]
+      : []),
   ];
 
   return (
@@ -141,7 +150,7 @@ const Dashboard = () => {
       >
         <Box sx={{ width: '100%' }}>
           <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ color: 'text.primary' }}>
-            דשבורד ניהול
+            {isEmployee ? 'הדשבורד שלי' : 'דשבורד ניהול'}
           </Typography>
           <Typography variant="body1" color="text.secondary">
             תמונת מצב עדכנית ומיקוד להיום
@@ -258,7 +267,7 @@ const Dashboard = () => {
                       </Box>
                       <LinearProgress
                         variant="determinate"
-                        value={Math.min((stage.count / (Math.max(stats.totalClients, 1))) * 100, 100)}
+                        value={Math.min((stage.count / (Math.max(pipelineData.metrics?.totalLeads || 1, 1))) * 100, 100)}
                         sx={{
                           height: 8,
                           borderRadius: 4,
