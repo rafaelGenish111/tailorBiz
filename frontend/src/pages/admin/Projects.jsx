@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Grid,
@@ -39,7 +39,24 @@ const Projects = () => {
   const updateProject = useUpdateProject();
   const deleteProject = useDeleteProject();
 
-  const projects = projectsResponse?.data || [];
+  const projectsRaw = projectsResponse?.data || [];
+  
+  // Add mock goal data for "5 לקוחות משלמים" project
+  const projects = projectsRaw.map((project) => {
+    // Mock goal data for projects with "5 לקוחות" or "לקוחות משלמים" in the name
+    if (project.name && (project.name.includes('5 לקוחות') || project.name.includes('לקוחות משלמים'))) {
+      return {
+        ...project,
+        goal: {
+          current: 2,
+          target: 5,
+          unit: 'לקוחות'
+        }
+      };
+    }
+    // Return project as-is if it already has goal data, or null if no goal
+    return project;
+  });
 
   const [form, setForm] = useState({
     name: '',
@@ -95,156 +112,428 @@ const Projects = () => {
     setSelectedProject(null);
   };
 
+  // Helper function to get goal progress percentage
+  const getGoalProgress = (goal) => {
+    if (!goal || goal.target === 0) return 0;
+    return Math.min((goal.current / goal.target) * 100, 100);
+  };
+
+  // Goal Progress Bar Component
+  const GoalProgressBar = ({ goal }) => {
+    const [animatedWidth, setAnimatedWidth] = useState(0);
+    const progress = getGoalProgress(goal);
+    
+    useEffect(() => {
+      // Animate progress bar on mount
+      const timer = setTimeout(() => {
+        setAnimatedWidth(progress);
+      }, 100);
+      return () => clearTimeout(timer);
+    }, [progress]);
+
+    if (!goal) return null;
+
+    return (
+      <Box
+        sx={{
+          px: 3,
+          pb: 2,
+          flexShrink: 0,
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 1,
+          }}
+        >
+          <Typography
+            variant="caption"
+            sx={{
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              color: '#6b7280',
+            }}
+          >
+            {`${goal.current}/${goal.target} ${goal.unit || ''} (${Math.round(progress)}%)`}
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            width: '100%',
+            height: '8px',
+            bgcolor: '#e5e7eb',
+            borderRadius: '9999px',
+            overflow: 'hidden',
+            position: 'relative',
+          }}
+        >
+          <Box
+            sx={{
+              height: '100%',
+              width: `${animatedWidth}%`,
+              background: 'linear-gradient(90deg, #4ade80 0%, #22c55e 100%)',
+              borderRadius: '9999px',
+              transition: 'width 0.8s ease-out',
+              boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+            }}
+          />
+        </Box>
+      </Box>
+    );
+  };
+
   const getStatusChip = (status) => {
     const config = {
-      active: { label: 'פעיל', color: 'success' },
-      on_hold: { label: 'בהשהיה', color: 'warning' },
-      completed: { label: 'הושלם', color: 'primary' },
-      archived: { label: 'בארכיון', color: 'default' }
-    }[status] || { label: status, color: 'default' };
-    return <Chip label={config.label} color={config.color} size="small" />;
+      active: { 
+        label: 'פעיל', 
+        bgcolor: '#d1fae5', 
+        color: '#065f46',
+        borderColor: '#a7f3d0',
+      },
+      on_hold: { 
+        label: 'בהשהיה', 
+        bgcolor: '#fef3c7', 
+        color: '#92400e',
+        borderColor: '#fde68a',
+      },
+      completed: { 
+        label: 'הושלם', 
+        bgcolor: '#dbeafe', 
+        color: '#1e40af',
+        borderColor: '#bfdbfe',
+      },
+      archived: { 
+        label: 'בארכיון', 
+        bgcolor: '#f3f4f6', 
+        color: '#374151',
+        borderColor: '#e5e7eb',
+      }
+    }[status] || { 
+      label: status, 
+      bgcolor: '#f3f4f6', 
+      color: '#374151',
+      borderColor: '#e5e7eb',
+    };
+    
+    return (
+      <Chip 
+        label={config.label} 
+        size="small"
+        sx={{
+          bgcolor: config.bgcolor,
+          color: config.color,
+          border: `1px solid ${config.borderColor}`,
+          height: 24,
+          fontSize: '0.75rem',
+          fontWeight: 600,
+          '& .MuiChip-label': {
+            px: 1.5,
+          },
+        }}
+      />
+    );
   };
 
   return (
-    <Box sx={{ p: { xs: 1.5, md: 3 } }}>
+    <Box 
+      sx={{ 
+        pb: 4, 
+        width: '100%',
+        maxWidth: '100%',
+        bgcolor: '#f8f9fa',
+      }}
+    >
+      {/* Header Area */}
       <Box
         sx={{
           mb: 4,
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 2
+          alignItems: { xs: 'flex-start', md: 'center' },
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 2,
         }}
       >
-        <Box>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
+        <Box sx={{ width: '100%' }}>
+          <Typography 
+            variant="h4" 
+            fontWeight={700} 
+            gutterBottom 
+            sx={{ 
+              color: '#16191f',
+              fontSize: { xs: '1.5rem', md: '2rem' },
+              letterSpacing: '-0.02em',
+            }}
+          >
             פרויקטים
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              color: '#6b7280',
+              fontSize: '0.95rem',
+              fontWeight: 400,
+            }}
+          >
             ניהול פרויקטים ומשימות חוצות יומן ולוח משימות
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={openCreate}
-          sx={{ width: { xs: '100%', md: 'auto' } }}
+        <Box
+          sx={{
+            mt: { xs: 2, md: 0 },
+            width: { xs: '100%', md: 'auto' },
+            display: 'flex',
+            justifyContent: { xs: 'stretch', md: 'flex-start' },
+          }}
         >
-          פרויקט חדש
-        </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={openCreate}
+            sx={{ 
+              width: { xs: '100%', md: 'auto' },
+              borderRadius: '12px',
+              px: 3,
+              py: 1.5,
+              fontWeight: 600,
+              textTransform: 'none',
+              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+              '&:hover': {
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+              }
+            }}
+          >
+            פרויקט חדש
+          </Button>
+        </Box>
       </Box>
 
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {projects.length === 0 ? (
-          <Grid item xs={12}>
-            <Box sx={{ textAlign: 'center', py: 8 }}>
-              <Typography variant="h6" color="text.secondary">
-                אין פרויקטים. לחץ על "פרויקט חדש" כדי להתחיל.
-              </Typography>
-            </Box>
-          </Grid>
-        ) : (
-          projects.map((project) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={project._id} sx={{ display: 'flex' }}>
-              <Card
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleProjectClick(project);
-                }}
+      {/* Projects Grid - Full Width CSS Grid */}
+      {projects.length === 0 ? (
+        <Box 
+          sx={{ 
+            textAlign: 'center', 
+            py: 12,
+            bgcolor: '#ffffff',
+            borderRadius: '16px',
+            border: '1px solid #e5e7eb',
+          }}
+        >
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              color: '#6b7280',
+              fontWeight: 500,
+            }}
+          >
+            אין פרויקטים. לחץ על "פרויקט חדש" כדי להתחיל.
+          </Typography>
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, 1fr)',
+              md: 'repeat(3, 1fr)',
+              lg: 'repeat(4, 1fr)',
+            },
+            gap: 3,
+            width: '100%',
+          }}
+        >
+          {projects.map((project) => (
+            <Card
+              key={project._id}
+              onClick={(e) => {
+                e.preventDefault();
+                handleProjectClick(project);
+              }}
+              elevation={0}
+              sx={{
+                borderTop: `4px solid ${project.color || '#6366f1'}`,
+                width: '100%',
+                minHeight: '280px',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                cursor: 'pointer',
+                borderRadius: '16px',
+                border: '1px solid #e5e7eb',
+                bgcolor: '#ffffff',
+                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                transition: 'all 0.2s ease-in-out',
+                overflow: 'hidden',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                  borderColor: '#d1d5db',
+                }
+              }}
+            >
+              {/* Header Section */}
+              <Box
                 sx={{
-                  borderTop: `4px solid ${project.color || '#1976d2'}`,
-                  width: '100%',
-                  // במובייל/טאבלט קטן - חשוב שכרטיסים יהיו בגודל אחיד (ללא תלות באורך הטקסט)
-                  height: { xs: 300, sm: 320 },
-                  minHeight: { xs: 300, sm: 320 },
-                  maxHeight: { xs: 300, sm: 320 },
-                  display: 'flex',
-                  flexDirection: 'column',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 6
-                  }
+                  p: 3,
+                  pb: 2,
+                  flexShrink: 0,
                 }}
               >
-                <CardHeader
-                  title={
-                    <Stack direction="row" spacing={1} alignItems="center" flexWrap="nowrap" sx={{ minWidth: 0 }}>
-                      <Typography
-                        variant="h6"
-                        noWrap
-                        sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
-                      >
-                        {project.name}
-                      </Typography>
-                      {getStatusChip(project.status)}
-                    </Stack>
-                  }
-                  subheader={
-                    project.startDate && project.endDate
-                      ? `${new Date(project.startDate).toLocaleDateString('he-IL')} - ${new Date(
-                        project.endDate
-                      ).toLocaleDateString('he-IL')}`
-                      : null
-                  }
-                  subheaderTypographyProps={{ noWrap: true }}
-                />
-                <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                  {project.description ? (
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        mb: 2,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        flexGrow: 1
-                      }}
-                    >
-                      {project.description}
-                    </Typography>
-                  ) : (
-                    <Box sx={{ flexGrow: 1 }} />
-                  )}
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    justifyContent="flex-end"
-                    sx={{ mt: 'auto', flexShrink: 0 }}
-                    onClick={(e) => e.stopPropagation()}
+                <Stack 
+                  direction="row" 
+                  spacing={1.5} 
+                  alignItems="flex-start" 
+                  sx={{ 
+                    minWidth: 0,
+                    mb: 1,
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      flex: 1,
+                      minWidth: 0,
+                      fontWeight: 700,
+                      fontSize: '1.125rem',
+                      color: '#16191f',
+                      letterSpacing: '-0.01em',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      lineHeight: 1.4,
+                    }}
                   >
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEdit(project);
-                      }}
-                      color="primary"
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(project);
-                      }}
-                      color="error"
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))
-        )}
-      </Grid>
+                    {project.name}
+                  </Typography>
+                  <Box sx={{ flexShrink: 0 }}>
+                    {getStatusChip(project.status)}
+                  </Box>
+                </Stack>
+                {project.startDate && project.endDate && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: '#6b7280',
+                      fontSize: '0.75rem',
+                      fontWeight: 400,
+                      display: 'block',
+                      mt: 1,
+                    }}
+                  >
+                    {`${new Date(project.startDate).toLocaleDateString('he-IL')} - ${new Date(
+                      project.endDate
+                    ).toLocaleDateString('he-IL')}`}
+                  </Typography>
+                )}
+              </Box>
+
+              {/* Description Section - Middle with flex grow */}
+              <Box
+                sx={{
+                  px: 3,
+                  pb: 2,
+                  flexGrow: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minHeight: 0,
+                }}
+              >
+                {project.description ? (
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: '#6b7280',
+                      fontSize: '0.875rem',
+                      fontWeight: 400,
+                      lineHeight: 1.6,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 4,
+                      WebkitBoxOrient: 'vertical',
+                      flexGrow: 1,
+                    }}
+                  >
+                    {project.description}
+                  </Typography>
+                ) : (
+                  <Box sx={{ flexGrow: 1 }} />
+                )}
+              </Box>
+
+              {/* Goal Progress Bar - Between Description and Footer */}
+              {project.goal && <GoalProgressBar goal={project.goal} />}
+
+              {/* Footer Section - Pinned to bottom */}
+              <Box
+                sx={{
+                  px: 3,
+                  pb: 3,
+                  pt: 2,
+                  borderTop: '1px solid #f3f4f6',
+                  flexShrink: 0,
+                  mt: 'auto',
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Stack
+                  direction="row"
+                  spacing={0.5}
+                  sx={{ flexShrink: 0 }}
+                >
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEdit(project);
+                    }}
+                    sx={{
+                      color: '#6366f1',
+                      bgcolor: '#eef2ff',
+                      '&:hover': {
+                        bgcolor: '#e0e7ff',
+                        color: '#4f46e5',
+                      },
+                      width: 32,
+                      height: 32,
+                    }}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(project);
+                    }}
+                    sx={{
+                      color: '#ef4444',
+                      bgcolor: '#fee2e2',
+                      '&:hover': {
+                        bgcolor: '#fecaca',
+                        color: '#dc2626',
+                      },
+                      width: 32,
+                      height: 32,
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Stack>
+              </Box>
+            </Card>
+          ))}
+        </Box>
+      )}
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{editing ? 'עריכת פרויקט' : 'פרויקט חדש'}</DialogTitle>
