@@ -301,13 +301,13 @@ const TaskForm = ({
     onSubmit(formattedData);
   };
 
-  // Helper component for Priority Badge
-  const PriorityBadge = ({ value, onChange }) => {
+  // Helper component for Priority Chips (Selection Pills)
+  const PriorityChips = ({ value, onChange }) => {
     const priorities = [
-      { value: 'low', label: 'נמוכה', color: 'bg-green-100 text-green-700 border-green-300' },
-      { value: 'medium', label: 'בינונית', color: 'bg-yellow-100 text-yellow-700 border-yellow-300' },
-      { value: 'high', label: 'גבוהה', color: 'bg-orange-100 text-orange-700 border-orange-300' },
-      { value: 'urgent', label: 'דחופה', color: 'bg-red-100 text-red-700 border-red-300' }
+      { value: 'low', label: 'נמוכה', selectedColor: 'bg-green-500 text-white border-green-500' },
+      { value: 'medium', label: 'בינונית', selectedColor: 'bg-yellow-500 text-white border-yellow-500' },
+      { value: 'high', label: 'גבוהה', selectedColor: 'bg-orange-500 text-white border-orange-500' },
+      { value: 'urgent', label: 'דחופה', selectedColor: 'bg-red-500 text-white border-red-500' }
     ];
 
     return (
@@ -317,10 +317,10 @@ const TaskForm = ({
             key={priority.value}
             type="button"
             onClick={() => onChange(priority.value)}
-            className={`px-4 py-2.5 rounded-lg border-2 transition-all text-sm font-medium h-11 ${
+            className={`px-4 py-2 rounded-full border-2 transition-all text-sm font-medium ${
               value === priority.value
-                ? `${priority.color} ring-2 ring-offset-2 ring-offset-white`
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                ? `${priority.selectedColor} shadow-sm`
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
             }`}
           >
             {priority.label}
@@ -330,13 +330,13 @@ const TaskForm = ({
     );
   };
 
-  // Helper component for Status Badge
-  const StatusBadge = ({ value, onChange }) => {
+  // Helper component for Status Chips (Selection Pills)
+  const StatusChips = ({ value, onChange }) => {
     const statuses = [
-      { value: 'todo', label: 'לביצוע', color: 'bg-gray-100 text-gray-700 border-gray-300' },
-      { value: 'in_progress', label: 'בטיפול', color: 'bg-blue-100 text-blue-700 border-blue-300' },
-      { value: 'waiting', label: 'ממתין', color: 'bg-yellow-100 text-yellow-700 border-yellow-300' },
-      { value: 'completed', label: 'הושלם', color: 'bg-green-100 text-green-700 border-green-300' }
+      { value: 'todo', label: 'לביצוע', selectedColor: 'bg-gray-500 text-white border-gray-500' },
+      { value: 'in_progress', label: 'בטיפול', selectedColor: 'bg-blue-500 text-white border-blue-500' },
+      { value: 'waiting', label: 'ממתין', selectedColor: 'bg-yellow-500 text-white border-yellow-500' },
+      { value: 'completed', label: 'הושלם', selectedColor: 'bg-green-500 text-white border-green-500' }
     ];
 
     return (
@@ -346,10 +346,10 @@ const TaskForm = ({
             key={status.value}
             type="button"
             onClick={() => onChange(status.value)}
-            className={`px-4 py-2.5 rounded-lg border-2 transition-all text-sm font-medium h-11 ${
+            className={`px-4 py-2 rounded-full border-2 transition-all text-sm font-medium ${
               value === status.value
-                ? `${status.color} ring-2 ring-offset-2 ring-offset-white`
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                ? `${status.selectedColor} shadow-sm`
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
             }`}
           >
             {status.label}
@@ -390,73 +390,66 @@ const TaskForm = ({
         id={formId}
         component="form"
         onSubmit={handleSubmit(handleFormSubmit)}
-        className="bg-white rounded-xl shadow-sm border border-gray-200"
+        className="w-full"
         sx={{ 
-          mt: 2, 
           display: 'flex', 
           flexDirection: 'column',
           overflow: 'hidden',
-          maxHeight: { xs: 'calc(100vh - 100px)', md: '80vh' }
         }}
       >
-            <div className="p-8 overflow-y-auto flex-1 min-h-0">
-              <div className="max-w-3xl mx-auto space-y-8">
-              {/* Task Details Section */}
-              <FormSection title="פרטי המשימה">
-                <div className="space-y-6">
-                  {/* Title - Full Width */}
-                  <FormField label="כותרת המשימה *">
-                    <TextField
-                      fullWidth
-                      multiline
-                      minRows={2}
-                      maxRows={2}
-                      {...register('title', { required: 'שדה חובה' })}
-                      required
-                      className="w-full"
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          height: 'auto',
-                          minHeight: '60px',
-                          borderRadius: '8px',
-                          backgroundColor: '#f9fafb',
-                          '& fieldset': {
-                            borderColor: '#e5e7eb',
-                          },
-                          '&:hover fieldset': {
-                            borderColor: '#d1d5db',
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: '#ec7211',
-                            borderWidth: '2px',
-                          },
-                        },
-                      }}
-                    />
-                  </FormField>
+            <div className="p-6 overflow-y-auto flex-1 min-h-0">
+              <div className="space-y-6">
+              {/* Row 1: Task Title (Large input) */}
+              <FormField label="כותרת המשימה *">
+                <TextField
+                  fullWidth
+                  {...register('title', { required: 'שדה חובה' })}
+                  required
+                  placeholder="הזן כותרת למשימה..."
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      height: '56px',
+                      borderRadius: '12px',
+                      backgroundColor: '#ffffff',
+                      fontSize: '1.125rem',
+                      '& fieldset': {
+                        borderColor: '#e5e7eb',
+                        borderWidth: '1px',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#d1d5db',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#ec7211',
+                        borderWidth: '2px',
+                      },
+                    },
+                  }}
+                />
+              </FormField>
 
-                  {/* Priority and Status - Side by Side */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField label="עדיפות">
-                      <Controller
-                        name="priority"
-                        control={control}
-                        render={({ field: { onChange, value } }) => (
-                          <PriorityBadge value={value || 'medium'} onChange={onChange} />
-                        )}
-                      />
-                    </FormField>
+              {/* Row 2: Priority | Status (Chips) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField label="עדיפות">
+                  <Controller
+                    name="priority"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <PriorityChips value={value || 'medium'} onChange={onChange} />
+                    )}
+                  />
+                </FormField>
 
-                    <FormField label="סטטוס">
-                      <Controller
-                        name="status"
-                        control={control}
-                        render={({ field: { onChange, value } }) => (
-                          <StatusBadge value={value || 'todo'} onChange={onChange} />
-                        )}
-                      />
-                    </FormField>
-                  </div>
+                <FormField label="סטטוס">
+                  <Controller
+                    name="status"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <StatusChips value={value || 'todo'} onChange={onChange} />
+                    )}
+                  />
+                </FormField>
+              </div>
 
                   {/* Color Picker */}
                   <FormField label="צבע המשימה">
@@ -501,11 +494,8 @@ const TaskForm = ({
                 </div>
               </FormSection>
 
-              {/* Schedule Section */}
-              <FormSection title="לוח זמנים" showDivider>
-                <div className="space-y-6">
-                  {/* Start Date and Due Date - Side by Side */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Row 3: Date/Time inputs */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField label="תאריך התחלה">
                       <Controller
                         name="startDate"
@@ -653,14 +643,8 @@ const TaskForm = ({
                     </FormField>
                   </div>
 
-                  {/* Recurrence */}
-                  <FormField label="חזרתיות">
-                    <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                      {(() => {
-                        const start = parseDate(watchStartDate) || parseDate(watchDueDate) || new Date();
-                        const dowLabels = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
-                        const mode = watchRecurrenceMode || 'none';
-                        const customFreq = watchRecurrenceCustomFrequency || 'weekly';
+              {/* Row 4: Project | Client (Dropdowns) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         const daysForSummary = () => {
                           const raw = Array.isArray(watchRecurrenceDays) && watchRecurrenceDays.length ? watchRecurrenceDays : [start.getDay()];
@@ -866,239 +850,382 @@ const TaskForm = ({
                               </DialogActions>
                             </Dialog>
                           </>
-                        );
-                      })()}
-                    </div>
-                  </FormField>
-                </div>
-              </FormSection>
-
-              {/* Assignment Section */}
-              <FormSection title="הקצאה" showDivider>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField label="פרויקט">
-                    <Controller
-                      name="projectId"
-                      control={control}
-                      render={({ field: { onChange, value } }) => (
-                        <Autocomplete
-                          options={projects}
-                          getOptionLabel={(option) => option.name || ''}
-                          value={value && typeof value === 'string' ? projects.find(p => p._id === value) : value}
-                          onChange={(_, newValue) => onChange(newValue)}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  height: '44px',
-                                  borderRadius: '8px',
-                                  backgroundColor: '#f9fafb',
-                                  '& fieldset': {
-                                    borderColor: '#e5e7eb',
-                                  },
-                                  '&:hover fieldset': {
-                                    borderColor: '#d1d5db',
-                                  },
-                                  '&.Mui-focused fieldset': {
-                                    borderColor: '#ec7211',
-                                    borderWidth: '2px',
-                                  },
+                <FormField label="פרויקט">
+                  <Controller
+                    name="projectId"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <Autocomplete
+                        options={projects}
+                        getOptionLabel={(option) => option.name || ''}
+                        value={value && typeof value === 'string' ? projects.find(p => p._id === value) : value}
+                        onChange={(_, newValue) => onChange(newValue)}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            placeholder="בחר פרויקט..."
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                height: '44px',
+                                borderRadius: '12px',
+                                backgroundColor: '#ffffff',
+                                '& fieldset': {
+                                  borderColor: '#e5e7eb',
+                                  borderWidth: '1px',
                                 },
-                              }}
-                            />
-                          )}
-                        />
-                      )}
-                    />
-                  </FormField>
-
-                  <FormField label="לקוח מקושר">
-                    <Controller
-                      name="relatedClient"
-                      control={control}
-                      render={({ field: { onChange, value } }) => (
-                        <Autocomplete
-                          options={clients}
-                          getOptionLabel={(option) => option.personalInfo?.fullName || ''}
-                          value={value && typeof value === 'string' ? clients.find(c => c._id === value) : value}
-                          onChange={(_, newValue) => onChange(newValue)}
-                          loading={isLoadingClients}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              InputProps={{
-                                ...params.InputProps,
-                                endAdornment: (
-                                  <>
-                                    {isLoadingClients ? <CircularProgress color="inherit" size={20} /> : null}
-                                    {params.InputProps.endAdornment}
-                                  </>
-                                ),
-                              }}
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  height: '44px',
-                                  borderRadius: '8px',
-                                  backgroundColor: '#f9fafb',
-                                  '& fieldset': {
-                                    borderColor: '#e5e7eb',
-                                  },
-                                  '&:hover fieldset': {
-                                    borderColor: '#d1d5db',
-                                  },
-                                  '&.Mui-focused fieldset': {
-                                    borderColor: '#ec7211',
-                                    borderWidth: '2px',
-                                  },
+                                '&:hover fieldset': {
+                                  borderColor: '#d1d5db',
                                 },
-                              }}
-                            />
-                          )}
-                        />
-                      )}
-                    />
-                  </FormField>
-                </div>
-              </FormSection>
-
-              {/* Description Section */}
-              <FormSection title="תיאור" showDivider>
-                <FormField>
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={5}
-                    {...register('description')}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: '8px',
-                        backgroundColor: '#f9fafb',
-                        '& fieldset': {
-                          borderColor: '#e5e7eb',
-                        },
-                        '&:hover fieldset': {
-                          borderColor: '#d1d5db',
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#ec7211',
-                          borderWidth: '2px',
-                        },
-                      },
-                    }}
+                                '&.Mui-focused fieldset': {
+                                  borderColor: '#ec7211',
+                                  borderWidth: '2px',
+                                },
+                              },
+                            }}
+                          />
+                        )}
+                      />
+                    )}
                   />
                 </FormField>
-              </FormSection>
 
-              {/* Subtasks Section */}
-              <FormSection title="תתי־משימות" showDivider>
-                <div className="space-y-6">
-                  <div className="flex justify-end">
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      onClick={() => {
-                        appendSubtask({ title: '', done: false });
-                        setSubtasksExpanded(true);
-                      }}
-                    >
-                      הוסף תת־משימה
-                    </Button>
-                  </div>
-
-                  {subtaskFields.length === 0 ? (
-                    <Typography variant="body2" className="text-gray-600">
-                      אין תתי־משימות עדיין.
-                    </Typography>
-                  ) : null}
-
-                  <Collapse in={subtasksExpanded && subtaskFields.length > 0}>
-                    <div className="flex flex-col gap-6">
-                      {subtaskFields.map((field, index) => (
-                        <div key={field.id} className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-                          <FormField label={`תת־משימה ${index + 1}`}>
-                            <TextField
-                              fullWidth
-                              multiline
-                              minRows={2}
-                              {...register(`subtasks.${index}.title`)}
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  borderRadius: '8px',
-                                  backgroundColor: '#ffffff',
-                                  '& fieldset': {
-                                    borderColor: '#e5e7eb',
-                                  },
-                                  '&:hover fieldset': {
-                                    borderColor: '#d1d5db',
-                                  },
-                                  '&.Mui-focused fieldset': {
-                                    borderColor: '#ec7211',
-                                    borderWidth: '2px',
-                                  },
+                <FormField label="לקוח מקושר">
+                  <Controller
+                    name="relatedClient"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <Autocomplete
+                        options={clients}
+                        getOptionLabel={(option) => option.personalInfo?.fullName || ''}
+                        value={value && typeof value === 'string' ? clients.find(c => c._id === value) : value}
+                        onChange={(_, newValue) => onChange(newValue)}
+                        loading={isLoadingClients}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            placeholder="בחר לקוח..."
+                            InputProps={{
+                              ...params.InputProps,
+                              endAdornment: (
+                                <>
+                                  {isLoadingClients ? <CircularProgress color="inherit" size={20} /> : null}
+                                  {params.InputProps.endAdornment}
+                                </>
+                              ),
+                            }}
+                            sx={{
+                              '& .MuiOutlinedInput-root': {
+                                height: '44px',
+                                borderRadius: '12px',
+                                backgroundColor: '#ffffff',
+                                '& fieldset': {
+                                  borderColor: '#e5e7eb',
+                                  borderWidth: '1px',
                                 },
-                              }}
-                            />
-                          </FormField>
-                          <div className="flex gap-3">
-                            <div className="flex-1">
-                              <FormField label="סטטוס">
-                                <TextField
-                                  select
-                                  fullWidth
-                                  defaultValue={field.done ? 'true' : 'false'}
-                                  {...register(`subtasks.${index}.done`, {
-                                    setValueAs: (v) =>
-                                      v === true ||
-                                      v === 'true' ||
-                                      v === 1 ||
-                                      v === '1' ||
-                                      v === 'done'
-                                  })}
-                                  SelectProps={{
-                                    native: true,
-                                  }}
-                                  sx={{
-                                    '& .MuiOutlinedInput-root': {
-                                      height: '44px',
-                                      borderRadius: '8px',
-                                      backgroundColor: '#ffffff',
-                                      '& fieldset': {
-                                        borderColor: '#e5e7eb',
-                                      },
-                                      '&:hover fieldset': {
-                                        borderColor: '#d1d5db',
-                                      },
-                                      '&.Mui-focused fieldset': {
-                                        borderColor: '#ec7211',
-                                        borderWidth: '2px',
-                                      },
-                                    },
-                                  }}
-                                >
-                                  <option value="false">פתוחה</option>
-                                  <option value="true">בוצעה</option>
-                                </TextField>
-                              </FormField>
-                            </div>
-                            <div className="flex items-end pb-1">
-                              <Button
-                                variant="outlined"
-                                color="error"
-                                onClick={() => removeSubtask(index)}
-                                sx={{ whiteSpace: 'nowrap', height: '44px' }}
-                              >
-                                מחק
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
+                                '&:hover fieldset': {
+                                  borderColor: '#d1d5db',
+                                },
+                                '&.Mui-focused fieldset': {
+                                  borderColor: '#ec7211',
+                                  borderWidth: '2px',
+                                },
+                              },
+                            }}
+                          />
+                        )}
+                      />
+                    )}
+                  />
+                </FormField>
+              </div>
+
+              {/* Row 5: Description (Textarea) */}
+              <FormField label="תיאור">
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={4}
+                  placeholder="הוסף תיאור למשימה..."
+                  {...register('description')}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '12px',
+                      backgroundColor: '#ffffff',
+                      minHeight: '100px',
+                      '& fieldset': {
+                        borderColor: '#e5e7eb',
+                        borderWidth: '1px',
+                      },
+                      '&:hover fieldset': {
+                        borderColor: '#d1d5db',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#ec7211',
+                        borderWidth: '2px',
+                      },
+                    },
+                  }}
+                />
+              </FormField>
+
+              {/* Color Picker - Row of colored circles */}
+              <FormField label="צבע המשימה">
+                <Controller
+                  name="color"
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <div className="flex flex-wrap gap-3">
+                      {[
+                        { value: '#1976d2', label: 'כחול' },
+                        { value: '#d32f2f', label: 'אדום' },
+                        { value: '#388e3c', label: 'ירוק' },
+                        { value: '#f57c00', label: 'כתום' },
+                        { value: '#7b1fa2', label: 'סגול' },
+                        { value: '#0288d1', label: 'תכלת' },
+                        { value: '#c2185b', label: 'ורוד' },
+                        { value: '#5d4037', label: 'חום' },
+                        { value: '#455a64', label: 'אפור כהה' },
+                        { value: '#0097a7', label: 'ציאן' }
+                      ].map((color) => (
+                        <button
+                          key={color.value}
+                          type="button"
+                          onClick={() => onChange(color.value)}
+                          className={`w-10 h-10 rounded-full transition-all hover:scale-110 ${
+                            value === color.value
+                              ? 'ring-4 ring-[#ec7211] ring-offset-2 ring-offset-white border-2 border-white shadow-md'
+                              : 'border-2 border-gray-200 hover:border-gray-300'
+                          }`}
+                          style={{ backgroundColor: color.value }}
+                          title={color.label}
+                        >
+                          {value === color.value && (
+                            <span className="text-white text-sm font-bold drop-shadow-md flex items-center justify-center h-full">✓</span>
+                          )}
+                        </button>
                       ))}
                     </div>
-                  </Collapse>
+                  )}
+                />
+              </FormField>
+
+              {/* Recurrence - Collapsible Section */}
+              <FormField label="חזרתיות">
+                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  {(() => {
+                    const start = parseDate(watchStartDate) || parseDate(watchDueDate) || new Date();
+                    const dowLabels = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
+                    const mode = watchRecurrenceMode || 'none';
+                    const customFreq = watchRecurrenceCustomFrequency || 'weekly';
+
+                    const daysForSummary = () => {
+                      const raw = Array.isArray(watchRecurrenceDays) && watchRecurrenceDays.length ? watchRecurrenceDays : [start.getDay()];
+                      return raw.map((d) => dowLabels[parseInt(d, 10)]).filter(Boolean);
+                    };
+
+                    const summary = () => {
+                      if (mode === 'none') return 'לא חוזר';
+                      if (mode === 'daily') {
+                        const every = Math.max(1, parseInt(watchRecurrenceEveryDays, 10) || 1);
+                        return every === 1 ? 'כל יום' : `כל ${every} ימים`;
+                      }
+                      if (mode === 'weekly') {
+                        const every = Math.max(1, parseInt(watchRecurrenceEveryWeeks, 10) || 1);
+                        const days = daysForSummary();
+                        const daysStr = days.length ? ` • ${days.join(', ')}` : '';
+                        return every === 1 ? `כל שבוע${daysStr}` : `כל ${every} שבועות${daysStr}`;
+                      }
+                      if (mode === 'monthly') {
+                        const every = Math.max(1, parseInt(watchRecurrenceEveryMonths, 10) || 1);
+                        return every === 1 ? 'כל חודש' : `כל ${every} חודשים`;
+                      }
+                      if (mode === 'yearly') {
+                        const every = Math.max(1, parseInt(watchRecurrenceEveryYears, 10) || 1);
+                        return every === 1 ? 'כל שנה' : `כל ${every} שנים`;
+                      }
+                      // custom
+                      if (customFreq === 'daily') {
+                        const every = Math.max(1, parseInt(watchRecurrenceEveryDays, 10) || 1);
+                        return `מותאם: כל ${every} ימים`;
+                      }
+                      if (customFreq === 'weekly') {
+                        const every = Math.max(1, parseInt(watchRecurrenceEveryWeeks, 10) || 1);
+                        const days = daysForSummary();
+                        return `מותאם: כל ${every} שבועות${days.length ? ` • ${days.join(', ')}` : ''}`;
+                      }
+                      if (customFreq === 'monthly') {
+                        const every = Math.max(1, parseInt(watchRecurrenceEveryMonths, 10) || 1);
+                        return `מותאם: כל ${every} חודשים`;
+                      }
+                      const every = Math.max(1, parseInt(watchRecurrenceEveryYears, 10) || 1);
+                      return `מותאם: כל ${every} שנים`;
+                    };
+
+                    const choosePreset = (nextMode) => {
+                      setValue('recurrenceMode', nextMode);
+                      if (nextMode === 'none') return;
+                      if (nextMode === 'daily') setValue('recurrenceEveryDays', 1);
+                      if (nextMode === 'weekly') {
+                        setValue('recurrenceEveryWeeks', 1);
+                        setValue('recurrenceDaysOfWeek', [start.getDay()]);
+                      }
+                      if (nextMode === 'monthly') setValue('recurrenceEveryMonths', 1);
+                      if (nextMode === 'yearly') setValue('recurrenceEveryYears', 1);
+                    };
+
+                    return (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <Typography variant="subtitle1" fontWeight="bold" className="text-gray-900">
+                              חזרתיות
+                            </Typography>
+                            <Typography variant="body2" className="text-gray-600">
+                              {summary()}
+                            </Typography>
+                          </div>
+                          <Button variant="outlined" onClick={() => setRecurrenceDialogOpen(true)}>
+                            שנה
+                          </Button>
+                        </div>
+
+                        <Dialog open={recurrenceDialogOpen} onClose={() => setRecurrenceDialogOpen(false)} maxWidth="xs" fullWidth>
+                          <DialogTitle sx={{ fontWeight: 800 }}>חזרתיות</DialogTitle>
+                          <DialogContent dividers>
+                            <List dense disablePadding>
+                              {[
+                                { key: 'none', label: 'לא חוזר' },
+                                { key: 'daily', label: 'כל יום' },
+                                { key: 'weekly', label: 'כל שבוע' },
+                                { key: 'monthly', label: 'כל חודש' },
+                                { key: 'yearly', label: 'כל שנה' }
+                              ].map((it) => (
+                                <ListItemButton
+                                  key={it.key}
+                                  selected={mode === it.key}
+                                  onClick={() => {
+                                    choosePreset(it.key);
+                                    setRecurrenceDialogOpen(false);
+                                  }}
+                                >
+                                  <ListItemText primary={it.label} />
+                                </ListItemButton>
+                              ))}
+                              <Divider sx={{ my: 1 }} />
+                              <ListItemButton
+                                selected={mode === 'custom'}
+                                onClick={() => {
+                                  setValue('recurrenceMode', 'custom');
+                                  setRecurrenceDialogOpen(true);
+                                }}
+                              >
+                                <ListItemText primary="מותאם אישית…" secondary="ימים מסוימים / כל כמה שבועות / חודשי / שנתי" />
+                              </ListItemButton>
+                            </List>
+
+                            {mode === 'custom' ? (
+                              <Box sx={{ mt: 2 }}>
+                                <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>
+                                  מותאם אישית
+                                </Typography>
+                                <Controller
+                                  name="recurrenceCustomFrequency"
+                                  control={control}
+                                  render={({ field: { value, onChange } }) => (
+                                    <ToggleButtonGroup
+                                      value={value || 'weekly'}
+                                      exclusive
+                                      onChange={(_, v) => { if (v) onChange(v); }}
+                                      size="small"
+                                      sx={{ mb: 2 }}
+                                    >
+                                      <ToggleButton value="daily">יומי</ToggleButton>
+                                      <ToggleButton value="weekly">שבועי</ToggleButton>
+                                      <ToggleButton value="monthly">חודשי</ToggleButton>
+                                      <ToggleButton value="yearly">שנתי</ToggleButton>
+                                    </ToggleButtonGroup>
+                                  )}
+                                />
+
+                                {customFreq === 'daily' ? (
+                                  <TextField
+                                    type="number"
+                                    fullWidth
+                                    label="כל כמה ימים"
+                                    inputProps={{ min: 1 }}
+                                    {...register('recurrenceEveryDays', { valueAsNumber: true })}
+                                  />
+                                ) : null}
+
+                                {customFreq === 'weekly' ? (
+                                  <Grid container spacing={2}>
+                                    <Grid item xs={12}>
+                                      <TextField
+                                        type="number"
+                                        fullWidth
+                                        label="כל כמה שבועות"
+                                        inputProps={{ min: 1 }}
+                                        {...register('recurrenceEveryWeeks', { valueAsNumber: true })}
+                                      />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                      <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                                        ימים בשבוע
+                                      </Typography>
+                                      <Controller
+                                        name="recurrenceDaysOfWeek"
+                                        control={control}
+                                        render={({ field: { value, onChange } }) => (
+                                          <ToggleButtonGroup
+                                            value={Array.isArray(value) ? value : []}
+                                            onChange={(_, next) => onChange(next)}
+                                            size="small"
+                                          >
+                                            <ToggleButton value={0}>א׳</ToggleButton>
+                                            <ToggleButton value={1}>ב׳</ToggleButton>
+                                            <ToggleButton value={2}>ג׳</ToggleButton>
+                                            <ToggleButton value={3}>ד׳</ToggleButton>
+                                            <ToggleButton value={4}>ה׳</ToggleButton>
+                                            <ToggleButton value={5}>ו׳</ToggleButton>
+                                            <ToggleButton value={6}>ש׳</ToggleButton>
+                                          </ToggleButtonGroup>
+                                        )}
+                                      />
+                                    </Grid>
+                                  </Grid>
+                                ) : null}
+
+                                {customFreq === 'monthly' ? (
+                                  <TextField
+                                    type="number"
+                                    fullWidth
+                                    label="כל כמה חודשים"
+                                    inputProps={{ min: 1 }}
+                                    {...register('recurrenceEveryMonths', { valueAsNumber: true })}
+                                  />
+                                ) : null}
+
+                                {customFreq === 'yearly' ? (
+                                  <TextField
+                                    type="number"
+                                    fullWidth
+                                    label="כל כמה שנים"
+                                    inputProps={{ min: 1 }}
+                                    {...register('recurrenceEveryYears', { valueAsNumber: true })}
+                                  />
+                                ) : null}
+                              </Box>
+                            ) : null}
+                          </DialogContent>
+                          <DialogActions>
+                            <Button onClick={() => setRecurrenceDialogOpen(false)}>סגור</Button>
+                          </DialogActions>
+                        </Dialog>
+                      </>
+                    );
+                  })()}
                 </div>
-              </FormSection>
-              </div>
+              </FormField>
             </div>
 
             {/* Footer Actions - Fixed at bottom */}
