@@ -35,7 +35,7 @@ import {
   Close as CloseIcon,
 } from '@mui/icons-material';
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useProjects } from '../admin/hooks/useTasks';
-import { format } from 'date-fns';
+import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isSameMonth, isBefore, isAfter } from 'date-fns';
 import { he } from 'date-fns/locale';
 import TaskForm from '../admin/components/content/tasks/TaskForm';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -67,6 +67,7 @@ const TaskBoard = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [projectFilter, setProjectFilter] = useState('');
+  const [timeframeFilter, setTimeframeFilter] = useState('this_week'); // Default: This Week
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editTask, setEditTask] = useState(null);
   const [taskModalId, setTaskModalId] = useState(null);
@@ -108,8 +109,50 @@ const TaskBoard = () => {
   const allTasks = (tasksResponse?.data || []).slice();
   const projects = projectsResponse?.data || [];
 
-  // Client-side search filtering
+  // Timeframe filtering function
+  const filterByTimeframe = (task) => {
+    if (!task.dueDate) {
+      // Tasks without dueDate: show in "All" only
+      return timeframeFilter === 'all';
+    }
+
+    const taskDate = new Date(task.dueDate);
+    const now = new Date();
+    const todayStart = startOfDay(now);
+    const todayEnd = endOfDay(now);
+    const weekStart = startOfWeek(now, { locale: he });
+    const weekEnd = endOfWeek(now, { locale: he });
+    const monthStart = startOfMonth(now);
+    const monthEnd = endOfMonth(now);
+
+    switch (timeframeFilter) {
+      case 'today':
+        // Show tasks due today OR overdue (before today)
+        return taskDate <= todayEnd;
+      
+      case 'this_week':
+        // Show tasks due between start of week and end of week
+        return taskDate >= weekStart && taskDate <= weekEnd;
+      
+      case 'this_month':
+        // Show tasks due this month
+        return isSameMonth(taskDate, now);
+      
+      case 'all':
+        // Show everything
+        return true;
+      
+      default:
+        return true;
+    }
+  };
+
+  // Client-side filtering: timeframe + search
   const filteredTasks = allTasks.filter((task) => {
+    // Apply timeframe filter
+    if (!filterByTimeframe(task)) return false;
+
+    // Apply search filter
     if (search) {
       const query = search.toLowerCase();
       const matchesTitle = (task.title || '').toLowerCase().includes(query);
@@ -358,6 +401,24 @@ const TaskBoard = () => {
                 {project.name}
               </MenuItem>
             ))}
+          </TextField>
+          <TextField
+            select
+            size="small"
+            label="תקופה"
+            value={timeframeFilter}
+            onChange={(e) => setTimeframeFilter(e.target.value)}
+            sx={{ 
+              minWidth: { xs: '100%', sm: 150 },
+              '& .MuiOutlinedInput-root': {
+                borderRadius: '8px',
+              }
+            }}
+          >
+            <MenuItem value="today">היום</MenuItem>
+            <MenuItem value="this_week">השבוע</MenuItem>
+            <MenuItem value="this_month">החודש</MenuItem>
+            <MenuItem value="all">הכל</MenuItem>
           </TextField>
         </Box>
       </Box>
