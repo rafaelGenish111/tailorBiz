@@ -4,7 +4,6 @@ import {
   Box,
   Card,
   Typography,
-  Grid,
   Chip,
   IconButton,
   Button,
@@ -13,8 +12,6 @@ import {
   DialogContent,
   DialogActions,
   Avatar,
-  Badge,
-  Paper,
   TextField,
   MenuItem
 } from '@mui/material';
@@ -171,11 +168,25 @@ const TaskBoard = () => {
   };
 
   return (
-    <Box sx={{ p: { xs: 1.5, md: 3 } }}>
+    <Box 
+      sx={{ 
+        pb: 4, 
+        width: '100%',
+        maxWidth: '100%',
+        bgcolor: '#f8f9fa',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
       {/* Header */}
       <Box
         sx={{
-          mb: 4,
+          p: 3,
+          flexShrink: 0,
+          bgcolor: '#ffffff',
+          borderBottom: '1px solid #e5e7eb',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -269,221 +280,361 @@ const TaskBoard = () => {
         </Box>
       </Box>
 
-      {/* Kanban Board */}
-      <Grid container spacing={3}>
-        {columns.map((column) => (
-          <Grid item xs={12} md={6} lg={3} key={column.id}>
-            <Paper 
-              elevation={0}
-              sx={{ 
-                width: '100%',
-                height: '100%', 
-                minHeight: { xs: 'auto', md: '75vh' }, 
-                bgcolor: '#f5f5f5',
-                display: 'flex', 
+      {/* Kanban Board - 4 Equal Columns with Internal Scroll */}
+      <Box
+        sx={{
+          flex: 1,
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 3,
+          p: 3,
+          overflow: 'hidden',
+          minHeight: 0,
+        }}
+      >
+        {columns.map((column) => {
+          const tasksInColumn = tasksByStatus[column.id];
+          const isEmpty = tasksInColumn.length === 0;
+          
+          return (
+            <Box
+              key={column.id}
+              sx={{
+                display: 'flex',
                 flexDirection: 'column',
-                borderRadius: 2,
-                overflow: 'hidden'
+                height: '100%',
+                minHeight: 0,
+                bgcolor: '#ffffff',
+                borderRadius: '12px',
+                border: '1px solid #e5e7eb',
+                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                overflow: 'hidden',
               }}
             >
-              {/* Column Header */}
+              {/* Column Header - Fixed */}
               <Box
                 sx={{
-                  p: 2,
+                  p: 2.5,
                   borderTop: `4px solid ${column.color}`,
-                  bgcolor: 'white',
+                  bgcolor: '#ffffff',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  boxShadow: 1
+                  flexShrink: 0,
+                  borderBottom: '1px solid #f3f4f6',
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Box sx={{ color: column.color, display: 'flex' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box sx={{ color: column.color, display: 'flex', alignItems: 'center' }}>
                     {column.icon}
                   </Box>
-                  <Typography variant="h6" fontWeight="bold">
+                  <Typography 
+                    variant="h6" 
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: '1rem',
+                      color: '#16191f',
+                    }}
+                  >
                     {column.title}
                   </Typography>
                 </Box>
                 <Chip 
-                  label={tasksByStatus[column.id].length} 
+                  label={tasksInColumn.length} 
                   size="small" 
-                  sx={{ bgcolor: column.color, color: 'white', fontWeight: 'bold' }}
+                  sx={{ 
+                    bgcolor: `${column.color}15`,
+                    color: column.color,
+                    fontWeight: 600,
+                    height: 24,
+                    fontSize: '0.75rem',
+                    border: `1px solid ${column.color}30`,
+                  }}
                 />
               </Box>
 
-              {/* Tasks */}
-              <Box sx={{ p: 2, flexGrow: 1, overflowY: 'auto' }}>
-                {tasksByStatus[column.id].length > 0 ? (
+              {/* Tasks Container - Scrollable */}
+              <Box 
+                sx={{ 
+                  flex: 1,
+                  p: 2,
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                  minHeight: 0,
+                  bgcolor: isEmpty ? '#f9fafb' : '#ffffff',
+                  backgroundImage: isEmpty 
+                    ? 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,.02) 10px, rgba(0,0,0,.02) 20px)'
+                    : 'none',
+                  '&::-webkit-scrollbar': {
+                    width: '8px',
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    background: '#f1f1f1',
+                    borderRadius: '4px',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    background: '#c1c1c1',
+                    borderRadius: '4px',
+                    '&:hover': {
+                      background: '#a8a8a8',
+                    },
+                  },
+                }}
+              >
+                {isEmpty ? (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      py: 8,
+                      textAlign: 'center',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 64,
+                        height: 64,
+                        borderRadius: '50%',
+                        bgcolor: `${column.color}15`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mb: 2,
+                      }}
+                    >
+                      {React.cloneElement(column.icon, { sx: { fontSize: '2rem', color: column.color } })}
+                    </Box>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#6b7280',
+                        fontWeight: 500,
+                        mb: 0.5,
+                      }}
+                    >
+                      אין משימות
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: '#9ca3af',
+                        fontSize: '0.75rem',
+                      }}
+                    >
+                      גרור משימות לכאן
+                    </Typography>
+                  </Box>
+                ) : (
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {tasksByStatus[column.id].map((task) => (
-                      <Card
-                        key={task._id}
-                        elevation={2}
-                        sx={{
-                          p: 2,
-                          cursor: 'pointer',
-                          transition: 'transform 0.2s, box-shadow 0.2s',
-                          '&:hover': {
-                            transform: 'translateY(-2px)',
-                            boxShadow: 4
-                          },
-                          position: 'relative'
-                        }}
-                        onClick={() => openTaskModal(task._id)}
-                      >
-                        {/* Color Stripe */}
-                        <Box 
-                          sx={{ 
-                            position: 'absolute', 
-                            left: 0, 
-                            top: 0, 
-                            bottom: 0, 
-                            width: 4, 
-                            bgcolor: task.color || (task.priority === 'urgent' ? 'error.main' : 
-                                    task.priority === 'high' ? 'warning.main' : 
-                                    task.priority === 'medium' ? 'info.main' : 'grey.300')
-                          }} 
-                        />
-
-                        {/* Task Header */}
-                        <Box sx={{ pl: 1, display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                          <Chip
-                            label={task.priority === 'urgent' ? 'דחוף' : 
-                                   task.priority === 'high' ? 'גבוה' : 
-                                   task.priority === 'medium' ? 'בינוני' : 'נמוך'}
-                            size="small"
-                            color={getPriorityColor(task.priority)}
-                            variant="outlined"
+                    {tasksInColumn.map((task) => {
+                      const priorityColors = {
+                        urgent: '#ef4444',
+                        high: '#f59e0b',
+                        medium: '#3b82f6',
+                        low: '#9ca3af',
+                      };
+                      const priorityBorderColor = priorityColors[task.priority] || '#9ca3af';
+                      
+                      return (
+                        <Card
+                          key={task._id}
+                          elevation={0}
+                          sx={{
+                            p: 2.5,
+                            cursor: 'pointer',
+                            borderRadius: '12px',
+                            border: '1px solid #f3f4f6',
+                            bgcolor: '#ffffff',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                            transition: 'all 0.2s ease-in-out',
+                            position: 'relative',
+                            '&:hover': {
+                              transform: 'translateY(-2px)',
+                              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                              borderColor: '#d1d5db',
+                            }
+                          }}
+                          onClick={() => openTaskModal(task._id)}
+                        >
+                          {/* Priority Border Strip */}
+                          <Box 
+                            sx={{ 
+                              position: 'absolute', 
+                              right: 0, 
+                              top: 0, 
+                              bottom: 0, 
+                              width: 4, 
+                              bgcolor: priorityBorderColor,
+                              borderTopRightRadius: '12px',
+                              borderBottomRightRadius: '12px',
+                            }} 
                           />
-                          <Box>
-                            <IconButton 
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditTask(task);
-                              }}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              color="error"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteTask(task._id);
-                              }}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Box>
-                        </Box>
 
-                        {/* Task Content */}
-                        <Box sx={{ pl: 1 }}>
-                          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                          {/* Top: Priority Badge + Actions */}
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+                            <Chip
+                              label={task.priority === 'urgent' ? 'דחוף' : 
+                                     task.priority === 'high' ? 'גבוה' : 
+                                     task.priority === 'medium' ? 'בינוני' : 'נמוך'}
+                              size="small"
+                              sx={{
+                                bgcolor: `${priorityBorderColor}15`,
+                                color: priorityBorderColor,
+                                fontWeight: 600,
+                                height: 22,
+                                fontSize: '0.7rem',
+                                border: `1px solid ${priorityBorderColor}30`,
+                              }}
+                            />
+                            <Box sx={{ display: 'flex', gap: 0.5 }}>
+                              <IconButton 
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditTask(task);
+                                }}
+                                sx={{
+                                  width: 28,
+                                  height: 28,
+                                  color: '#6366f1',
+                                  bgcolor: '#eef2ff',
+                                  '&:hover': {
+                                    bgcolor: '#e0e7ff',
+                                  }
+                                }}
+                              >
+                                <EditIcon sx={{ fontSize: '0.875rem' }} />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteTask(task._id);
+                                }}
+                                sx={{
+                                  width: 28,
+                                  height: 28,
+                                  color: '#ef4444',
+                                  bgcolor: '#fee2e2',
+                                  '&:hover': {
+                                    bgcolor: '#fecaca',
+                                  }
+                                }}
+                              >
+                                <DeleteIcon sx={{ fontSize: '0.875rem' }} />
+                              </IconButton>
+                            </Box>
+                          </Box>
+
+                          {/* Middle: Title */}
+                          <Typography 
+                            variant="subtitle1" 
+                            sx={{
+                              fontWeight: 700,
+                              fontSize: '0.9375rem',
+                              color: '#16191f',
+                              mb: 1.5,
+                              pr: 1,
+                              lineHeight: 1.4,
+                            }}
+                          >
                             {task.title}
                           </Typography>
 
-                          {task.description && (
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              gutterBottom
-                              sx={{
-                                mb: 2,
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                display: '-webkit-box',
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical'
-                              }}
-                            >
-                              {task.description}
-                            </Typography>
-                          )}
-
-                          {/* Footer Info */}
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 'auto' }}>
-                             {task.relatedClient ? (
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Avatar 
-                                  sx={{ width: 24, height: 24, fontSize: '0.75rem', bgcolor: 'primary.main' }}
-                                >
-                                  {task.relatedClient.personalInfo.fullName?.charAt(0)}
-                                </Avatar>
-                                <Typography variant="caption" color="text.secondary" sx={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                  {task.relatedClient.personalInfo.fullName}
-                                </Typography>
-                              </Box>
-                            ) : <Box />}
-
-                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
+                          {/* Bottom: Tags + Date + Avatar */}
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 'auto' }}>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                               {task.projectId && (
                                 <Chip
                                   label={task.projectId.name}
                                   size="small"
                                   sx={{
-                                    bgcolor: task.projectId.color || 'grey.300',
-                                    color: 'white',
-                                    maxWidth: 120,
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis'
+                                    bgcolor: task.projectId.color || '#6366f1',
+                                    color: '#ffffff',
+                                    fontSize: '0.7rem',
+                                    height: 20,
+                                    fontWeight: 500,
                                   }}
                                 />
                               )}
                               {task.dueDate && (
-                                <Chip 
-                                  icon={<ScheduleIcon sx={{ fontSize: '1rem !important' }} />}
-                                  label={format(new Date(task.dueDate), 'dd/MM HH:mm', { locale: he })}
+                                <Chip
+                                  icon={<ScheduleIcon sx={{ fontSize: '0.75rem !important' }} />}
+                                  label={format(new Date(task.dueDate), 'dd/MM', { locale: he })}
                                   size="small"
-                                  sx={{ fontSize: '0.75rem', height: 24 }}
+                                  sx={{
+                                    fontSize: '0.7rem',
+                                    height: 20,
+                                    bgcolor: '#f3f4f6',
+                                    color: '#6b7280',
+                                    border: 'none',
+                                  }}
                                 />
                               )}
                             </Box>
+                            {task.relatedClient && (
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Avatar 
+                                  sx={{ 
+                                    width: 24, 
+                                    height: 24, 
+                                    fontSize: '0.7rem', 
+                                    bgcolor: '#6366f1',
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {task.relatedClient.personalInfo?.fullName?.charAt(0) || '?'}
+                                </Avatar>
+                                <Typography 
+                                  variant="caption" 
+                                  sx={{ 
+                                    color: '#6b7280',
+                                    fontSize: '0.75rem',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    maxWidth: 120,
+                                  }}
+                                >
+                                  {task.relatedClient.personalInfo?.fullName}
+                                </Typography>
+                              </Box>
+                            )}
                           </Box>
-                        </Box>
-
-                        {/* Actions */}
-                        <Box sx={{ mt: 2, pt: 1, borderTop: 1, borderColor: 'divider', display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                            {task.status === 'todo' && (
-                              <Button size="small" onClick={() => handleStatusChange(task._id, 'in_progress')}>
-                                התחל טיפול
-                              </Button>
-                            )}
-                            {task.status === 'in_progress' && (
-                              <Button size="small" color="success" onClick={() => handleStatusChange(task._id, 'completed')}>
-                                סיים משימה
-                              </Button>
-                            )}
-                            {task.status === 'completed' && (
-                               <Typography variant="caption" color="success.main" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                 <CheckCircleIcon fontSize="small" /> הושלם
-                               </Typography>
-                            )}
-                        </Box>
-                      </Card>
-                    ))}
-                  </Box>
-                ) : (
-                  <Box
-                    sx={{
-                      textAlign: 'center',
-                      py: 8,
-                      opacity: 0.5
-                    }}
-                  >
-                    <Typography variant="body2">אין משימות</Typography>
+                        </Card>
+                      );
+                    })}
                   </Box>
                 )}
+              </Box>
 
-                {/* Add Task Button (Bottom of column) */}
+              {/* Add Task Button - Fixed at Bottom */}
+              <Box
+                sx={{
+                  p: 2,
+                  borderTop: '1px solid #f3f4f6',
+                  flexShrink: 0,
+                  bgcolor: '#ffffff',
+                }}
+              >
                 <Button
                   fullWidth
-                  variant="dashed"
+                  variant="outlined"
                   startIcon={<AddIcon />}
-                  sx={{ mt: 2, border: '1px dashed', borderColor: 'divider' }}
+                  sx={{
+                    border: '1px dashed #d1d5db',
+                    borderColor: '#d1d5db',
+                    color: '#6b7280',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    '&:hover': {
+                      borderColor: column.color,
+                      bgcolor: `${column.color}10`,
+                      color: column.color,
+                    }
+                  }}
                   onClick={() => {
                     setSelectedStatus(column.id);
                     setCreateDialogOpen(true);
@@ -492,10 +643,10 @@ const TaskBoard = () => {
                   הוסף משימה
                 </Button>
               </Box>
-            </Paper>
-          </Grid>
-        ))}
-      </Grid>
+            </Box>
+          );
+        })}
+      </Box>
 
       {/* Create Task Dialog */}
       <Dialog
