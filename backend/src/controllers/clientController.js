@@ -1543,66 +1543,113 @@ exports.updateTask = async (req, res) => {
 // סטטיסטיקות כלליות
 exports.getOverviewStats = async (req, res) => {
   try {
+    const allowedStatuses = getAllowedStatusesForUser(req.user);
+    const allStatuses = [...LEAD_STATUSES, ...CLIENT_STATUSES];
+
+    const ownershipOr = req.user?._id
+      ? {
+        $or: [{ 'metadata.createdBy': req.user._id }, { 'metadata.assignedTo': req.user._id }],
+      }
+      : null;
+
+    const isPrivileged = req.user?.role === 'admin' || req.user?.role === 'super_admin';
+
+    const matchForStatuses = (statuses) => {
+      const st = Array.isArray(statuses) ? statuses.filter(Boolean) : [];
+      if (st.length === 0) return null;
+
+      let effective = st;
+      if (allowedStatuses !== null) {
+        effective = effective.filter((s) => allowedStatuses.includes(s));
+      }
+      if (effective.length === 0) return null;
+
+      let base = { status: effective.length === 1 ? effective[0] : { $in: effective } };
+
+      // Ownership scope: for employees without viewAll, show only "their" leads/clients
+      if (!isPrivileged && ownershipOr) {
+        const isLeadScope = effective.every((s) => LEAD_STATUSES.includes(s));
+        const isClientScope = effective.every((s) => CLIENT_STATUSES.includes(s));
+        if (isLeadScope) {
+          const canViewAll = Boolean(req.user?.permissions?.leads?.viewAll);
+          if (!canViewAll) base = { $and: [base, ownershipOr] };
+        } else if (isClientScope) {
+          const canViewAll = Boolean(req.user?.permissions?.clients?.viewAll);
+          if (!canViewAll) base = { $and: [base, ownershipOr] };
+        }
+      }
+
+      return base;
+    };
+
+    const totalMatch = allowedStatuses === null ? null : matchForStatuses(allStatuses);
+    const activeLeadsMatch = matchForStatuses(['new_lead', 'contacted', 'engaged', 'meeting_set']);
+    const activeDealsMatch = matchForStatuses(['proposal_sent']);
+    const wonMatch = matchForStatuses(['won']);
+    const leadsMatch = matchForStatuses(LEAD_STATUSES);
+
     const stats = {
-      // ספירות בסיסיות
-      totalClients: await Client.countDocuments(),
-      activeLeads: await Client.countDocuments({
-        status: { $in: ['new_lead', 'contacted', 'engaged', 'meeting_set'] }
-      }),
-      activeDeals: await Client.countDocuments({
-        status: { $in: ['proposal_sent'] }
-      }),
-      wonDeals: await Client.countDocuments({ status: 'won' }),
-      activeClients: await Client.countDocuments({
-        status: { $in: ['won'] }
-      }),
+      totalClients: totalMatch ? await Client.countDocuments(totalMatch) : await Client.countDocuments(),
+      activeLeads: activeLeadsMatch ? await Client.countDocuments(activeLeadsMatch) : 0,
+      activeDeals: activeDealsMatch ? await Client.countDocuments(activeDealsMatch) : 0,
+      wonDeals: wonMatch ? await Client.countDocuments(wonMatch) : 0,
+      activeClients: wonMatch ? await Client.countDocuments(wonMatch) : 0,
 
       // הכנסות
       totalRevenue: 0,
       paidAmount: 0,
       outstandingAmount: 0,
 
-      // פילוח לפי מקור
-      leadsBySource: await Client.aggregate([
-        { $group: { _id: '$leadSource', count: { $sum: 1 } } },
-        { $sort: { count: -1 } }
-      ]),
+      // פילוח לפי מקור (לידים בלבד)
+      leadsBySource: leadsMatch
+        ? await Client.aggregate([
+          { $match: leadsMatch },
+          { $group: { _id: '$leadSource', count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+        ])
+        : [],
 
-      // פילוח לפי סטטוס
-      clientsByStatus: await Client.aggregate([
-        { $group: { _id: '$status', count: { $sum: 1 } } },
-        { $sort: { count: -1 } }
-      ]),
+      // פילוח לפי סטטוס (רק מה שמותר למשתמש)
+      clientsByStatus:
+        allowedStatuses === null
+          ? await Client.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }, { $sort: { count: -1 } }])
+          : await Client.aggregate([
+            { $match: totalMatch || { status: '__no_such_status__' } },
+            { $group: { _id: '$status', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+          ]),
 
-      // ממוצע Lead Score
-      averageLeadScore: await Client.aggregate([
-        { $group: { _id: null, avgScore: { $avg: '$leadScore' } } }
-      ]),
+      // ממוצע Lead Score (לידים בלבד)
+      averageLeadScore: leadsMatch
+        ? await Client.aggregate([{ $match: leadsMatch }, { $group: { _id: null, avgScore: { $avg: '$leadScore' } } }])
+        : [],
 
-      // פעילות אחרונה
-      recentActivity: await Client.find()
+      // פעילות אחרונה (רק מה שמותר למשתמש)
+      recentActivity: await Client.find(totalMatch || {})
         .sort({ 'metadata.lastContactedAt': -1 })
         .limit(5)
-        .select('personalInfo.fullName businessInfo.businessName status metadata.lastContactedAt metadata.lastInteractionType')
+        .select('personalInfo.fullName businessInfo.businessName status metadata.lastContactedAt metadata.lastInteractionType'),
     };
 
-    // חישוב הכנסות
-    const revenueData = await Client.aggregate([
-      { $match: { status: { $in: ['won'] } } },
-      {
-        $group: {
-          _id: null,
-          totalRevenue: { $sum: '$metadata.stats.totalRevenue' },
-          totalPaid: { $sum: '$metadata.stats.totalPaid' },
-          outstanding: { $sum: '$metadata.stats.outstandingBalance' }
-        }
-      }
-    ]);
+    // חישוב הכנסות (ללקוחות/Deals שנמצאים ב-scope)
+    if (wonMatch) {
+      const revenueData = await Client.aggregate([
+        { $match: wonMatch },
+        {
+          $group: {
+            _id: null,
+            totalRevenue: { $sum: '$metadata.stats.totalRevenue' },
+            totalPaid: { $sum: '$metadata.stats.totalPaid' },
+            outstanding: { $sum: '$metadata.stats.outstandingBalance' },
+          },
+        },
+      ]);
 
-    if (revenueData.length > 0) {
-      stats.totalRevenue = revenueData[0].totalRevenue || 0;
-      stats.paidAmount = revenueData[0].totalPaid || 0;
-      stats.outstandingAmount = revenueData[0].outstanding || 0;
+      if (revenueData.length > 0) {
+        stats.totalRevenue = revenueData[0].totalRevenue || 0;
+        stats.paidAmount = revenueData[0].totalPaid || 0;
+        stats.outstandingAmount = revenueData[0].outstanding || 0;
+      }
     }
 
     stats.averageLeadScore = stats.averageLeadScore[0]?.avgScore || 0;
@@ -1628,48 +1675,13 @@ exports.getPipelineStats = async (req, res) => {
     const allowedStatuses = getAllowedStatusesForUser(req.user);
 
     const pipeline = [
-      {
-        stage: 'new_lead',
-        name: 'ליד חדש',
-        count: await Client.countDocuments({ status: 'new_lead' }),
-        value: 0
-      },
-      {
-        stage: 'contacted',
-        name: 'צור קשר',
-        count: await Client.countDocuments({ status: 'contacted' }),
-        value: 0
-      },
-      {
-        stage: 'engaged',
-        name: 'מעורבות',
-        count: await Client.countDocuments({ status: 'engaged' }),
-        value: 0
-      },
-      {
-        stage: 'meeting_set',
-        name: 'פגישה נקבעה',
-        count: await Client.countDocuments({ status: 'meeting_set' }),
-        value: 0
-      },
-      {
-        stage: 'proposal_sent',
-        name: 'הצעה נשלחה',
-        count: await Client.countDocuments({ status: 'proposal_sent' }),
-        value: 0
-      },
-      {
-        stage: 'won',
-        name: 'נסגר',
-        count: await Client.countDocuments({ status: 'won' }),
-        value: 0
-      },
-      {
-        stage: 'lost',
-        name: 'אבוד',
-        count: await Client.countDocuments({ status: 'lost' }),
-        value: 0
-      }
+      { stage: 'new_lead', name: 'ליד חדש', count: 0, value: 0 },
+      { stage: 'contacted', name: 'צור קשר', count: 0, value: 0 },
+      { stage: 'engaged', name: 'מעורבות', count: 0, value: 0 },
+      { stage: 'meeting_set', name: 'פגישה נקבעה', count: 0, value: 0 },
+      { stage: 'proposal_sent', name: 'הצעה נשלחה', count: 0, value: 0 },
+      { stage: 'won', name: 'נסגר', count: 0, value: 0 },
+      { stage: 'lost', name: 'אבוד', count: 0, value: 0 },
     ];
 
     // RBAC: אם אין הרשאה לשלב, נאפס אותו (כדי לא לדלוף ספירות/ערכים).
@@ -1682,7 +1694,7 @@ exports.getPipelineStats = async (req, res) => {
       }
     }
 
-    // חישוב ערך פוטנציאלי לכל שלב
+    // חישוב ערך פוטנציאלי + ספירה לכל שלב
     for (const stage of pipeline) {
       if (allowedStatuses !== null && !allowedStatuses.includes(stage.stage)) {
         // Skip DB work for blocked stages
@@ -1690,14 +1702,19 @@ exports.getPipelineStats = async (req, res) => {
       }
       let statusFilter = { status: stage.stage };
       // RBAC (ownership): leads viewAll=false => employee sees only their own leads in pipeline stats
-      if (req.user?.role !== 'admin') {
+      if (req.user?.role !== 'admin' && req.user?.role !== 'super_admin') {
         const leadsPerm = req.user?.permissions?.leads;
         const canLeads = Boolean(leadsPerm?.enabled);
         const canViewAllLeads = Boolean(leadsPerm?.viewAll);
         if (canLeads && !canViewAllLeads && LEAD_STATUSES.includes(stage.stage)) {
-          statusFilter['metadata.createdBy'] = req.user._id;
+          statusFilter.$or = [
+            { 'metadata.createdBy': req.user._id },
+            { 'metadata.assignedTo': req.user._id },
+          ];
         }
       }
+
+      stage.count = await Client.countDocuments(statusFilter);
 
       const clients = await Client.find(statusFilter)
         .select('paymentPlan.totalAmount orders.totalAmount');
@@ -1718,7 +1735,7 @@ exports.getPipelineStats = async (req, res) => {
 
     const totalLeadsFilter = { status: { $in: conversionStatuses } };
     // אם זה עובד לידים בלבד בלי viewAll, נחשב/נחזיר נתונים רק על הלידים שלו
-    if (req.user?.role !== 'admin') {
+    if (req.user?.role !== 'admin' && req.user?.role !== 'super_admin') {
       const leadsPerm = req.user?.permissions?.leads;
       const canLeads = Boolean(leadsPerm?.enabled);
       const canViewAllLeads = Boolean(leadsPerm?.viewAll);
@@ -1727,7 +1744,10 @@ exports.getPipelineStats = async (req, res) => {
         allowedStatuses.length > 0 &&
         allowedStatuses.every((s) => LEAD_STATUSES.includes(s));
       if (canLeads && !canViewAllLeads && isLeadOnlyScope) {
-        totalLeadsFilter['metadata.createdBy'] = req.user._id;
+        totalLeadsFilter.$or = [
+          { 'metadata.createdBy': req.user._id },
+          { 'metadata.assignedTo': req.user._id },
+        ];
       }
     }
     const totalLeads = await Client.countDocuments(totalLeadsFilter);
@@ -1779,12 +1799,15 @@ exports.getMorningFocus = async (req, res) => {
     };
 
     // RBAC (ownership): leads viewAll=false => employee sees only their own leads
-    if (req.user?.role !== 'admin') {
+    if (req.user?.role !== 'admin' && req.user?.role !== 'super_admin') {
       const leadsPerm = req.user?.permissions?.leads;
       const canLeads = Boolean(leadsPerm?.enabled);
       const canViewAllLeads = Boolean(leadsPerm?.viewAll);
       if (canLeads && !canViewAllLeads) {
-        focusQuery['metadata.createdBy'] = req.user._id;
+        focusQuery.$or = [
+          { 'metadata.createdBy': req.user._id },
+          { 'metadata.assignedTo': req.user._id },
+        ];
       }
     }
 
