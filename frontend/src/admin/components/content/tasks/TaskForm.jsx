@@ -301,549 +301,642 @@ const TaskForm = ({
     onSubmit(formattedData);
   };
 
+  // Helper component for Priority Badge
+  const PriorityBadge = ({ value, onChange }) => {
+    const priorities = [
+      { value: 'low', label: 'נמוכה', color: 'bg-green-100 text-green-700 border-green-300' },
+      { value: 'medium', label: 'בינונית', color: 'bg-yellow-100 text-yellow-700 border-yellow-300' },
+      { value: 'high', label: 'גבוהה', color: 'bg-orange-100 text-orange-700 border-orange-300' },
+      { value: 'urgent', label: 'דחופה', color: 'bg-red-100 text-red-700 border-red-300' }
+    ];
+
+    return (
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-600">עדיפות</label>
+        <div className="flex flex-wrap gap-2">
+          {priorities.map((priority) => (
+            <button
+              key={priority.value}
+              type="button"
+              onClick={() => onChange(priority.value)}
+              className={`px-4 py-2 rounded-lg border-2 transition-all text-sm font-medium ${
+                value === priority.value
+                  ? `${priority.color} ring-2 ring-offset-2 ring-offset-white`
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              {priority.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Helper component for Status Badge
+  const StatusBadge = ({ value, onChange }) => {
+    const statuses = [
+      { value: 'todo', label: 'לביצוע', color: 'bg-gray-100 text-gray-700 border-gray-300' },
+      { value: 'in_progress', label: 'בטיפול', color: 'bg-blue-100 text-blue-700 border-blue-300' },
+      { value: 'waiting', label: 'ממתין', color: 'bg-yellow-100 text-yellow-700 border-yellow-300' },
+      { value: 'completed', label: 'הושלם', color: 'bg-green-100 text-green-700 border-green-300' }
+    ];
+
+    return (
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-600">סטטוס</label>
+        <div className="flex flex-wrap gap-2">
+          {statuses.map((status) => (
+            <button
+              key={status.value}
+              type="button"
+              onClick={() => onChange(status.value)}
+              className={`px-4 py-2 rounded-lg border-2 transition-all text-sm font-medium ${
+                value === status.value
+                  ? `${status.color} ring-2 ring-offset-2 ring-offset-white`
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              {status.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // Helper component for Form Section
+  const FormSection = ({ title, children, className = '' }) => (
+    <div className={`space-y-4 ${className}`}>
+      {title && (
+        <h3 className="text-base font-semibold text-gray-900 border-b border-gray-200 pb-2">
+          {title}
+        </h3>
+      )}
+      {children}
+    </div>
+  );
+
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
-      <Box id={formId} component="form" onSubmit={handleSubmit(handleFormSubmit)} sx={{ mt: 2 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="כותרת המשימה"
-              multiline
-              minRows={2}
-              maxRows={2}
-              {...register('title', { required: 'שדה חובה' })}
-              required
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <TextField
-              select
-              fullWidth
-              label="עדיפות"
-              defaultValue="medium"
-              {...register('priority')}
-            >
-              <MenuItem value="low">נמוכה</MenuItem>
-              <MenuItem value="medium">בינונית</MenuItem>
-              <MenuItem value="high">גבוהה</MenuItem>
-              <MenuItem value="urgent">דחופה</MenuItem>
-            </TextField>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <TextField
-              select
-              fullWidth
-              label="סטטוס"
-              defaultValue="todo"
-              {...register('status')}
-            >
-              <MenuItem value="todo">לביצוע</MenuItem>
-              <MenuItem value="in_progress">בטיפול</MenuItem>
-              <MenuItem value="waiting">ממתין</MenuItem>
-              <MenuItem value="completed">הושלם</MenuItem>
-            </TextField>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Controller
-              name="color"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <Box>
-                  <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
-                    צבע המשימה
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    {[
-                      { value: '#1976d2', label: 'כחול' },
-                      { value: '#d32f2f', label: 'אדום' },
-                      { value: '#388e3c', label: 'ירוק' },
-                      { value: '#f57c00', label: 'כתום' },
-                      { value: '#7b1fa2', label: 'סגול' },
-                      { value: '#0288d1', label: 'תכלת' },
-                      { value: '#c2185b', label: 'ורוד' },
-                      { value: '#5d4037', label: 'חום' },
-                      { value: '#455a64', label: 'אפור כהה' },
-                      { value: '#0097a7', label: 'ציאן' }
-                    ].map((color) => (
-                      <Box
-                        key={color.value}
-                        onClick={() => onChange(color.value)}
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 1,
-                          bgcolor: color.value,
-                          cursor: 'pointer',
-                          border: value === color.value ? '3px solid' : '2px solid',
-                          borderColor: value === color.value ? 'primary.main' : 'divider',
-                          transition: 'all 0.2s',
-                          '&:hover': {
-                            transform: 'scale(1.1)',
-                            boxShadow: 2
-                          },
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          position: 'relative'
-                        }}
-                        title={color.label}
-                      >
-                        {value === color.value && (
-                          <Box
-                            sx={{
-                              color: 'white',
-                              fontSize: '1.2rem',
-                              textShadow: '0 1px 2px rgba(0,0,0,0.3)'
-                            }}
-                          >
-                            ✓
-                          </Box>
-                        )}
-                      </Box>
-                    ))}
-                  </Box>
-                </Box>
-              )}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Controller
-              name="startDate"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <Grid container spacing={1}>
-                  <Grid item xs={7}>
-                    <DatePicker
-                      label="תאריך התחלה"
-                      value={parseDate(value)}
-                      onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
-                      slotProps={{ textField: { fullWidth: true } }}
-                    />
-                  </Grid>
-                  <Grid item xs={5}>
-                    <TimePicker
-                      label="שעה"
-                      value={parseDate(value)}
-                      onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
-                      ampm={false}
-                      views={['hours', 'minutes']}
-                      viewRenderers={{
-                        hours: renderTimeViewClock,
-                        minutes: renderTimeViewClock
+      <Box
+        id={formId}
+        component="form"
+        onSubmit={handleSubmit(handleFormSubmit)}
+        className="bg-white rounded-xl shadow-sm border border-gray-200"
+        sx={{ mt: 2 }}
+      >
+            <div className="p-6 space-y-8">
+              {/* Task Details Section */}
+              <FormSection title="פרטי המשימה">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                  {/* Title - Full Width */}
+                  <div className="col-span-12">
+                    <TextField
+                      fullWidth
+                      label="כותרת המשימה"
+                      multiline
+                      minRows={2}
+                      maxRows={2}
+                      {...register('title', { required: 'שדה חובה' })}
+                      required
+                      className="w-full"
+                      slotProps={{
+                        root: {
+                          className: 'rounded-lg border-gray-200 focus-within:ring-2 focus-within:ring-[#ec7211]'
+                        }
                       }}
-                      slotProps={{ textField: { fullWidth: true } }}
                     />
-                  </Grid>
-                </Grid>
-              )}
-            />
-          </Grid>
+                  </div>
 
-          <Grid item xs={12} md={6}>
-            <Controller
-              name="dueDate"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <Grid container spacing={1}>
-                  <Grid item xs={7}>
-                    <DatePicker
-                      label="תאריך יעד"
-                      value={parseDate(value)}
-                      onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
-                      slotProps={{ textField: { fullWidth: true } }}
+                  {/* Priority and Status - Side by Side */}
+                  <div className="col-span-12 md:col-span-6">
+                    <Controller
+                      name="priority"
+                      control={control}
+                      render={({ field: { onChange, value } }) => (
+                        <PriorityBadge value={value || 'medium'} onChange={onChange} />
+                      )}
                     />
-                  </Grid>
-                  <Grid item xs={5}>
-                    <TimePicker
-                      label="שעה"
-                      value={parseDate(value)}
-                      onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
-                      ampm={false}
-                      views={['hours', 'minutes']}
-                      viewRenderers={{
-                        hours: renderTimeViewClock,
-                        minutes: renderTimeViewClock
-                      }}
-                      slotProps={{ textField: { fullWidth: true } }}
+                  </div>
+
+                  <div className="col-span-12 md:col-span-6">
+                    <Controller
+                      name="status"
+                      control={control}
+                      render={({ field: { onChange, value } }) => (
+                        <StatusBadge value={value || 'todo'} onChange={onChange} />
+                      )}
                     />
-                  </Grid>
-                </Grid>
-              )}
-            />
-          </Grid>
+                  </div>
 
-          {/* חזרתיות */}
-          <Grid item xs={12}>
-            <Box sx={{ border: '1px solid', borderColor: 'grey.100', borderRadius: 2, p: 2 }}>
-              {(() => {
-                const start = parseDate(watchStartDate) || parseDate(watchDueDate) || new Date();
-                const dowLabels = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
-                const mode = watchRecurrenceMode || 'none';
-                const customFreq = watchRecurrenceCustomFrequency || 'weekly';
+                  {/* Color Picker */}
+                  <div className="col-span-12 md:col-span-6">
+                    <Controller
+                      name="color"
+                      control={control}
+                      render={({ field: { onChange, value } }) => (
+                        <div className="space-y-2">
+                          <label className="block text-sm font-medium text-gray-600">צבע המשימה</label>
+                          <div className="flex flex-wrap gap-2">
+                            {[
+                              { value: '#1976d2', label: 'כחול' },
+                              { value: '#d32f2f', label: 'אדום' },
+                              { value: '#388e3c', label: 'ירוק' },
+                              { value: '#f57c00', label: 'כתום' },
+                              { value: '#7b1fa2', label: 'סגול' },
+                              { value: '#0288d1', label: 'תכלת' },
+                              { value: '#c2185b', label: 'ורוד' },
+                              { value: '#5d4037', label: 'חום' },
+                              { value: '#455a64', label: 'אפור כהה' },
+                              { value: '#0097a7', label: 'ציאן' }
+                            ].map((color) => (
+                              <button
+                                key={color.value}
+                                type="button"
+                                onClick={() => onChange(color.value)}
+                                className={`w-10 h-10 rounded-lg transition-all hover:scale-110 ${
+                                  value === color.value
+                                    ? 'ring-2 ring-[#ec7211] ring-offset-2 ring-offset-white border-2 border-[#ec7211]'
+                                    : 'border-2 border-gray-200 hover:border-gray-300'
+                                }`}
+                                style={{ backgroundColor: color.value }}
+                                title={color.label}
+                              >
+                                {value === color.value && (
+                                  <span className="text-white text-lg font-bold drop-shadow-md">✓</span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    />
+                  </div>
+                </div>
+              </FormSection>
 
-                const daysForSummary = () => {
-                  const raw = Array.isArray(watchRecurrenceDays) && watchRecurrenceDays.length ? watchRecurrenceDays : [start.getDay()];
-                  return raw.map((d) => dowLabels[parseInt(d, 10)]).filter(Boolean);
-                };
-
-                const summary = () => {
-                  if (mode === 'none') return 'לא חוזר';
-                  if (mode === 'daily') {
-                    const every = Math.max(1, parseInt(watchRecurrenceEveryDays, 10) || 1);
-                    return every === 1 ? 'כל יום' : `כל ${every} ימים`;
-                  }
-                  if (mode === 'weekly') {
-                    const every = Math.max(1, parseInt(watchRecurrenceEveryWeeks, 10) || 1);
-                    const days = daysForSummary();
-                    const daysStr = days.length ? ` • ${days.join(', ')}` : '';
-                    return every === 1 ? `כל שבוע${daysStr}` : `כל ${every} שבועות${daysStr}`;
-                  }
-                  if (mode === 'monthly') {
-                    const every = Math.max(1, parseInt(watchRecurrenceEveryMonths, 10) || 1);
-                    return every === 1 ? 'כל חודש' : `כל ${every} חודשים`;
-                  }
-                  if (mode === 'yearly') {
-                    const every = Math.max(1, parseInt(watchRecurrenceEveryYears, 10) || 1);
-                    return every === 1 ? 'כל שנה' : `כל ${every} שנים`;
-                  }
-                  // custom
-                  if (customFreq === 'daily') {
-                    const every = Math.max(1, parseInt(watchRecurrenceEveryDays, 10) || 1);
-                    return `מותאם: כל ${every} ימים`;
-                  }
-                  if (customFreq === 'weekly') {
-                    const every = Math.max(1, parseInt(watchRecurrenceEveryWeeks, 10) || 1);
-                    const days = daysForSummary();
-                    return `מותאם: כל ${every} שבועות${days.length ? ` • ${days.join(', ')}` : ''}`;
-                  }
-                  if (customFreq === 'monthly') {
-                    const every = Math.max(1, parseInt(watchRecurrenceEveryMonths, 10) || 1);
-                    return `מותאם: כל ${every} חודשים`;
-                  }
-                  const every = Math.max(1, parseInt(watchRecurrenceEveryYears, 10) || 1);
-                  return `מותאם: כל ${every} שנים`;
-                };
-
-                const choosePreset = (nextMode) => {
-                  setValue('recurrenceMode', nextMode);
-                  if (nextMode === 'none') return;
-                  if (nextMode === 'daily') setValue('recurrenceEveryDays', 1);
-                  if (nextMode === 'weekly') {
-                    setValue('recurrenceEveryWeeks', 1);
-                    setValue('recurrenceDaysOfWeek', [start.getDay()]);
-                  }
-                  if (nextMode === 'monthly') setValue('recurrenceEveryMonths', 1);
-                  if (nextMode === 'yearly') setValue('recurrenceEveryYears', 1);
-                };
-
-                return (
-                  <>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
-                      <Box>
-                        <Typography variant="subtitle1" fontWeight="bold">
-                          חזרתיות
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {summary()}
-                        </Typography>
-                      </Box>
-                      <Button variant="outlined" onClick={() => setRecurrenceDialogOpen(true)}>
-                        שנה
-                      </Button>
-                    </Stack>
-
-                    <Dialog open={recurrenceDialogOpen} onClose={() => setRecurrenceDialogOpen(false)} maxWidth="xs" fullWidth>
-                      <DialogTitle sx={{ fontWeight: 800 }}>חזרתיות</DialogTitle>
-                      <DialogContent dividers>
-                        <List dense disablePadding>
-                          {[
-                            { key: 'none', label: 'לא חוזר' },
-                            { key: 'daily', label: 'כל יום' },
-                            { key: 'weekly', label: 'כל שבוע' },
-                            { key: 'monthly', label: 'כל חודש' },
-                            { key: 'yearly', label: 'כל שנה' }
-                          ].map((it) => (
-                            <ListItemButton
-                              key={it.key}
-                              selected={mode === it.key}
-                              onClick={() => {
-                                choosePreset(it.key);
-                                setRecurrenceDialogOpen(false);
-                              }}
-                            >
-                              <ListItemText primary={it.label} />
-                            </ListItemButton>
-                          ))}
-                          <Divider sx={{ my: 1 }} />
-                          <ListItemButton
-                            selected={mode === 'custom'}
-                            onClick={() => {
-                              setValue('recurrenceMode', 'custom');
-                              setRecurrenceDialogOpen(true);
-                            }}
-                          >
-                            <ListItemText primary="מותאם אישית…" secondary="ימים מסוימים / כל כמה שבועות / חודשי / שנתי" />
-                          </ListItemButton>
-                        </List>
-
-                        {mode === 'custom' ? (
-                          <Box sx={{ mt: 2 }}>
-                            <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>
-                              מותאם אישית
-                            </Typography>
-                            <Controller
-                              name="recurrenceCustomFrequency"
-                              control={control}
-                              render={({ field: { value, onChange } }) => (
-                                <ToggleButtonGroup
-                                  value={value || 'weekly'}
-                                  exclusive
-                                  onChange={(_, v) => { if (v) onChange(v); }}
-                                  size="small"
-                                  sx={{ mb: 2 }}
-                                >
-                                  <ToggleButton value="daily">יומי</ToggleButton>
-                                  <ToggleButton value="weekly">שבועי</ToggleButton>
-                                  <ToggleButton value="monthly">חודשי</ToggleButton>
-                                  <ToggleButton value="yearly">שנתי</ToggleButton>
-                                </ToggleButtonGroup>
-                              )}
+              {/* Schedule Section */}
+              <FormSection title="לוח זמנים">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                  {/* Start Date - Side by Side with Due Date */}
+                  <div className="col-span-12 md:col-span-6">
+                    <Controller
+                      name="startDate"
+                      control={control}
+                      render={({ field: { onChange, value } }) => (
+                        <div className="grid grid-cols-12 gap-2">
+                          <div className="col-span-7">
+                            <DatePicker
+                              label="תאריך התחלה"
+                              value={parseDate(value)}
+                              onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
+                              slotProps={{ textField: { fullWidth: true } }}
                             />
-
-                            {customFreq === 'daily' ? (
-                              <TextField
-                                type="number"
-                                fullWidth
-                                label="כל כמה ימים"
-                                inputProps={{ min: 1 }}
-                                {...register('recurrenceEveryDays', { valueAsNumber: true })}
-                              />
-                            ) : null}
-
-                            {customFreq === 'weekly' ? (
-                              <Grid container spacing={2}>
-                                <Grid item xs={12}>
-                                  <TextField
-                                    type="number"
-                                    fullWidth
-                                    label="כל כמה שבועות"
-                                    inputProps={{ min: 1 }}
-                                    {...register('recurrenceEveryWeeks', { valueAsNumber: true })}
-                                  />
-                                </Grid>
-                                <Grid item xs={12}>
-                                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                                    ימים בשבוע
-                                  </Typography>
-                                  <Controller
-                                    name="recurrenceDaysOfWeek"
-                                    control={control}
-                                    render={({ field: { value, onChange } }) => (
-                                      <ToggleButtonGroup
-                                        value={Array.isArray(value) ? value : []}
-                                        onChange={(_, next) => onChange(next)}
-                                        size="small"
-                                      >
-                                        <ToggleButton value={0}>א׳</ToggleButton>
-                                        <ToggleButton value={1}>ב׳</ToggleButton>
-                                        <ToggleButton value={2}>ג׳</ToggleButton>
-                                        <ToggleButton value={3}>ד׳</ToggleButton>
-                                        <ToggleButton value={4}>ה׳</ToggleButton>
-                                        <ToggleButton value={5}>ו׳</ToggleButton>
-                                        <ToggleButton value={6}>ש׳</ToggleButton>
-                                      </ToggleButtonGroup>
-                                    )}
-                                  />
-                                </Grid>
-                              </Grid>
-                            ) : null}
-
-                            {customFreq === 'monthly' ? (
-                              <TextField
-                                type="number"
-                                fullWidth
-                                label="כל כמה חודשים"
-                                inputProps={{ min: 1 }}
-                                {...register('recurrenceEveryMonths', { valueAsNumber: true })}
-                              />
-                            ) : null}
-
-                            {customFreq === 'yearly' ? (
-                              <TextField
-                                type="number"
-                                fullWidth
-                                label="כל כמה שנים"
-                                inputProps={{ min: 1 }}
-                                {...register('recurrenceEveryYears', { valueAsNumber: true })}
-                              />
-                            ) : null}
-                          </Box>
-                        ) : null}
-                      </DialogContent>
-                      <DialogActions>
-                        <Button onClick={() => setRecurrenceDialogOpen(false)}>סגור</Button>
-                      </DialogActions>
-                    </Dialog>
-                  </>
-                );
-              })()}
-            </Box>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Controller
-              name="projectId"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <Autocomplete
-                  options={projects}
-                  getOptionLabel={(option) => option.name || ''}
-                  value={value && typeof value === 'string' ? projects.find(p => p._id === value) : value}
-                  onChange={(_, newValue) => onChange(newValue)}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="פרויקט"
+                          </div>
+                          <div className="col-span-5">
+                            <TimePicker
+                              label="שעה"
+                              value={parseDate(value)}
+                              onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
+                              ampm={false}
+                              views={['hours', 'minutes']}
+                              viewRenderers={{
+                                hours: renderTimeViewClock,
+                                minutes: renderTimeViewClock
+                              }}
+                              slotProps={{ textField: { fullWidth: true } }}
+                            />
+                          </div>
+                        </div>
+                      )}
                     />
-                  )}
-                />
-              )}
-            />
-          </Grid>
+                  </div>
 
-          <Grid item xs={12} md={6}>
-            <Controller
-              name="relatedClient"
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <Autocomplete
-                  options={clients}
-                  getOptionLabel={(option) => option.personalInfo?.fullName || ''}
-                  value={value && typeof value === 'string' ? clients.find(c => c._id === value) : value}
-                  onChange={(_, newValue) => onChange(newValue)}
-                  loading={isLoadingClients}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="לקוח מקושר"
-                      InputProps={{
-                        ...params.InputProps,
-                        endAdornment: (
+                  {/* Due Date - Side by Side with Start Date */}
+                  <div className="col-span-12 md:col-span-6">
+                    <Controller
+                      name="dueDate"
+                      control={control}
+                      render={({ field: { onChange, value } }) => (
+                        <div className="grid grid-cols-12 gap-2">
+                          <div className="col-span-7">
+                            <DatePicker
+                              label="תאריך יעד"
+                              value={parseDate(value)}
+                              onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
+                              slotProps={{ textField: { fullWidth: true } }}
+                            />
+                          </div>
+                          <div className="col-span-5">
+                            <TimePicker
+                              label="שעה"
+                              value={parseDate(value)}
+                              onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
+                              ampm={false}
+                              views={['hours', 'minutes']}
+                              viewRenderers={{
+                                hours: renderTimeViewClock,
+                                minutes: renderTimeViewClock
+                              }}
+                              slotProps={{ textField: { fullWidth: true } }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    />
+                  </div>
+
+                  {/* Recurrence */}
+                  <div className="col-span-12">
+                    <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      {(() => {
+                        const start = parseDate(watchStartDate) || parseDate(watchDueDate) || new Date();
+                        const dowLabels = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
+                        const mode = watchRecurrenceMode || 'none';
+                        const customFreq = watchRecurrenceCustomFrequency || 'weekly';
+
+                        const daysForSummary = () => {
+                          const raw = Array.isArray(watchRecurrenceDays) && watchRecurrenceDays.length ? watchRecurrenceDays : [start.getDay()];
+                          return raw.map((d) => dowLabels[parseInt(d, 10)]).filter(Boolean);
+                        };
+
+                        const summary = () => {
+                          if (mode === 'none') return 'לא חוזר';
+                          if (mode === 'daily') {
+                            const every = Math.max(1, parseInt(watchRecurrenceEveryDays, 10) || 1);
+                            return every === 1 ? 'כל יום' : `כל ${every} ימים`;
+                          }
+                          if (mode === 'weekly') {
+                            const every = Math.max(1, parseInt(watchRecurrenceEveryWeeks, 10) || 1);
+                            const days = daysForSummary();
+                            const daysStr = days.length ? ` • ${days.join(', ')}` : '';
+                            return every === 1 ? `כל שבוע${daysStr}` : `כל ${every} שבועות${daysStr}`;
+                          }
+                          if (mode === 'monthly') {
+                            const every = Math.max(1, parseInt(watchRecurrenceEveryMonths, 10) || 1);
+                            return every === 1 ? 'כל חודש' : `כל ${every} חודשים`;
+                          }
+                          if (mode === 'yearly') {
+                            const every = Math.max(1, parseInt(watchRecurrenceEveryYears, 10) || 1);
+                            return every === 1 ? 'כל שנה' : `כל ${every} שנים`;
+                          }
+                          // custom
+                          if (customFreq === 'daily') {
+                            const every = Math.max(1, parseInt(watchRecurrenceEveryDays, 10) || 1);
+                            return `מותאם: כל ${every} ימים`;
+                          }
+                          if (customFreq === 'weekly') {
+                            const every = Math.max(1, parseInt(watchRecurrenceEveryWeeks, 10) || 1);
+                            const days = daysForSummary();
+                            return `מותאם: כל ${every} שבועות${days.length ? ` • ${days.join(', ')}` : ''}`;
+                          }
+                          if (customFreq === 'monthly') {
+                            const every = Math.max(1, parseInt(watchRecurrenceEveryMonths, 10) || 1);
+                            return `מותאם: כל ${every} חודשים`;
+                          }
+                          const every = Math.max(1, parseInt(watchRecurrenceEveryYears, 10) || 1);
+                          return `מותאם: כל ${every} שנים`;
+                        };
+
+                        const choosePreset = (nextMode) => {
+                          setValue('recurrenceMode', nextMode);
+                          if (nextMode === 'none') return;
+                          if (nextMode === 'daily') setValue('recurrenceEveryDays', 1);
+                          if (nextMode === 'weekly') {
+                            setValue('recurrenceEveryWeeks', 1);
+                            setValue('recurrenceDaysOfWeek', [start.getDay()]);
+                          }
+                          if (nextMode === 'monthly') setValue('recurrenceEveryMonths', 1);
+                          if (nextMode === 'yearly') setValue('recurrenceEveryYears', 1);
+                        };
+
+                        return (
                           <>
-                            {isLoadingClients ? <CircularProgress color="inherit" size={20} /> : null}
-                            {params.InputProps.endAdornment}
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <Typography variant="subtitle1" fontWeight="bold" className="text-gray-900">
+                                  חזרתיות
+                                </Typography>
+                                <Typography variant="body2" className="text-gray-600">
+                                  {summary()}
+                                </Typography>
+                              </div>
+                              <Button variant="outlined" onClick={() => setRecurrenceDialogOpen(true)}>
+                                שנה
+                              </Button>
+                            </div>
+
+                            <Dialog open={recurrenceDialogOpen} onClose={() => setRecurrenceDialogOpen(false)} maxWidth="xs" fullWidth>
+                              <DialogTitle sx={{ fontWeight: 800 }}>חזרתיות</DialogTitle>
+                              <DialogContent dividers>
+                                <List dense disablePadding>
+                                  {[
+                                    { key: 'none', label: 'לא חוזר' },
+                                    { key: 'daily', label: 'כל יום' },
+                                    { key: 'weekly', label: 'כל שבוע' },
+                                    { key: 'monthly', label: 'כל חודש' },
+                                    { key: 'yearly', label: 'כל שנה' }
+                                  ].map((it) => (
+                                    <ListItemButton
+                                      key={it.key}
+                                      selected={mode === it.key}
+                                      onClick={() => {
+                                        choosePreset(it.key);
+                                        setRecurrenceDialogOpen(false);
+                                      }}
+                                    >
+                                      <ListItemText primary={it.label} />
+                                    </ListItemButton>
+                                  ))}
+                                  <Divider sx={{ my: 1 }} />
+                                  <ListItemButton
+                                    selected={mode === 'custom'}
+                                    onClick={() => {
+                                      setValue('recurrenceMode', 'custom');
+                                      setRecurrenceDialogOpen(true);
+                                    }}
+                                  >
+                                    <ListItemText primary="מותאם אישית…" secondary="ימים מסוימים / כל כמה שבועות / חודשי / שנתי" />
+                                  </ListItemButton>
+                                </List>
+
+                                {mode === 'custom' ? (
+                                  <Box sx={{ mt: 2 }}>
+                                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>
+                                      מותאם אישית
+                                    </Typography>
+                                    <Controller
+                                      name="recurrenceCustomFrequency"
+                                      control={control}
+                                      render={({ field: { value, onChange } }) => (
+                                        <ToggleButtonGroup
+                                          value={value || 'weekly'}
+                                          exclusive
+                                          onChange={(_, v) => { if (v) onChange(v); }}
+                                          size="small"
+                                          sx={{ mb: 2 }}
+                                        >
+                                          <ToggleButton value="daily">יומי</ToggleButton>
+                                          <ToggleButton value="weekly">שבועי</ToggleButton>
+                                          <ToggleButton value="monthly">חודשי</ToggleButton>
+                                          <ToggleButton value="yearly">שנתי</ToggleButton>
+                                        </ToggleButtonGroup>
+                                      )}
+                                    />
+
+                                    {customFreq === 'daily' ? (
+                                      <TextField
+                                        type="number"
+                                        fullWidth
+                                        label="כל כמה ימים"
+                                        inputProps={{ min: 1 }}
+                                        {...register('recurrenceEveryDays', { valueAsNumber: true })}
+                                      />
+                                    ) : null}
+
+                                    {customFreq === 'weekly' ? (
+                                      <Grid container spacing={2}>
+                                        <Grid item xs={12}>
+                                          <TextField
+                                            type="number"
+                                            fullWidth
+                                            label="כל כמה שבועות"
+                                            inputProps={{ min: 1 }}
+                                            {...register('recurrenceEveryWeeks', { valueAsNumber: true })}
+                                          />
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                                            ימים בשבוע
+                                          </Typography>
+                                          <Controller
+                                            name="recurrenceDaysOfWeek"
+                                            control={control}
+                                            render={({ field: { value, onChange } }) => (
+                                              <ToggleButtonGroup
+                                                value={Array.isArray(value) ? value : []}
+                                                onChange={(_, next) => onChange(next)}
+                                                size="small"
+                                              >
+                                                <ToggleButton value={0}>א׳</ToggleButton>
+                                                <ToggleButton value={1}>ב׳</ToggleButton>
+                                                <ToggleButton value={2}>ג׳</ToggleButton>
+                                                <ToggleButton value={3}>ד׳</ToggleButton>
+                                                <ToggleButton value={4}>ה׳</ToggleButton>
+                                                <ToggleButton value={5}>ו׳</ToggleButton>
+                                                <ToggleButton value={6}>ש׳</ToggleButton>
+                                              </ToggleButtonGroup>
+                                            )}
+                                          />
+                                        </Grid>
+                                      </Grid>
+                                    ) : null}
+
+                                    {customFreq === 'monthly' ? (
+                                      <TextField
+                                        type="number"
+                                        fullWidth
+                                        label="כל כמה חודשים"
+                                        inputProps={{ min: 1 }}
+                                        {...register('recurrenceEveryMonths', { valueAsNumber: true })}
+                                      />
+                                    ) : null}
+
+                                    {customFreq === 'yearly' ? (
+                                      <TextField
+                                        type="number"
+                                        fullWidth
+                                        label="כל כמה שנים"
+                                        inputProps={{ min: 1 }}
+                                        {...register('recurrenceEveryYears', { valueAsNumber: true })}
+                                      />
+                                    ) : null}
+                                  </Box>
+                                ) : null}
+                              </DialogContent>
+                              <DialogActions>
+                                <Button onClick={() => setRecurrenceDialogOpen(false)}>סגור</Button>
+                              </DialogActions>
+                            </Dialog>
                           </>
-                        ),
-                      }}
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              </FormSection>
+
+              {/* Assignment Section */}
+              <FormSection title="הקצאה">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                  <div className="col-span-12 md:col-span-6">
+                    <Controller
+                      name="projectId"
+                      control={control}
+                      render={({ field: { onChange, value } }) => (
+                        <Autocomplete
+                          options={projects}
+                          getOptionLabel={(option) => option.name || ''}
+                          value={value && typeof value === 'string' ? projects.find(p => p._id === value) : value}
+                          onChange={(_, newValue) => onChange(newValue)}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="פרויקט"
+                            />
+                          )}
+                        />
+                      )}
                     />
-                  )}
-                />
-              )}
-            />
-          </Grid>
+                  </div>
 
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              multiline
-              minRows={6}
-              label="תיאור"
-              {...register('description')}
-            />
-          </Grid>
+                  <div className="col-span-12 md:col-span-6">
+                    <Controller
+                      name="relatedClient"
+                      control={control}
+                      render={({ field: { onChange, value } }) => (
+                        <Autocomplete
+                          options={clients}
+                          getOptionLabel={(option) => option.personalInfo?.fullName || ''}
+                          value={value && typeof value === 'string' ? clients.find(c => c._id === value) : value}
+                          onChange={(_, newValue) => onChange(newValue)}
+                          loading={isLoadingClients}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="לקוח מקושר"
+                              InputProps={{
+                                ...params.InputProps,
+                                endAdornment: (
+                                  <>
+                                    {isLoadingClients ? <CircularProgress color="inherit" size={20} /> : null}
+                                    {params.InputProps.endAdornment}
+                                  </>
+                                ),
+                              }}
+                            />
+                          )}
+                        />
+                      )}
+                    />
+                  </div>
+                </div>
+              </FormSection>
 
-          {/* תתי־משימות (צ'קליסט) */}
-          <Grid item xs={12}>
-            <Box sx={{ mb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="subtitle1" fontWeight="bold">
-                תתי־משימות
-              </Typography>
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={() => {
-                  appendSubtask({ title: '', done: false });
-                  setSubtasksExpanded(true);
-                }}
-              >
-                הוסף תת־משימה
-              </Button>
-            </Box>
+              {/* Description Section */}
+              <FormSection title="תיאור">
+                <div className="col-span-12">
+                  <TextField
+                    fullWidth
+                    multiline
+                    minRows={6}
+                    label="תיאור"
+                    {...register('description')}
+                  />
+                </div>
+              </FormSection>
 
-            {subtaskFields.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">
-                אין תתי־משימות עדיין.
-              </Typography>
-            ) : null}
+              {/* Subtasks Section */}
+              <FormSection title="תתי־משימות">
+                <div className="space-y-4">
+                  <div className="flex justify-end">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        appendSubtask({ title: '', done: false });
+                        setSubtasksExpanded(true);
+                      }}
+                    >
+                      הוסף תת־משימה
+                    </Button>
+                  </div>
 
-            <Collapse in={subtasksExpanded && subtaskFields.length > 0}>
-              <Divider sx={{ my: 1.5 }} />
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {subtaskFields.map((field, index) => (
-                  <Grid container spacing={1} key={field.id} alignItems="flex-start">
-                    <Grid item xs={12} md={8}>
-                      <TextField
-                        fullWidth
-                        label={`תת־משימה ${index + 1}`}
-                        multiline
-                        minRows={2}
-                        {...register(`subtasks.${index}.title`)}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <Stack direction="row" spacing={1} alignItems="stretch">
-                        <TextField
-                          select
-                          label="סטטוס"
-                          fullWidth
-                          defaultValue={field.done ? 'true' : 'false'}
-                          {...register(`subtasks.${index}.done`, {
-                            setValueAs: (v) =>
-                              v === true ||
-                              v === 'true' ||
-                              v === 1 ||
-                              v === '1' ||
-                              v === 'done'
-                          })}
-                          SelectProps={{
-                            native: true,
-                          }}
-                        >
-                          <option value="false">פתוחה</option>
-                          <option value="true">בוצעה</option>
-                        </TextField>
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          onClick={() => removeSubtask(index)}
-                          sx={{ whiteSpace: 'nowrap' }}
-                        >
-                          מחק
-                        </Button>
-                      </Stack>
-                    </Grid>
-                  </Grid>
-                ))}
-              </Box>
-            </Collapse>
-          </Grid>
+                  {subtaskFields.length === 0 ? (
+                    <Typography variant="body2" className="text-gray-600">
+                      אין תתי־משימות עדיין.
+                    </Typography>
+                  ) : null}
 
-          {showActions ? (
-            <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-              <Button onClick={onCancel} disabled={isLoading}>
-                ביטול
-              </Button>
-              <Button type="submit" variant="contained" disabled={isLoading}>
-                {isLoading ? <CircularProgress size={24} /> : (initialData ? 'עדכן משימה' : 'צור משימה')}
-              </Button>
-            </Grid>
-          ) : null}
-        </Grid>
+                  <Collapse in={subtasksExpanded && subtaskFields.length > 0}>
+                    <Divider sx={{ my: 1.5 }} />
+                    <div className="flex flex-col gap-4">
+                      {subtaskFields.map((field, index) => (
+                        <Grid container spacing={1} key={field.id} alignItems="flex-start">
+                          <Grid item xs={12} md={8}>
+                            <TextField
+                              fullWidth
+                              label={`תת־משימה ${index + 1}`}
+                              multiline
+                              minRows={2}
+                              {...register(`subtasks.${index}.title`)}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={4}>
+                            <Stack direction="row" spacing={1} alignItems="stretch">
+                              <TextField
+                                select
+                                label="סטטוס"
+                                fullWidth
+                                defaultValue={field.done ? 'true' : 'false'}
+                                {...register(`subtasks.${index}.done`, {
+                                  setValueAs: (v) =>
+                                    v === true ||
+                                    v === 'true' ||
+                                    v === 1 ||
+                                    v === '1' ||
+                                    v === 'done'
+                                })}
+                                SelectProps={{
+                                  native: true,
+                                }}
+                              >
+                                <option value="false">פתוחה</option>
+                                <option value="true">בוצעה</option>
+                              </TextField>
+                              <Button
+                                variant="outlined"
+                                color="error"
+                                onClick={() => removeSubtask(index)}
+                                sx={{ whiteSpace: 'nowrap' }}
+                              >
+                                מחק
+                              </Button>
+                            </Stack>
+                          </Grid>
+                        </Grid>
+                      ))}
+                    </div>
+                  </Collapse>
+                </div>
+              </FormSection>
+            </div>
+
+            {/* Footer Actions */}
+            {showActions && (
+              <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 rounded-b-xl">
+                <div className="flex justify-end gap-3">
+                  <Button onClick={onCancel} disabled={isLoading} className="text-gray-700">
+                    ביטול
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    disabled={isLoading}
+                    className="bg-[#ec7211] hover:bg-[#c75e0c] text-white"
+                    sx={{
+                      backgroundColor: '#ec7211',
+                      '&:hover': {
+                        backgroundColor: '#c75e0c'
+                      }
+                    }}
+                  >
+                    {isLoading ? <CircularProgress size={24} /> : (initialData ? 'עדכן משימה' : 'צור משימה')}
+                  </Button>
+                </div>
+              </div>
+            )}
       </Box>
     </LocalizationProvider>
   );
