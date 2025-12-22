@@ -330,7 +330,8 @@ const CalendarView = () => {
           __kind: 'task', 
           displayTitle: getTaskDisplayTitle(t),
           startTime: baseStart,
-          endTime: baseEnd
+          endTime: baseEnd,
+          color: t.color
         };
       }),
       ...interactions.map(i => ({ 
@@ -494,27 +495,31 @@ const CalendarView = () => {
                 </Box>
                 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                  {events.slice(0, 3).map(event => (
-                    <Box 
-                      key={event._id}
-                      sx={{ 
-                        bgcolor: event.__kind === 'task' ? (event.priority === 'urgent' ? theme.palette.error.main : theme.palette.primary.main) : theme.palette.success.main,
-                        color: 'white',
-                        borderRadius: 0.5,
-                        px: 0.5,
-                        fontSize: '0.7rem',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        opacity: isCurrentMonth ? 1 : 0.6,
-                        lineHeight: 1.5
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (event.__kind === 'task') setSelectedTaskId(event._id);
-                        else setSelectedEvent(event);
-                      }}
-                      draggable={event.__kind === 'task'}
+                  {events.slice(0, 3).map(event => {
+                    const bgColor = event.__kind === 'task' 
+                      ? (event.color || (event.priority === 'urgent' ? theme.palette.error.main : theme.palette.primary.main))
+                      : theme.palette.success.main;
+                    return (
+                      <Box 
+                        key={event._id}
+                        sx={{ 
+                          bgcolor: bgColor,
+                          color: 'white',
+                          borderRadius: 0.5,
+                          px: 0.5,
+                          fontSize: '0.7rem',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          opacity: isCurrentMonth ? 1 : 0.6,
+                          lineHeight: 1.5
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (event.__kind === 'task') setSelectedTaskId(event._id);
+                          else setSelectedEvent(event);
+                        }}
+                        draggable={event.__kind === 'task'}
                       onDragStart={() => {
                         if (event.__kind !== 'task') return;
                         monthDragRef.current = {
@@ -522,13 +527,15 @@ const CalendarView = () => {
                           startTime: event.startTime,
                           endTime: event.endTime,
                           displayTitle: event.displayTitle || event.title,
-                          title: event.title
+                          title: event.title,
+                          color: event.color
                         };
                       }}
-                    >
-                      {format(new Date(event.startTime), 'HH:mm')} {event.__kind === 'task' ? (event.displayTitle || event.title) : event.subject}
-                    </Box>
-                  ))}
+                      >
+                        {format(new Date(event.startTime), 'HH:mm')} {event.__kind === 'task' ? (event.displayTitle || event.title) : event.subject}
+                      </Box>
+                    );
+                  })}
                   {events.length > 3 && (
                     <Typography variant="caption" color="text.secondary" align="center" sx={{ fontSize: '0.7rem' }}>
                       +{events.length - 3} נוספים

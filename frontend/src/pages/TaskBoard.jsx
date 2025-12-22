@@ -333,7 +333,7 @@ const TaskBoard = () => {
                         }}
                         onClick={() => openTaskModal(task._id)}
                       >
-                        {/* Priority Stripe */}
+                        {/* Color Stripe */}
                         <Box 
                           sx={{ 
                             position: 'absolute', 
@@ -341,9 +341,9 @@ const TaskBoard = () => {
                             top: 0, 
                             bottom: 0, 
                             width: 4, 
-                            bgcolor: task.priority === 'urgent' ? 'error.main' : 
+                            bgcolor: task.color || (task.priority === 'urgent' ? 'error.main' : 
                                     task.priority === 'high' ? 'warning.main' : 
-                                    task.priority === 'medium' ? 'info.main' : 'grey.300'
+                                    task.priority === 'medium' ? 'info.main' : 'grey.300')
                           }} 
                         />
 
