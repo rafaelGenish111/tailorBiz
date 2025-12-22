@@ -26,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTodayAgenda, useUpdateTask, useTaskStats } from '../admin/hooks/useTasks';
+import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { he } from 'date-fns/locale';
 import TaskModal from '../components/tasks/TaskModal';
@@ -33,6 +34,7 @@ import TaskModal from '../components/tasks/TaskModal';
 const TodayAgenda = () => {
   const navigate = useNavigate();
   const theme = useTheme();
+  const queryClient = useQueryClient();
   const { data: agendaResponse, isLoading } = useTodayAgenda();
   const { data: statsResponse } = useTaskStats();
   const updateTask = useUpdateTask();
@@ -42,10 +44,47 @@ const TodayAgenda = () => {
   const stats = statsResponse?.data || {};
 
   const handleCompleteTask = async (taskId) => {
-    await updateTask.mutateAsync({
-      id: taskId,
-      data: { status: 'completed' }
+    // Optimistic update - remove task from UI immediately
+    queryClient.setQueryData(['today-agenda'], (oldData) => {
+      if (!oldData?.data) return oldData;
+      
+      const updatedData = { ...oldData.data };
+      
+      // Remove from overdue
+      if (updatedData.overdue) {
+        updatedData.overdue = updatedData.overdue.filter(task => task._id !== taskId);
+      }
+      
+      // Remove from today
+      if (updatedData.today) {
+        updatedData.today = updatedData.today.filter(task => task._id !== taskId);
+      }
+      
+      // Remove from upcoming
+      if (updatedData.upcoming) {
+        updatedData.upcoming = updatedData.upcoming.filter(task => task._id !== taskId);
+      }
+      
+      return {
+        ...oldData,
+        data: updatedData
+      };
     });
+    
+    // Update task status on server
+    try {
+      await updateTask.mutateAsync({
+        id: taskId,
+        data: { status: 'completed' }
+      });
+      // Refetch to ensure data is in sync
+      queryClient.invalidateQueries(['today-agenda']);
+      queryClient.invalidateQueries(['task-stats']);
+    } catch (error) {
+      // If update fails, refetch to restore correct state
+      queryClient.invalidateQueries(['today-agenda']);
+      queryClient.invalidateQueries(['task-stats']);
+    }
   };
 
   // --- פונקציות עזר לפעולות ---
