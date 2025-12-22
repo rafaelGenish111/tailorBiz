@@ -84,6 +84,7 @@ const TaskBoard = () => {
     waiting: false,
     completed: false,
   });
+  const [taskFormMode, setTaskFormMode] = useState('task'); // Track form mode (task/meeting)
 
   const openCreateTaskFromNav = Boolean(location.state?.openCreateTask);
   const effectiveCreateDialogOpen = createDialogOpen || openCreateTaskFromNav;
@@ -202,11 +203,13 @@ const TaskBoard = () => {
   const handleAdd = () => {
     setEditTask(null);
     setSelectedStatus('todo');
+    setTaskFormMode('task'); // Reset to task mode when opening create dialog
     setCreateDialogOpen(true);
   };
 
   const handleEdit = (task) => {
     setEditTask(task);
+    setTaskFormMode(task?.type || 'task'); // Set mode based on task type
   };
 
   const handleView = (task) => {
@@ -972,6 +975,7 @@ const TaskBoard = () => {
             isLoading={createTask.isPending}
             formId={createFormId}
             showActions={false}
+            onModeChange={setTaskFormMode}
           />
         </DialogContent>
         <DialogActions>
@@ -993,7 +997,11 @@ const TaskBoard = () => {
               }
             }}
           >
-            {createTask.isPending ? 'יוצר...' : 'צור משימה'}
+            {createTask.isPending 
+              ? 'יוצר...' 
+              : taskFormMode === 'meeting' 
+                ? 'צור פגישה' 
+                : 'צור משימה'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1016,6 +1024,7 @@ const TaskBoard = () => {
             isLoading={updateTask.isPending}
             formId={editFormId}
             showActions={false}
+            onModeChange={setTaskFormMode}
           />
         </DialogContent>
         <DialogActions>
@@ -1037,7 +1046,11 @@ const TaskBoard = () => {
               }
             }}
           >
-            {updateTask.isPending ? 'שומר…' : 'עדכן משימה'}
+            {updateTask.isPending 
+              ? 'שומר…' 
+              : taskFormMode === 'meeting' 
+                ? 'עדכן פגישה' 
+                : 'עדכן משימה'}
           </Button>
         </DialogActions>
       </Dialog>
