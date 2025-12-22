@@ -384,9 +384,15 @@ const TaskForm = ({
         component="form"
         onSubmit={handleSubmit(handleFormSubmit)}
         className="bg-white rounded-xl shadow-sm border border-gray-200"
-        sx={{ mt: 2 }}
+        sx={{ 
+          mt: 2, 
+          display: 'flex', 
+          flexDirection: 'column',
+          overflow: 'hidden',
+          maxHeight: { xs: 'calc(100vh - 100px)', md: '80vh' }
+        }}
       >
-            <div className="p-6 space-y-8">
+            <div className="p-6 space-y-8 overflow-y-auto flex-1 min-h-0">
               {/* Task Details Section */}
               <FormSection title="פרטי המשימה">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -913,9 +919,9 @@ const TaskForm = ({
               </FormSection>
             </div>
 
-            {/* Footer Actions */}
+            {/* Footer Actions - Fixed at bottom */}
             {showActions && (
-              <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 rounded-b-xl">
+              <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 rounded-b-xl flex-shrink-0">
                 <div className="flex justify-end gap-3">
                   <Button onClick={onCancel} disabled={isLoading} className="text-gray-700">
                     ביטול
