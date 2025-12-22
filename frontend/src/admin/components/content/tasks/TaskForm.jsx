@@ -10,6 +10,8 @@ import {
   Autocomplete,
   Typography,
   Stack,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
@@ -66,17 +68,37 @@ const COLOR_OPTIONS = [
   { value: '#0097a7', label: 'ציאן' }
 ];
 
+const DURATION_OPTIONS = [
+  { value: 15, label: '15 דקות' },
+  { value: 30, label: '30 דקות' },
+  { value: 45, label: '45 דקות' },
+  { value: 60, label: '1 שעה' },
+  { value: 90, label: '1.5 שעות' },
+  { value: 120, label: '2 שעות' },
+];
+
+const RECURRENCE_OPTIONS = [
+  { value: 'none', label: 'לא חוזר' },
+  { value: 'daily', label: 'יומי' },
+  { value: 'weekly', label: 'שבועי' },
+  { value: 'monthly', label: 'חודשי' },
+];
+
 const TaskForm = ({
   initialData,
   onSubmit,
   onCancel,
   isLoading,
   formId = 'task-form',
-  showActions = true
+  showActions = true,
+  onModeChange
 }) => {
   // ברירות מחדל: התחלה עכשיו, יעד שעה קדימה – לפי זמן מקומי
   const defaultStart = new Date();
   const defaultDue = new Date(defaultStart.getTime() + 60 * 60 * 1000); // שעה קדימה
+
+  // Mode state: 'task' or 'meeting'
+  const [mode, setMode] = useState(initialData?.type || 'task');
 
   const { register, handleSubmit, control, reset, watch, setValue } = useForm({
     defaultValues: {
@@ -90,21 +112,29 @@ const TaskForm = ({
       projectId: null,
       relatedClient: null,
       subtasks: initialData?.subtasks || [],
+      // Meeting-specific fields
+      duration: 60, // Default 1 hour
+      recurrence: 'none',
+      location: '',
+      type: 'task',
       ...initialData
     }
   });
+
+  const watchStartDate = watch('startDate');
+  const watchDuration = watch('duration');
+  const watchMode = mode;
 
   const { data: clientsResponse, isLoading: isLoadingClients } = useClients();
   const { data: projectsResponse } = useProjects();
   const clients = clientsResponse?.data || [];
   const projects = projectsResponse?.data || [];
 
-  const watchStartDate = watch('startDate');
   const lastAutoDueRef = useRef(defaultDue);
 
-  // Auto dueDate: רק כאשר dueDate ריק או עדיין במצב "אוטומטי"
+  // Auto dueDate for tasks: רק כאשר dueDate ריק או עדיין במצב "אוטומטי"
   useEffect(() => {
-    if (watchStartDate && watchStartDate instanceof Date) {
+    if (watchMode === 'task' && watchStartDate && watchStartDate instanceof Date) {
       const due = new Date(watchStartDate.getTime() + 60 * 60 * 1000);
       const currentDue = watch('dueDate');
       const canAutoSet = !currentDue || isCloseTo(currentDue, lastAutoDueRef.current);
@@ -115,7 +145,17 @@ const TaskForm = ({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [watchStartDate]);
+  }, [watchStartDate, watchMode]);
+
+  // Auto calculate end time for meetings based on duration
+  useEffect(() => {
+    if (watchMode === 'meeting' && watchStartDate && watchStartDate instanceof Date && watchDuration) {
+      const start = new Date(watchStartDate);
+      const end = new Date(start.getTime() + watchDuration * 60 * 1000);
+      setValue('dueDate', end, { shouldDirty: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchStartDate, watchDuration, watchMode]);
 
   const isCloseTo = (a, b, toleranceMs = 60 * 1000) => {
     if (!a || !b) return false;
@@ -134,20 +174,31 @@ const TaskForm = ({
     );
 
     if (hasRealData) {
+      const itemType = initialData.type || 'task';
+      setMode(itemType);
+      // Notify parent component of mode
+      if (onModeChange) {
+        onModeChange(itemType);
+      }
       reset({
         ...initialData,
+        type: itemType,
         dueDate: parseDate(initialData.dueDate),
         startDate: parseDate(initialData.startDate),
         relatedClient: initialData.relatedClient || null,
         subtasks: initialData.subtasks || [],
+        duration: initialData.duration || 60,
+        recurrence: initialData.recurrence || 'none',
+        location: initialData.location || '',
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialData?._id, initialData?.title, initialData?.dueDate, initialData?.startDate]);
+  }, [initialData?._id, initialData?.title, initialData?.dueDate, initialData?.startDate, initialData?.type]);
 
   const handleFormSubmit = (data) => {
     const formattedData = {
       ...data,
+      type: mode, // Add type field
       relatedClient: data.relatedClient?._id || data.relatedClient,
       projectId: data.projectId?._id || data.projectId,
       subtasks: (data.subtasks || []).map((s) => ({
@@ -161,7 +212,30 @@ const TaskForm = ({
       }))
     };
 
+    // For meetings, ensure status is 'scheduled' and remove priority
+    if (mode === 'meeting') {
+      formattedData.status = 'scheduled';
+      delete formattedData.priority;
+    }
+
     onSubmit(formattedData);
+  };
+
+  const handleModeChange = (event, newMode) => {
+    if (newMode !== null) {
+      setMode(newMode);
+      setValue('type', newMode);
+      // Notify parent component of mode change
+      if (onModeChange) {
+        onModeChange(newMode);
+      }
+      // Reset meeting-specific fields when switching to task
+      if (newMode === 'task') {
+        setValue('duration', 60);
+        setValue('recurrence', 'none');
+        setValue('location', '');
+      }
+    }
   };
 
   return (
@@ -173,79 +247,212 @@ const TaskForm = ({
         sx={{ width: '100%' }}
       >
         <Stack spacing={2} sx={{ mt: 1 }}>
-          {/* Row 1: Task Title (Full width) */}
+          {/* Mode Switcher - Top of Modal */}
+          <ToggleButtonGroup
+            value={mode}
+            exclusive
+            onChange={handleModeChange}
+            fullWidth
+            sx={{
+              '& .MuiToggleButton-root': {
+                flex: 1,
+                py: 1.5,
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.95rem',
+                border: '1px solid #e5e7eb',
+                '&.Mui-selected': {
+                  backgroundColor: '#ec7211',
+                  color: '#ffffff',
+                  borderColor: '#ec7211',
+                  '&:hover': {
+                    backgroundColor: '#c75e0c',
+                  }
+                },
+                '&:not(.Mui-selected)': {
+                  backgroundColor: '#f3f4f6',
+                  color: '#6b7280',
+                  '&:hover': {
+                    backgroundColor: '#e5e7eb',
+                  }
+                }
+              }
+            }}
+          >
+            <ToggleButton value="task">
+              ✅ משימה
+            </ToggleButton>
+            <ToggleButton value="meeting">
+              📅 פגישה
+            </ToggleButton>
+          </ToggleButtonGroup>
+
+          {/* Title Field - Different label based on mode */}
           <TextField
-            label="כותרת המשימה"
+            label={mode === 'meeting' ? 'כותרת הפגישה' : 'כותרת המשימה'}
             {...register('title', { required: 'שדה חובה' })}
             fullWidth
             required
           />
 
-          {/* Row 2: Grid with Priority and Status */}
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Controller
-                name="priority"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    select
-                    label="עדיפות"
-                    fullWidth
-                  >
-                    {PRIORITY_OPTIONS.map((opt) => (
-                      <MenuItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
-              />
+          {/* Priority and Status - Only for Tasks */}
+          {mode === 'task' && (
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name="priority"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      select
+                      label="עדיפות"
+                      fullWidth
+                    >
+                      {PRIORITY_OPTIONS.map((opt) => (
+                        <MenuItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name="status"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      select
+                      label="סטטוס"
+                      fullWidth
+                    >
+                      {STATUS_OPTIONS.map((opt) => (
+                        <MenuItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  )}
+                />
+              </Grid>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <Controller
-                name="status"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    select
-                    label="סטטוס"
-                    fullWidth
-                  >
-                    {STATUS_OPTIONS.map((opt) => (
-                      <MenuItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
-              />
-            </Grid>
-          </Grid>
+          )}
 
-          {/* Row 3: Grid with Start Date and End Date */}
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Controller
-                name="startDate"
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Box sx={{ flex: 1 }}>
+          {/* Date/Time Fields - Different layout for Task vs Meeting */}
+          {mode === 'task' ? (
+            // Task Mode: Start Date and Due Date
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name="startDate"
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      <Box sx={{ flex: 1 }}>
+                        <DatePicker
+                          value={parseDate(value)}
+                          onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              label: 'תאריך התחלה',
+                            }
+                          }}
+                        />
+                      </Box>
+                      <Box sx={{ width: 128 }}>
+                        <TimePicker
+                          value={parseDate(value)}
+                          onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
+                          ampm={false}
+                          views={['hours', 'minutes']}
+                          viewRenderers={{
+                            hours: renderTimeViewClock,
+                            minutes: renderTimeViewClock
+                          }}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              label: 'שעה',
+                            }
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Controller
+                  name="dueDate"
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <Box sx={{ display: 'flex', gap: 2 }}>
+                      <Box sx={{ flex: 1 }}>
+                        <DatePicker
+                          value={parseDate(value)}
+                          onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              label: 'תאריך יעד',
+                            }
+                          }}
+                        />
+                      </Box>
+                      <Box sx={{ width: 128 }}>
+                        <TimePicker
+                          value={parseDate(value)}
+                          onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
+                          ampm={false}
+                          views={['hours', 'minutes']}
+                          viewRenderers={{
+                            hours: renderTimeViewClock,
+                            minutes: renderTimeViewClock
+                          }}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              label: 'שעה',
+                            }
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                  )}
+                />
+              </Grid>
+            </Grid>
+          ) : (
+            // Meeting Mode: Date + Start Time, then Duration
+            <>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <Controller
+                    name="startDate"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
                       <DatePicker
                         value={parseDate(value)}
                         onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
                         slotProps={{
                           textField: {
                             fullWidth: true,
-                            label: 'תאריך התחלה',
+                            label: 'תאריך',
                           }
                         }}
                       />
-                    </Box>
-                    <Box sx={{ width: 128 }}>
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Controller
+                    name="startDate"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
                       <TimePicker
                         value={parseDate(value)}
                         onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
@@ -258,56 +465,58 @@ const TaskForm = ({
                         slotProps={{
                           textField: {
                             fullWidth: true,
-                            label: 'שעה',
+                            label: 'שעת התחלה',
                           }
                         }}
                       />
-                    </Box>
-                  </Box>
-                )}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
+                    )}
+                  />
+                </Grid>
+              </Grid>
               <Controller
-                name="dueDate"
+                name="duration"
                 control={control}
-                render={({ field: { onChange, value } }) => (
-                  <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Box sx={{ flex: 1 }}>
-                      <DatePicker
-                        value={parseDate(value)}
-                        onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            label: 'תאריך יעד',
-                          }
-                        }}
-                      />
-                    </Box>
-                    <Box sx={{ width: 128 }}>
-                      <TimePicker
-                        value={parseDate(value)}
-                        onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
-                        ampm={false}
-                        views={['hours', 'minutes']}
-                        viewRenderers={{
-                          hours: renderTimeViewClock,
-                          minutes: renderTimeViewClock
-                        }}
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            label: 'שעה',
-                          }
-                        }}
-                      />
-                    </Box>
-                  </Box>
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    select
+                    label="משך זמן"
+                    fullWidth
+                  >
+                    {DURATION_OPTIONS.map((opt) => (
+                      <MenuItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 )}
               />
-            </Grid>
-          </Grid>
+              <Controller
+                name="recurrence"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    select
+                    label="חזרתיות"
+                    fullWidth
+                  >
+                    {RECURRENCE_OPTIONS.map((opt) => (
+                      <MenuItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
+              <TextField
+                label="מיקום / קישור זום"
+                {...register('location')}
+                fullWidth
+                placeholder="הזן מיקום או קישור לפגישה..."
+              />
+            </>
+          )}
 
           {/* Project and Client */}
           <Grid container spacing={2}>
@@ -365,9 +574,9 @@ const TaskForm = ({
             </Grid>
           </Grid>
 
-          {/* Row 4: Description */}
+          {/* Description */}
           <TextField
-            label="תיאור"
+            label={mode === 'meeting' ? 'תיאור הפגישה' : 'תיאור'}
             {...register('description')}
             fullWidth
             multiline
@@ -378,7 +587,7 @@ const TaskForm = ({
           {/* Color Picker */}
           <Box>
             <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-              צבע המשימה
+              {mode === 'meeting' ? 'צבע הפגישה' : 'צבע המשימה'}
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               <Controller
@@ -444,7 +653,7 @@ const TaskForm = ({
                   }
                 }}
               >
-                {isLoading ? <CircularProgress size={24} /> : (initialData ? 'עדכן משימה' : 'צור משימה')}
+                {isLoading ? <CircularProgress size={24} /> : (initialData ? (mode === 'meeting' ? 'עדכן פגישה' : 'עדכן משימה') : (mode === 'meeting' ? 'צור פגישה' : 'צור משימה'))}
               </Button>
             </Box>
           )}
