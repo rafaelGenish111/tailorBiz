@@ -447,12 +447,15 @@ const TaskBoard = () => {
 
       {/* Kanban Board - Desktop: Grid, Mobile: Accordion */}
       {isMobile ? (
-        // Mobile: Accordion Layout
+        // Mobile: Accordion Layout (Vertical, one below the other - NO GRID)
         <Box
           sx={{
             flex: 1,
             overflowY: 'auto',
             p: 2,
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
           {columns.map((column) => {
