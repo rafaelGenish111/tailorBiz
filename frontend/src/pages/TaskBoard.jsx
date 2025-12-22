@@ -19,6 +19,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -33,6 +36,7 @@ import {
   Campaign as CampaignIcon,
   Science as ScienceIcon,
   Close as CloseIcon,
+  ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
 import { useTasks, useCreateTask, useUpdateTask, useDeleteTask, useProjects } from '../admin/hooks/useTasks';
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isSameMonth, isBefore, isAfter } from 'date-fns';
@@ -74,6 +78,12 @@ const TaskBoard = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState('todo');
+  const [expandedAccordions, setExpandedAccordions] = useState({
+    todo: true, // Default: "To Do" is open
+    in_progress: false,
+    waiting: false,
+    completed: false,
+  });
 
   const openCreateTaskFromNav = Boolean(location.state?.openCreateTask);
   const effectiveCreateDialogOpen = createDialogOpen || openCreateTaskFromNav;
@@ -239,6 +249,13 @@ const TaskBoard = () => {
     });
   };
 
+  const handleAccordionChange = (columnId) => (event, isExpanded) => {
+    setExpandedAccordions((prev) => ({
+      ...prev,
+      [columnId]: isExpanded,
+    }));
+  };
+
   const getTaskContext = (task) => {
     const projectName = (task.projectId?.name || '').toLowerCase();
     const taskTitle = (task.title || '').toLowerCase();
@@ -249,6 +266,152 @@ const TaskBoard = () => {
     if (hasMarketingKeyword) return 'marketing';
     if (task.projectId?.clientId || task.relatedClient) return 'client';
     return 'internal';
+  };
+
+  // Helper function to render a task card (used in both desktop and mobile)
+  const renderTaskCard = (task) => {
+    const priorityInfo = PRIORITY_LABELS[task.priority] || { label: task.priority, color: 'default' };
+    const taskContext = getTaskContext(task);
+    const contextColors = {
+      client: '#3b82f6',
+      marketing: '#7c3aed',
+      internal: '#10b981',
+    };
+    const projectTagColor = task.projectId?.color || contextColors[taskContext] || '#6366f1';
+    const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed';
+    
+    return (
+      <Card
+        key={task._id}
+        sx={{
+          bgcolor: '#ffffff',
+          borderRadius: '12px',
+          border: '1px solid #f3f4f6',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+            transform: 'translateY(-2px)',
+          },
+          cursor: 'pointer',
+        }}
+        onClick={() => handleView(task)}
+      >
+        <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+          {/* Top: Priority + Actions */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+            <Chip
+              label={priorityInfo.label}
+              color={priorityInfo.color}
+              size="small"
+              sx={{ height: 24, fontSize: '0.75rem', fontWeight: 600 }}
+            />
+            <Box sx={{ display: 'flex', gap: 0.5 }}>
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEdit(task);
+                }}
+                sx={{
+                  width: 28,
+                  height: 28,
+                  color: '#6b7280',
+                  '&:hover': {
+                    bgcolor: '#f3f4f6',
+                    color: '#ec7211',
+                  }
+                }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteClick(task);
+                }}
+                sx={{
+                  width: 28,
+                  height: 28,
+                  color: '#6b7280',
+                  '&:hover': {
+                    bgcolor: '#fee2e2',
+                    color: '#dc2626',
+                  }
+                }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          </Box>
+
+          {/* Middle: Title */}
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 700,
+              fontSize: '0.95rem',
+              color: '#16191f',
+              mb: 1.5,
+              lineHeight: 1.4,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {task.title || 'ללא כותרת'}
+          </Typography>
+
+          {/* Bottom: Tags + Date + Avatar */}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+            {task.projectId && (
+              <Chip
+                label={task.projectId.name}
+                size="small"
+                sx={{
+                  bgcolor: `${projectTagColor}15`,
+                  color: projectTagColor,
+                  fontSize: '0.7rem',
+                  height: 20,
+                  fontWeight: 500,
+                  border: `1px solid ${projectTagColor}30`,
+                }}
+              />
+            )}
+            {task.dueDate && (
+              <Chip
+                icon={<ScheduleIcon sx={{ fontSize: '0.7rem !important' }} />}
+                label={format(new Date(task.dueDate), 'dd/MM', { locale: he })}
+                size="small"
+                sx={{
+                  fontSize: '0.7rem',
+                  height: 20,
+                  bgcolor: isOverdue ? '#fee2e2' : '#f3f4f6',
+                  color: isOverdue ? '#991b1b' : '#6b7280',
+                  border: isOverdue ? '1px solid #fecaca' : 'none',
+                  fontWeight: isOverdue ? 600 : 400,
+                }}
+              />
+            )}
+            {task.relatedClient && (
+              <Avatar 
+                sx={{ 
+                  width: 24, 
+                  height: 24, 
+                  fontSize: '0.7rem', 
+                  bgcolor: '#6366f1',
+                  fontWeight: 600,
+                }}
+              >
+                {task.relatedClient.personalInfo?.fullName?.charAt(0) || '?'}
+              </Avatar>
+            )}
+          </Box>
+        </CardContent>
+      </Card>
+    );
   };
 
   return (
@@ -423,12 +586,12 @@ const TaskBoard = () => {
         </Box>
       </Box>
 
-      {/* Kanban Board - 4 Equal Columns */}
+      {/* Desktop Kanban Board - 4 Equal Columns */}
       <Box
         sx={{
           flex: 1,
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' },
+          display: { xs: 'none', md: 'grid' },
+          gridTemplateColumns: 'repeat(4, 1fr)',
           gap: 3,
           p: 3,
           overflow: 'hidden',
@@ -577,150 +740,7 @@ const TaskBoard = () => {
                   </Box>
                 ) : (
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {tasksInColumn.map((task) => {
-                      const priorityInfo = PRIORITY_LABELS[task.priority] || { label: task.priority, color: 'default' };
-                      const taskContext = getTaskContext(task);
-                      const contextColors = {
-                        client: '#3b82f6',
-                        marketing: '#7c3aed',
-                        internal: '#10b981',
-                      };
-                      const projectTagColor = task.projectId?.color || contextColors[taskContext] || '#6366f1';
-                      const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed';
-                      
-                      return (
-                        <Card
-                          key={task._id}
-                          sx={{
-                            bgcolor: '#ffffff',
-                            borderRadius: '12px',
-                            border: '1px solid #f3f4f6',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                              transform: 'translateY(-2px)',
-                            },
-                            cursor: 'pointer',
-                          }}
-                          onClick={() => handleView(task)}
-                        >
-                          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                            {/* Top: Priority + Actions */}
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
-                              <Chip
-                                label={priorityInfo.label}
-                                color={priorityInfo.color}
-                                size="small"
-                                sx={{ height: 24, fontSize: '0.75rem', fontWeight: 600 }}
-                              />
-                              <Box sx={{ display: 'flex', gap: 0.5 }}>
-                                <IconButton
-                                  size="small"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleEdit(task);
-                                  }}
-                                  sx={{
-                                    width: 28,
-                                    height: 28,
-                                    color: '#6b7280',
-                                    '&:hover': {
-                                      bgcolor: '#f3f4f6',
-                                      color: '#ec7211',
-                                    }
-                                  }}
-                                >
-                                  <EditIcon fontSize="small" />
-                                </IconButton>
-                                <IconButton
-                                  size="small"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteClick(task);
-                                  }}
-                                  sx={{
-                                    width: 28,
-                                    height: 28,
-                                    color: '#6b7280',
-                                    '&:hover': {
-                                      bgcolor: '#fee2e2',
-                                      color: '#dc2626',
-                                    }
-                                  }}
-                                >
-                                  <DeleteIcon fontSize="small" />
-                                </IconButton>
-                              </Box>
-                            </Box>
-
-                            {/* Middle: Title */}
-                            <Typography
-                              variant="subtitle1"
-                              sx={{
-                                fontWeight: 700,
-                                fontSize: '0.95rem',
-                                color: '#16191f',
-                                mb: 1.5,
-                                lineHeight: 1.4,
-                                display: '-webkit-box',
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
-                              }}
-                            >
-                              {task.title || 'ללא כותרת'}
-                            </Typography>
-
-                            {/* Bottom: Tags + Date + Avatar */}
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                              {task.projectId && (
-                                <Chip
-                                  label={task.projectId.name}
-                                  size="small"
-                                  sx={{
-                                    bgcolor: `${projectTagColor}15`,
-                                    color: projectTagColor,
-                                    fontSize: '0.7rem',
-                                    height: 20,
-                                    fontWeight: 500,
-                                    border: `1px solid ${projectTagColor}30`,
-                                  }}
-                                />
-                              )}
-                              {task.dueDate && (
-                                <Chip
-                                  icon={<ScheduleIcon sx={{ fontSize: '0.7rem !important' }} />}
-                                  label={format(new Date(task.dueDate), 'dd/MM', { locale: he })}
-                                  size="small"
-                                  sx={{
-                                    fontSize: '0.7rem',
-                                    height: 20,
-                                    bgcolor: isOverdue ? '#fee2e2' : '#f3f4f6',
-                                    color: isOverdue ? '#991b1b' : '#6b7280',
-                                    border: isOverdue ? '1px solid #fecaca' : 'none',
-                                    fontWeight: isOverdue ? 600 : 400,
-                                  }}
-                                />
-                              )}
-                              {task.relatedClient && (
-                                <Avatar 
-                                  sx={{ 
-                                    width: 24, 
-                                    height: 24, 
-                                    fontSize: '0.7rem', 
-                                    bgcolor: '#6366f1',
-                                    fontWeight: 600,
-                                  }}
-                                >
-                                  {task.relatedClient.personalInfo?.fullName?.charAt(0) || '?'}
-                                </Avatar>
-                              )}
-                            </Box>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
+                    {tasksInColumn.map((task) => renderTaskCard(task))}
                   </Box>
                 )}
                 
@@ -753,6 +773,183 @@ const TaskBoard = () => {
                 </Box>
               </Box>
             </Box>
+          );
+        })}
+      </Box>
+
+      {/* Mobile Accordion View */}
+      <Box
+        sx={{
+          flex: 1,
+          display: { xs: 'block', md: 'none' },
+          p: 2,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+        }}
+      >
+        {columns.map((column) => {
+          const tasksInColumn = tasksByStatus[column.id];
+          const isEmpty = tasksInColumn.length === 0;
+          const isExpanded = expandedAccordions[column.id];
+          
+          return (
+            <Accordion
+              key={column.id}
+              expanded={isExpanded}
+              onChange={handleAccordionChange(column.id)}
+              sx={{
+                mb: 2,
+                borderRadius: '12px !important',
+                border: '1px solid #f3f4f6',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                '&:before': {
+                  display: 'none',
+                },
+                '&.Mui-expanded': {
+                  margin: '0 0 16px 0',
+                },
+              }}
+            >
+              {/* Accordion Header */}
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon sx={{ color: column.color }} />}
+                sx={{
+                  minHeight: 50,
+                  height: 50,
+                  bgcolor: '#ffffff',
+                  borderLeft: `4px solid ${column.color}`,
+                  borderRadius: '12px',
+                  '&.Mui-expanded': {
+                    minHeight: 50,
+                    borderBottomLeftRadius: 0,
+                    borderBottomRightRadius: 0,
+                  },
+                  '& .MuiAccordionSummary-content': {
+                    margin: '12px 0',
+                    alignItems: 'center',
+                  },
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1 }}>
+                  <Box sx={{ color: column.color, display: 'flex', alignItems: 'center' }}>
+                    {column.icon}
+                  </Box>
+                  <Typography 
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: '1rem',
+                      color: '#16191f',
+                    }}
+                  >
+                    {column.title}
+                  </Typography>
+                </Box>
+                <Chip 
+                  label={tasksInColumn.length} 
+                  size="small" 
+                  sx={{ 
+                    bgcolor: `${column.color}15`,
+                    color: column.color,
+                    fontWeight: 600,
+                    height: 24,
+                    fontSize: '0.75rem',
+                    border: `1px solid ${column.color}30`,
+                    ml: 'auto',
+                    mr: 1,
+                  }}
+                />
+              </AccordionSummary>
+
+              {/* Accordion Body */}
+              <AccordionDetails
+                sx={{
+                  p: 2,
+                  bgcolor: isEmpty ? '#f9fafb' : '#ffffff',
+                  backgroundImage: isEmpty 
+                    ? 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,.02) 10px, rgba(0,0,0,.02) 20px)'
+                    : 'none',
+                }}
+              >
+                {isEmpty ? (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      py: 4,
+                      textAlign: 'center',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: '50%',
+                        bgcolor: `${column.color}15`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mb: 1.5,
+                      }}
+                    >
+                      {React.cloneElement(column.icon, { sx: { fontSize: '1.5rem', color: column.color } })}
+                    </Box>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#6b7280',
+                        fontWeight: 500,
+                      }}
+                    >
+                      אין משימות
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: '#9ca3af',
+                        fontSize: '0.75rem',
+                        mt: 0.5,
+                      }}
+                    >
+                      גרור משימות לכאן
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {tasksInColumn.map((task) => renderTaskCard(task))}
+                  </Box>
+                )}
+                
+                {/* Add Task Button */}
+                <Box sx={{ mt: 2 }}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<AddIcon />}
+                    sx={{
+                      border: '1px dashed #d1d5db',
+                      borderColor: '#d1d5db',
+                      color: '#6b7280',
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      py: 1.5,
+                      '&:hover': {
+                        borderColor: column.color,
+                        bgcolor: `${column.color}10`,
+                        color: column.color,
+                      }
+                    }}
+                    onClick={() => {
+                      setSelectedStatus(column.id);
+                      setCreateDialogOpen(true);
+                    }}
+                  >
+                    הוסף משימה
+                  </Button>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
           );
         })}
       </Box>
