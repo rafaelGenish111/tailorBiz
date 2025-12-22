@@ -1129,6 +1129,7 @@ const TaskBoard = () => {
           );
         })}
       </Box>
+      )}
 
       {/* Create Task Dialog */}
       <Dialog
