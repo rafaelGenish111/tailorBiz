@@ -24,6 +24,7 @@ import LoginPage from './admin/pages/LoginPage';
 import BootstrapAdminPage from './admin/pages/BootstrapAdminPage';
 import RequireAdminAuth from './admin/components/auth/RequireAdminAuth';
 import SalesOnboarding from './pages/SalesOnboarding';
+import PartnershipPitch from './pages/PartnershipPitch';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,6 +52,15 @@ function App() {
               <RequireAdminAuth>
                 <SalesOnboarding />
               </RequireAdminAuth>
+            </ThemeProvider>
+          }
+        />
+        <Route
+          path="/partnership-pitch"
+          element={
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <PartnershipPitch />
             </ThemeProvider>
           }
         />
