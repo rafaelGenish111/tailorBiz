@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const { ParseServer } = require('parse-server'); // 1. ייבוא Parse
 
 // Import routes
 const testimonialRoutes = require('./routes/testimonials.routes');
@@ -30,157 +31,157 @@ const adminUploadsRoutes = require('./routes/adminUploadsRoutes');
 const adminSiteSettingsRoutes = require('./routes/adminSiteSettingsRoutes');
 const adminUsersRoutes = require('./routes/adminUsersRoutes');
 
-const app = express();
-const isDev = process.env.NODE_ENV === 'development';
-const IS_VERCEL = process.env.VERCEL === '1';
+// אנו עוטפים את הכל בפונקציה אסינכרונית כדי לאפשר ל-Parse לעלות לפני שהאפליקציה מוכנה
+async function createApp() {
+  const app = express();
+  const isDev = process.env.NODE_ENV === 'development';
+  const IS_VERCEL = process.env.VERCEL === '1';
 
-// ב-Vercel (מאחורי פרוקסי) חובה להגדיר trust proxy כדי שה-rate limit יזהה IP נכון
-if (IS_VERCEL) {
-  app.set('trust proxy', 1);
-}
+  // --- Parse Server Setup (חייב לקרות לפני הכל) ---
+  const parseServer = new ParseServer({
+    databaseURI: process.env.DATABASE_URI || 'mongodb://localhost:27017/dev',
+    cloud: process.env.CLOUD_CODE_MAIN || __dirname + '/cloud/main.js',
+    appId: process.env.APP_ID || 'myAppId',
+    masterKey: process.env.MASTER_KEY || 'myMasterKey', // Keep this key secret!
+    serverURL: process.env.SERVER_URL || 'http://localhost:1337/parse',
+    // הגדרות אבטחה נוספות
+    allowClientClassCreation: false,
+    enforcePrivateUsers: true,
+  });
 
-// CORS (קשיח) - כדי להבטיח headers גם כשהשרת מחזיר שגיאה/403.
-// חשוב במיוחד ל-uploads (multipart) שנחסם אחרת בדפדפן.
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (origin) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Vary', 'Origin');
+  // הפעלת Parse (החלק האסינכרוני)
+  await parseServer.start();
+
+  // הרכבת Parse על נתיב ספציפי *לפני* Body Parsers גלובליים
+  // זה פותר בעיות עם העלאת קבצים ב-Parse
+  app.use('/parse', parseServer.app);
+
+  // --- הגדרות Express רגילות ---
+
+  if (IS_VERCEL) {
+    app.set('trust proxy', 1);
   }
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(204);
-  }
-  next();
-});
-
-// Security middleware
-app.use(
-  helmet({
-    // בסביבת פיתוח נבטל CSP וגם X-Frame-Options כדי לאפשר iframe מ-5174 (Vite)
-    contentSecurityPolicy: isDev ? false : undefined,
-    // אפשר iframe גם ב-production עבור תצוגה מקדימה של מסמכים
-    frameguard: false // הסר X-Frame-Options לחלוטין כדי לאפשר תצוגה מקדימה
-  })
-);
-
-// הסר X-Frame-Options מפורשות עבור כל הבקשות (גם אם Vercel או שירותים אחרים מוסיפים אותו)
-app.use((req, res, next) => {
-  res.removeHeader('X-Frame-Options');
-  next();
-});
-
-// CORS configuration
-// חשוב: כדי למנוע מצבים שבהם שגיאות שרת/פרוקסי מחזירות בלי CORS headers (ואז הדפדפן "חוסם"),
-// אנחנו משקפים את ה-Origin שנשלח בבקשה (origin: true) ומאפשרים credentials.
-// למערכת אדמין זה עדיף על חסימות שגויות.
-app.use(cors({
-  origin: true,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Preflight - כבר מטופל במידלוור "קשיח" למעלה
-
-// Rate limiting - יותר מקל גם ב-Production כדי למנוע 429 מהירים מ-Frontend
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  // ברירת מחדל חדשה: גבול גבוה גם ב-Production (מתאים למערכת פנימית / עומס נמוך)
-  max: isDev ? 2000 : 1000, // Dev: 2000, Prod: 1000
-  message: 'יותר מדי בקשות, נסה שוב מאוחר יותר',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use('/api/', limiter);
-
-// Body parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-
-// Serve static files (uploaded images)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/testimonials', testimonialRoutes);
-app.use('/api/clients', clientRoutes);
-app.use('/api/invoices', invoiceRoutes);
-app.use('/api/whatsapp', whatsappRoutes);
-app.use('/api/tasks', taskManagerRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/lead-nurturing', leadNurturingRoutes);
-app.use('/api/marketing', marketingRoutes);
-app.use('/api/time-entries', timeEntryRoutes);
-app.use('/api/documents', documentRoutes);
-app.use('/api/quotes', quoteRoutes);
-app.use('/api/hunting-pools', huntingPoolRoutes);
-app.use('/api/referrer-partners', referrerPartnersRoutes);
-
-// Public CMS
-app.use('/api/public', publicCmsRoutes);
-
-// Admin CMS
-app.use('/api/admin/pages', adminPagesRoutes);
-app.use('/api/admin/articles', adminArticlesRoutes);
-app.use('/api/admin/clients', adminClientsRoutes);
-app.use('/api/admin/uploads', adminUploadsRoutes);
-app.use('/api/admin/site-settings', adminSiteSettingsRoutes);
-app.use('/api/admin/users', adminUsersRoutes);
-
-// Test routes (רק ב-development)
-if (process.env.NODE_ENV === 'development') {
-  app.use('/api/test', testRoutes);
-
-  // נתיב נוסף לסטטוס אוטומציות (גם ב-production)
-  app.get('/api/automation/status', async (req, res) => {
-    try {
-      const reminderService = require('./services/reminderService');
-      const leadNurturingService = require('./services/leadNurturingService');
-
-      res.json({
-        success: true,
-        data: {
-          reminderService: {
-            active: reminderService.jobs && reminderService.jobs.length > 0,
-            jobCount: reminderService.jobs ? reminderService.jobs.length : 0
-          },
-          leadNurturingService: {
-            active: leadNurturingService.jobs && leadNurturingService.jobs.length > 0,
-            jobCount: leadNurturingService.jobs ? leadNurturingService.jobs.length : 0
-          }
-        }
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        error: error.message
-      });
+  // CORS הקשיח שלך
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin) {
+      res.header('Access-Control-Allow-Origin', origin);
+      res.header('Vary', 'Origin');
     }
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Parse-Application-Id, X-Parse-Session-Token'); // הוספתי את ההדרים של Parse
+
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(204);
+    }
+    next();
   });
+
+  app.use(
+    helmet({
+      contentSecurityPolicy: isDev ? false : undefined,
+      frameguard: false 
+    })
+  );
+
+  app.use((req, res, next) => {
+    res.removeHeader('X-Frame-Options');
+    next();
+  });
+
+  app.use(cors({
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Parse-Application-Id', 'X-Parse-Session-Token']
+  }));
+
+  // Rate Limiting
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: isDev ? 2000 : 1000,
+    message: 'יותר מדי בקשות, נסה שוב מאוחר יותר',
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  
+  // מחילים את ה-Limiter רק על ה-API שלנו, לא על Parse (ל-Parse יש הגנות משלו אם רוצים)
+  app.use('/api/', limiter);
+
+  // Body parser - מגיע אחרי Parse!
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(cookieParser());
+
+  app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+  // --- Routes ---
+  app.use('/api/auth', authRoutes);
+  app.use('/api/testimonials', testimonialRoutes);
+  app.use('/api/clients', clientRoutes);
+  app.use('/api/invoices', invoiceRoutes);
+  app.use('/api/whatsapp', whatsappRoutes);
+  app.use('/api/tasks', taskManagerRoutes);
+  app.use('/api/projects', projectRoutes);
+  app.use('/api/notifications', notificationRoutes);
+  app.use('/api/lead-nurturing', leadNurturingRoutes);
+  app.use('/api/marketing', marketingRoutes);
+  app.use('/api/time-entries', timeEntryRoutes);
+  app.use('/api/documents', documentRoutes);
+  app.use('/api/quotes', quoteRoutes);
+  app.use('/api/hunting-pools', huntingPoolRoutes);
+  app.use('/api/referrer-partners', referrerPartnersRoutes);
+  app.use('/api/public', publicCmsRoutes);
+  app.use('/api/admin/pages', adminPagesRoutes);
+  app.use('/api/admin/articles', adminArticlesRoutes);
+  app.use('/api/admin/clients', adminClientsRoutes);
+  app.use('/api/admin/uploads', adminUploadsRoutes);
+  app.use('/api/admin/site-settings', adminSiteSettingsRoutes);
+  app.use('/api/admin/users', adminUsersRoutes);
+
+  if (process.env.NODE_ENV === 'development') {
+    app.use('/api/test', testRoutes);
+    
+    app.get('/api/automation/status', async (req, res) => {
+      try {
+        const reminderService = require('./services/reminderService');
+        const leadNurturingService = require('./services/leadNurturingService');
+
+        res.json({
+          success: true,
+          data: {
+            reminderService: {
+              active: reminderService.jobs && reminderService.jobs.length > 0,
+              jobCount: reminderService.jobs ? reminderService.jobs.length : 0
+            },
+            leadNurturingService: {
+              active: leadNurturingService.jobs && leadNurturingService.jobs.length > 0,
+              jobCount: leadNurturingService.jobs ? leadNurturingService.jobs.length : 0
+            }
+          }
+        });
+      } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+      }
+    });
+  }
+
+  app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+  });
+
+  app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(err.statusCode || 500).json({
+      success: false,
+      message: err.message || 'שגיאת שרת',
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    });
+  });
+
+  return app;
 }
 
-// Health check
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
-});
-
-// Error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.statusCode || 500).json({
-    success: false,
-    message: err.message || 'שגיאת שרת',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
-});
-
-module.exports = app;
-
-
-
+module.exports = createApp;
