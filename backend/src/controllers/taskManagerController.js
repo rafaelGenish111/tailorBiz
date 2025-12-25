@@ -403,31 +403,46 @@ exports.createTask = async (req, res) => {
 
     const rec = normalizeRecurrence(req.body);
 
+    // Validate enum values
+    const validTypes = ['call', 'meeting', 'email', 'follow_up', 'proposal', 'demo', 'reminder', 'admin', 'personal', 'other'];
+    const validPriorities = ['low', 'medium', 'high', 'urgent'];
+    const validStatuses = ['todo', 'in_progress', 'waiting', 'completed', 'cancelled'];
+
     const taskData = {
       ...req.body,
       subtasks: normalizeSubtasks(req.body?.subtasks),
       ...rec,
       createdBy: safeUserId,
-      assignedTo: req.body.assignedTo || safeUserId
+      assignedTo: req.body.assignedTo || safeUserId,
+      // Ensure enum values are valid
+      type: validTypes.includes(req.body?.type) ? req.body.type : 'other',
+      priority: validPriorities.includes(req.body?.priority) ? req.body.priority : 'medium',
+      status: validStatuses.includes(req.body?.status) ? req.body.status : 'todo'
     };
 
     const task = new TaskManager(taskData);
     await task.save();
 
     // אם המשימה הוקצתה למשתמש אחר, שלח התראה
-    if (task.assignedTo && task.assignedTo.toString() !== req.user.id.toString()) {
-      await Notification.create({
-        type: 'task_assigned',
-        title: 'משימה חדשה הוקצתה לך',
-        message: `${req.user.name || 'משתמש'} הקצה לך את המשימה: ${task.title}`,
-        userId: task.assignedTo,
-        relatedTask: task._id,
-        priority: task.priority,
-        actionUrl: `/admin/tasks/${task._id}`,
-        actionText: 'צפה במשימה',
-        icon: 'assignment',
-        color: task.color
-      });
+    const userId = req.user?.id || req.user?._id;
+    if (task.assignedTo && userId && task.assignedTo.toString() !== userId.toString()) {
+      try {
+        await Notification.create({
+          type: 'task_assigned',
+          title: 'משימה חדשה הוקצתה לך',
+          message: `${req.user?.name || 'משתמש'} הקצה לך את המשימה: ${task.title}`,
+          userId: task.assignedTo,
+          relatedTask: task._id,
+          priority: task.priority,
+          actionUrl: `/admin/tasks/${task._id}`,
+          actionText: 'צפה במשימה',
+          icon: 'assignment',
+          color: task.color
+        });
+      } catch (notifError) {
+        // לא נכשל את כל הבקשה אם יצירת ההתראה נכשלה
+        console.error('Error creating notification:', notifError);
+      }
     }
 
     res.status(201).json({
@@ -438,10 +453,24 @@ exports.createTask = async (req, res) => {
 
   } catch (error) {
     console.error('Error in createTask:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Request body:', req.body);
+    console.error('User:', req.user);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const errors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({
+        success: false,
+        message: 'שגיאת אימות',
+        errors
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת המשימה',
-      error: error.message
+      error: process.env.NODE_ENV === 'production' ? 'שגיאה פנימית' : error.message
     });
   }
 };
