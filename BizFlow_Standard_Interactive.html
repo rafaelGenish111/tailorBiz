@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BizFlow Engineering Standard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700;900&display=swap');
+        
+        body {
+            font-family: 'Heebo', sans-serif;
+            background-color: #fdfbf7; /* Warm Neutral Background */
+            color: #44403c; /* Stone 700 */
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .code-block {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #292524;
+            color: #e7e5e4;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .nav-item.active {
+            border-bottom: 3px solid #d97706; /* Amber 600 */
+            color: #d97706;
+            font-weight: 700;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f5f5f4;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e;
+        }
+        
+        .step-arrow::after {
+            content: '←';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: #d97706;
+        }
+        @media (max-width: 768px) {
+            .step-arrow::after {
+                content: '↓';
+                left: 50%;
+                top: 100%;
+                transform: translateX(-50%);
+            }
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals & Amber Accents (Calm Harmony) -->
+    <!-- Application Structure Plan: The app is structured as a vertical scrolling dashboard with distinct thematic sections matching the report's chapters. 
+         1. Hero: High-level philosophy. 
+         2. The 12 Commandments: Interactive grid + Radar chart to visualize rule categories. 
+         3. Architecture: Comparative code views (Bad vs Good) to illustrate separation of concerns. 
+         4. Testing: Donut chart for the '3 Paths' strategy. 
+         5. Automation: Visual flow pipeline. 
+         6. Workflow Wizard: Interactive checklist generator for new vs legacy projects. -->
+    <!-- Visualization & Content Choices: 
+         1. Radar Chart: To categorize the 12 AI rules into 'Mindset', 'Technical', and 'Process' - comparing qualitative categories.
+         2. Donut Chart: To visualize the '3 Paths' testing coverage distribution (Happy/Sad/Bad).
+         3. Code Toggles: To interactively compare code structures without clutter.
+         4. Process Flow (CSS): To visualize the Automation/Husky pipeline. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-[#fdfbf7] text-stone-800">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur shadow-sm border-b border-stone-200">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="text-xl font-black text-stone-800 tracking-tight">🛡️ BizFlow Standard</div>
+                <div class="hidden md:flex space-x-8 space-x-reverse text-sm font-medium">
+                    <button onclick="scrollToSection('philosophy')" class="nav-item px-3 py-2 transition-colors hover:text-amber-600">פילוסופיה</button>
+                    <button onclick="scrollToSection('commandments')" class="nav-item px-3 py-2 transition-colors hover:text-amber-600">12 הדיברות</button>
+                    <button onclick="scrollToSection('architecture')" class="nav-item px-3 py-2 transition-colors hover:text-amber-600">ארכיטקטורה</button>
+                    <button onclick="scrollToSection('testing')" class="nav-item px-3 py-2 transition-colors hover:text-amber-600">בדיקות</button>
+                    <button onclick="scrollToSection('workflow')" class="nav-item px-3 py-2 transition-colors hover:text-amber-600">צ'ק-ליסט</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="philosophy" class="pt-12 pb-8 px-4 container mx-auto text-center">
+        <h1 class="text-4xl md:text-6xl font-black mb-4 text-stone-900">פרוטוקול פיתוח מאובטח</h1>
+        <p class="text-xl text-stone-600 max-w-2xl mx-auto mb-8">
+            עקרונות הנדסת תוכנה מתקדמים וארכיטקטורה לשימוש עם AI.
+            העיקרון המוביל: <span class="font-bold text-amber-700">Shift Left</span> - גילוי בעיות בפיתוח ולא בייצור.
+        </p>
+
+        <!-- The 3 Pillars -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 max-w-5xl mx-auto">
+            <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow border-t-4 border-amber-500">
+                <div class="text-4xl mb-4">🧱</div>
+                <h3 class="text-xl font-bold mb-2">עמיד (Resilient)</h3>
+                <p class="text-stone-500 text-sm leading-relaxed">המערכת לא קורסת תחת קלט שגוי. יש טיפול שגיאות חכם וולידציה בכל שלב.</p>
+            </div>
+            <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow border-t-4 border-sky-500">
+                <div class="text-4xl mb-4">🔒</div>
+                <h3 class="text-xl font-bold mb-2">מאובטח (Secure)</h3>
+                <p class="text-stone-500 text-sm leading-relaxed">הגנה על המידע מפני זליגה ופריצה היא לא פיצ'ר, אלא הבסיס לכל שורת קוד.</p>
+            </div>
+            <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow border-t-4 border-emerald-500">
+                <div class="text-4xl mb-4">🔧</div>
+                <h3 class="text-xl font-bold mb-2">תחזוקה (Maintainable)</h3>
+                <p class="text-stone-500 text-sm leading-relaxed">קוד נקי, מופרד לארכיטקטורת שכבות, וקל לשינוי ולבדיקה אוטומטית.</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Section: 12 Commandments -->
+    <section id="commandments" class="py-16 bg-stone-100">
+        <div class="container mx-auto px-4">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl font-bold mb-3">12 הדיברות לפיתוח עם AI</h2>
+                <p class="text-stone-500 max-w-2xl mx-auto">חוקי הברזל שיש לשנן ולהטמיע בכל אינטראקציה עם כלי AI. הניתוח למטה מראה את החלוקה בין גישה מנטלית, דרישות טכניות ותהליכי עבודה.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Interactive List -->
+                <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4" id="rulesGrid">
+                    <!-- Rules injected via JS -->
+                </div>
+
+                <!-- Radar Chart -->
+                <div class="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center">
+                    <h3 class="text-lg font-bold mb-4 text-center">מיקוד הנהלים</h3>
+                    <div class="chart-container">
+                        <canvas id="rulesRadarChart"></canvas>
+                    </div>
+                    <p class="text-xs text-stone-400 mt-4 text-center">ניתוח הקטגוריות של 12 הדיברות</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section: Architecture -->
+    <section id="architecture" class="py-16 bg-[#fdfbf7]">
+        <div class="container mx-auto px-4">
+            <div class="mb-10">
+                <h2 class="text-3xl font-bold mb-3 text-center">ארכיטקטורה נכונה: הפרדת רשויות</h2>
+                <p class="text-stone-500 max-w-3xl mx-auto text-center">
+                    כדי לאפשר בדיקות איכותיות, חובה להפריד בין ה<b>לוגיקה</b> (app.js) לבין <b>הפעלת השרת</b> (index.js).
+                    בחרו בתבנית הרצויה למטה כדי לראות את היישום הנכון.
+                </p>
+            </div>
+
+            <!-- Architecture Tabs -->
+            <div class="flex justify-center mb-8">
+                <div class="bg-stone-200 p-1 rounded-lg inline-flex">
+                    <button onclick="switchArchTab('express')" id="tab-express" class="px-6 py-2 rounded-md text-sm font-bold bg-white shadow-sm text-stone-800 transition-all">Express רגיל</button>
+                    <button onclick="switchArchTab('parse')" id="tab-parse" class="px-6 py-2 rounded-md text-sm font-bold text-stone-500 hover:text-stone-700 transition-all">Parse Server</button>
+                </div>
+            </div>
+
+            <!-- Code Comparison -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+                <!-- App Logic -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-stone-100">
+                    <div class="bg-stone-800 px-4 py-2 flex items-center justify-between">
+                        <span class="text-stone-300 font-mono text-sm">app.js (The Brain)</span>
+                        <span class="text-xs text-stone-400 bg-stone-700 px-2 py-1 rounded">Logic Only</span>
+                    </div>
+                    <div class="p-4 bg-[#292524]">
+                        <pre id="code-app" class="code-block text-sm overflow-x-auto whitespace-pre p-2"></pre>
+                    </div>
+                    <div class="p-4 bg-stone-50 border-t border-stone-100">
+                        <p class="text-sm text-stone-600">קובץ זה מכיל את הקונפיגורציה, ה-Routes וה-Middleware. הוא <b>מייצא</b> את האפליקציה ולא מפעיל אותה, מה שמאפשר ל-Jest לטעון אותה לבדיקות.</p>
+                    </div>
+                </div>
+
+                <!-- Server Execution -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-stone-100">
+                    <div class="bg-stone-800 px-4 py-2 flex items-center justify-between">
+                        <span class="text-stone-300 font-mono text-sm">index.js (The Muscles)</span>
+                        <span class="text-xs text-stone-400 bg-stone-700 px-2 py-1 rounded">Execution Only</span>
+                    </div>
+                    <div class="p-4 bg-[#292524]">
+                        <pre id="code-index" class="code-block text-sm overflow-x-auto whitespace-pre p-2"></pre>
+                    </div>
+                    <div class="p-4 bg-stone-50 border-t border-stone-100">
+                        <p class="text-sm text-stone-600">קובץ זה אחראי על החיבור לעולם האמיתי: חיבור ל-DB אמיתי (לא בזיכרון) והאזנה לפורט. הוא נקודת הכניסה ב-Production.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section: Testing Strategy -->
+    <section id="testing" class="py-16 bg-white border-y border-stone-200">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                
+                <div>
+                    <h2 class="text-3xl font-bold mb-4">אסטרטגיית הבדיקות: חוק ה-3</h2>
+                    <p class="text-stone-600 mb-6 leading-relaxed">
+                        כל פיצ'ר חדש חייב לעבור דרך שלושה "נתיבי בדיקה" ב-Integration Tests.
+                        אנחנו משתמשים ב-<code>mongodb-memory-server</code> כדי להריץ בדיקות מהירות ומבודדות שלא מלכלכות את בסיס הנתונים האמיתי.
+                    </p>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold ml-3">1</span>
+                            <div>
+                                <h4 class="font-bold text-stone-800">Happy Path (השביל השמח) 🟢</h4>
+                                <p class="text-sm text-stone-500">המשתמש עושה פעולה תקינה ומקבל 200/201. זה בודק שהלוגיקה העסקית עובדת.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold ml-3">2</span>
+                            <div>
+                                <h4 class="font-bold text-stone-800">Sad Path (השביל העצוב) 🟡</h4>
+                                <p class="text-sm text-stone-500">המשתמש שולח מידע חסר או שגוי ומקבל 400. זה בודק את מנגנוני ה-Validation (Joi/Zod).</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold ml-3">3</span>
+                            <div>
+                                <h4 class="font-bold text-stone-800">Bad Path (נתיב האבטחה) 🔴</h4>
+                                <p class="text-sm text-stone-500">ניסיונות פריצה: גישה ללא טוקן (401), גישה למידע של אחר (IDOR - 403), הזרקות קוד.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Visualization -->
+                <div class="bg-stone-50 p-8 rounded-2xl shadow-inner flex flex-col items-center">
+                    <h3 class="text-lg font-bold mb-6 text-stone-700">כיסוי בדיקות נדרש</h3>
+                    <div class="chart-container">
+                        <canvas id="testingDonutChart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Section: Automation & Workflow -->
+    <section id="workflow" class="py-16 bg-stone-100">
+        <div class="container mx-auto px-4">
+            
+            <!-- Automation Pipeline Visualization -->
+            <div class="mb-16">
+                <h2 class="text-3xl font-bold mb-8 text-center">השומר בשער: אוטומציה עם Husky</h2>
+                <div class="flex flex-col md:flex-row justify-between items-center max-w-4xl mx-auto space-y-4 md:space-y-0 relative">
+                    <!-- Line connecting -->
+                    <div class="absolute top-1/2 left-0 w-full h-1 bg-stone-300 hidden md:block -z-0"></div>
+
+                    <div class="z-10 bg-white border-2 border-stone-800 p-4 rounded-lg w-40 text-center shadow-md">
+                        <div class="font-bold">Git Commit</div>
+                        <div class="text-xs text-stone-500">Developer Action</div>
+                    </div>
+                    
+                    <div class="z-10 bg-amber-100 border-2 border-amber-500 p-4 rounded-lg w-40 text-center shadow-md">
+                        <div class="font-bold text-amber-800">Husky Hook</div>
+                        <div class="text-xs text-amber-600">Pre-commit</div>
+                    </div>
+
+                    <div class="z-10 bg-sky-100 border-2 border-sky-500 p-4 rounded-lg w-40 text-center shadow-md">
+                        <div class="font-bold text-sky-800">npm audit</div>
+                        <div class="text-xs text-sky-600">Security Scan</div>
+                    </div>
+
+                    <div class="z-10 bg-emerald-100 border-2 border-emerald-500 p-4 rounded-lg w-40 text-center shadow-md">
+                        <div class="font-bold text-emerald-800">npm test</div>
+                        <div class="text-xs text-emerald-600">Integration Tests</div>
+                    </div>
+
+                    <div class="z-10 bg-stone-800 text-white border-2 border-stone-800 p-4 rounded-lg w-40 text-center shadow-md">
+                        <div class="font-bold">Git Push</div>
+                        <div class="text-xs text-stone-400">Success</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workflow Wizard -->
+            <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div class="bg-stone-800 p-6 text-white text-center">
+                    <h2 class="text-2xl font-bold">מחולל צ'ק-ליסט עבודה</h2>
+                    <p class="text-stone-300">בחר את סוג הפרויקט לקבלת תוכנית עבודה מותאמת</p>
+                </div>
+                
+                <div class="p-8">
+                    <div class="flex justify-center space-x-4 space-x-reverse mb-8">
+                        <label class="cursor-pointer flex items-center space-x-2 space-x-reverse p-4 border rounded-lg hover:bg-stone-50 transition">
+                            <input type="radio" name="projectType" value="new" class="w-5 h-5 text-amber-600" onchange="updateChecklist()">
+                            <span class="font-bold">פרויקט חדש (Greenfield)</span>
+                        </label>
+                        <label class="cursor-pointer flex items-center space-x-2 space-x-reverse p-4 border rounded-lg hover:bg-stone-50 transition">
+                            <input type="radio" name="projectType" value="legacy" class="w-5 h-5 text-amber-600" onchange="updateChecklist()">
+                            <span class="font-bold">פרויקט קיים (Legacy)</span>
+                        </label>
+                    </div>
+
+                    <div id="checklist-container" class="bg-stone-50 p-6 rounded-xl border border-stone-200">
+                        <p class="text-center text-stone-500 italic">בחר סוג פרויקט למעלה כדי לראות את הצעדים</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-stone-800 text-stone-400 py-8 text-center text-sm">
+        <div class="container mx-auto">
+            <p>© BizFlow Engineering Standards. נוצר לשימוש פנימי.</p>
+            <p class="mt-2">גרסה 1.1 | Security & Architecture Protocol</p>
+        </div>
+    </footer>
+
+    <!-- Logic Script -->
+    <script>
+        // --- 1. The 12 Commandments Data ---
+        const rules = [
+            { id: 1, cat: 'mindset', title: "הבנה מלאה", desc: "לעולם אל תעתיק קוד שלא הבנת ב-100%. האחריות היא עליך." },
+            { id: 2, cat: 'mindset', title: "פסימיות הנדסית", desc: 'שאל תמיד "מה יכול להשתבש?" לפני "איך זה יעבוד?".' },
+            { id: 3, cat: 'tech', title: "ולידציה כפולה", desc: "קלט נבדק בקלאיינט (UX) וגם בשרת (Security). אין יוצא מן הכלל." },
+            { id: 4, cat: 'process', title: "בדיקות חובה", desc: "כל מנגנון אימות דורש בדיקה (Test Case). אין העלאת קוד ללא טסטים." },
+            { id: 5, cat: 'mindset', title: "אין קיצורי דרך", desc: 'לעולם אל תבטל בדיקות או ולידציות "כי זה נוח".' },
+            { id: 6, cat: 'tech', title: "OWASP Top 10", desc: "הצלב כל קוד מול רשימת החולשות הנפוצות (Injection, Broken Auth)." },
+            { id: 7, cat: 'tech', title: "הצפנה תקנית", desc: "השתמש בספריות סטנדרטיות בלבד (bcrypt). אל תמציא אלגוריתמים." },
+            { id: 8, cat: 'process', title: "Code Review", desc: 'בצע מעבר ידני על קוד AI. הוא ה"ג\'וניור", אתה ה"סניור".' },
+            { id: 9, cat: 'tech', title: "סורקים אוטומטיים", desc: "SAST ו-SCA (כמו npm audit) הם חלק בלתי נפרד מהתהליך." },
+            { id: 10, cat: 'process', title: "תיעוד", desc: "סמן קוד שנכתב ע\"י AI בהערות לצורך מעקב עתידי." },
+            { id: 11, cat: 'process', title: "מדיניות AI", desc: "הגדר ל-AI מראש את חוקי הארגון (דרך .cursorrules)." },
+            { id: 12, cat: 'mindset', title: "Threat Modeling", desc: "לפני קוד חדש, שרטט את זרימת המידע וזהה סכנות." }
+        ];
+
+        // --- 2. Render Rules Grid ---
+        const rulesGrid = document.getElementById('rulesGrid');
+        rules.forEach(rule => {
+            const card = document.createElement('div');
+            // Color coding by category
+            let borderClass = 'border-l-4';
+            let bgHover = 'hover:bg-stone-50';
+            if(rule.cat === 'mindset') borderClass += ' border-amber-500';
+            if(rule.cat === 'tech') borderClass += ' border-sky-500';
+            if(rule.cat === 'process') borderClass += ' border-emerald-500';
+
+            card.className = `bg-white p-4 rounded-lg shadow-sm transition-all cursor-pointer ${borderClass} ${bgHover}`;
+            card.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-bold text-stone-800 text-lg">${rule.id}. ${rule.title}</span>
+                </div>
+                <p class="text-sm text-stone-600">${rule.desc}</p>
+            `;
+            rulesGrid.appendChild(card);
+        });
+
+        // --- 3. Chart: Rules Radar ---
+        // Need to split labels if too long (though here they are short)
+        function splitLabel(label) {
+            return label.length > 16 ? label.split(' ') : label;
+        }
+
+        const ctxRadar = document.getElementById('rulesRadarChart').getContext('2d');
+        new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: ['גישה מנטלית (Mindset)', 'דרישות טכניות (Tech)', 'תהליכים (Process)'],
+                datasets: [{
+                    label: 'חלוקת כללים',
+                    data: [4, 4, 4], // 4 rules in each category based on the data above
+                    backgroundColor: 'rgba(217, 119, 6, 0.2)', // Amber
+                    borderColor: 'rgba(217, 119, 6, 1)',
+                    pointBackgroundColor: 'rgba(217, 119, 6, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(217, 119, 6, 1)'
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(0,0,0,0.1)' },
+                        grid: { color: 'rgba(0,0,0,0.1)' },
+                        pointLabels: {
+                            font: { family: 'Heebo', size: 12 },
+                            color: '#444'
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 5
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                const item = tooltipItems[0];
+                                let label = item.chart.data.labels[item.dataIndex];
+                                return Array.isArray(label) ? label.join(' ') : label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // --- 4. Chart: Testing Donut ---
+        const ctxDonut = document.getElementById('testingDonutChart').getContext('2d');
+        new Chart(ctxDonut, {
+            type: 'doughnut',
+            data: {
+                labels: ['Happy Path (תקין)', 'Sad Path (ולידציה)', 'Bad Path (אבטחה)'],
+                datasets: [{
+                    data: [33, 33, 34],
+                    backgroundColor: [
+                        '#10b981', // Emerald 500
+                        '#f59e0b', // Amber 500
+                        '#ef4444'  // Red 500
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { family: 'Heebo' }, usePointStyle: true }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                const item = tooltipItems[0];
+                                let label = item.chart.data.labels[item.dataIndex];
+                                return Array.isArray(label) ? label.join(' ') : label;
+                            },
+                            label: function(context) {
+                                const labels = [
+                                    '200/201 Success - הלוגיקה עובדת',
+                                    '400 Bad Request - קלט שגוי נחסם',
+                                    '401/403 Unauthorized - פריצה נחסמה'
+                                ];
+                                return labels[context.dataIndex];
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // --- 5. Architecture Logic ---
+        const codeSnippets = {
+            express: {
+                app: `const express = require('express');
+const app = express();
+
+// Middleware & Routes...
+app.use(express.json());
+app.use('/api', routes);
+
+module.exports = app; // Export only!`,
+                index: `const app = require('./app');
+const mongoose = require('mongoose');
+
+async function start() {
+  // Real DB Connection
+  await mongoose.connect(process.env.MONGO_URI);
+  
+  // Port Listening
+  app.listen(3000, () => {
+     console.log('Server running');
+  });
+}
+start();`
+            },
+            parse: {
+                app: `const { ParseServer } = require('parse-server');
+const express = require('express');
+
+async function createApp() { 
+  // Factory Function Pattern
+  const app = express();
+  const api = new ParseServer({ /* config */ });
+  
+  await api.start(); // Async start
+  app.use('/parse', api.app);
+  
+  return app;
+}
+module.exports = createApp;`,
+                index: `const createApp = require('./app');
+
+async function start() {
+  const app = await createApp();
+  
+  app.listen(1337, () => {
+    console.log('Parse Server running');
+  });
+}
+start();`
+            }
+        };
+
+        function switchArchTab(type) {
+            // UI Update
+            document.getElementById('tab-express').className = type === 'express' 
+                ? "px-6 py-2 rounded-md text-sm font-bold bg-white shadow-sm text-stone-800 transition-all"
+                : "px-6 py-2 rounded-md text-sm font-bold text-stone-500 hover:text-stone-700 transition-all";
+            
+            document.getElementById('tab-parse').className = type === 'parse' 
+                ? "px-6 py-2 rounded-md text-sm font-bold bg-white shadow-sm text-stone-800 transition-all"
+                : "px-6 py-2 rounded-md text-sm font-bold text-stone-500 hover:text-stone-700 transition-all";
+
+            // Code Update
+            document.getElementById('code-app').textContent = codeSnippets[type].app;
+            document.getElementById('code-index').textContent = codeSnippets[type].index;
+        }
+
+        // Init with Express
+        switchArchTab('express');
+
+        // --- 6. Workflow Wizard Logic ---
+        const checklists = {
+            new: [
+                "Setup: התקן את החבילות: express, mongoose, jest, supertest, husky.",
+                "Structure: צור מיד את הקבצים app.js ו-index.js בנפרד.",
+                "AI Rules: העתק את קובץ .cursorrules לתיקייה הראשית.",
+                "Security: התקן את helmet ו-cors לפני כתיבת ה-Route הראשון.",
+                "Git Hooks: הרץ npm run prepare והגדר את husky."
+            ],
+            legacy: [
+                "Audit: הרץ npm audit כדי למצוא ספריות ישנות.",
+                "Cleanup: מחק node_modules מתיקיות אב (Desktop/Projects) אם קיימות.",
+                "Architecture: בצע Refactor לפצל את index.js ל-app ו-server.",
+                "Sanity Test: כתוב טסט בסיסי (/health) שרץ מול DB בזיכרון.",
+                "Shield: הוסף ולידציה (Joi/Zod) לנתיבים הקריטיים ביותר כרגע."
+            ]
+        };
+
+        function updateChecklist() {
+            const container = document.getElementById('checklist-container');
+            const radios = document.getElementsByName('projectType');
+            let selected;
+            for(const radio of radios) {
+                if(radio.checked) selected = radio.value;
+            }
+
+            if(!selected) return;
+
+            const items = checklists[selected];
+            let html = `<h4 class="font-bold mb-4 text-lg border-b pb-2">${selected === 'new' ? 'תוכנית עבודה: פרויקט חדש' : 'תוכנית עבודה: שיקום פרויקט קיים'}</h4><ul class="space-y-3">`;
+            
+            items.forEach((item, index) => {
+                html += `
+                <li class="flex items-start bg-white p-3 rounded shadow-sm">
+                    <input type="checkbox" class="mt-1 ml-3 w-5 h-5 text-amber-600 rounded focus:ring-amber-500">
+                    <span class="text-stone-700">${item}</span>
+                </li>`;
+            });
+            html += '</ul>';
+            
+            container.innerHTML = html;
+        }
+
+        // Scroll helper
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+    </script>
+</body>
+</html>
