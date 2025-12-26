@@ -62,17 +62,38 @@ async function createApp() {
     app.set('trust proxy', 1);
   }
 
-  // CORS הקשיח שלך
-  app.use((req, res, next) => {
+  // CORS - הגדרה מרכזית שתעבוד גם בשגיאות
+  const allowedOrigins = [
+    'https://tailorbiz-software.com',
+    'https://www.tailorbiz-software.com',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:5000'
+  ];
+
+  const setCorsHeaders = (req, res) => {
     const origin = req.headers.origin;
+    // תמיד להגדיר CORS headers, גם אם אין origin (למקרה של preflight)
     if (origin) {
-      res.header('Access-Control-Allow-Origin', origin);
-      res.header('Vary', 'Origin');
+      if (allowedOrigins.includes(origin) || isDev) {
+        res.header('Access-Control-Allow-Origin', origin);
+        res.header('Vary', 'Origin');
+      } else if (!isDev) {
+        // בפרודקשן, רק origins מורשים - אבל נגדיר את הראשון כדי שלא תהיה שגיאת CORS
+        res.header('Access-Control-Allow-Origin', allowedOrigins[0]);
+      }
+    } else if (!isDev) {
+      // אם אין origin בפרודקשן, נגדיר את הראשון
+      res.header('Access-Control-Allow-Origin', allowedOrigins[0]);
     }
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Parse-Application-Id, X-Parse-Session-Token'); // הוספתי את ההדרים של Parse
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Parse-Application-Id, X-Parse-Session-Token');
+  };
 
+  // CORS middleware - לפני כל דבר אחר
+  app.use((req, res, next) => {
+    setCorsHeaders(req, res);
     if (req.method === 'OPTIONS') {
       return res.sendStatus(204);
     }
@@ -82,7 +103,7 @@ async function createApp() {
   app.use(
     helmet({
       contentSecurityPolicy: isDev ? false : undefined,
-      frameguard: false 
+      frameguard: false
     })
   );
 
@@ -90,13 +111,6 @@ async function createApp() {
     res.removeHeader('X-Frame-Options');
     next();
   });
-
-  app.use(cors({
-    origin: true,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Parse-Application-Id', 'X-Parse-Session-Token']
-  }));
 
   // Rate Limiting
   const limiter = rateLimit({
@@ -106,7 +120,7 @@ async function createApp() {
     standardHeaders: true,
     legacyHeaders: false,
   });
-  
+
   // מחילים את ה-Limiter רק על ה-API שלנו, לא על Parse (ל-Parse יש הגנות משלו אם רוצים)
   app.use('/api/', limiter);
 
@@ -143,7 +157,7 @@ async function createApp() {
 
   if (process.env.NODE_ENV === 'development') {
     app.use('/api/test', testRoutes);
-    
+
     app.get('/api/automation/status', async (req, res) => {
       try {
         const reminderService = require('./services/reminderService');
@@ -172,8 +186,32 @@ async function createApp() {
     res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
   });
 
+  // Error handler - חייב להגדיר CORS headers גם בשגיאות
   app.use((err, req, res, next) => {
-    console.error(err.stack);
+    // הגדרת CORS headers גם בשגיאות - חשוב מאוד!
+    const origin = req.headers.origin;
+    const allowedOrigins = [
+      'https://tailorbiz-software.com',
+      'https://www.tailorbiz-software.com',
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://localhost:5000'
+    ];
+    if (origin) {
+      if (allowedOrigins.includes(origin) || isDev) {
+        res.header('Access-Control-Allow-Origin', origin);
+        res.header('Vary', 'Origin');
+      } else if (!isDev) {
+        res.header('Access-Control-Allow-Origin', allowedOrigins[0]);
+      }
+    } else if (!isDev) {
+      res.header('Access-Control-Allow-Origin', allowedOrigins[0]);
+    }
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Parse-Application-Id, X-Parse-Session-Token');
+
+    console.error('Error:', err.stack);
     res.status(err.statusCode || 500).json({
       success: false,
       message: err.message || 'שגיאת שרת',
