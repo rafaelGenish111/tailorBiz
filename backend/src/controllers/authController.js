@@ -37,11 +37,27 @@ const ensureJwtSecret = (res) => {
 
 exports.bootstrapNeeded = async (req, res) => {
   try {
+    // בדיקה שהמודל User נטען כראוי
+    if (!User || typeof User.countDocuments !== 'function') {
+      console.error('Error: User model is not properly loaded');
+      return res.status(500).json({ 
+        success: false, 
+        message: 'שגיאה בבדיקת מצב התקנה', 
+        error: 'User model not available' 
+      });
+    }
+
     const adminCount = await User.countDocuments({ role: 'admin' });
     return res.json({ success: true, data: { needed: adminCount === 0 } });
   } catch (error) {
     console.error('Error in bootstrapNeeded:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בבדיקת מצב התקנה', error: error.message });
+    console.error('Error stack:', error.stack);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'שגיאה בבדיקת מצב התקנה', 
+      error: error.message,
+      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+    });
   }
 };
 
