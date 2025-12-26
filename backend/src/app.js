@@ -112,6 +112,43 @@ async function createApp() {
     next();
   });
 
+  // Wrapper לכל ה-responses כדי לוודא ש-CORS headers תמיד נשלחים
+  // זה חשוב כי controllers מחזירים שגיאות ישירות עם res.status().json()
+  const originalSend = express.response.send;
+  const originalJson = express.response.json;
+  const originalStatus = express.response.status;
+
+  // Override send כדי לוודא ש-CORS headers תמיד נשלחים
+  express.response.send = function (body) {
+    setCorsHeaders(this.req, this);
+    return originalSend.call(this, body);
+  };
+
+  // Override json כדי לוודא ש-CORS headers תמיד נשלחים
+  express.response.json = function (body) {
+    setCorsHeaders(this.req, this);
+    return originalJson.call(this, body);
+  };
+
+  // Override status כדי לוודא ש-CORS headers תמיד נשלחים
+  express.response.status = function (code) {
+    setCorsHeaders(this.req, this);
+    const statusResponse = originalStatus.call(this, code);
+    // Override גם את ה-json של ה-status response
+    const originalStatusJson = statusResponse.json;
+    statusResponse.json = function (body) {
+      setCorsHeaders(this.req, this);
+      return originalJson.call(this, body);
+    };
+    // Override גם את ה-send של ה-status response
+    const originalStatusSend = statusResponse.send;
+    statusResponse.send = function (body) {
+      setCorsHeaders(this.req, this);
+      return originalSend.call(this, body);
+    };
+    return statusResponse;
+  };
+
   // Rate Limiting
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
