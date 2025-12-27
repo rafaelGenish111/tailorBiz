@@ -35,6 +35,7 @@ module.exports = async (req, res) => {
   console.log(`[Vercel] Incoming request: ${req.method} ${req.url}`);
 
   // הגדרת CORS headers מיד בתחילת ה-handler - לפני כל דבר אחר!
+  // ב-Vercel serverless functions, צריך להשתמש ב-setHeader במקום header
   const allowedOrigins = [
     'https://tailorbiz-software.com',
     'https://www.tailorbiz-software.com',
@@ -43,24 +44,26 @@ module.exports = async (req, res) => {
     'http://localhost:5000'
   ];
 
-  const origin = req.headers.origin;
+  const origin = req.headers?.origin || req.headers?.['origin'];
   if (origin && allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
   } else if (origin) {
     // אם origin לא ברשימה, נגדיר את הראשון כדי שלא תהיה שגיאת CORS
-    res.header('Access-Control-Allow-Origin', allowedOrigins[0]);
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]);
   } else {
     // אם אין origin, נגדיר את הראשון
-    res.header('Access-Control-Allow-Origin', allowedOrigins[0]);
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]);
   }
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Parse-Application-Id, X-Parse-Session-Token');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Parse-Application-Id, X-Parse-Session-Token');
 
   // טיפול ב-preflight requests
   if (req.method === 'OPTIONS') {
-    return res.status(204).send();
+    res.statusCode = 204;
+    res.end();
+    return;
   }
 
   try {
@@ -69,12 +72,15 @@ module.exports = async (req, res) => {
     if (!hasMongoUri) {
       console.error('❌ [Vercel] MONGO_URI / MONGODB_URI is missing!');
       // CORS headers כבר מוגדרים בתחילת ה-handler
-      return res.status(500).json({
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({
         success: false,
         error: 'Internal Server Error',
         message: 'MONGO_URI / MONGODB_URI is missing!',
         stage: 'Environment Variables'
-      });
+      }));
+      return;
     }
 
     // חיבור ל-MongoDB
@@ -92,13 +98,18 @@ module.exports = async (req, res) => {
     console.error('Error stack:', error.stack);
 
     // CORS headers כבר מוגדרים בתחילת ה-handler, אז לא צריך להגדיר אותם שוב
-
-    return res.status(500).json({
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    const errorResponse = {
       success: false,
       error: 'Internal Server Error',
       message: error.message,
-      stage: 'DB Connection or Init',
-      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
-    });
+      stage: 'DB Connection or Init'
+    };
+    if (process.env.NODE_ENV === 'development') {
+      errorResponse.stack = error.stack;
+    }
+    res.end(JSON.stringify(errorResponse));
+    return;
   }
 };
