@@ -34,19 +34,41 @@ if (!IS_VERCEL) {
 module.exports = async (req, res) => {
   console.log(`[Vercel] Incoming request: ${req.method} ${req.url}`);
 
+  // הגדרת CORS headers מיד בתחילת ה-handler - לפני כל דבר אחר!
+  const allowedOrigins = [
+    'https://tailorbiz-software.com',
+    'https://www.tailorbiz-software.com',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:5000'
+  ];
+
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+  } else if (origin) {
+    // אם origin לא ברשימה, נגדיר את הראשון כדי שלא תהיה שגיאת CORS
+    res.header('Access-Control-Allow-Origin', allowedOrigins[0]);
+  } else {
+    // אם אין origin, נגדיר את הראשון
+    res.header('Access-Control-Allow-Origin', allowedOrigins[0]);
+  }
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Parse-Application-Id, X-Parse-Session-Token');
+
+  // טיפול ב-preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(204).send();
+  }
+
   try {
     // בדיקה של environment variables
     const hasMongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
     if (!hasMongoUri) {
       console.error('❌ [Vercel] MONGO_URI / MONGODB_URI is missing!');
-      // הגדרת CORS headers גם בשגיאה
-      const origin = req.headers.origin;
-      if (origin) {
-        res.header('Access-Control-Allow-Origin', origin);
-        res.header('Access-Control-Allow-Credentials', 'true');
-        res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Parse-Application-Id, X-Parse-Session-Token');
-      }
+      // CORS headers כבר מוגדרים בתחילת ה-handler
       return res.status(500).json({
         success: false,
         error: 'Internal Server Error',
@@ -69,14 +91,7 @@ module.exports = async (req, res) => {
     console.error('❌ [Vercel] Critical Error:', error);
     console.error('Error stack:', error.stack);
 
-    // הגדרת CORS headers גם בשגיאה
-    const origin = req.headers.origin;
-    if (origin) {
-      res.header('Access-Control-Allow-Origin', origin);
-      res.header('Access-Control-Allow-Credentials', 'true');
-      res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Parse-Application-Id, X-Parse-Session-Token');
-    }
+    // CORS headers כבר מוגדרים בתחילת ה-handler, אז לא צריך להגדיר אותם שוב
 
     return res.status(500).json({
       success: false,
