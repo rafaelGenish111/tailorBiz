@@ -4,7 +4,15 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const { ParseServer } = require('parse-server'); // 1. ייבוא Parse
+// Parse Server - רק אם לא ב-Vercel (conditional import כדי למנוע בעיות עם PostgreSQL adapter)
+let ParseServer = null;
+if (process.env.VERCEL !== '1') {
+  try {
+    ParseServer = require('parse-server').ParseServer;
+  } catch (e) {
+    console.warn('⚠️ Parse Server not available:', e.message);
+  }
+}
 
 // Import routes
 const testimonialRoutes = require('./routes/testimonials.routes');
@@ -38,47 +46,56 @@ async function createApp() {
   const IS_VERCEL = process.env.VERCEL === '1';
 
   // --- Parse Server Setup (חייב לקרות לפני הכל) ---
-  // שימוש ב-MongoDB URI הנכון (אותו URI כמו ב-connectDB)
-  const mongoUri = process.env.DATABASE_URI || process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/dev';
-
-  // רק אם יש MongoDB URI, נפעיל את Parse Server
-  // אם אין URI, נדלג על Parse Server (לא נחוץ ב-Vercel אם לא משתמשים בו)
+  // משביתים את Parse Server ב-Vercel כי הוא לא נחוץ וגורם לבעיות עם PostgreSQL adapter
   let parseServer = null;
-  if (mongoUri && mongoUri.startsWith('mongodb')) {
-    try {
-      // בדיקה אם קובץ cloud code קיים
-      const cloudCodePath = process.env.CLOUD_CODE_MAIN || path.join(__dirname, 'cloud', 'main.js');
-      const fs = require('fs');
-      const cloudCodeExists = fs.existsSync(cloudCodePath);
 
-      const parseConfig = {
-        databaseURI: mongoUri,
-        appId: process.env.APP_ID || 'myAppId',
-        masterKey: process.env.MASTER_KEY || 'myMasterKey', // Keep this key secret!
-        serverURL: process.env.SERVER_URL || 'http://localhost:1337/parse',
-        // הגדרות אבטחה נוספות
-        allowClientClassCreation: false,
-        enforcePrivateUsers: true,
-      };
+  // רק אם לא ב-Vercel ו-ParseServer זמין, נפעיל את Parse Server (אם נחוץ בפיתוח מקומי)
+  if (!IS_VERCEL && ParseServer) {
+    const mongoUri = process.env.DATABASE_URI || process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/dev';
 
-      // רק אם קובץ cloud code קיים, נוסיף אותו
-      if (cloudCodeExists) {
-        parseConfig.cloud = cloudCodePath;
+    // רק אם יש MongoDB URI, נפעיל את Parse Server
+    if (mongoUri && mongoUri.startsWith('mongodb')) {
+      try {
+        // בדיקה אם קובץ cloud code קיים
+        const cloudCodePath = process.env.CLOUD_CODE_MAIN || path.join(__dirname, 'cloud', 'main.js');
+        const fs = require('fs');
+        const cloudCodeExists = fs.existsSync(cloudCodePath);
+
+        const parseConfig = {
+          databaseURI: mongoUri,
+          appId: process.env.APP_ID || 'myAppId',
+          masterKey: process.env.MASTER_KEY || 'myMasterKey', // Keep this key secret!
+          serverURL: process.env.SERVER_URL || 'http://localhost:1337/parse',
+          // הגדרות אבטחה נוספות
+          allowClientClassCreation: false,
+          enforcePrivateUsers: true,
+        };
+
+        // רק אם קובץ cloud code קיים, נוסיף אותו
+        if (cloudCodeExists) {
+          parseConfig.cloud = cloudCodePath;
+        }
+
+        parseServer = new ParseServer(parseConfig);
+
+        // הפעלת Parse (החלק האסינכרוני)
+        await parseServer.start();
+        console.log('✅ Parse Server started');
+      } catch (parseError) {
+        console.error('⚠️ Parse Server failed to start:', parseError.message);
+        console.error('Parse Server error stack:', parseError.stack);
+        // לא נכשל את כל האפליקציה אם Parse Server נכשל
+        parseServer = null;
       }
-
-      parseServer = new ParseServer(parseConfig);
-
-      // הפעלת Parse (החלק האסינכרוני)
-      await parseServer.start();
-      console.log('✅ Parse Server started');
-    } catch (parseError) {
-      console.error('⚠️ Parse Server failed to start:', parseError.message);
-      console.error('Parse Server error stack:', parseError.stack);
-      // לא נכשל את כל האפליקציה אם Parse Server נכשל
-      parseServer = null;
+    } else {
+      console.log('⚠️ Parse Server skipped - no MongoDB URI or not MongoDB URI format');
     }
   } else {
-    console.log('⚠️ Parse Server skipped - no MongoDB URI or not MongoDB URI format');
+    if (IS_VERCEL) {
+      console.log('⚠️ Parse Server disabled in Vercel (not needed and causes PostgreSQL adapter issues)');
+    } else if (!ParseServer) {
+      console.log('⚠️ Parse Server not available');
+    }
   }
 
   // הרכבת Parse על נתיב ספציפי *לפני* Body Parsers גלובליים
