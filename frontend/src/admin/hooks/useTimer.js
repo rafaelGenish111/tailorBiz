@@ -1,19 +1,16 @@
 // frontend/src/admin/hooks/useTimer.js
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
-
-// ב-Production (Vercel) נשתמש ב-/api, בלוקאל נגדיר VITE_API_URL=http://localhost:5000/api
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+import api from '../utils/api';
 
 const timerApi = {
-  getActive: () => axios.get(`${API_URL}/time-entries/active`).then(res => res.data),
-  start: (clientId, data) => axios.post(`${API_URL}/time-entries/client/${clientId}/start`, data).then(res => res.data),
-  stop: (entryId) => axios.put(`${API_URL}/time-entries/${entryId}/stop`).then(res => res.data),
-  getClientEntries: (clientId, params) => axios.get(`${API_URL}/time-entries/client/${clientId}`, { params }).then(res => res.data),
-  addManual: (clientId, data) => axios.post(`${API_URL}/time-entries/client/${clientId}/manual`, data).then(res => res.data),
-  update: (entryId, data) => axios.put(`${API_URL}/time-entries/${entryId}`, data).then(res => res.data),
-  delete: (entryId) => axios.delete(`${API_URL}/time-entries/${entryId}`).then(res => res.data),
+  getActive: () => api.get('/time-entries/active').then(res => res.data),
+  start: (clientId, data) => api.post(`/time-entries/client/${clientId}/start`, data).then(res => res.data),
+  stop: (entryId) => api.put(`/time-entries/${entryId}/stop`).then(res => res.data),
+  getClientEntries: (clientId, params) => api.get(`/time-entries/client/${clientId}`, { params }).then(res => res.data),
+  addManual: (clientId, data) => api.post(`/time-entries/client/${clientId}/manual`, data).then(res => res.data),
+  update: (entryId, data) => api.put(`/time-entries/${entryId}`, data).then(res => res.data),
+  delete: (entryId) => api.delete(`/time-entries/${entryId}`).then(res => res.data),
 };
 
 // unwrap אחיד ל-response מהשרת עבור טיימר פעיל:
