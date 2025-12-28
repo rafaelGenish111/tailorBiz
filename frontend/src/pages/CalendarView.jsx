@@ -1264,26 +1264,10 @@ const CalendarView = () => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexDirection: 'row-reverse',
-            gap: 2
-          }}
-        >
+        <DialogTitle>
           <Typography variant="h6" fontWeight="bold">
             משימה חדשה
           </Typography>
-          <Button
-            type="submit"
-            form={createFormId}
-            variant="contained"
-            disabled={createTask.isPending}
-          >
-            {createTask.isPending ? 'שומר…' : 'צור משימה'}
-          </Button>
         </DialogTitle>
         <DialogContent dividers>
           <TaskForm 
@@ -1302,6 +1286,14 @@ const CalendarView = () => {
         <DialogActions>
           <Button onClick={() => setCreateTaskDialogOpen(false)} disabled={createTask.isPending}>
             ביטול
+          </Button>
+          <Button
+            type="submit"
+            form={createFormId}
+            variant="contained"
+            disabled={createTask.isPending}
+          >
+            {createTask.isPending ? 'שומר…' : 'צור משימה'}
           </Button>
         </DialogActions>
       </Dialog>

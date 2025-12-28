@@ -355,27 +355,9 @@ const ProjectModal = ({ open, onClose, project }) => {
         fullWidth
       >
         <DialogTitle>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexDirection: 'row-reverse',
-              gap: 2
-            }}
-          >
-            <Typography variant="h6" fontWeight="bold">
-              {editingTask ? 'עדכן משימה' : 'משימה חדשה'}
-            </Typography>
-            <Button
-              type="submit"
-              form={formId}
-              variant="contained"
-              disabled={editingTask ? updateTask.isPending : createTask.isPending}
-            >
-              {editingTask ? (updateTask.isPending ? 'שומר…' : 'עדכן משימה') : (createTask.isPending ? 'שומר…' : 'צור משימה')}
-            </Button>
-          </Box>
+          <Typography variant="h6" fontWeight="bold">
+            {editingTask ? 'עדכן משימה' : 'משימה חדשה'}
+          </Typography>
         </DialogTitle>
         <DialogContent dividers>
           <TaskForm
@@ -410,6 +392,14 @@ const ProjectModal = ({ open, onClose, project }) => {
             disabled={editingTask ? updateTask.isPending : createTask.isPending}
           >
             ביטול
+          </Button>
+          <Button
+            type="submit"
+            form={formId}
+            variant="contained"
+            disabled={editingTask ? updateTask.isPending : createTask.isPending}
+          >
+            {editingTask ? (updateTask.isPending ? 'שומר…' : 'עדכן משימה') : (createTask.isPending ? 'שומר…' : 'צור משימה')}
           </Button>
         </DialogActions>
       </Dialog>
