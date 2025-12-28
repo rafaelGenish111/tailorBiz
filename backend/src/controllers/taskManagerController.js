@@ -427,18 +427,18 @@ exports.createTask = async (req, res) => {
     const userId = req.user?.id || req.user?._id;
     if (task.assignedTo && userId && task.assignedTo.toString() !== userId.toString()) {
       try {
-        await Notification.create({
-          type: 'task_assigned',
-          title: 'משימה חדשה הוקצתה לך',
+      await Notification.create({
+        type: 'task_assigned',
+        title: 'משימה חדשה הוקצתה לך',
           message: `${req.user?.name || 'משתמש'} הקצה לך את המשימה: ${task.title}`,
-          userId: task.assignedTo,
-          relatedTask: task._id,
-          priority: task.priority,
-          actionUrl: `/admin/tasks/${task._id}`,
-          actionText: 'צפה במשימה',
-          icon: 'assignment',
-          color: task.color
-        });
+        userId: task.assignedTo,
+        relatedTask: task._id,
+        priority: task.priority,
+        actionUrl: `/admin/tasks/${task._id}`,
+        actionText: 'צפה במשימה',
+        icon: 'assignment',
+        color: task.color
+      });
       } catch (notifError) {
         // לא נכשל את כל הבקשה אם יצירת ההתראה נכשלה
         console.error('Error creating notification:', notifError);

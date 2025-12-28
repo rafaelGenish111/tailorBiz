@@ -288,12 +288,12 @@ const TaskForm = ({
           </ToggleButtonGroup>
 
           {/* Title Field - Different label based on mode */}
-          <TextField
+            <TextField
             label={mode === 'meeting' ? 'כותרת הפגישה' : 'כותרת המשימה'}
             {...register('title', { required: 'שדה חובה' })}
-            fullWidth
-            required
-          />
+              fullWidth
+              required
+            />
 
           {/* Priority and Status - Only for Tasks */}
           {mode === 'task' && (
@@ -303,41 +303,41 @@ const TaskForm = ({
                   name="priority"
                   control={control}
                   render={({ field }) => (
-                    <TextField
+            <TextField
                       {...field}
-                      select
+              select
                       label="עדיפות"
-                      fullWidth
+              fullWidth
                     >
                       {PRIORITY_OPTIONS.map((opt) => (
                         <MenuItem key={opt.value} value={opt.value}>
                           {opt.label}
                         </MenuItem>
                       ))}
-                    </TextField>
+            </TextField>
                   )}
                 />
-              </Grid>
+          </Grid>
               <Grid item xs={12} sm={6}>
                 <Controller
                   name="status"
                   control={control}
                   render={({ field }) => (
-                    <TextField
+            <TextField
                       {...field}
-                      select
+              select
                       label="סטטוס"
-                      fullWidth
+              fullWidth
                     >
                       {STATUS_OPTIONS.map((opt) => (
                         <MenuItem key={opt.value} value={opt.value}>
                           {opt.label}
                         </MenuItem>
                       ))}
-                    </TextField>
-                  )}
-                />
-              </Grid>
+            </TextField>
+              )}
+            />
+          </Grid>
             </Grid>
           )}
 
@@ -346,94 +346,94 @@ const TaskForm = ({
             // Task Mode: Start Date and Due Date
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
-                <Controller
-                  name="startDate"
-                  control={control}
-                  render={({ field: { onChange, value } }) => (
+            <Controller
+              name="startDate"
+              control={control}
+              render={({ field: { onChange, value } }) => (
                     <Box sx={{ display: 'flex', gap: 2 }}>
                       <Box sx={{ flex: 1 }}>
-                        <DatePicker
-                          value={parseDate(value)}
-                          onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
+                    <DatePicker
+                      value={parseDate(value)}
+                      onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
                           slotProps={{
                             textField: {
                               fullWidth: true,
                               label: 'תאריך התחלה',
                             }
                           }}
-                        />
+                    />
                       </Box>
                       <Box sx={{ width: 128 }}>
-                        <TimePicker
-                          value={parseDate(value)}
-                          onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
-                          ampm={false}
-                          views={['hours', 'minutes']}
-                          viewRenderers={{
-                            hours: renderTimeViewClock,
-                            minutes: renderTimeViewClock
-                          }}
+                    <TimePicker
+                      value={parseDate(value)}
+                      onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
+                      ampm={false}
+                      views={['hours', 'minutes']}
+                      viewRenderers={{
+                        hours: renderTimeViewClock,
+                        minutes: renderTimeViewClock
+                      }}
                           slotProps={{
                             textField: {
                               fullWidth: true,
                               label: 'שעה',
                             }
                           }}
-                        />
+                    />
                       </Box>
                     </Box>
-                  )}
-                />
-              </Grid>
+              )}
+            />
+          </Grid>
               <Grid item xs={12} sm={6}>
-                <Controller
-                  name="dueDate"
-                  control={control}
-                  render={({ field: { onChange, value } }) => (
+            <Controller
+              name="dueDate"
+              control={control}
+              render={({ field: { onChange, value } }) => (
                     <Box sx={{ display: 'flex', gap: 2 }}>
                       <Box sx={{ flex: 1 }}>
-                        <DatePicker
-                          value={parseDate(value)}
-                          onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
+                    <DatePicker
+                      value={parseDate(value)}
+                      onChange={(newDate) => onChange(mergeDateAndTime(newDate, parseDate(value)))}
                           slotProps={{
                             textField: {
                               fullWidth: true,
                               label: 'תאריך יעד',
                             }
                           }}
-                        />
+                    />
                       </Box>
                       <Box sx={{ width: 128 }}>
-                        <TimePicker
-                          value={parseDate(value)}
-                          onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
-                          ampm={false}
-                          views={['hours', 'minutes']}
-                          viewRenderers={{
-                            hours: renderTimeViewClock,
-                            minutes: renderTimeViewClock
-                          }}
+                    <TimePicker
+                      value={parseDate(value)}
+                      onChange={(newTime) => onChange(mergeDateAndTime(parseDate(value), newTime))}
+                      ampm={false}
+                      views={['hours', 'minutes']}
+                      viewRenderers={{
+                        hours: renderTimeViewClock,
+                        minutes: renderTimeViewClock
+                      }}
                           slotProps={{
                             textField: {
                               fullWidth: true,
                               label: 'שעה',
                             }
                           }}
-                        />
+                    />
                       </Box>
                     </Box>
-                  )}
-                />
-              </Grid>
+              )}
+            />
+          </Grid>
             </Grid>
           ) : (
             // Meeting Mode: Date + Start Time, then Duration
-            <>
+                  <>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
-                  <Controller
+                            <Controller
                     name="startDate"
-                    control={control}
+                              control={control}
                     render={({ field: { onChange, value } }) => (
                       <DatePicker
                         value={parseDate(value)}
@@ -446,12 +446,12 @@ const TaskForm = ({
                         }}
                       />
                     )}
-                  />
-                </Grid>
+                                  />
+                                </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Controller
+                                  <Controller
                     name="startDate"
-                    control={control}
+                                    control={control}
                     render={({ field: { onChange, value } }) => (
                       <TimePicker
                         value={parseDate(value)}
@@ -469,10 +469,10 @@ const TaskForm = ({
                           }
                         }}
                       />
-                    )}
-                  />
-                </Grid>
-              </Grid>
+                                    )}
+                                  />
+                                </Grid>
+                              </Grid>
               <Controller
                 name="duration"
                 control={control}
@@ -495,11 +495,11 @@ const TaskForm = ({
                 name="recurrence"
                 control={control}
                 render={({ field }) => (
-                  <TextField
+                              <TextField
                     {...field}
                     select
                     label="חזרתיות"
-                    fullWidth
+                                fullWidth
                   >
                     {RECURRENCE_OPTIONS.map((opt) => (
                       <MenuItem key={opt.value} value={opt.value}>
@@ -508,11 +508,11 @@ const TaskForm = ({
                     ))}
                   </TextField>
                 )}
-              />
-              <TextField
+                              />
+                              <TextField
                 label="מיקום / קישור זום"
                 {...register('location')}
-                fullWidth
+                                fullWidth
                 placeholder="הזן מיקום או קישור לפגישה..."
               />
             </>
@@ -521,68 +521,68 @@ const TaskForm = ({
           {/* Project and Client */}
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
-              <Controller
-                name="projectId"
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <Autocomplete
-                    options={projects}
-                    getOptionLabel={(option) => option.name || ''}
-                    value={value && typeof value === 'string' ? projects.find(p => p._id === value) : value}
-                    onChange={(_, newValue) => onChange(newValue)}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="פרויקט"
+            <Controller
+              name="projectId"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Autocomplete
+                  options={projects}
+                  getOptionLabel={(option) => option.name || ''}
+                  value={value && typeof value === 'string' ? projects.find(p => p._id === value) : value}
+                  onChange={(_, newValue) => onChange(newValue)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="פרויקט"
                         placeholder="בחר פרויקט..."
-                      />
-                    )}
-                  />
-                )}
-              />
-            </Grid>
+                    />
+                  )}
+                />
+              )}
+            />
+          </Grid>
             <Grid item xs={12} sm={6}>
-              <Controller
-                name="relatedClient"
-                control={control}
-                render={({ field: { onChange, value } }) => (
-                  <Autocomplete
-                    options={clients}
-                    getOptionLabel={(option) => option.personalInfo?.fullName || ''}
-                    value={value && typeof value === 'string' ? clients.find(c => c._id === value) : value}
-                    onChange={(_, newValue) => onChange(newValue)}
-                    loading={isLoadingClients}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="לקוח מקושר"
+            <Controller
+              name="relatedClient"
+              control={control}
+              render={({ field: { onChange, value } }) => (
+                <Autocomplete
+                  options={clients}
+                  getOptionLabel={(option) => option.personalInfo?.fullName || ''}
+                  value={value && typeof value === 'string' ? clients.find(c => c._id === value) : value}
+                  onChange={(_, newValue) => onChange(newValue)}
+                  loading={isLoadingClients}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="לקוח מקושר"
                         placeholder="בחר לקוח..."
-                        InputProps={{
-                          ...params.InputProps,
-                          endAdornment: (
-                            <>
-                              {isLoadingClients ? <CircularProgress color="inherit" size={20} /> : null}
-                              {params.InputProps.endAdornment}
-                            </>
-                          ),
-                        }}
-                      />
-                    )}
-                  />
-                )}
-              />
-            </Grid>
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                          <>
+                            {isLoadingClients ? <CircularProgress color="inherit" size={20} /> : null}
+                            {params.InputProps.endAdornment}
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
+                />
+              )}
+            />
+          </Grid>
           </Grid>
 
           {/* Description */}
-          <TextField
+                      <TextField
             label={mode === 'meeting' ? 'תיאור הפגישה' : 'תיאור'}
             {...register('description')}
-            fullWidth
-            multiline
+                        fullWidth
+                        multiline
             rows={4}
             sx={{ minHeight: '100px' }}
-          />
+                      />
 
           {/* Color Picker */}
           <Box>
@@ -614,8 +614,8 @@ const TaskForm = ({
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                        }}
-                      >
+                          }}
+                        >
                         {value === color.value && (
                           <Typography
                             sx={{
@@ -624,7 +624,7 @@ const TaskForm = ({
                               fontWeight: 'bold',
                               textShadow: '0 1px 2px rgba(0,0,0,0.3)',
                             }}
-                          >
+                        >
                             ✓
                           </Typography>
                         )}
@@ -634,7 +634,7 @@ const TaskForm = ({
                 )}
               />
             </Box>
-          </Box>
+              </Box>
 
           {/* Footer Actions - Only if showActions is true */}
           {showActions && (

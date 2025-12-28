@@ -85,7 +85,9 @@ export const useClientInteractions = (clientId) => {
   return useQuery({
     queryKey: ['client-interactions', clientId],
     queryFn: () => clientAPI.getInteractions(clientId).then(res => res.data),
-    enabled: !!clientId
+    enabled: !!clientId,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true
   });
 };
 
@@ -106,8 +108,10 @@ export const useAddInteraction = () => {
 
   return useMutation({
     mutationFn: ({ clientId, data }) => clientAPI.addInteraction(clientId, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries(['client-interactions', variables.clientId]);
+    onSuccess: async (_, variables) => {
+      // Invalidate and refetch immediately
+      await queryClient.invalidateQueries(['client-interactions', variables.clientId]);
+      await queryClient.refetchQueries(['client-interactions', variables.clientId]);
       queryClient.invalidateQueries(['client', variables.clientId]);
       toast.success('אינטראקציה נוספה בהצלחה!');
     },

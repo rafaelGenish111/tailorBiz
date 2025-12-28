@@ -135,7 +135,7 @@ const TaskBoard = () => {
     const weekEnd = endOfWeek(now, { locale: he });
     const monthStart = startOfMonth(now);
     const monthEnd = endOfMonth(now);
-
+    
     switch (timeframeFilter) {
       case 'today':
         // Show tasks due today OR overdue (before today)
@@ -162,7 +162,7 @@ const TaskBoard = () => {
   const filteredTasks = allTasks.filter((task) => {
     // Apply timeframe filter
     if (!filterByTimeframe(task)) return false;
-
+    
     // Apply search filter
     if (search) {
       const query = search.toLowerCase();
@@ -525,7 +525,7 @@ const TaskBoard = () => {
             {Object.entries(STATUS_LABELS).map(([value, info]) => (
               <MenuItem key={value} value={value}>
                 {info.label}
-              </MenuItem>
+            </MenuItem>
             ))}
           </TextField>
           <TextField
@@ -590,28 +590,28 @@ const TaskBoard = () => {
       </Box>
 
       {/* Desktop Kanban Board - 4 Equal Columns */}
-      <Box
-        sx={{
-          flex: 1,
+        <Box
+          sx={{
+            flex: 1,
           display: { xs: 'none', md: 'grid' },
           gridTemplateColumns: 'repeat(4, 1fr)',
           gap: 3,
           p: 3,
           overflow: 'hidden',
           minHeight: 0,
-          width: '100%',
+            width: '100%',
           height: '100%',
           boxSizing: 'border-box',
-        }}
-      >
-        {columns.map((column) => {
-          const tasksInColumn = tasksByStatus[column.id];
-          const isEmpty = tasksInColumn.length === 0;
-          
-          return (
+          }}
+        >
+          {columns.map((column) => {
+            const tasksInColumn = tasksByStatus[column.id];
+            const isEmpty = tasksInColumn.length === 0;
+            
+            return (
             <Box
-              key={column.id}
-              sx={{
+                key={column.id}
+                sx={{
                 display: 'flex',
                 flexDirection: 'column',
                 height: '100%',
@@ -624,13 +624,13 @@ const TaskBoard = () => {
                 boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
                 overflow: 'hidden',
                 boxSizing: 'border-box',
-              }}
-            >
+                }}
+              >
               {/* Column Header - Fixed */}
               <Box
-                sx={{
+                  sx={{
                   p: 2.5,
-                  borderTop: `4px solid ${column.color}`,
+                    borderTop: `4px solid ${column.color}`,
                   bgcolor: '#ffffff',
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -639,34 +639,34 @@ const TaskBoard = () => {
                   borderBottom: '1px solid #f3f4f6',
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Box sx={{ color: column.color, display: 'flex', alignItems: 'center' }}>
-                    {column.icon}
-                  </Box>
-                  <Typography 
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box sx={{ color: column.color, display: 'flex', alignItems: 'center' }}>
+                        {column.icon}
+                      </Box>
+                      <Typography 
                     variant="h6" 
-                    sx={{
-                      fontWeight: 700,
-                      fontSize: '1rem',
-                      color: '#16191f',
-                    }}
-                  >
-                    {column.title}
-                  </Typography>
-                </Box>
-                <Chip 
-                  label={tasksInColumn.length} 
-                  size="small" 
-                  sx={{ 
-                    bgcolor: `${column.color}15`,
-                    color: column.color,
-                    fontWeight: 600,
-                    height: 24,
-                    fontSize: '0.75rem',
-                    border: `1px solid ${column.color}30`,
-                  }}
-                />
-              </Box>
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: '1rem',
+                          color: '#16191f',
+                        }}
+                      >
+                        {column.title}
+                      </Typography>
+                    </Box>
+                    <Chip 
+                      label={tasksInColumn.length} 
+                      size="small" 
+                      sx={{ 
+                        bgcolor: `${column.color}15`,
+                        color: column.color,
+                        fontWeight: 600,
+                        height: 24,
+                        fontSize: '0.75rem',
+                        border: `1px solid ${column.color}30`,
+                      }}
+                    />
+                  </Box>
 
               {/* Tasks Container - Scrollable */}
               <Box 
@@ -696,100 +696,100 @@ const TaskBoard = () => {
                   },
                 }}
               >
-                {isEmpty ? (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      py: 8,
-                      textAlign: 'center',
-                    }}
-                  >
+                  {isEmpty ? (
                     <Box
                       sx={{
-                        width: 64,
-                        height: 64,
-                        borderRadius: '50%',
-                        bgcolor: `${column.color}15`,
                         display: 'flex',
+                        flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
+                      py: 8,
+                        textAlign: 'center',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                        width: 64,
+                        height: 64,
+                          borderRadius: '50%',
+                          bgcolor: `${column.color}15`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
                         mb: 2,
-                      }}
-                    >
+                        }}
+                      >
                       {React.cloneElement(column.icon, { sx: { fontSize: '2rem', color: column.color } })}
-                    </Box>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: '#6b7280',
-                        fontWeight: 500,
-                      }}
-                    >
-                      אין משימות
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: '#9ca3af',
-                        fontSize: '0.75rem',
+                      </Box>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: '#6b7280',
+                          fontWeight: 500,
+                        }}
+                      >
+                        אין משימות
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: '#9ca3af',
+                          fontSize: '0.75rem',
                         mt: 0.5,
+                        }}
+                      >
+                        גרור משימות לכאן
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {tasksInColumn.map((task) => renderTaskCard(task))}
+                    </Box>
+                  )}
+                  
+                  {/* Add Task Button */}
+                  <Box sx={{ mt: 2 }}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      startIcon={<AddIcon />}
+                      sx={{
+                        border: '1px dashed #d1d5db',
+                        borderColor: '#d1d5db',
+                        color: '#6b7280',
+                        textTransform: 'none',
+                        fontWeight: 500,
+                      py: 1.5,
+                        '&:hover': {
+                          borderColor: column.color,
+                          bgcolor: `${column.color}10`,
+                          color: column.color,
+                        }
+                      }}
+                      onClick={() => {
+                        setSelectedStatus(column.id);
+                        setCreateDialogOpen(true);
                       }}
                     >
-                      גרור משימות לכאן
-                    </Typography>
+                      הוסף משימה
+                    </Button>
                   </Box>
-                ) : (
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {tasksInColumn.map((task) => renderTaskCard(task))}
-                  </Box>
-                )}
-                
-                {/* Add Task Button */}
-                <Box sx={{ mt: 2 }}>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<AddIcon />}
-                    sx={{
-                      border: '1px dashed #d1d5db',
-                      borderColor: '#d1d5db',
-                      color: '#6b7280',
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      py: 1.5,
-                      '&:hover': {
-                        borderColor: column.color,
-                        bgcolor: `${column.color}10`,
-                        color: column.color,
-                      }
-                    }}
-                    onClick={() => {
-                      setSelectedStatus(column.id);
-                      setCreateDialogOpen(true);
-                    }}
-                  >
-                    הוסף משימה
-                  </Button>
-                </Box>
               </Box>
             </Box>
-          );
-        })}
-      </Box>
+            );
+          })}
+        </Box>
 
       {/* Mobile Accordion View */}
-      <Box
-        sx={{
-          flex: 1,
+        <Box
+          sx={{
+            flex: 1,
           display: { xs: 'block', md: 'none' },
           p: 2,
           overflowY: 'auto',
           overflowX: 'hidden',
-        }}
-      >
+          }}
+        >
         {columns.map((column) => {
           const tasksInColumn = tasksByStatus[column.id];
           const isEmpty = tasksInColumn.length === 0;
@@ -829,7 +829,7 @@ const TaskBoard = () => {
                   },
                   '& .MuiAccordionSummary-content': {
                     margin: '12px 0',
-                    alignItems: 'center',
+                  alignItems: 'center',
                   },
                 }}
               >
@@ -865,7 +865,7 @@ const TaskBoard = () => {
 
               {/* Accordion Body */}
               <AccordionDetails
-                sx={{
+                sx={{ 
                   p: 2,
                   bgcolor: isEmpty ? '#f9fafb' : '#ffffff',
                   backgroundImage: isEmpty 
@@ -921,36 +921,36 @@ const TaskBoard = () => {
                 ) : (
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {tasksInColumn.map((task) => renderTaskCard(task))}
-                  </Box>
+                          </Box>
                 )}
                 
                 {/* Add Task Button */}
                 <Box sx={{ mt: 2 }}>
-                  <Button
-                    fullWidth
-                    variant="outlined"
-                    startIcon={<AddIcon />}
-                    sx={{
-                      border: '1px dashed #d1d5db',
-                      borderColor: '#d1d5db',
-                      color: '#6b7280',
-                      textTransform: 'none',
-                      fontWeight: 500,
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  startIcon={<AddIcon />}
+                  sx={{
+                    border: '1px dashed #d1d5db',
+                    borderColor: '#d1d5db',
+                    color: '#6b7280',
+                    textTransform: 'none',
+                    fontWeight: 500,
                       py: 1.5,
-                      '&:hover': {
-                        borderColor: column.color,
-                        bgcolor: `${column.color}10`,
-                        color: column.color,
-                      }
-                    }}
-                    onClick={() => {
-                      setSelectedStatus(column.id);
-                      setCreateDialogOpen(true);
-                    }}
-                  >
-                    הוסף משימה
-                  </Button>
-                </Box>
+                    '&:hover': {
+                      borderColor: column.color,
+                      bgcolor: `${column.color}10`,
+                      color: column.color,
+                    }
+                  }}
+                  onClick={() => {
+                    setSelectedStatus(column.id);
+                    setCreateDialogOpen(true);
+                  }}
+                >
+                  הוסף משימה
+                </Button>
+              </Box>
               </AccordionDetails>
             </Accordion>
           );
@@ -965,7 +965,7 @@ const TaskBoard = () => {
         fullWidth
       >
         <DialogTitle>
-          משימה חדשה
+            משימה חדשה
         </DialogTitle>
         <DialogContent dividers>
           <TaskForm 
@@ -1014,7 +1014,7 @@ const TaskBoard = () => {
         fullWidth
       >
         <DialogTitle>
-          עדכן משימה
+            עדכן משימה
         </DialogTitle>
         <DialogContent dividers>
           <TaskForm 
@@ -1057,10 +1057,10 @@ const TaskBoard = () => {
 
       {/* Task Modal */}
       {taskModalId && (
-        <TaskModal
-          taskId={taskModalId}
+      <TaskModal
+        taskId={taskModalId}
           open={Boolean(taskModalId)}
-          onClose={closeTaskModal}
+        onClose={closeTaskModal}
         />
       )}
 

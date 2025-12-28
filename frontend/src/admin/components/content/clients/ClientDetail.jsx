@@ -173,7 +173,7 @@ function ClientDetail({ open, onClose, client }) {
   const [assignedTo, setAssignedTo] = useState('');
 
   const clientId = client?._id;
-  const { data: interactionsResponse, isLoading: interactionsLoading } =
+  const { data: interactionsResponse, isLoading: interactionsLoading, refetch: refetchInteractions } =
     useClientInteractions(clientId);
   const interactions = interactionsResponse?.data || client?.interactions || [];
 
@@ -368,6 +368,9 @@ function ClientDetail({ open, onClose, client }) {
         nextFollowUp: newInteraction.nextFollowUp?.toISOString() || null,
       },
     });
+
+    // Refetch interactions immediately to show the new one
+    await refetchInteractions();
 
     setInteractionDialogOpen(false);
     setNewInteraction({

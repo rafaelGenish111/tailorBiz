@@ -281,10 +281,10 @@ const PartnershipPitch = () => {
             width: 'auto',
             objectFit: 'contain',
           }}
-          onError={(e) => {
+                onError={(e) => {
             e.currentTarget.style.display = 'none';
-          }}
-        />
+                }}
+              />
       </Box>
 
       {/* Hero Section */}
@@ -797,7 +797,7 @@ const PartnershipPitch = () => {
                       ? `4px solid ${theme.palette.primary.dark}`
                       : '4px solid transparent',
                   bgcolor:
-                    activeTab === tab.id
+                  activeTab === tab.id
                       ? 'rgba(11, 31, 51, 0.1)'
                       : 'transparent',
                 }}
@@ -877,7 +877,7 @@ const PartnershipPitch = () => {
                     הפתרון (התהליך האוטומטי):
                   </Typography>
                   <Stack spacing={3}>
-                    {currentSector.solutionSteps.map((step, index) => (
+                  {currentSector.solutionSteps.map((step, index) => (
                       <Box
                         key={index}
                         sx={{
@@ -906,7 +906,7 @@ const PartnershipPitch = () => {
                             transition: 'all 0.3s ease',
                           }}
                         >
-                          {step.icon}
+                        {step.icon}
                         </Box>
                         <Box>
                           <Typography
@@ -923,7 +923,7 @@ const PartnershipPitch = () => {
                           </Typography>
                         </Box>
                       </Box>
-                    ))}
+                  ))}
                   </Stack>
                 </Paper>
               </Grid>
