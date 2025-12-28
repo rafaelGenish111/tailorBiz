@@ -82,14 +82,22 @@ class LeadNurturingService {
         return;
       }
 
-      console.log(`  📋 Client: ${client.personalInfo.fullName}, Source: ${client.leadSource}, Score: ${client.leadScore}, Status: ${client.status}`);
+      console.log(`  📋 Client: ${client.personalInfo.fullName}, Source: ${client.leadSource}, Score: ${client.leadScore}, Status: '${client.status}'`);
 
-      // וודא שהליד הוא באמת ליד חדש
-      if (client.status !== 'lead') {
-        console.log(`  ⚠️ Client status is "${client.status}", not "lead" - skipping nurturing triggers`);
+      // נרמול הסטטוס לבדיקה
+      const status = (client.status || '').trim().toLowerCase();
+
+      // וודא שהליד הוא באמת ליד חדש - תיקון: תמיכה גם ב-new_lead וגם ב-lead
+      // הוספתי נרמול (trim) כדי למנוע בעיות של רווחים נסתרים
+      if (status !== 'lead' && status !== 'new_lead') {
+        console.log(`  ⚠️ Client status is "${client.status}" (normalized: '${status}'), not "lead" or "new_lead" - skipping nurturing triggers`);
         return;
       }
 
+      // דיבוג: נסה למצוא את כל התבניות בלי סינון בהתחלה כדי לראות מה קיים
+      const allTemplates = await LeadNurturing.find({});
+      console.log(`  🐛 DEBUG: Total templates in DB: ${allTemplates.length}`);
+      
       // קבל כל התבניות הפעילות עם טריגר של new_lead
       const templates = await LeadNurturing.find({
         isActive: true,
@@ -100,6 +108,10 @@ class LeadNurturingService {
 
       if (templates.length === 0) {
         console.log(`  ⚠️ No active templates found! Make sure to run: npm run seed:nurturing`);
+        if (allTemplates.length > 0) {
+             console.log(`  💡 Hint: Check if templates have 'isActive: true' and 'trigger.type: new_lead'`);
+             allTemplates.forEach(t => console.log(`     - ${t.name}: Active=${t.isActive}, Type=${t.trigger?.type}`));
+        }
       }
 
       for (const template of templates) {
@@ -121,7 +133,9 @@ class LeadNurturingService {
         // בדוק Lead Score
         if (conditions.minLeadScore) {
           console.log(`    📊 Template requires minLeadScore: ${conditions.minLeadScore}, Client has: ${client.leadScore}`);
-          if (client.leadScore < conditions.minLeadScore) {
+          // אפשר ל-0 לעבור אם הציון לא מוגדר
+          const clientScore = client.leadScore !== undefined ? client.leadScore : 0;
+          if (clientScore < conditions.minLeadScore) {
             shouldTrigger = false;
             console.log(`    ❌ Lead score too low - skipping template`);
           }
@@ -140,7 +154,7 @@ class LeadNurturingService {
             console.log(`    ⚠️ Instance already exists for this client and template`);
           } else {
             // בדוק אם יש אינטראקציה אחרונה עם nextFollowUp
-            const lastInteraction = client.interactions
+            const lastInteraction = (client.interactions || [])
               .filter(int => int.nextFollowUp)
               .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
 
@@ -166,9 +180,30 @@ class LeadNurturingService {
             console.log(`    ✨ Started nurturing for ${client.personalInfo.fullName} (template: ${template.name})`);
 
             // הרץ את הפעולה הראשונה מיד אם אין delay
-            if (template.sequence[0] && template.sequence[0].delayDays === 0) {
+            if (template.sequence[0] && template.sequence[0].delayDays === 0 && (!template.sequence[0].delayHours || template.sequence[0].delayHours === 0)) {
               console.log(`    ⚡ Executing first action immediately (no delay)`);
               await this.executeAction(template.sequence[0], client);
+              
+              instance.executionHistory.push({
+                  step: 0,
+                  actionType: template.sequence[0].actionType,
+                  success: true,
+                  response: 'Executed immediately on trigger',
+                  executedAt: new Date()
+              });
+              
+              instance.currentStep = 1;
+              
+              // חישוב זמן לשלב הבא
+              if (template.sequence.length > 1) {
+                  instance.nextActionAt = this.calculateNextActionTime(template.sequence[1], new Date());
+              } else {
+                  instance.status = 'completed';
+                  template.stats.totalCompleted += 1;
+                  await template.save();
+              }
+              
+              await instance.save();
             }
           }
         } else {
@@ -319,9 +354,29 @@ class LeadNurturingService {
         console.log(`  ✨ Started interaction-based nurturing for ${client.personalInfo.fullName} (template: ${template.name})`);
 
         // אם אין delay לסטפ הראשון – לבצע מיד
-        if (firstStep && (firstStep.delayDays === 0 || firstStep.delayDays == null)) {
+        if (firstStep && (firstStep.delayDays === 0 || firstStep.delayDays == null) && (!firstStep.delayHours || firstStep.delayHours === 0)) {
           console.log('  ⚡ Executing first interaction-based step immediately');
           await this.executeAction(firstStep, client);
+          
+          instance.executionHistory.push({
+              step: 0,
+              actionType: firstStep.actionType,
+              success: true,
+              response: 'Executed immediately on trigger',
+              executedAt: new Date()
+          });
+          
+          instance.currentStep = 1;
+          
+          if (template.sequence.length > 1) {
+              instance.nextActionAt = this.calculateNextActionTime(template.sequence[1], new Date());
+          } else {
+              instance.status = 'completed';
+              template.stats.totalCompleted += 1;
+              await template.save();
+          }
+          
+          await instance.save();
         }
       }
     } catch (error) {
@@ -402,6 +457,32 @@ class LeadNurturingService {
         await template.save();
 
         console.log(`  ✨ Started status-change nurturing for ${client.personalInfo.fullName} (template: ${template.name})`);
+        
+        // ביצוע מיידי אם אין דיליי
+        if (firstStep && (firstStep.delayDays === 0 || firstStep.delayDays == null) && (!firstStep.delayHours || firstStep.delayHours === 0)) {
+            console.log('  ⚡ Executing first status-change step immediately');
+            await this.executeAction(firstStep, client);
+            
+            instance.executionHistory.push({
+                step: 0,
+                actionType: firstStep.actionType,
+                success: true,
+                response: 'Executed immediately on trigger',
+                executedAt: new Date()
+            });
+            
+            instance.currentStep = 1;
+            
+            if (template.sequence.length > 1) {
+                instance.nextActionAt = this.calculateNextActionTime(template.sequence[1], new Date());
+            } else {
+                instance.status = 'completed';
+                template.stats.totalCompleted += 1;
+                await template.save();
+            }
+            
+            await instance.save();
+        }
       }
     } catch (error) {
       console.error('Error in checkTriggersForStatusChange:', error);
@@ -418,8 +499,9 @@ class LeadNurturingService {
       // מצא לידים חדשים (נוצרו ב-24 השעות האחרונות)
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
+      // תיקון: חפש גם new_lead וגם lead
       let query = {
-        status: 'new_lead',
+        status: { $in: ['new_lead', 'lead'] },
         'metadata.createdAt': { $gte: oneDayAgo }
       };
 
@@ -487,8 +569,9 @@ class LeadNurturingService {
 
       const thresholdDate = new Date(Date.now() - daysWithoutContact * 24 * 60 * 60 * 1000);
 
+      // תיקון: הוספת new_lead לרשימת הסטטוסים לבדיקה
       let query = {
-        status: { $in: ['new_lead', 'contacted'] },
+        status: { $in: ['new_lead', 'lead', 'contacted'] },
         'metadata.lastContactedAt': { $lt: thresholdDate }
       };
 
@@ -761,7 +844,8 @@ class LeadNurturingService {
         actionType: step.actionType,
         success: result.success,
         response: result.message,
-        error: result.error
+        error: result.error,
+        executedAt: new Date()
       });
 
       // עבור לשלב הבא
@@ -783,6 +867,11 @@ class LeadNurturingService {
         }
 
         instance.nextActionAt = this.calculateNextActionTime(nextStep, baseTime);
+      } else {
+          // אם זה היה השלב האחרון, נסמן כהושלם
+          instance.status = 'completed';
+          template.stats.totalCompleted += 1;
+          await template.save();
       }
 
       instance.metadata.updatedAt = new Date();
@@ -849,11 +938,11 @@ class LeadNurturingService {
 
       // החלף משתנים בהודעה
       let message = step.content.message || '';
-      message = message.replace(/{name}/g, client.personalInfo.fullName);
+      message = message.replace(/{name}/g, client.personalInfo.fullName || '');
       message = message.replace(/{business}/g, client.businessInfo.businessName || '');
 
-      // שלח דרך WhatsApp Service
-      // await whatsappService.sendMessage(phone, message);
+      // שימוש בשירות הוואטסאפ האמיתי
+      await whatsappService.sendMessage(phone, message);
 
       // הוסף אינטראקציה
       client.interactions.push({
@@ -870,6 +959,7 @@ class LeadNurturingService {
 
       return { success: true, message: 'WhatsApp sent' };
     } catch (error) {
+      console.error('Error sending WA:', error);
       return { success: false, error: error.message };
     }
   }
@@ -879,8 +969,11 @@ class LeadNurturingService {
    */
   async createTask(step, client) {
     try {
+      let title = step.content.taskTitle || `Follow-up: ${client.personalInfo.fullName}`;
+      title = title.replace(/{name}/g, client.personalInfo.fullName || '');
+      
       const task = new TaskManager({
-        title: step.content.taskTitle || `Follow-up: ${client.personalInfo.fullName}`,
+        title: title,
         description: step.content.taskDescription || 'טיפול בליד',
         type: 'follow_up',
         priority: step.content.taskPriority || 'medium',
@@ -1224,8 +1317,9 @@ class LeadNurturingService {
     try {
       const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
 
+      // תיקון: הוספת new_lead ו-lead לרשימת הסטטוסים
       const leadsWithoutResponse = await Client.find({
-        status: { $in: ['new_lead', 'contacted'] },
+        status: { $in: ['new_lead', 'lead', 'contacted'] },
         'metadata.lastContactedAt': { $lt: threeDaysAgo }
       });
 
@@ -1276,4 +1370,3 @@ class LeadNurturingService {
 }
 
 module.exports = new LeadNurturingService();
-
