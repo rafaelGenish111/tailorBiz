@@ -7,7 +7,7 @@ router.get('/run-nurturing', async (req, res) => {
   try {
     console.log('🧪 Running manual Lead Nurturing check...');
 
-    const leadNurturingService = require('../services/leadNurturingService');
+    const leadNurturingService = require('../services/leadServiceV2');
 
     await leadNurturingService.checkTriggers();
     await leadNurturingService.executeScheduledActions();

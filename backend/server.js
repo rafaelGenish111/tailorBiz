@@ -14,7 +14,7 @@ if (!IS_VERCEL) {
   // --- מצב פיתוח מקומי ---
   // טוענים את השירותים רק כאן, לא ב-Vercel
   const reminderService = require('./src/services/reminderService');
-  const leadNurturingService = require('./src/services/leadNurturingService');
+  const leadNurturingService = require('./src/services/leadServiceV2');
   const { initializeAutomationEngine } = require('./src/services/marketing/automationEngine');
 
   connectDB().then(async () => {

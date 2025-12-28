@@ -246,7 +246,7 @@ async function createApp() {
     app.get('/api/automation/status', async (req, res) => {
       try {
         const reminderService = require('./services/reminderService');
-        const leadNurturingService = require('./services/leadNurturingService');
+        const leadNurturingService = require('./services/leadServiceV2');
 
         res.json({
           success: true,

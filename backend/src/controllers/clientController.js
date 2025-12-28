@@ -4,9 +4,8 @@ const Project = require('../models/Project');
 const ReferrerPartner = require('../models/ReferrerPartner');
 const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
-const leadNurturingService = require('../services/leadNurturingService');
 const projectGeneratorService = require('../services/projectGeneratorService');
-
+const leadNurturingService = require('../services/leadServiceV2');
 const LEAD_STATUSES = ['new_lead', 'contacted', 'engaged', 'meeting_set', 'proposal_sent', 'lost'];
 const CLIENT_STATUSES = ['won'];
 

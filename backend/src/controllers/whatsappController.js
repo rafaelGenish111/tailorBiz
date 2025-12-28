@@ -1,6 +1,6 @@
 const Client = require('../models/Client');
 const whatsappService = require('../services/whatsappService');
-const leadNurturingService = require('../services/leadNurturingService');
+const leadNurturingService = require('../services/leadServiceV2');
 const mongoose = require('mongoose');
 
 // Helper function to check if string is valid ObjectId

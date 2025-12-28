@@ -36,18 +36,18 @@ class WhatsAppService {
     });
 
     this.setupEventListeners();
-    
+
     // יצירת Promise שיושלם כשהלקוח מוכן
     this.readyPromise = new Promise((resolve) => {
-        this.client.on('ready', () => {
-            this.isConnected = true;
-            console.log('✅ WhatsApp Service is ready!');
-            resolve();
-        });
+      this.client.on('ready', () => {
+        this.isConnected = true;
+        console.log('✅ WhatsApp Service is ready!');
+        resolve();
+      });
     });
 
     this.client.initialize().catch(err => {
-        console.error('❌ WhatsApp Service initialization error:', err.message);
+      console.error('❌ WhatsApp Service initialization error:', err.message);
     });
   }
 
@@ -81,11 +81,11 @@ class WhatsAppService {
 
     // האזנה להודעות נכנסות
     this.client.on('message', async msg => {
-        try {
-            await this.handleIncomingMessage(msg);
-        } catch (error) {
-            console.error('Error handling incoming message:', error);
-        }
+      try {
+        await this.handleIncomingMessage(msg);
+      } catch (error) {
+        console.error('Error handling incoming message:', error);
+      }
     });
   }
 
@@ -93,25 +93,25 @@ class WhatsAppService {
   async sendMessage(to, message) {
     try {
       if (!this.isConnected) {
-          // נסה לחכות לחיבור אם אנחנו בתהליך אתחול
-          if (this.readyPromise) {
-              console.log('⏳ Waiting for WhatsApp connection...');
-              await this.readyPromise;
-          } else {
-              throw new Error('WhatsApp client is not connected');
-          }
+        // נסה לחכות לחיבור אם אנחנו בתהליך אתחול
+        if (this.readyPromise) {
+          console.log('⏳ Waiting for WhatsApp connection...');
+          await this.readyPromise;
+        } else {
+          throw new Error('WhatsApp client is not connected');
+        }
       }
 
       // נרמול מספר הטלפון
       let targetId = to;
       if (!to.includes('@c.us')) {
-          // מנקה תווים לא רצויים
-          const cleanNumber = to.replace(/\D/g, '');
-          // אם אין קידומת מדינה (972), נוסיף (הנחה: מספר ישראלי)
-          const finalNumber = cleanNumber.startsWith('972') ? cleanNumber : 
-                             (cleanNumber.startsWith('0') ? '972' + cleanNumber.substring(1) : '972' + cleanNumber);
-          
-          targetId = `${finalNumber}@c.us`;
+        // מנקה תווים לא רצויים
+        const cleanNumber = to.replace(/\D/g, '');
+        // אם אין קידומת מדינה (972), נוסיף (הנחה: מספר ישראלי)
+        const finalNumber = cleanNumber.startsWith('972') ? cleanNumber :
+          (cleanNumber.startsWith('0') ? '972' + cleanNumber.substring(1) : '972' + cleanNumber);
+
+        targetId = `${finalNumber}@c.us`;
       }
 
       console.log(`📤 Sending WhatsApp to ${targetId}...`);
@@ -121,17 +121,17 @@ class WhatsAppService {
       const isRegistered = await this.client.isRegisteredUser(number);
 
       if (!isRegistered) {
-          throw new Error(`Number ${number} is not registered on WhatsApp`);
+        throw new Error(`Number ${number} is not registered on WhatsApp`);
       }
 
       // נסה להשיג את ה-ID המלא
       try {
-          const contact = await this.client.getNumberId(number);
-          if (contact && contact._serialized) {
-              targetId = contact._serialized;
-          }
+        const contact = await this.client.getNumberId(number);
+        if (contact && contact._serialized) {
+          targetId = contact._serialized;
+        }
       } catch (e) {
-          console.warn('⚠️ Could not resolve full contact ID, trying direct send');
+        console.warn('⚠️ Could not resolve full contact ID, trying direct send');
       }
 
       const response = await this.client.sendMessage(targetId, message);
@@ -143,22 +143,22 @@ class WhatsAppService {
 
     } catch (error) {
       console.error('Error sending WhatsApp message:', error.message);
-      throw error; 
+      throw error;
     }
   }
 
   // שליחת תבנית (כרגע מיושם כשליחת טקסט רגיל כי זו ספרייה לא רשמית)
   async sendTemplate(to, templateName, parameters = []) {
     try {
-        // מציאת תוכן התבנית מה-utils או ממקור אחר
-        // לצורך הפשטות, נניח שהפרמטר templateName הוא כבר הטקסט או שיש לוגיקת המרה
-        // במימוש המקורי היה שימוש ב-templates מ-utils/messageTemplates
-        
-        // כאן נצטרך לוגיקה שתמיר שם תבנית לטקסט מלא עם הפרמטרים
-        // כרגע נשלח את שם התבנית והפרמטרים כטקסט משורשר (Placeholder)
-        const message = `Template: ${templateName}\nParams: ${parameters.join(', ')}`;
-        
-        return await this.sendMessage(to, message);
+      // מציאת תוכן התבנית מה-utils או ממקור אחר
+      // לצורך הפשטות, נניח שהפרמטר templateName הוא כבר הטקסט או שיש לוגיקת המרה
+      // במימוש המקורי היה שימוש ב-templates מ-utils/messageTemplates
+
+      // כאן נצטרך לוגיקה שתמיר שם תבנית לטקסט מלא עם הפרמטרים
+      // כרגע נשלח את שם התבנית והפרמטרים כטקסט משורשר (Placeholder)
+      const message = `Template: ${templateName}\nParams: ${parameters.join(', ')}`;
+
+      return await this.sendMessage(to, message);
     } catch (error) {
       console.error('Error sending WhatsApp template:', error.message);
       throw error;
@@ -168,11 +168,11 @@ class WhatsAppService {
   // שליחת הודעה עם כפתורים (לא נתמך מלא ב-MultiDevice בגרסאות מסוימות, fallback לטקסט)
   async sendInteractiveButtons(to, bodyText, buttons) {
     try {
-        // המרה לטקסט עם רשימת אפשרויות מכיוון שכפתורים לעיתים בעייתיים בגרסאות ה-Web החדשות
-        const optionsText = buttons.map((btn, index) => `${index + 1}. ${btn}`).join('\n');
-        const fullMessage = `${bodyText}\n\n${optionsText}\n(השב עם המספר המתאים)`;
-        
-        return await this.sendMessage(to, fullMessage);
+      // המרה לטקסט עם רשימת אפשרויות מכיוון שכפתורים לעיתים בעייתיים בגרסאות ה-Web החדשות
+      const optionsText = buttons.map((btn, index) => `${index + 1}. ${btn}`).join('\n');
+      const fullMessage = `${bodyText}\n\n${optionsText}\n(השב עם המספר המתאים)`;
+
+      return await this.sendMessage(to, fullMessage);
     } catch (error) {
       console.error('Error sending interactive message:', error.message);
       throw error;
@@ -181,63 +181,63 @@ class WhatsAppService {
 
   // טיפול בהודעות נכנסות
   async handleIncomingMessage(msg) {
-      // דילוג על הודעות קבוצה או סטטוסים
-      if (msg.isGroupMsg || msg.isStatus) return;
+    // דילוג על הודעות קבוצה או סטטוסים
+    if (msg.isGroupMsg || msg.isStatus) return;
 
-      const fromNumber = msg.from.replace('@c.us', '').replace(/^972/, '0');
-      console.log(`📩 Received message from ${fromNumber}: ${msg.body}`);
+    const fromNumber = msg.from.replace('@c.us', '').replace(/^972/, '0');
+    console.log(`📩 Received message from ${fromNumber}: ${msg.body}`);
 
-      try {
-          // כאן נדרשת קריאה לשירותים אחרים במערכת
-          // מכיוון שיש תלות מעגלית (Services תלויים ב-WhatsAppService),
-          // עדיף להשתמש ב-Event Emitter או לייבא את השירותים הנדרשים בתוך הפונקציה (Lazy Loading)
-          
-          const leadNurturingService = require('./leadNurturingService');
-          const Client = require('../models/Client'); // נדרש לייבוא המודל כדי למצוא את הלקוח
+    try {
+      // כאן נדרשת קריאה לשירותים אחרים במערכת
+      // מכיוון שיש תלות מעגלית (Services תלויים ב-WhatsAppService),
+      // עדיף להשתמש ב-Event Emitter או לייבא את השירותים הנדרשים בתוך הפונקציה (Lazy Loading)
 
-          // מציאת הלקוח לפי מספר טלפון
-          // נחפש גם עם 05X וגם עם פורמט בינלאומי ליתר ביטחון
-          const phoneNumber = fromNumber; 
-          const cleanPhone = fromNumber.startsWith('0') ? fromNumber.substring(1) : fromNumber;
-          
-          const client = await Client.findOne({
-              $or: [
-                  { 'personalInfo.phone': { $regex: cleanPhone } },
-                  { 'personalInfo.whatsappPhone': { $regex: cleanPhone } }
-              ]
-          });
+      const leadNurturingService = require('./leadServiceV2');
+      const Client = require('../models/Client'); // נדרש לייבוא המודל כדי למצוא את הלקוח
 
-          if (client) {
-              // יצירת אובייקט אינטראקציה
-              const interaction = {
-                  type: 'whatsapp',
-                  direction: 'inbound',
-                  subject: 'הודעה נכנסת',
-                  content: msg.body,
-                  timestamp: new Date(),
-                  completed: true
-              };
+      // מציאת הלקוח לפי מספר טלפון
+      // נחפש גם עם 05X וגם עם פורמט בינלאומי ליתר ביטחון
+      const phoneNumber = fromNumber;
+      const cleanPhone = fromNumber.startsWith('0') ? fromNumber.substring(1) : fromNumber;
 
-              // הוספה ללקוח ושמירה
-              client.interactions.push(interaction);
-              await client.save();
+      const client = await Client.findOne({
+        $or: [
+          { 'personalInfo.phone': { $regex: cleanPhone } },
+          { 'personalInfo.whatsappPhone': { $regex: cleanPhone } }
+        ]
+      });
 
-              // קריאה לשירות ה-Nurturing לעצירת אוטומציות
-              // אנו מעבירים את האינטראקציה החדשה (האחרונה במערך)
-              const savedInteraction = client.interactions[client.interactions.length - 1];
-              
-              // בדיקה אם הלקוח הגיב - עצירת רצפים אוטומטיים
-              await leadNurturingService.checkInteractionForActiveNurturing(client._id, savedInteraction);
-              
-              // בדיקת טריגרים חדשים המבוססים על התגובה
-              await leadNurturingService.checkTriggersForInteraction(client._id, savedInteraction);
-          } else {
-              console.log(`⚠️ Message from unknown number: ${fromNumber}`);
-          }
+      if (client) {
+        // יצירת אובייקט אינטראקציה
+        const interaction = {
+          type: 'whatsapp',
+          direction: 'inbound',
+          subject: 'הודעה נכנסת',
+          content: msg.body,
+          timestamp: new Date(),
+          completed: true
+        };
 
-      } catch (error) {
-          console.error('Error processing incoming message logic:', error);
+        // הוספה ללקוח ושמירה
+        client.interactions.push(interaction);
+        await client.save();
+
+        // קריאה לשירות ה-Nurturing לעצירת אוטומציות
+        // אנו מעבירים את האינטראקציה החדשה (האחרונה במערך)
+        const savedInteraction = client.interactions[client.interactions.length - 1];
+
+        // בדיקה אם הלקוח הגיב - עצירת רצפים אוטומטיים
+        await leadNurturingService.checkInteractionForActiveNurturing(client._id, savedInteraction);
+
+        // בדיקת טריגרים חדשים המבוססים על התגובה
+        await leadNurturingService.checkTriggersForInteraction(client._id, savedInteraction);
+      } else {
+        console.log(`⚠️ Message from unknown number: ${fromNumber}`);
       }
+
+    } catch (error) {
+      console.error('Error processing incoming message logic:', error);
+    }
   }
 
   // בדיקת סטטוס חיבור

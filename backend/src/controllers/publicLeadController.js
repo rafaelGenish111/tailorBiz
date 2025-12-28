@@ -1,6 +1,6 @@
 const { validationResult } = require('express-validator');
 const Client = require('../models/Client');
-const leadNurturingService = require('../services/leadNurturingService');
+const leadNurturingService = require('../services/leadServiceV2');
 
 function normalizeILPhoneToDigits(phone) {
   if (!phone) return '';
