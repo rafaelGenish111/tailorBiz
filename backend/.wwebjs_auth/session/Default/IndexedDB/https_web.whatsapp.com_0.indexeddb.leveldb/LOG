@@ -1,30 +1,31 @@
-2025/12/28-11:23:09.314 dc03 Reusing MANIFEST /Users/bestflow/Documents/projects/bizflow-website/backend/.wwebjs_auth/session/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/12/28-11:23:09.314 dc03 Recovering log #556
-2025/12/28-11:23:09.358 dc03 Reusing old log /Users/bestflow/Documents/projects/bizflow-website/backend/.wwebjs_auth/session/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/000556.log 
-2025/12/28-11:23:11.424 28f03 Level-0 table #569: started
-2025/12/28-11:23:11.439 28f03 Level-0 table #569: 841378 bytes OK
-2025/12/28-11:23:11.451 28f03 Delete type=0 #556
-2025/12/28-11:23:11.453 28f03 Manual compaction at level-0 from '\x00.\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00/\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/12/28-11:23:11.533 21403 Compacting 1@1 + 9@2 files
-2025/12/28-11:23:11.606 21403 Generated table #570@1: 87971 keys, 2237534 bytes
-2025/12/28-11:23:11.655 21403 Generated table #571@1: 37902 keys, 2214363 bytes
-2025/12/28-11:23:11.707 21403 Generated table #572@1: 46791 keys, 2207555 bytes
-2025/12/28-11:23:11.733 21403 Generated table #573@1: 6991 keys, 2146840 bytes
-2025/12/28-11:23:11.754 21403 Generated table #574@1: 979 keys, 2139139 bytes
-2025/12/28-11:23:11.776 21403 Generated table #575@1: 996 keys, 2137899 bytes
-2025/12/28-11:23:11.801 21403 Generated table #576@1: 6697 keys, 2156414 bytes
-2025/12/28-11:23:11.849 21403 Generated table #577@1: 32343 keys, 2238769 bytes
-2025/12/28-11:23:11.882 21403 Generated table #578@1: 36760 keys, 2173175 bytes
-2025/12/28-11:23:11.889 21403 Generated table #579@1: 984 keys, 82374 bytes
-2025/12/28-11:23:11.889 21403 Compacted 1@1 + 9@2 files => 19734062 bytes
-2025/12/28-11:23:11.899 21403 compacted to: files[ 0 0 10 0 0 0 0 ]
-2025/12/28-11:23:11.899 21403 Delete type=2 #559
-2025/12/28-11:23:11.899 21403 Delete type=2 #565
-2025/12/28-11:23:11.899 21403 Delete type=2 #564
-2025/12/28-11:23:11.899 21403 Delete type=2 #558
-2025/12/28-11:23:11.899 21403 Delete type=2 #566
-2025/12/28-11:23:11.899 21403 Delete type=2 #563
-2025/12/28-11:23:11.899 21403 Delete type=2 #562
-2025/12/28-11:23:11.899 21403 Delete type=2 #560
-2025/12/28-11:23:11.899 21403 Delete type=2 #561
-2025/12/28-11:23:11.899 21403 Delete type=2 #569
+2025/12/28-11:28:20.738 d303 Reusing MANIFEST /Users/bestflow/Documents/projects/bizflow-website/backend/.wwebjs_auth/session/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/12/28-11:28:20.738 d303 Recovering log #594
+2025/12/28-11:28:20.750 d303 Reusing old log /Users/bestflow/Documents/projects/bizflow-website/backend/.wwebjs_auth/session/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/000594.log 
+2025/12/28-11:28:22.879 28d03 Level-0 table #608: started
+2025/12/28-11:28:22.888 28d03 Level-0 table #608: 176454 bytes OK
+2025/12/28-11:28:22.899 28d03 Delete type=0 #594
+2025/12/28-11:28:22.899 28d03 Manual compaction at level-0 from '\x001\x00\x00\x00' @ 72057594037927935 : 1 .. '\x002\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/12/28-11:28:22.988 e503 Compacting 1@1 + 10@2 files
+2025/12/28-11:28:23.053 e503 Generated table #609@1: 87801 keys, 2236446 bytes
+2025/12/28-11:28:23.104 e503 Generated table #610@1: 41605 keys, 2219767 bytes
+2025/12/28-11:28:23.153 e503 Generated table #611@1: 45311 keys, 2205015 bytes
+2025/12/28-11:28:23.176 e503 Generated table #612@1: 9127 keys, 2154361 bytes
+2025/12/28-11:28:23.193 e503 Generated table #613@1: 962 keys, 2140424 bytes
+2025/12/28-11:28:23.209 e503 Generated table #614@1: 985 keys, 2140741 bytes
+2025/12/28-11:28:23.229 e503 Generated table #615@1: 5020 keys, 2146925 bytes
+2025/12/28-11:28:23.277 e503 Generated table #616@1: 31980 keys, 2239734 bytes
+2025/12/28-11:28:23.310 e503 Generated table #617@1: 28498 keys, 2168867 bytes
+2025/12/28-11:28:23.324 e503 Generated table #618@1: 11639 keys, 316995 bytes
+2025/12/28-11:28:23.324 e503 Compacted 1@1 + 10@2 files => 19969275 bytes
+2025/12/28-11:28:23.332 e503 compacted to: files[ 0 0 10 0 0 0 0 ]
+2025/12/28-11:28:23.333 e503 Delete type=2 #604
+2025/12/28-11:28:23.333 e503 Delete type=2 #599
+2025/12/28-11:28:23.333 e503 Delete type=2 #598
+2025/12/28-11:28:23.333 e503 Delete type=2 #605
+2025/12/28-11:28:23.333 e503 Delete type=2 #601
+2025/12/28-11:28:23.333 e503 Delete type=2 #600
+2025/12/28-11:28:23.333 e503 Delete type=2 #602
+2025/12/28-11:28:23.333 e503 Delete type=2 #603
+2025/12/28-11:28:23.333 e503 Delete type=2 #608
+2025/12/28-11:28:23.333 e503 Delete type=2 #596
+2025/12/28-11:28:23.333 e503 Delete type=2 #597

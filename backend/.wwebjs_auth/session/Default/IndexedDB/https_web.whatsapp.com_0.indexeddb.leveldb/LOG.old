@@ -1,3 +1,31 @@
-2025/12/28-11:23:04.811 cb03 Reusing MANIFEST /Users/bestflow/Documents/projects/bizflow-website/backend/.wwebjs_auth/session/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/12/28-11:23:04.811 cb03 Recovering log #556
-2025/12/28-11:23:04.855 cb03 Reusing old log /Users/bestflow/Documents/projects/bizflow-website/backend/.wwebjs_auth/session/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/000556.log 
+2025/12/28-11:28:06.879 b203 Reusing MANIFEST /Users/bestflow/Documents/projects/bizflow-website/backend/.wwebjs_auth/session/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/12/28-11:28:06.879 b203 Recovering log #581
+2025/12/28-11:28:06.905 b203 Reusing old log /Users/bestflow/Documents/projects/bizflow-website/backend/.wwebjs_auth/session/Default/IndexedDB/https_web.whatsapp.com_0.indexeddb.leveldb/000581.log 
+2025/12/28-11:28:09.027 29403 Level-0 table #595: started
+2025/12/28-11:28:09.035 29403 Level-0 table #595: 314623 bytes OK
+2025/12/28-11:28:09.047 29403 Delete type=0 #581
+2025/12/28-11:28:09.048 29403 Manual compaction at level-0 from '\x000\x00\x00\x00' @ 72057594037927935 : 1 .. '\x001\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/12/28-11:28:09.141 e003 Compacting 1@1 + 10@2 files
+2025/12/28-11:28:09.214 e003 Generated table #596@1: 88054 keys, 2238639 bytes
+2025/12/28-11:28:09.262 e003 Generated table #597@1: 40733 keys, 2218563 bytes
+2025/12/28-11:28:09.315 e003 Generated table #598@1: 45698 keys, 2205006 bytes
+2025/12/28-11:28:09.338 e003 Generated table #599@1: 8560 keys, 2149264 bytes
+2025/12/28-11:28:09.359 e003 Generated table #600@1: 970 keys, 2139139 bytes
+2025/12/28-11:28:09.374 e003 Generated table #601@1: 983 keys, 2144947 bytes
+2025/12/28-11:28:09.401 e003 Generated table #602@1: 5385 keys, 2148755 bytes
+2025/12/28-11:28:09.456 e003 Generated table #603@1: 32301 keys, 2236321 bytes
+2025/12/28-11:28:09.491 e003 Generated table #604@1: 29196 keys, 2170604 bytes
+2025/12/28-11:28:09.504 e003 Generated table #605@1: 10224 keys, 289373 bytes
+2025/12/28-11:28:09.504 e003 Compacted 1@1 + 10@2 files => 19940611 bytes
+2025/12/28-11:28:09.514 e003 compacted to: files[ 0 0 10 0 0 0 0 ]
+2025/12/28-11:28:09.514 e003 Delete type=2 #588
+2025/12/28-11:28:09.514 e003 Delete type=2 #589
+2025/12/28-11:28:09.514 e003 Delete type=2 #587
+2025/12/28-11:28:09.514 e003 Delete type=2 #586
+2025/12/28-11:28:09.514 e003 Delete type=2 #592
+2025/12/28-11:28:09.514 e003 Delete type=2 #584
+2025/12/28-11:28:09.514 e003 Delete type=2 #590
+2025/12/28-11:28:09.514 e003 Delete type=2 #591
+2025/12/28-11:28:09.514 e003 Delete type=2 #585
+2025/12/28-11:28:09.514 e003 Delete type=2 #595
+2025/12/28-11:28:09.514 e003 Delete type=2 #583
