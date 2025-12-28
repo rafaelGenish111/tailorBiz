@@ -32,7 +32,7 @@ import {
   ContentCopy as DuplicateIcon
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../../admin/utils/api';
 import QuoteEditor from './QuoteEditor';
 
 // ב-Production (Vercel) נשתמש ב-/api, בלוקאל נגדיר VITE_API_URL=http://localhost:5000/api
@@ -125,16 +125,16 @@ const QuotesTab = ({ clientId, clientName }) => {
 
   const { data: quotesData, isLoading, error } = useQuery({
     queryKey: ['clientQuotes', clientId],
-    queryFn: () => axios.get(`${API_URL}/quotes/client/${clientId}`).then(res => res.data)
+    queryFn: () => api.get(`/quotes/client/${clientId}`).then(res => res.data)
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (quoteId) => axios.delete(`${API_URL}/quotes/${quoteId}`),
+    mutationFn: (quoteId) => api.delete(`/quotes/${quoteId}`),
     onSuccess: () => queryClient.invalidateQueries(['clientQuotes', clientId])
   });
 
   const duplicateMutation = useMutation({
-    mutationFn: (quoteId) => axios.post(`${API_URL}/quotes/${quoteId}/duplicate`).then(res => res.data),
+    mutationFn: (quoteId) => api.post(`/quotes/${quoteId}/duplicate`).then(res => res.data),
     onSuccess: (data) => {
       queryClient.invalidateQueries(['clientQuotes', clientId]);
       setSelectedQuote(data.data);
@@ -143,7 +143,7 @@ const QuotesTab = ({ clientId, clientName }) => {
   });
 
   const pdfMutation = useMutation({
-    mutationFn: (quoteId) => axios.post(`${API_URL}/quotes/${quoteId}/generate-pdf`).then(res => res.data),
+    mutationFn: (quoteId) => api.post(`/quotes/${quoteId}/generate-pdf`).then(res => res.data),
     onSuccess: () => {
       // רק רענון הנתונים - לא פותח אוטומטית
       queryClient.invalidateQueries(['clientQuotes', clientId]);
@@ -152,7 +152,7 @@ const QuotesTab = ({ clientId, clientName }) => {
 
   const createBasicQuoteMutation = useMutation({
     mutationFn: async (data) =>
-      axios.post(`${API_URL}/quotes/client/${clientId}`, data).then((res) => res.data),
+      api.post(`/quotes/client/${clientId}`, data).then((res) => res.data),
     onSuccess: () => {
       queryClient.invalidateQueries(['clientQuotes', clientId]);
       setBasicForm((prev) => ({
@@ -171,8 +171,8 @@ const QuotesTab = ({ clientId, clientName }) => {
     mutationFn: async ({ quoteId, file }) => {
       const formData = new FormData();
       formData.append('pdf', file);
-      return axios
-        .post(`${API_URL}/quotes/${quoteId}/upload-pdf`, formData, {
+      return api
+        .post(`/quotes/${quoteId}/upload-pdf`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
         .then((res) => res.data);

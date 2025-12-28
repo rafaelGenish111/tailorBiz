@@ -10,7 +10,7 @@ import {
   PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../../admin/utils/api';
 
 // ב-Production (Vercel) נשתמש ב-/api, בלוקאל נגדיר VITE_API_URL=http://localhost:5000/api
 const API_URL = import.meta.env.VITE_API_URL || '/api';
@@ -176,9 +176,9 @@ const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
   const saveMutation = useMutation({
     mutationFn: async (data) => {
       if (existingQuote?._id) {
-        return axios.put(`${API_URL}/quotes/${existingQuote._id}`, data).then(res => res.data);
+        return api.put(`/quotes/${existingQuote._id}`, data).then(res => res.data);
       } else {
-        return axios.post(`${API_URL}/quotes/client/${clientId}`, data).then(res => res.data);
+        return api.post(`/quotes/client/${clientId}`, data).then(res => res.data);
       }
     },
     onSuccess: (data) => {
@@ -190,7 +190,7 @@ const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
   // Generate PDF mutation
   const pdfMutation = useMutation({
     mutationFn: (quoteId) => 
-      axios.post(`${API_URL}/quotes/${quoteId}/generate-pdf`).then(res => res.data),
+      api.post(`/quotes/${quoteId}/generate-pdf`).then(res => res.data),
     onSuccess: (data) => {
       // רק רענון הנתונים ועדכון ה-state - לא פותח אוטומטית
       queryClient.invalidateQueries(['clientQuotes', clientId]);
@@ -206,8 +206,8 @@ const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
     mutationFn: async ({ quoteId, file }) => {
       const formData = new FormData();
       formData.append('pdf', file);
-      return axios
-        .post(`${API_URL}/quotes/${quoteId}/upload-pdf`, formData, {
+      return api
+        .post(`/quotes/${quoteId}/upload-pdf`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
         .then((res) => res.data);
