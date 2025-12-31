@@ -64,27 +64,6 @@ function TestimonialCard({ testimonial, isCenter }) {
         transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
-      {/* Badge */}
-      {isCenter && (
-        <Box
-          sx={{
-            position: 'absolute',
-            top: -12,
-            right: 20,
-            px: 2,
-            py: 0.5,
-            borderRadius: 1,
-            bgcolor: 'secondary.main',
-            color: 'white',
-            fontSize: '0.75rem',
-            fontWeight: 700,
-            boxShadow: '0 4px 12px rgba(0, 188, 212, 0.4)',
-          }}
-        >
-          המלצה מומלצת ⭐
-        </Box>
-      )}
-
       {/* אייקון ציטוט */}
       <Box
         sx={{

@@ -40,7 +40,41 @@ function HeroSection() {
         bgcolor: '#FFFFFF',
       }}
     >
-      {/* Animated Mesh Gradient Blobs Container */}
+      {/* Video Background - Layer 1 (Bottom) */}
+      <Box
+        component="video"
+        autoPlay
+        loop
+        muted
+        playsInline
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          zIndex: 0,
+        }}
+      >
+        <source src="/assets/images/background.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </Box>
+
+      {/* Glass Overlay - Layer 2 (Above Video, Below Content) */}
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(2px)',
+          WebkitBackdropFilter: 'blur(2px)',
+          zIndex: 1,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Animated Mesh Gradient Blobs Container - Optional, can be removed if too busy */}
       <Box
         sx={{
           position: 'absolute',
@@ -52,6 +86,7 @@ function HeroSection() {
           height: '100%',
           zIndex: 2,
           pointerEvents: 'none',
+          opacity: 0.3, // Reduced opacity to work with video
         }}
       >
         {/* Blob 1 - The Anchor (Purple/Violet) */}
@@ -162,7 +197,7 @@ function HeroSection() {
         />
       </Box>
 
-      {/* Glass Effect Overlay for Content */}
+      {/* Content Layer - Layer 3 (Top) */}
       <Container
         maxWidth="lg"
         sx={{
@@ -170,20 +205,6 @@ function HeroSection() {
           zIndex: 10,
           mx: 'auto',
           px: { xs: 3, md: 6 },
-          // Glass effect overlay
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: '-50%',
-            left: '-50%',
-            right: '-50%',
-            bottom: '-50%',
-            backdropFilter: 'blur(2px)',
-            WebkitBackdropFilter: 'blur(2px)',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            zIndex: -1,
-            pointerEvents: 'none',
-          },
         }}
       >
         <Box
