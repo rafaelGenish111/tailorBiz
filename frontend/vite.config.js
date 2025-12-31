@@ -48,6 +48,13 @@ export default defineConfig({
   server: {
     host: '0.0.0.0', // מאפשר גישה מהרשת המקומית
     port: 5173,
+    proxy: {
+      '/api': {
+        target: process.env.VITE_API_URL || 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
   // Optimization: Split vendor code to reduce chunk size
   build: {
