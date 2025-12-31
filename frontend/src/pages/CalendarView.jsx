@@ -30,7 +30,6 @@ import {
   Add as AddIcon
 } from '@mui/icons-material';
 import { useCalendarView, useCreateTask, useUpdateTask } from '../admin/hooks/useTasks';
-import TaskForm from '../admin/components/content/tasks/TaskForm';
 import TaskModal from '../components/tasks/TaskModal';
 import {
   format,
@@ -238,8 +237,7 @@ const CalendarView = () => {
   const [selectedEvent, setSelectedEvent] = useState(null); // For detailed view
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [viewMode, setViewMode] = useState('week'); // 'day' | 'week' | 'month'
-  const [createTaskDialogOpen, setCreateTaskDialogOpen] = useState(false);
-  const createFormId = 'calendar-task-create-form';
+  const [createTaskInitialData, setCreateTaskInitialData] = useState(null);
   const [dragPreview, setDragPreview] = useState(null); // { taskId, startTime, endTime, displayTitle, title, __kind, color, priority }
   const dragStateRef = useRef(null);
   const gridBodyRef = useRef(null);
@@ -280,7 +278,7 @@ const CalendarView = () => {
   const handleCreateTask = (data) => {
     createTask.mutate(data, {
         onSuccess: () => {
-            setCreateTaskDialogOpen(false);
+            setCreateTaskInitialData(null);
         }
     });
   };
@@ -763,16 +761,36 @@ const CalendarView = () => {
                     }}
                   >
                   {/* Slot lines (30 דקות) */}
-                  {Array.from({ length: totalSlots }).map((_, slotIdx) => (
-                    <Box
-                      key={`slot-${slotIdx}`}
-                      sx={{
-                        height: HOUR_HEIGHT / slotsPerHour,
-                        borderBottom: 1,
-                        borderColor: slotIdx % slotsPerHour === 0 ? 'divider' : 'rgba(0,0,0,0.06)'
-                      }}
-                    />
-                      ))}
+                  {Array.from({ length: totalSlots }).map((_, slotIdx) => {
+                    const slotStartTime = addMinutes(
+                      setMinutes(setHours(new Date(day), START_HOUR), 0),
+                      slotIdx * SLOT_MINUTES
+                    );
+                    return (
+                      <Box
+                        key={`slot-${slotIdx}`}
+                        onClick={(e) => {
+                          // רק אם לא לחיצה על אירוע
+                          if (e.target === e.currentTarget) {
+                            const startTime = snapToSlot(slotStartTime);
+                            setCreateTaskInitialData({
+                              startDate: startTime,
+                              dueDate: addMinutes(startTime, 60) // ברירת מחדל שעה
+                            });
+                          }
+                        }}
+                        sx={{
+                          height: HOUR_HEIGHT / slotsPerHour,
+                          borderBottom: 1,
+                          borderColor: slotIdx % slotsPerHour === 0 ? 'divider' : 'rgba(0,0,0,0.06)',
+                          cursor: 'pointer',
+                          '&:hover': {
+                            bgcolor: 'rgba(25, 118, 210, 0.05)'
+                          }
+                        }}
+                      />
+                    );
+                  })}
 
                       {/* Events */}
                       {laidOut.map(event => {
@@ -1091,7 +1109,13 @@ const CalendarView = () => {
               variant="contained" 
               color="primary" 
               startIcon={<AddIcon />}
-              onClick={() => setCreateTaskDialogOpen(true)}
+              onClick={() => {
+                const defaultDate = new Date();
+                setCreateTaskInitialData({
+                  startDate: defaultDate,
+                  dueDate: addHours(defaultDate, 1)
+                });
+              }}
            >
               משימה חדשה
            </Button>
@@ -1203,7 +1227,7 @@ const CalendarView = () => {
       
       {/* Day Click List Dialog (Only for Month View selection) */}
       <Dialog 
-         open={Boolean(selectedDate) && !selectedEvent && !createTaskDialogOpen} 
+         open={Boolean(selectedDate) && !selectedEvent && !createTaskInitialData} 
          onClose={() => setSelectedDate(null)}
          maxWidth="sm"
          fullWidth
@@ -1247,9 +1271,15 @@ const CalendarView = () => {
             <Button 
               variant="contained" 
               onClick={() => {
-                  // Close this dialog and open Create Task
-                  setCreateTaskDialogOpen(true);
-                  // Keep selectedDate so it can be used as default
+                  // Close this dialog and open Create Task Modal
+                  const defaultTime = selectedDate 
+                    ? setHours(setMinutes(new Date(selectedDate), 0), 10)
+                    : new Date();
+                  setCreateTaskInitialData({
+                    startDate: defaultTime,
+                    dueDate: addHours(defaultTime, 1)
+                  });
+                  setSelectedDate(null);
               }}
             >
                 הוסף משימה
@@ -1257,46 +1287,13 @@ const CalendarView = () => {
          </DialogActions>
       </Dialog>
 
-      {/* Create Task Dialog */}
-      <Dialog
-        open={createTaskDialogOpen}
-        onClose={() => setCreateTaskDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          <Typography variant="h6" fontWeight="bold">
-            משימה חדשה
-          </Typography>
-        </DialogTitle>
-        <DialogContent dividers>
-          <TaskForm 
-            formId={createFormId}
-            showActions={false}
-            initialData={{ 
-                dueDate: selectedDate 
-                    ? format(setHours(setMinutes(selectedDate, 0), 10), "yyyy-MM-dd'T'HH:mm") // Default to 10:00 on selected day
-                    : format(new Date(), "yyyy-MM-dd'T'HH:mm") 
-            }}
-            onSubmit={handleCreateTask}
-            onCancel={() => setCreateTaskDialogOpen(false)}
-            isLoading={createTask.isPending}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCreateTaskDialogOpen(false)} disabled={createTask.isPending}>
-            ביטול
-          </Button>
-          <Button
-            type="submit"
-            form={createFormId}
-            variant="contained"
-            disabled={createTask.isPending}
-          >
-            {createTask.isPending ? 'שומר…' : 'צור משימה'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Create Task Modal */}
+      <TaskModal
+        open={Boolean(createTaskInitialData)}
+        taskId={null}
+        initialData={createTaskInitialData}
+        onClose={() => setCreateTaskInitialData(null)}
+      />
     </Box>
   );
 };
