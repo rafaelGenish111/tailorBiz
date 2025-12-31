@@ -4,9 +4,12 @@ const router = express.Router();
 const huntingPoolController = require('../controllers/huntingPoolController');
 const { protect, requireAnyModule } = require('../middleware/auth.middleware');
 
-// כל ה-routes דורשים אימות
+// --- נתיבים פתוחים (עבור התוסף) ---
+// שים לב: זה חייב להיות לפני ה-protect!
+router.post('/add', huntingPoolController.addFromExtension);
+
+// --- נתיבים מוגנים (עבור המערכת) ---
 router.use(protect);
-// שימוש באותן הרשאות כמו לידים/לקוחות (אדמין תמיד מותר)
 router.use(requireAnyModule(['leads', 'clients']));
 
 router

@@ -12,6 +12,7 @@ import {
   IconButton
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
@@ -33,8 +34,11 @@ const ClientsManager = () => {
   const uploadImage = useUploadImage();
 
   const [form, setForm] = React.useState({
+    _id: null,
     name: '',
     websiteUrl: '',
+    projectTitle: '',
+    description: '',
     isPublished: true,
     logo: null
   });
@@ -47,15 +51,48 @@ const ClientsManager = () => {
     return res?.data?.data;
   };
 
-  const handleCreate = async () => {
+  const handleSubmit = async () => {
     if (!form.logo?.url) return;
-    await createClient.mutateAsync({
-      name: form.name,
-      websiteUrl: form.websiteUrl,
-      isPublished: form.isPublished,
-      logo: form.logo
+
+    if (form._id) {
+      // Update
+      await updateClient.mutateAsync({
+        id: form._id,
+        data: {
+          name: form.name,
+          websiteUrl: form.websiteUrl,
+          projectTitle: form.projectTitle,
+          description: form.description,
+          isPublished: form.isPublished,
+          logo: form.logo
+        }
+      });
+    } else {
+      // Create
+      await createClient.mutateAsync({
+        name: form.name,
+        websiteUrl: form.websiteUrl,
+        projectTitle: form.projectTitle,
+        description: form.description,
+        isPublished: form.isPublished,
+        logo: form.logo
+      });
+    }
+    setForm({ _id: null, name: '', websiteUrl: '', projectTitle: '', description: '', isPublished: true, logo: null });
+  };
+
+  const handleEdit = (client) => {
+    setForm({
+      _id: client._id,
+      name: client.name,
+      websiteUrl: client.websiteUrl || '',
+      projectTitle: client.projectTitle || '',
+      description: client.description || '',
+      isPublished: client.isPublished,
+      logo: client.logo
     });
-    setForm({ name: '', websiteUrl: '', isPublished: true, logo: null });
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const move = async (index, dir) => {
@@ -78,18 +115,31 @@ const ClientsManager = () => {
       </Box>
 
       <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, mb: 3 }}>
-        <Typography fontWeight={800} sx={{ mb: 1.5 }}>הוסף לקוח</Typography>
+        <Typography fontWeight={800} sx={{ mb: 1.5 }}>{form._id ? 'עריכת לקוח' : 'הוסף לקוח'}</Typography>
         <Grid container spacing={2}>
-          <Grid item xs={12} md={4}>
-            <TextField fullWidth label="שם" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
+          <Grid item xs={12} md={6}>
+            <TextField fullWidth label="שם הלקוח" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
           </Grid>
-          <Grid item xs={12} md={4}>
-            <TextField fullWidth label="קישור אתר" value={form.websiteUrl} onChange={(e) => setForm((p) => ({ ...p, websiteUrl: e.target.value }))} />
+          <Grid item xs={12} md={6}>
+            <TextField fullWidth label="קישור לאתר" value={form.websiteUrl} onChange={(e) => setForm((p) => ({ ...p, websiteUrl: e.target.value }))} />
           </Grid>
-          <Grid item xs={12} md={4}>
-            <Stack direction="row" spacing={1} alignItems="center">
+          <Grid item xs={12} md={6}>
+            <TextField fullWidth label="כותרת הפרויקט (למשל: מערכת CRM)" value={form.projectTitle} onChange={(e) => setForm((p) => ({ ...p, projectTitle: e.target.value }))} />
+          </Grid>
+          <Grid item xs={12} md={12}>
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              label="תיאור הפרויקט (יופיע בכרטיס)"
+              value={form.description}
+              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ height: '100%' }}>
               <Button variant="outlined" component="label">
-                העלה לוגו
+                {form.logo?.url ? 'החלף לוגו' : 'העלה לוגו'}
                 <input
                   hidden
                   type="file"
@@ -111,9 +161,14 @@ const ClientsManager = () => {
               label="מפורסם"
             />
           </Grid>
-          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button variant="contained" onClick={handleCreate} disabled={createClient.isPending || !form.logo?.url}>
-              הוסף
+          <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+            {form._id && (
+              <Button variant="text" onClick={() => setForm({ _id: null, name: '', websiteUrl: '', projectTitle: '', description: '', isPublished: true, logo: null })}>
+                ביטול עריכה
+              </Button>
+            )}
+            <Button variant="contained" onClick={handleSubmit} disabled={createClient.isPending || updateClient.isPending || !form.logo?.url}>
+              {form._id ? 'עדכן לקוח' : 'הוסף לקוח'}
             </Button>
           </Grid>
         </Grid>
@@ -146,6 +201,7 @@ const ClientsManager = () => {
                 />
                 <IconButton size="small" onClick={() => move(idx, -1)}><ArrowUpwardIcon fontSize="small" /></IconButton>
                 <IconButton size="small" onClick={() => move(idx, 1)}><ArrowDownwardIcon fontSize="small" /></IconButton>
+                <IconButton size="small" onClick={() => handleEdit(c)}><EditIcon fontSize="small" /></IconButton>
                 <IconButton
                   size="small"
                   color="error"

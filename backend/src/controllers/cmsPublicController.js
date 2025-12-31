@@ -1,6 +1,19 @@
 const PageContent = require('../models/PageContent');
 const Article = require('../models/Article');
 const ClientLogo = require('../models/ClientLogo');
+const Testimonial = require('../models/Testimonial');
+
+exports.getPublishedTestimonials = async (req, res) => {
+  try {
+    const testimonials = await Testimonial.find({ isVisible: true, status: 'approved' })
+      .sort({ displayOrder: 1, createdAt: -1 })
+      .lean();
+    return res.json({ success: true, data: testimonials });
+  } catch (error) {
+    console.error('Error in getPublishedTestimonials:', error);
+    return res.status(500).json({ success: false, message: 'שגיאה בטעינת המלצות', error: error.message });
+  }
+};
 
 exports.getPublishedPageBySlug = async (req, res) => {
   try {

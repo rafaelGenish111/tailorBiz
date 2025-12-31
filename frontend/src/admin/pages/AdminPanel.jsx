@@ -12,6 +12,7 @@ import GanttView from '../../pages/GanttView';
 import NotificationsCenter from '../../pages/NotificationsCenter';
 import NurturingDashboard from '../../pages/NurturingDashboard';
 import ActiveNurturing from '../../pages/ActiveNurturing';
+import NurturingTemplateEditor from '../../pages/NurturingTemplateEditor';
 import MarketingDashboard from '../../pages/admin/marketing/MarketingDashboard';
 import CampaignsPage from '../../pages/admin/marketing/CampaignsPage';
 import CampaignForm from '../../pages/admin/marketing/CampaignForm';
@@ -57,6 +58,8 @@ function AdminPanel() {
           {/* Lead Nurturing */}
           <Route path="nurturing" element={<RequireModuleAccess requiredModule="marketing"><NurturingDashboard /></RequireModuleAccess>} />
           <Route path="nurturing/active" element={<RequireModuleAccess requiredModule="marketing"><ActiveNurturing /></RequireModuleAccess>} />
+          <Route path="nurturing/new" element={<RequireModuleAccess requiredModule="marketing"><NurturingTemplateEditor /></RequireModuleAccess>} />
+          <Route path="nurturing/:id/edit" element={<RequireModuleAccess requiredModule="marketing"><NurturingTemplateEditor /></RequireModuleAccess>} />
           {/* Marketing Hub */}
           <Route path="marketing" element={<RequireModuleAccess requiredModule="marketing"><MarketingDashboard /></RequireModuleAccess>} />
           <Route path="marketing/campaigns" element={<RequireModuleAccess requiredModule="marketing"><CampaignsPage /></RequireModuleAccess>} />

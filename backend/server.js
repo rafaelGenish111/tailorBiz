@@ -24,6 +24,12 @@ if (!IS_VERCEL) {
       if (process.env.ENABLE_REMINDERS === 'true') reminderService.startAllReminders();
       if (process.env.ENABLE_LEAD_NURTURING === 'true') leadNurturingService.start();
       initializeAutomationEngine().catch(console.error);
+
+      // אתחול WhatsApp Service
+      const whatsappService = require('./src/services/whatsappService');
+      if (process.env.ENABLE_WHATSAPP === 'true' || process.env.NODE_ENV === 'development') {
+        whatsappService.initialize();
+      }
     });
   }).catch(err => {
     console.error('❌ Local Server Error:', err);

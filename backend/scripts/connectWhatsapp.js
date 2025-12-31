@@ -8,17 +8,17 @@ const client = new Client({
         dataPath: './.wwebjs_auth'
     }),
     puppeteer: {
-        headless: true, // שנה ל-false אם אתה רוצה לראות את הדפדפן נפתח (לצורך דיבוג)
+        headless: false, // שונה ל-false כדי לראות מה קורה
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
             '--disable-accelerated-2d-canvas',
             '--no-first-run',
-            '--no-zygote',
-            '--single-process', // <- זה יכול לעזור בבעיות זיכרון
             '--disable-gpu'
+            // הסרתי --no-zygote ו--single-process כי הם יכולים לגרום לבעיות
         ],
+        timeout: 120000 // 2 דקות timeout
     }
 });
 
@@ -51,7 +51,40 @@ client.on('disconnected', (reason) => {
     console.log('❌ Client was logged out', reason);
 });
 
-console.log('🚀 Starting client...');
-client.initialize().catch(err => {
-    console.error('❌ Initialization error:', err.message);
+// הוסף event listeners נוספים לזיהוי בעיות
+client.on('change_state', (state) => {
+    console.log('🔄 WhatsApp state changed:', state);
 });
+
+client.on('error', (error) => {
+    console.error('❌ WhatsApp client error:', error.message);
+    if (error.stack) {
+        console.error('❌ Error stack:', error.stack);
+    }
+});
+
+console.log('🚀 Starting client...');
+console.log('⏳ This may take a minute - initializing Puppeteer and Chrome...');
+
+// הוסף timeout כדי לראות אם יש בעיה
+const timeout = setTimeout(() => {
+    console.log('⏳ Still initializing... (this is normal, can take 30-60 seconds)');
+    console.log('⏳ If this takes too long, there might be a Chrome/Puppeteer issue');
+}, 10000);
+
+client.initialize()
+    .then(() => {
+        clearTimeout(timeout);
+        console.log('✅ Client initialization promise resolved');
+    })
+    .catch(err => {
+        clearTimeout(timeout);
+        console.error('❌ Initialization error:', err.message);
+        console.error('❌ Error stack:', err.stack);
+        console.error('\n💡 Possible solutions:');
+        console.error('   1. Make sure Chrome/Chromium is installed');
+        console.error('   2. Try running: npm install puppeteer --save');
+        console.error('   3. Check if port 9222 is available');
+        console.error('   4. Try deleting .wwebjs_auth and .wwebjs_cache folders');
+        process.exit(1);
+    });

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { width: 300px; font-family: 'Segoe UI', sans-serif; padding: 15px; text-align: center; }
+    h2 { margin-top: 0; color: #0077b5; } /* LinkedIn Blue */
+    .btn {
+      background: #0077b5; color: white; border: none; padding: 10px 20px;
+      border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px;
+      transition: background 0.3s;
+    }
+    .btn:hover { background: #005582; }
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
+    #status { margin-top: 15px; font-size: 14px; min-height: 20px; }
+    .success { color: green; font-weight: bold; }
+    .error { color: red; }
+    .data-preview { text-align: right; background: #f0f2f5; padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 12px; display: none; }
+  </style>
+</head>
+<body>
+  <h2>BizFlow Hunter 🎯</h2>
+  <div id="dataPreview" class="data-preview">
+    </div>
+  <button id="scrapeBtn" class="btn">שמור ליד ל-CRM</button>
+  <div id="status"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

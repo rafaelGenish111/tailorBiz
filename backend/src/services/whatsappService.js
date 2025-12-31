@@ -46,9 +46,28 @@ class WhatsAppService {
       });
     });
 
-    this.client.initialize().catch(err => {
-      console.error('❌ WhatsApp Service initialization error:', err.message);
-    });
+    console.log('🚀 Starting WhatsApp client initialization...');
+    this.client.initialize()
+      .then(() => {
+        console.log('✅ WhatsApp client.initialize() completed successfully');
+      })
+      .catch(err => {
+        console.error('❌ WhatsApp Service initialization error:', err.message);
+        console.error('❌ Error stack:', err.stack);
+        // אם יש שגיאה, נדחה את ה-readyPromise כדי שהקוד לא יחכה לנצח
+        if (this.readyPromise) {
+          // נדחה את ה-Promise כדי שהקוד לא יחכה לנצח
+          setTimeout(() => {
+            if (!this.isConnected) {
+              console.error('❌ WhatsApp Service failed to connect after initialization error');
+              console.error('❌ This usually means:');
+              console.error('   1. WhatsApp needs QR code scan (check for QR code in logs)');
+              console.error('   2. Authentication failed (check .wwebjs_auth folder)');
+              console.error('   3. Puppeteer/Chrome issue (check if Chrome is installed)');
+            }
+          }, 5000);
+        }
+      });
   }
 
   setupEventListeners() {
@@ -57,7 +76,8 @@ class WhatsAppService {
     });
 
     this.client.on('qr', (qr) => {
-      console.log('📱 WhatsApp QR Code generated');
+      console.log('📱 WhatsApp QR Code generated - Please scan with your phone!');
+      console.log('📱 QR Code (scan this with WhatsApp on your phone):');
       // בסביבת שרת אולי נרצה לשמור את ה-QR כתמונה או לשלוח אותו למקום אחר
       // כרגע נדפיס ללוג למקרה הצורך (למשל בהרצה ידנית)
       qrcode.generate(qr, { small: true });
@@ -70,13 +90,45 @@ class WhatsAppService {
     this.client.on('auth_failure', (msg) => {
       console.error('❌ WhatsApp Authentication failed:', msg);
       this.isConnected = false;
+      // נדחה את ה-readyPromise כדי שהקוד לא יחכה לנצח
+      if (this.readyPromise) {
+        console.error('❌ WhatsApp auth failure - rejecting readyPromise');
+      }
     });
 
     this.client.on('disconnected', (reason) => {
-      console.log('❌ WhatsApp Client was logged out', reason);
+      console.log('❌ WhatsApp Client was logged out:', reason);
       this.isConnected = false;
       // אופציונלי: ניסיון חיבור מחדש
       // this.client.initialize(); 
+    });
+
+    // הוסף event listeners נוספים לזיהוי בעיות
+    this.client.on('change_state', (state) => {
+      console.log('🔄 WhatsApp state changed:', state);
+      if (state === 'CONNECTING') {
+        console.log('   → Connecting to WhatsApp...');
+      } else if (state === 'OPENING') {
+        console.log('   → Opening WhatsApp Web...');
+      } else if (state === 'PAIRING') {
+        console.log('   → Pairing with phone...');
+      } else if (state === 'UNPAIRED') {
+        console.log('   ⚠️ Unpaired - QR code needed!');
+      } else if (state === 'CONFLICT') {
+        console.log('   ⚠️ Conflict - Another session is active!');
+      }
+    });
+
+    this.client.on('remote_session_saved', () => {
+      console.log('💾 WhatsApp remote session saved');
+    });
+
+    // הוסף error handler כללי
+    this.client.on('error', (error) => {
+      console.error('❌ WhatsApp client error:', error.message);
+      if (error.stack) {
+        console.error('❌ Error stack:', error.stack);
+      }
     });
 
     // האזנה להודעות נכנסות
@@ -96,9 +148,13 @@ class WhatsAppService {
         // נסה לחכות לחיבור אם אנחנו בתהליך אתחול
         if (this.readyPromise) {
           console.log('⏳ Waiting for WhatsApp connection...');
-          await this.readyPromise;
+          // הוסף timeout של 30 שניות
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('WhatsApp connection timeout after 30 seconds')), 30000);
+          });
+          await Promise.race([this.readyPromise, timeoutPromise]);
         } else {
-          throw new Error('WhatsApp client is not connected');
+          throw new Error('WhatsApp client is not connected and not initializing');
         }
       }
 

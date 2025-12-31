@@ -6,62 +6,28 @@ import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import StarIcon from '@mui/icons-material/Star';
+import { publicCMS } from '../../utils/publicApi';
 
 const MotionBox = motion(Box);
 const MotionPaper = motion(Paper);
 
-const testimonials = [
-  {
-    id: 1,
-    name: 'יוסי כהן',
-    role: 'מנכ״ל, חברת טכנולוגיה',
-    avatar: '👨‍💼',
-    text: 'TailorBiz שינה לחלוטין את הדרך שבה אנחנו מנהלים את העסק. חסכנו 15 שעות שבועיות ושיפרנו את שביעות רצון הלקוחות ב-40%!',
-    rating: 5,
-    company: 'TechCorp',
-  },
-  {
-    id: 2,
-    name: 'שרה לוי',
-    role: 'מנהלת שיווק, סטארטאפ',
-    avatar: '👩‍💼',
-    text: 'הפלטפורמה הכי פשוטה ונוחה שהשתמשתי בה. הממשק האינטואיטיבי והתמיכה המעולה עשו את כל ההבדל. ממליצה בחום!',
-    rating: 5,
-    company: 'GrowthHub',
-  },
-  {
-    id: 3,
-    name: 'דוד ישראלי',
-    role: 'יזם ובעל עסק',
-    avatar: '🧑‍💻',
-    text: 'לקוחות שנעלמו לי חוזרים בזכות המערכת! התזכורות האוטומטיות והמעקב החכם הפכו את העסק שלי למכונה משומנת.',
-    rating: 5,
-    company: 'IsraelBiz',
-  },
-  {
-    id: 4,
-    name: 'מיכל אברהם',
-    role: 'מנהלת מכירות',
-    avatar: '👩‍💻',
-    text: 'הצוות שלנו התאהב במערכת מהיום הראשון. הכל כל כך פשוט ואוטומטי, פשוט חיסכנו המון זמן ועצבים!',
-    rating: 5,
-    company: 'SalesForce IL',
-  },
-  {
-    id: 5,
-    name: 'רון ברקוביץ',
-    role: 'מייסד, חברת ייעוץ',
-    avatar: '👨‍🏫',
-    text: 'ROI מדהים! המערכת החזירה את עצמה תוך 3 חודשים. הדיווחים והאנליטיקס עזרו לנו לקבל החלטות חכמות.',
-    rating: 5,
-    company: 'ConsultPro',
-  },
-];
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  if (imagePath.startsWith('http')) return imagePath;
+
+  // Get API URL from env or default
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  // Strip /api suffix to get origin
+  const origin = apiUrl.replace(/\/api\/?$/, '');
+
+  return `${origin}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+};
 
 function TestimonialCard({ testimonial, position, isCenter }) {
   const scale = isCenter ? 1 : 0.85;
   const opacity = isCenter ? 1 : 0.6;
   const zIndex = isCenter ? 10 : 1;
+  const imageUrl = getImageUrl(testimonial.image);
 
   return (
     <MotionPaper
@@ -166,7 +132,7 @@ function TestimonialCard({ testimonial, position, isCenter }) {
           transition: 'font-size 0.5s',
         }}
       >
-        "{testimonial.text}"
+        "{testimonial.content}"
       </Typography>
 
       {/* פרטי הלקוח */}
@@ -183,11 +149,16 @@ function TestimonialCard({ testimonial, position, isCenter }) {
             fontSize: '2rem',
             border: isCenter ? '2px solid' : 'none',
             borderColor: 'secondary.main',
+            overflow: 'hidden'
           }}
           role="img"
-          aria-label={`אווטר של ${testimonial.name}`}
+          aria-label={`אווטר של ${testimonial.clientName}`}
         >
-          {testimonial.avatar}
+          {imageUrl ? (
+            <Box component="img" src={imageUrl} alt={testimonial.clientName} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            testimonial.avatar || '👤'
+          )}
         </Box>
         <Box>
           <Typography
@@ -196,10 +167,10 @@ function TestimonialCard({ testimonial, position, isCenter }) {
             color={isCenter ? 'secondary.main' : 'primary.main'}
             sx={{ transition: 'color 0.5s' }}
           >
-            {testimonial.name}
+            {testimonial.clientName}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {testimonial.role}
+            {testimonial.clientRole}
           </Typography>
           <Typography
             variant="caption"
@@ -208,7 +179,7 @@ function TestimonialCard({ testimonial, position, isCenter }) {
               fontWeight: 600,
             }}
           >
-            {testimonial.company}
+            {testimonial.companyName}
           </Typography>
         </Box>
       </Box>
@@ -217,7 +188,21 @@ function TestimonialCard({ testimonial, position, isCenter }) {
 }
 
 function TestimonialsSection() {
+  const [testimonials, setTestimonials] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const res = await publicCMS.getTestimonials();
+        setTestimonials(res.data?.data || []);
+      } catch (err) {
+        console.error('Failed to fetch testimonials', err);
+      }
+    };
+    fetch();
+  }, []);
+
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -225,14 +210,14 @@ function TestimonialsSection() {
 
   // Auto-rotate every 5 seconds
   useEffect(() => {
-    if (!inView) return;
+    if (!inView || testimonials.length === 0) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % testimonials.length);
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [inView]);
+  }, [inView, testimonials]);
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
@@ -243,12 +228,22 @@ function TestimonialsSection() {
   };
 
   const getVisibleTestimonials = () => {
+    if (testimonials.length === 0) return [];
+    if (testimonials.length === 1) return [0, 0, 0];
+    if (testimonials.length === 2) {
+      // Just duplicate logic for 2 items to fill 3 slots
+      const prev = (currentIndex - 1 + testimonials.length) % testimonials.length;
+      const next = (currentIndex + 1) % testimonials.length;
+      return [prev, currentIndex, next];
+    }
     const prev = (currentIndex - 1 + testimonials.length) % testimonials.length;
     const next = (currentIndex + 1) % testimonials.length;
     return [prev, currentIndex, next];
   };
 
   const visibleIndices = getVisibleTestimonials();
+
+  if (testimonials.length === 0) return null;
 
   return (
     <Box
@@ -370,7 +365,7 @@ function TestimonialsSection() {
           >
             {visibleIndices.map((index, position) => (
               <TestimonialCard
-                key={testimonials[index].id}
+                key={`${testimonials[index]._id}-${position}`}
                 testimonial={testimonials[index]}
                 position={position}
                 isCenter={position === 1}

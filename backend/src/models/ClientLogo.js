@@ -13,6 +13,8 @@ const ClientLogoSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     websiteUrl: { type: String, trim: true },
+    projectTitle: { type: String, trim: true },
+    description: { type: String, trim: true },
     logo: { type: ImageSchema, required: true },
     order: { type: Number, default: 0, index: true },
     isPublished: { type: Boolean, default: true, index: true }

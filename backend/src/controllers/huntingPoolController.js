@@ -103,3 +103,80 @@ exports.updateProspectStatus = async (req, res) => {
     return res.status(500).json({ success: false, message: 'שגיאה בעדכון Prospect', error: error.message });
   }
 };
+
+exports.addFromExtension = async (req, res) => {
+  try {
+    const { name, platform, profileUrl, description, metadata } = req.body;
+    
+    // בדיקה אם קיים
+    const existing = await HuntingPool.findOne({ profileUrl });
+    if (existing) {
+      return res.status(200).json({ message: 'הליד כבר קיים במאגר' });
+    }
+
+    const newLead = await HuntingPool.create({
+      name,
+      platform,
+      profileUrl,
+      description,
+      status: 'new',
+      metadata
+    });
+
+    res.status(201).json({ success: true, data: newLead });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ... (הפונקציות הקיימות נשארות)
+
+// פונקציה חדשה לטיפול בתוסף הכרום
+exports.addFromExtension = async (req, res) => {
+  try {
+    console.log('📥 Received lead from extension:', req.body);
+    
+    const { name, platform, profileUrl, description, metadata } = req.body;
+
+    // 1. מציאת או יצירת Pool ברירת מחדל ללינקדאין
+    const defaultSectorName = 'LinkedIn Imports';
+    let pool = await HuntingPool.findOne({ sectorName: defaultSectorName });
+
+    if (!pool) {
+      pool = await HuntingPool.create({
+        sectorName: defaultSectorName,
+        description: 'לידים שיובאו אוטומטית מתוסף הכרום'
+      });
+      console.log('✨ Created new pool:', defaultSectorName);
+    }
+
+    // 2. בדיקה אם הליד כבר קיים ב-Pool הזה (לפי URL)
+    const existingProspect = pool.prospects.find(p => p.profileUrl === profileUrl);
+    if (existingProspect) {
+      return res.status(200).json({ 
+        success: true, 
+        message: 'הליד כבר קיים במערכת', 
+        exists: true 
+      });
+    }
+
+    // 3. הוספת הליד
+    pool.prospects.unshift({
+      contactPerson: name, // שם הליד
+      companyName: metadata?.role || description || 'Unknown', // תפקיד/חברה
+      platform: platform || 'linkedin',
+      profileUrl: profileUrl,
+      notes: description, // תיאור כללי
+      status: 'new',
+      metadata: metadata || {}
+    });
+
+    await pool.save();
+
+    return res.status(201).json({ success: true, message: 'הליד נשמר בהצלחה', data: pool });
+
+  } catch (error) {
+    console.error('❌ Error in addFromExtension:', error);
+    return res.status(500).json({ success: false, message: 'שגיאת שרת בשמירת הליד', error: error.message });
+  }
+};

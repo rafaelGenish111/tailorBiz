@@ -79,6 +79,10 @@ temp/
 *.tmp
 .cache/
 
+# WhatsApp Web.js session files
+backend/.wwebjs_auth/
+backend/.wwebjs_cache/
+
 # Vercel
 .vercel
 
@@ -88,6 +92,8 @@ temp/
 *.cert
 dummy
 examp.html
+
+
 
 
 

@@ -1,5 +1,6 @@
 // frontend/src/pages/NurturingDashboard.jsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Grid,
@@ -44,6 +45,7 @@ const api = axios.create({
 });
 
 const NurturingDashboard = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
@@ -143,7 +145,7 @@ const NurturingDashboard = () => {
           startIcon={<AddIcon />}
           variant="contained"
           onClick={() => {
-            toast.info('יצירת תבנית חדשה - יתווסף בהמשך');
+            navigate('/admin/nurturing/new');
           }}
           sx={{ width: { xs: '100%', md: 'auto' } }}
         >
@@ -293,7 +295,7 @@ const NurturingDashboard = () => {
                       <IconButton
                         size="small"
                         onClick={() => {
-                          toast.info('עריכת תבנית - יתווסף בהמשך');
+                          navigate(`/admin/nurturing/${template._id}/edit`);
                         }}
                       >
                         <EditIcon />

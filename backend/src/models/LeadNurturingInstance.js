@@ -22,7 +22,7 @@ const LeadNurturingInstanceSchema = new mongoose.Schema({
   // סטטוס הרצף
   status: {
     type: String,
-    enum: ['active', 'completed', 'stopped', 'paused'],
+    enum: ['active', 'completed', 'stopped', 'paused', 'error'],
     default: 'active'
   },
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, Typography, Grid, Paper, Link as MuiLink } from '@mui/material';
+import { Box, Container, Typography, Grid, Paper, Link as MuiLink, Stack } from '@mui/material';
 import { publicCMS } from '../utils/publicApi';
 
 const OurClients = () => {
@@ -25,33 +25,92 @@ const OurClients = () => {
           </Typography>
         </Box>
 
-        <Grid container spacing={2}>
+        <Stack spacing={4}>
           {clients.map((c) => (
-            <Grid item xs={6} sm={4} md={3} key={c._id}>
-              <Paper
-                variant="outlined"
+            <Paper
+              key={c._id}
+              variant="outlined"
+              sx={{
+                p: { xs: 3, md: 4 },
+                borderRadius: 4,
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                alignItems: { xs: 'flex-start', md: 'center' },
+                gap: { xs: 3, md: 6 },
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  borderColor: 'primary.main',
+                  boxShadow: '0 10px 40px -12px rgba(0,0,0,0.1)'
+                }
+              }}
+            >
+              {/* Logo Column */}
+              <Box
                 sx={{
-                  p: 2,
-                  height: 120,
+                  width: { xs: '100%', md: 240 },
+                  flexShrink: 0,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  p: 2,
+                  bgcolor: 'grey.50',
                   borderRadius: 3,
-                  borderColor: 'grey.100',
-                  bgcolor: 'white'
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  height: 160
                 }}
               >
-                {c.websiteUrl ? (
-                  <MuiLink href={c.websiteUrl} target="_blank" rel="noreferrer" sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Box component="img" src={c.logo?.url} alt={c.logo?.alt || c.name} sx={{ maxHeight: 56, maxWidth: '100%', opacity: 0.9 }} />
+                <Box
+                  component="img"
+                  src={c.logo?.url}
+                  alt={c.logo?.alt || c.name}
+                  sx={{
+                    maxHeight: '100%',
+                    maxWidth: '100%',
+                    objectFit: 'contain',
+                    filter: 'grayscale(100%)', // Optional: starts grayscale
+                    transition: 'filter 0.3s',
+                    '&:hover': { filter: 'none' }
+                  }}
+                />
+              </Box>
+
+              {/* Content Column */}
+              <Box sx={{ flex: 1, width: '100%' }}>
+                <Typography variant="overline" color="primary.main" fontWeight={700} sx={{ letterSpacing: 1 }}>
+                  {c.name}
+                </Typography>
+                <Typography variant="h4" fontWeight={800} sx={{ mb: 2, mt: 0.5 }}>
+                  {c.projectTitle || c.name}
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: '800px', lineHeight: 1.7 }}>
+                  {c.description || 'ללקוח זה עדיין לא הוזן תיאור פרויקט.'}
+                </Typography>
+
+                {c.websiteUrl && (
+                  <MuiLink
+                    href={c.websiteUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    underline="none"
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      fontWeight: 700,
+                      gap: 1,
+                      color: 'text.primary',
+                      transition: 'color 0.2s',
+                      '&:hover': { color: 'primary.main' }
+                    }}
+                  >
+                    ביקור באתר
+                    <Box component="span" sx={{ fontSize: '1.2em', lineHeight: 1 }}>→</Box>
                   </MuiLink>
-                ) : (
-                  <Box component="img" src={c.logo?.url} alt={c.logo?.alt || c.name} sx={{ maxHeight: 56, maxWidth: '100%', opacity: 0.9 }} />
                 )}
-              </Paper>
-            </Grid>
+              </Box>
+            </Paper>
           ))}
-        </Grid>
+        </Stack>
 
         {clients.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 6 }}>

@@ -17,6 +17,8 @@ exports.createClient = async (req, res) => {
     const created = await ClientLogo.create({
       name: req.body.name,
       websiteUrl: req.body.websiteUrl || '',
+      projectTitle: req.body.projectTitle || '',
+      description: req.body.description || '',
       logo: req.body.logo,
       order: req.body.order ?? 0,
       isPublished: req.body.isPublished ?? true

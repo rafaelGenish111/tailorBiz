@@ -14,6 +14,7 @@ export const publicCMS = {
   getArticles: (params) => api.get('/public/articles', { params }),
   getArticle: (slug) => api.get(`/public/articles/${slug}`),
   getClients: () => api.get('/public/clients'),
+  getTestimonials: () => api.get('/public/testimonials'),
   getSiteSettings: () => api.get('/public/site-settings')
 };
 
