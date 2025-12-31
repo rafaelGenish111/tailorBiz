@@ -39,6 +39,8 @@ if (!IS_VERCEL) {
 // --- מצב Vercel Serverless ---
 module.exports = async (req, res) => {
   console.log(`[Vercel] Incoming request: ${req.method} ${req.url}`);
+  console.log(`[Vercel] Request path: ${req.url}`);
+  console.log(`[Vercel] Request query:`, req.query);
 
   // הגדרת CORS headers מיד בתחילת ה-handler - לפני כל דבר אחר!
   // ב-Vercel serverless functions, צריך להשתמש ב-setHeader במקום header
@@ -94,9 +96,12 @@ module.exports = async (req, res) => {
 
     // יצירת/שימוש ב-app instance (cache כדי לא ליצור אותו מחדש בכל request)
     if (!appInstance) {
+      console.log('[Vercel] Creating app instance...');
       appInstance = await createApp();
+      console.log('[Vercel] App instance created');
     }
 
+    console.log('[Vercel] Handling request with Express app...');
     return appInstance(req, res);
 
   } catch (error) {
