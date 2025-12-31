@@ -1,7 +1,25 @@
 import axios from 'axios';
 
 // ב-Production (Vercel) נשתמש בנתיב יחסי /api, ובלוקאל אפשר להגדיר VITE_API_URL=http://localhost:5000/api
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+// אם לא מוגדר, ננסה לזהות אוטומטית את ה-backend URL
+const getApiBaseUrl = () => {
+  // אם יש VITE_API_URL מוגדר, נשתמש בו
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // אם אנחנו ב-production ויש backend URL ידוע, נשתמש בו
+  if (import.meta.env.PROD) {
+    // נבדוק אם יש backend URL ב-environment
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://tailor-biz-backend.vercel.app';
+    return `${backendUrl}/api`;
+  }
+  
+  // בלוקאל או אם אין הגדרה, נשתמש ב-relative path
+  return '/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Create axios instance
 const api = axios.create({
