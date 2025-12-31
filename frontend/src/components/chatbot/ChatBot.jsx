@@ -49,7 +49,7 @@ function ChatBot() {
   const [formFields, setFormFields] = useState([]);
   const [currentQuickReplies, setCurrentQuickReplies] = useState([
     { label: 'תכונות המערכת', value: 'features' },
-    { label: 'תמחור', value: 'pricing' },
+    // { label: 'תמחור', value: 'pricing' },
     { label: 'קבע דמו', value: 'demo' },
   ]);
   const [unreadCount, setUnreadCount] = useState(0);

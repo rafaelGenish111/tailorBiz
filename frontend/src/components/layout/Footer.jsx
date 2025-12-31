@@ -99,7 +99,7 @@ function Footer() {
               >
                 אודות
               </Link>
-              <Link
+              {/* <Link
                 component={RouterLink}
                 to="/pricing"
                 color="text.primary"
@@ -110,7 +110,7 @@ function Footer() {
                 }}
               >
                 תמחור
-              </Link>
+              </Link> */}
               <Link
                 component={RouterLink}
                 to="/contact"

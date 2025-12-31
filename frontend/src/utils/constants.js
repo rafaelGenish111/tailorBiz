@@ -15,7 +15,7 @@ export const SOCIAL_LINKS = {
 export const NAV_ITEMS = [
   { label: 'אודות', path: '/about' },
   { label: 'תכונות', path: '/#features' },
-  { label: 'תמחור', path: '/pricing' },
+  // { label: 'תמחור', path: '/pricing' },
   { label: 'צור קשר', path: '/contact' },
 ];
 
