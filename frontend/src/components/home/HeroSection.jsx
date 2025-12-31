@@ -232,7 +232,7 @@ function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <Box
+            {/* <Box
               sx={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -250,7 +250,7 @@ function HeroSection() {
               <Typography variant="h6" sx={{ fontWeight: 700, color: 'secondary.main' }}>
                 בלי דמי מנוי חודשיים - הנכס נשאר שלך
               </Typography>
-            </Box>
+            </Box> */}
           </motion.div>
 
           {/* כותרת ראשית - Apple/Big Tech Style */}

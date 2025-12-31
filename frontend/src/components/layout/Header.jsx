@@ -36,7 +36,6 @@ function Header() {
     { label: 'אודות', path: '/about' },
     { label: 'תכונות', path: '/#features' },
     { label: 'לקוחות', path: '/clients' },
-    { label: 'תמחור', path: '/pricing' },
     { label: 'צור קשר', path: '/contact' },
   ];
 
