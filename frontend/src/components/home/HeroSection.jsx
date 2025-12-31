@@ -37,82 +37,167 @@ function HeroSection() {
         alignItems: 'center',
         overflow: 'hidden',
         bgcolor: '#FFFFFF',
-        // Base layer - white background
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          // Grid pattern using CSS
-          backgroundImage: `
-            linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px',
-          // Mask to fade out at bottom
-          maskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
-          zIndex: 1,
-        },
       }}
     >
-      {/* Aurora Blur Blobs */}
-      {/* Top-left blob - Royal Blue */}
+      {/* Animated Mesh Gradient Blobs Container */}
       <Box
         sx={{
           position: 'absolute',
-          top: '-20%',
-          left: '-10%',
-          width: '600px',
-          height: '600px',
-          background: 'radial-gradient(circle, rgba(0, 113, 227, 0.25) 0%, rgba(0, 113, 227, 0) 70%)',
-          filter: 'blur(100px)',
-          opacity: 0.3,
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '100%',
+          maxWidth: '600px',
+          height: '100%',
           zIndex: 2,
           pointerEvents: 'none',
         }}
-      />
-      
-      {/* Bottom-right blob - Cyan/Purple mix */}
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: '-15%',
-          right: '-5%',
-          width: '500px',
-          height: '500px',
-          background: 'radial-gradient(circle, rgba(0, 188, 212, 0.2) 0%, rgba(147, 51, 234, 0.15) 50%, rgba(0, 188, 212, 0) 70%)',
-          filter: 'blur(120px)',
-          opacity: 0.25,
-          zIndex: 2,
-          pointerEvents: 'none',
-        }}
-      />
-      
-      {/* Additional subtle blob - middle right */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '30%',
-          right: '5%',
-          width: '400px',
-          height: '400px',
-          background: 'radial-gradient(circle, rgba(0, 113, 227, 0.15) 0%, rgba(0, 113, 227, 0) 60%)',
-          filter: 'blur(80px)',
-          opacity: 0.2,
-          zIndex: 2,
-          pointerEvents: 'none',
-        }}
-      />
+      >
+        {/* Blob 1 - The Anchor (Purple/Violet) */}
+        <motion.div
+          animate={{
+            x: [0, 15, -10, 0],
+            y: [0, -25, 10, 0],
+            scale: [1, 1.05, 0.95, 1],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: '-16px',
+            width: '288px',
+            height: '288px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(196, 181, 253, 0.6) 0%, rgba(167, 139, 250, 0.6) 100%)',
+            mixBlendMode: 'multiply',
+            filter: 'blur(50px)',
+            opacity: 0.6,
+          }}
+        />
+        
+        {/* Blob 2 - The Flow (Brand Blue) */}
+        <motion.div
+          animate={{
+            x: [0, 15, -10, 0],
+            y: [0, -25, 10, 0],
+            scale: [1, 1.05, 0.95, 1],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: 3,
+          }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: '-16px',
+            width: '288px',
+            height: '288px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(147, 197, 253, 0.6) 0%, rgba(96, 165, 250, 0.6) 100%)',
+            mixBlendMode: 'multiply',
+            filter: 'blur(50px)',
+            opacity: 0.6,
+          }}
+        />
+        
+        {/* Blob 3 - The Accent (Cyan/Pink) */}
+        <motion.div
+          animate={{
+            x: [0, 15, -10, 0],
+            y: [0, -25, 10, 0],
+            scale: [1, 1.05, 0.95, 1],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: 6,
+          }}
+          style={{
+            position: 'absolute',
+            bottom: '-32px',
+            left: '80px',
+            width: '288px',
+            height: '288px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(125, 211, 252, 0.5) 0%, rgba(251, 113, 133, 0.5) 100%)',
+            mixBlendMode: 'multiply',
+            filter: 'blur(50px)',
+            opacity: 0.6,
+          }}
+        />
+        
+        {/* Blob 4 - Additional Color (Green/Teal) */}
+        <motion.div
+          animate={{
+            x: [0, 15, -10, 0],
+            y: [0, -25, 10, 0],
+            scale: [1, 1.05, 0.95, 1],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: 9,
+          }}
+          style={{
+            position: 'absolute',
+            top: '40%',
+            right: '10%',
+            width: '288px',
+            height: '288px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, rgba(94, 234, 212, 0.5) 0%, rgba(34, 197, 94, 0.5) 100%)',
+            mixBlendMode: 'multiply',
+            filter: 'blur(50px)',
+            opacity: 0.5,
+          }}
+        />
+      </Box>
 
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 10, mx: 'auto', px: { xs: 3, md: 6 } }}>
+      {/* Glass Effect Overlay for Content */}
+      <Container 
+        maxWidth="lg" 
+        sx={{ 
+          position: 'relative', 
+          zIndex: 10, 
+          mx: 'auto', 
+          px: { xs: 3, md: 6 },
+          // Glass effect overlay
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: '-50%',
+            left: '-50%',
+            right: '-50%',
+            bottom: '-50%',
+            backdropFilter: 'blur(2px)',
+            WebkitBackdropFilter: 'blur(2px)',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            zIndex: -1,
+            pointerEvents: 'none',
+          },
+        }}
+      >
         <Box
           sx={{
+            position: 'relative',
+            zIndex: 1,
             maxWidth: 800,
             mx: 'auto',
             textAlign: 'center',
+            // Ensure text readability with subtle backdrop
+            backgroundColor: 'rgba(255, 255, 255, 0.6)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            borderRadius: '24px',
+            padding: { xs: 3, md: 4 },
           }}
         >
           {/* Logo גדול */}

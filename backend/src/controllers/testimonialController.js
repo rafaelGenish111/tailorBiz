@@ -1,6 +1,8 @@
 const Testimonial = require('../models/Testimonial');
 const path = require('path');
 const fs = require('fs').promises;
+const { cloudinary } = require('../config/cloudinary');
+const streamifier = require('streamifier');
 
 // @desc    Get all testimonials
 // @route   GET /api/testimonials
@@ -90,6 +92,45 @@ exports.getTestimonialById = async (req, res) => {
   }
 };
 
+// Helper function to upload image to Cloudinary
+const uploadImageToCloudinary = async (file) => {
+  const folder = 'tailorbiz/testimonials';
+  
+  if (file.buffer) {
+    // Memory storage (Vercel/serverless)
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder,
+          resource_type: 'image',
+          public_id: `testimonial-${Date.now()}-${Math.round(Math.random() * 1E9)}`
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          return resolve(result);
+        }
+      );
+      streamifier.createReadStream(file.buffer).pipe(stream);
+    });
+  } else if (file.path) {
+    // Disk storage (local development)
+    const result = await cloudinary.uploader.upload(file.path, {
+      folder,
+      resource_type: 'image',
+      public_id: `testimonial-${Date.now()}-${Math.round(Math.random() * 1E9)}`
+    });
+    // Cleanup local file
+    try {
+      await fs.unlink(file.path);
+    } catch (err) {
+      console.error('Error deleting local file:', err);
+    }
+    return result;
+  } else {
+    throw new Error('פורמט קובץ לא נתמך');
+  }
+};
+
 // @desc    Create new testimonial
 // @route   POST /api/testimonials
 // @access  Private
@@ -98,6 +139,28 @@ exports.createTestimonial = async (req, res) => {
     console.log('📥 Request Body:', req.body);
     console.log('📎 File:', req.file);
     
+    let imageUrl = null;
+    
+    // Upload image to Cloudinary if provided
+    if (req.file) {
+      try {
+        const cloudinaryResult = await uploadImageToCloudinary(req.file);
+        imageUrl = cloudinaryResult.secure_url;
+        console.log('✅ Image uploaded to Cloudinary:', imageUrl);
+      } catch (uploadError) {
+        console.error('❌ Error uploading to Cloudinary:', uploadError);
+        // Delete local file if upload failed
+        if (req.file.path) {
+          await fs.unlink(req.file.path).catch(console.error);
+        }
+        return res.status(500).json({
+          success: false,
+          message: 'שגיאה בהעלאת התמונה',
+          error: uploadError.message
+        });
+      }
+    }
+    
     const testimonialData = {
       clientName: req.body.clientName,
       clientRole: req.body.clientRole,
@@ -105,7 +168,7 @@ exports.createTestimonial = async (req, res) => {
       content: req.body.content,
       rating: Number(req.body.rating), // Convert string to number
       isVisible: req.body.isVisible === 'true' || req.body.isVisible === true, // Convert to boolean
-      image: req.file ? `/uploads/images/${req.file.filename}` : null
+      image: imageUrl
       // createdBy will be null by default in the model
     };
 
@@ -124,7 +187,9 @@ exports.createTestimonial = async (req, res) => {
     
     // Delete uploaded file if testimonial creation failed
     if (req.file) {
-      await fs.unlink(req.file.path).catch(console.error);
+      if (req.file.path) {
+        await fs.unlink(req.file.path).catch(console.error);
+      }
     }
 
     res.status(400).json({
@@ -133,6 +198,42 @@ exports.createTestimonial = async (req, res) => {
       error: error.message,
       details: error.errors
     });
+  }
+};
+
+// Helper function to delete image from Cloudinary
+const deleteImageFromCloudinary = async (imageUrl) => {
+  if (!imageUrl) return;
+  
+  // If it's a Cloudinary URL, extract public_id and delete
+  if (imageUrl.includes('cloudinary.com')) {
+    try {
+      // Extract public_id from URL
+      // Format: https://res.cloudinary.com/{cloud_name}/image/upload/{version}/{public_id}.{format}
+      // or: https://res.cloudinary.com/{cloud_name}/image/upload/{public_id}.{format}
+      const uploadIndex = imageUrl.indexOf('/upload/');
+      if (uploadIndex === -1) {
+        console.warn('Invalid Cloudinary URL format:', imageUrl);
+        return;
+      }
+      
+      const afterUpload = imageUrl.substring(uploadIndex + '/upload/'.length);
+      // Remove version if present (format: v1234567890/public_id.ext)
+      const parts = afterUpload.split('/');
+      let publicIdPart = parts.length > 1 ? parts.slice(1).join('/') : parts[0];
+      // Remove file extension
+      publicIdPart = publicIdPart.replace(/\.[^/.]+$/, '');
+      
+      await cloudinary.uploader.destroy(publicIdPart);
+      console.log('✅ Deleted image from Cloudinary:', publicIdPart);
+    } catch (err) {
+      console.error('Error deleting from Cloudinary:', err);
+      // Don't throw - continue even if deletion fails
+    }
+  } else {
+    // Old local file path - try to delete
+    const oldImagePath = path.join(__dirname, '../../uploads/images', path.basename(imageUrl));
+    await fs.unlink(oldImagePath).catch(console.error);
   }
 };
 
@@ -154,10 +255,26 @@ exports.updateTestimonial = async (req, res) => {
     if (req.file) {
       // Delete old image if exists
       if (testimonial.image) {
-        const oldImagePath = path.join(__dirname, '../../uploads/images', path.basename(testimonial.image));
-        await fs.unlink(oldImagePath).catch(console.error);
+        await deleteImageFromCloudinary(testimonial.image);
       }
-      req.body.image = `/uploads/images/${req.file.filename}`;
+      
+      // Upload new image to Cloudinary
+      try {
+        const cloudinaryResult = await uploadImageToCloudinary(req.file);
+        req.body.image = cloudinaryResult.secure_url;
+        console.log('✅ New image uploaded to Cloudinary:', req.body.image);
+      } catch (uploadError) {
+        console.error('❌ Error uploading to Cloudinary:', uploadError);
+        // Delete local file if upload failed
+        if (req.file.path) {
+          await fs.unlink(req.file.path).catch(console.error);
+        }
+        return res.status(500).json({
+          success: false,
+          message: 'שגיאה בהעלאת התמונה',
+          error: uploadError.message
+        });
+      }
     }
 
     testimonial = await Testimonial.findByIdAndUpdate(
@@ -197,10 +314,9 @@ exports.deleteTestimonial = async (req, res) => {
       });
     }
 
-    // Delete image if exists
+    // Delete image from Cloudinary or local filesystem
     if (testimonial.image) {
-      const imagePath = path.join(__dirname, '../../uploads/images', path.basename(testimonial.image));
-      await fs.unlink(imagePath).catch(console.error);
+      await deleteImageFromCloudinary(testimonial.image);
     }
 
     await testimonial.deleteOne();
