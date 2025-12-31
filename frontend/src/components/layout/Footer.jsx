@@ -12,6 +12,9 @@ import React from 'react';
 import { COMPANY_INFO, SOCIAL_LINKS } from '../../utils/constants';
 import { publicCMS } from '../../utils/publicApi';
 
+// Logo path - files in public/ are served from root in Vite
+const LOGO_SRC = '/assets/images/image-removebg-preview.png';
+
 function Footer() {
   const currentYear = new Date().getFullYear();
   const [settings, setSettings] = React.useState(null);
@@ -23,7 +26,7 @@ function Footer() {
         const res = await publicCMS.getSiteSettings();
         if (!mounted) return;
         setSettings(res.data?.data || null);
-      } catch (_) {
+      } catch {
         if (!mounted) return;
         setSettings(null);
       }
@@ -64,7 +67,7 @@ function Footer() {
           <Grid item xs={12} sm={6} md={3}>
             <Box
               component="img"
-              src="/assets/images/image-removebg-preview.png"
+              src={LOGO_SRC}
               alt="לוגו TailorBiz"
               sx={{
                 height: { xs: 60, md: 80 },

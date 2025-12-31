@@ -23,6 +23,8 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import Button from '../ui/Button';
 import { publicCMS } from '../../utils/publicApi';
 
+// Logo path - files in public/ are served from root in Vite
+// Use absolute path from root for Vercel compatibility
 const LOGO_SRC = '/assets/images/image-removebg-preview.png';
 
 const articleCategories = [

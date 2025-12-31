@@ -6,6 +6,8 @@ import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { publicCMS } from '../../utils/publicApi';
 import Button from '../ui/Button';
 
+// Logo path - files in public/ are served from root in Vite
+// Use absolute path from root for Vercel compatibility
 const LOGO_SRC = '/assets/images/image-removebg-preview.png';
 
 function HeroSection() {
