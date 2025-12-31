@@ -42,11 +42,27 @@ const LoginPage = () => {
     setError('');
     setLoading(true);
     try {
-      await authAPI.login({ username, password });
-      const to = location.state?.from || '/admin';
-      navigate(to, { replace: true });
+      const response = await authAPI.login({ username, password });
+      if (response?.data?.success) {
+        const to = location.state?.from || '/admin';
+        navigate(to, { replace: true });
+      } else {
+        setError(response?.data?.message || 'שגיאה בהתחברות');
+      }
     } catch (err) {
-      setError(err?.response?.data?.message || 'שגיאה בהתחברות');
+      console.error('Login error:', err);
+      // טיפול מפורט יותר בשגיאות
+      if (err.response) {
+        // השרת הגיב אבל עם שגיאה
+        const errorMessage = err.response?.data?.message || 'שגיאה בהתחברות';
+        setError(errorMessage);
+      } else if (err.request) {
+        // הבקשה נשלחה אבל לא התקבלה תשובה
+        setError('לא ניתן להתחבר לשרת. בדוק שהשרת רץ ושה-API_URL מוגדר נכון.');
+      } else {
+        // שגיאה אחרת
+        setError(err.message || 'שגיאה בהתחברות');
+      }
     } finally {
       setLoading(false);
     }
