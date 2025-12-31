@@ -271,6 +271,20 @@ async function createApp() {
     res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
   });
 
+  // 404 handler - לפני error handler
+  app.use((req, res) => {
+    console.log(`[404] Route not found: ${req.method} ${req.url}`);
+    console.log(`[404] Original URL: ${req.originalUrl}`);
+    console.log(`[404] Path: ${req.path}`);
+    setCorsHeaders(req, res);
+    res.status(404).json({
+      success: false,
+      message: 'Route not found',
+      path: req.path,
+      method: req.method
+    });
+  });
+
   // Error handler - חייב להגדיר CORS headers גם בשגיאות
   app.use((err, req, res, next) => {
     // הגדרת CORS headers גם בשגיאות - חשוב מאוד!
