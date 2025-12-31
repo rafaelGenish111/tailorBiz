@@ -16,7 +16,8 @@ function HeroSection() {
       try {
         const res = await publicCMS.getPage('home');
         setCmsHero(res.data?.data?.content || null);
-      } catch (_) {
+      } catch (e) {
+        console.error('Error loading hero content:', e);
         setCmsHero(null);
       }
     };
@@ -78,7 +79,7 @@ function HeroSection() {
             opacity: 0.6,
           }}
         />
-        
+
         {/* Blob 2 - The Flow (Brand Blue) */}
         <motion.div
           animate={{
@@ -105,7 +106,7 @@ function HeroSection() {
             opacity: 0.6,
           }}
         />
-        
+
         {/* Blob 3 - The Accent (Cyan/Pink) */}
         <motion.div
           animate={{
@@ -132,7 +133,7 @@ function HeroSection() {
             opacity: 0.6,
           }}
         />
-        
+
         {/* Blob 4 - Additional Color (Green/Teal) */}
         <motion.div
           animate={{
@@ -162,12 +163,12 @@ function HeroSection() {
       </Box>
 
       {/* Glass Effect Overlay for Content */}
-      <Container 
-        maxWidth="lg" 
-        sx={{ 
-          position: 'relative', 
-          zIndex: 10, 
-          mx: 'auto', 
+      <Container
+        maxWidth="lg"
+        sx={{
+          position: 'relative',
+          zIndex: 10,
+          mx: 'auto',
           px: { xs: 3, md: 6 },
           // Glass effect overlay
           '&::before': {
