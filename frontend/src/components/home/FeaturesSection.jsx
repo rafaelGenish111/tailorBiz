@@ -150,6 +150,7 @@ function FeaturesSection() {
       <Container maxWidth="lg" sx={{ mx: 'auto', px: { xs: 3, md: 6 } }}>
         <Box sx={{ textAlign: 'center', mb: 8 }}>
           <Typography
+            component="h2"
             variant="h2"
             sx={{
               mb: 2,

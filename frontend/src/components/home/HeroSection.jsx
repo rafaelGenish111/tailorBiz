@@ -47,6 +47,7 @@ function HeroSection() {
         loop
         muted
         playsInline
+        aria-label="Animation of an automated business dashboard showing efficiency metrics"
         sx={{
           position: 'absolute',
           top: 0,
@@ -282,6 +283,7 @@ function HeroSection() {
             transition={{ duration: 0.8, delay: 0.1 }}
           >
             <Typography
+              component="h1"
               variant="h1"
               sx={{
                 mb: 3,

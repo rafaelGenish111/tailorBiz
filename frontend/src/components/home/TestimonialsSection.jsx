@@ -139,6 +139,7 @@ function TestimonialCard({ testimonial, isCenter }) {
         </Avatar>
         <Box>
           <Typography
+            component="h3"
             variant="h6"
             fontWeight={700}
             color={isCenter ? 'secondary.main' : 'primary.main'}
