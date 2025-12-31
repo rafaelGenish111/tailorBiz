@@ -56,24 +56,33 @@ class WhatsAppService {
       this.setupEventListeners();
 
       // יצירת Promise שיושלם כשהלקוח מוכן
+      let timeoutHandle = null;
       this.readyPromise = new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
+        timeoutHandle = setTimeout(() => {
           if (!this.isConnected) {
-            reject(new Error('WhatsApp initialization timeout'));
+            console.warn('⚠️ WhatsApp initialization timeout - service will continue but may not be ready');
+            // לא נדחה את ה-Promise, רק נדפיס אזהרה
+            // השרת ימשיך לעבוד גם בלי WhatsApp
           }
         }, 120000); // 2 minutes timeout
 
         this.client.on('ready', () => {
-          clearTimeout(timeout);
+          if (timeoutHandle) clearTimeout(timeoutHandle);
           this.isConnected = true;
           console.log('✅ WhatsApp Service is ready!');
           resolve();
         });
 
         this.client.on('auth_failure', (msg) => {
-          clearTimeout(timeout);
-          reject(new Error(`WhatsApp auth failure: ${msg}`));
+          if (timeoutHandle) clearTimeout(timeoutHandle);
+          console.error('❌ WhatsApp auth failure:', msg);
+          // לא נדחה את ה-Promise כדי לא לקרוס את השרת
+          // השרת ימשיך לעבוד גם בלי WhatsApp
         });
+      }).catch(err => {
+        // Catch any errors in the promise to prevent uncaught exceptions
+        console.error('❌ WhatsApp readyPromise error (non-fatal):', err.message);
+        return null; // Return null so the promise resolves instead of rejecting
       });
 
       console.log('🚀 Starting WhatsApp client initialization...');
@@ -96,10 +105,12 @@ class WhatsAppService {
               }, RETRY_DELAY);
             } else {
               console.error('❌ WhatsApp Service failed after', MAX_RETRIES, 'retries');
+              console.error('⚠️ Server will continue running without WhatsApp functionality');
               console.error('❌ Please check your internet connection and try again');
             }
           } else {
             console.error('❌ Error stack:', err.stack);
+            console.error('⚠️ Server will continue running without WhatsApp functionality');
             console.error('❌ This usually means:');
             console.error('   1. WhatsApp needs QR code scan (check for QR code in logs)');
             console.error('   2. Authentication failed (check .wwebjs_auth folder)');

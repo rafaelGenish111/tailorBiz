@@ -10,18 +10,33 @@
 @tailwind utilities;
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Apple/Big Tech Typography */
+  font-family: 'Assistant', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
+  /* Light Mode - Premium Apple Aesthetic */
   color-scheme: light;
-  color: #213547;
-  background-color: #ffffff;
+  color: #86868B; /* Medium gray for body text */
+  background-color: #FFFFFF; /* Pure white base */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Apply Heebo to all headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Heebo', system-ui, -apple-system, sans-serif;
+  color: #1D1D1F; /* Deep charcoal gray for headings */
+  font-weight: 700;
+}
+
+/* Apply Assistant to all paragraphs */
+p, body, span, div {
+  font-family: 'Assistant', system-ui, -apple-system, sans-serif;
+  color: #86868B; /* Medium gray for body text */
 }
 
 html {
@@ -32,6 +47,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #FFFFFF; /* Pure white base */
+  color: #86868B; /* Medium gray for body text */
 }
 
 #root {
@@ -54,7 +71,7 @@ body.underline-links a {
 
 /* Focus visible for keyboard navigation */
 *:focus-visible {
-  outline: 3px solid #00B4D8;
+  outline: 3px solid #0071E3;
   outline-offset: 2px;
 }
 

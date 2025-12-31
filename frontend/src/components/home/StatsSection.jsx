@@ -2,6 +2,7 @@ import { Box, Container, Typography, Grid } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { useEffect, useState } from 'react';
+import { publicCMS } from '../../utils/publicApi';
 
 const MotionBox = motion(Box);
 
@@ -30,33 +31,6 @@ function CountUp({ end, duration = 2 }) {
   return <span ref={ref}>{count}</span>;
 }
 
-const stats = [
-  {
-    value: 10,
-    suffix: '+',
-    label: 'שעות חיסכון שבועי',
-    color: '#00bcd4',
-  },
-  {
-    value: 95,
-    suffix: '%',
-    label: 'שביעות רצון',
-    color: '#1a237e',
-  },
-  {
-    value: 500,
-    suffix: '+',
-    label: 'עסקים משתמשים',
-    color: '#00bcd4',
-  },
-  {
-    value: 24,
-    suffix: '/7',
-    label: 'תמיכה',
-    color: '#1a237e',
-  },
-];
-
 function StatCard({ stat, index }) {
   const [ref, inView] = useInView({
     triggerOnce: true,
@@ -75,11 +49,13 @@ function StatCard({ stat, index }) {
           sx={{
             textAlign: 'center',
             p: 4,
-            borderRadius: 1,
-            bgcolor: 'white',
-            transition: 'transform 0.3s ease',
+            borderRadius: '24px',
+            bgcolor: '#FFFFFF',
+            boxShadow: '0px 20px 40px -10px rgba(0,0,0,0.05)',
+            transition: 'all 0.3s ease',
             '&:hover': {
-              transform: 'translateY(-8px)',
+              transform: 'translateY(-4px)',
+              boxShadow: '0px 24px 48px -12px rgba(0,0,0,0.08)',
             },
           }}
         >
@@ -87,7 +63,7 @@ function StatCard({ stat, index }) {
             variant="h2"
             sx={{
               fontWeight: 900,
-              color: stat.color,
+              color: '#0071E3',
               mb: 1,
               fontSize: { xs: '2.5rem', md: '3.5rem' },
             }}
@@ -98,7 +74,7 @@ function StatCard({ stat, index }) {
           <Typography
             variant="body1"
             sx={{
-              color: 'text.secondary',
+              color: '#86868B',
               fontWeight: 500,
             }}
           >
@@ -111,36 +87,91 @@ function StatCard({ stat, index }) {
 }
 
 function StatsSection() {
+  const [stats, setStats] = useState(null);
+  const [clientsCount, setClientsCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    const loadData = async () => {
+      try {
+        // Load stats from CMS
+        const [settingsRes, clientsRes] = await Promise.all([
+          publicCMS.getSiteSettings(),
+          publicCMS.getClientsCount().catch(() => ({ data: { data: { count: 0 } } }))
+        ]);
+
+        if (!mounted) return;
+
+        const settings = settingsRes.data?.data;
+        const actualClientsCount = clientsRes.data?.data?.count || 0;
+        
+        setClientsCount(actualClientsCount);
+
+        // Use CMS stats or defaults
+        const cmsStats = settings?.stats || {};
+        const defaultStats = {
+          hoursSaved: { value: 10, suffix: '+', label: 'שעות חיסכון שבועי' },
+          satisfaction: { value: 95, suffix: '%', label: 'שביעות רצון' },
+          businesses: { value: 500, suffix: '+', label: 'עסקים משתמשים' },
+          support: { value: 24, suffix: '/7', label: 'תמיכה' }
+        };
+
+        const finalStats = [
+          { ...defaultStats.hoursSaved, ...(cmsStats.hoursSaved || {}) },
+          { ...defaultStats.satisfaction, ...(cmsStats.satisfaction || {}) },
+          { ...defaultStats.businesses, ...(cmsStats.businesses || {}) },
+          { ...defaultStats.support, ...(cmsStats.support || {}) }
+        ];
+
+        setStats(finalStats);
+      } catch (error) {
+        console.error('Error loading stats:', error);
+        if (mounted) {
+          // Fallback to defaults
+          setStats([
+            { value: 10, suffix: '+', label: 'שעות חיסכון שבועי' },
+            { value: 95, suffix: '%', label: 'שביעות רצון' },
+            { value: 500, suffix: '+', label: 'עסקים משתמשים' },
+            { value: 24, suffix: '/7', label: 'תמיכה' }
+          ]);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadData();
+    return () => { mounted = false; };
+  }, []);
+
+  // Don't show section if less than 10 clients
+  if (!loading && clientsCount < 10) {
+    return null;
+  }
+
+  if (loading || !stats) {
+    return null;
+  }
+
   return (
     <Box
       sx={{
-        py: { xs: 8, md: 12 },
-        bgcolor: 'primary.main',
+        py: { xs: 24, md: 32 },
+        bgcolor: '#F5F5F7', // Very light gray/off-white for sections
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          right: '-10%',
-          width: 400,
-          height: 400,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-        }}
-      />
 
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, mx: 'auto', px: { xs: 3, md: 6 } }}>
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Typography
             variant="h2"
             sx={{
               mb: 2,
               fontWeight: 800,
-              color: 'white',
+              color: '#1D1D1F',
             }}
           >
             המספרים מדברים בעד עצמם

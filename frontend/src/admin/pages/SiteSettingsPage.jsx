@@ -21,6 +21,12 @@ const empty = {
   contact: { email: '', phone: '', whatsapp: '', address: '' },
   socials: { facebook: '', instagram: '', linkedin: '', tiktok: '', youtube: '', twitter: '' },
   hours: { sundayToThursday: '', friday: '' },
+  stats: {
+    hoursSaved: { value: 10, suffix: '+', label: 'שעות חיסכון שבועי' },
+    satisfaction: { value: 95, suffix: '%', label: 'שביעות רצון' },
+    businesses: { value: 500, suffix: '+', label: 'עסקים משתמשים' },
+    support: { value: 24, suffix: '/7', label: 'תמיכה' }
+  }
 };
 
 function SiteSettingsPage() {
@@ -51,6 +57,7 @@ function SiteSettingsPage() {
           contact: { ...empty.contact, ...(data?.contact || {}) },
           socials: { ...empty.socials, ...(data?.socials || {}) },
           hours: { ...empty.hours, ...(data?.hours || {}) },
+          stats: { ...empty.stats, ...(data?.stats || {}) },
         });
       } catch (e) {
         if (!mounted) return;
@@ -86,6 +93,7 @@ function SiteSettingsPage() {
         contact: form.contact,
         socials: form.socials,
         hours: form.hours,
+        stats: form.stats,
       });
       setSuccess('נשמר בהצלחה');
     } catch (e) {
@@ -310,6 +318,204 @@ function SiteSettingsPage() {
               label='שישי'
               value={form.hours.friday}
               onChange={setNested('hours', 'friday')}
+              disabled={loading}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Typography variant="h6" fontWeight={700}>
+              נתונים סטטיסטיים (מוצגים בעמוד הבית)
+            </Typography>
+            <Divider sx={{ mt: 1 }} />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 2 }}>
+              הסקשן יוצג רק אם יש לפחות 10 לקוחות במערכת
+            </Typography>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="שעות חיסכון שבועי - ערך"
+              type="number"
+              value={form.stats.hoursSaved.value}
+              onChange={(e) => setForm(prev => ({
+                ...prev,
+                stats: {
+                  ...prev.stats,
+                  hoursSaved: { ...prev.stats.hoursSaved, value: parseInt(e.target.value) || 0 }
+                }
+              }))}
+              disabled={loading}
+            />
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
+              label="סיומת"
+              value={form.stats.hoursSaved.suffix}
+              onChange={(e) => setForm(prev => ({
+                ...prev,
+                stats: {
+                  ...prev.stats,
+                  hoursSaved: { ...prev.stats.hoursSaved, suffix: e.target.value }
+                }
+              }))}
+              disabled={loading}
+            />
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
+              label="תווית"
+              value={form.stats.hoursSaved.label}
+              onChange={(e) => setForm(prev => ({
+                ...prev,
+                stats: {
+                  ...prev.stats,
+                  hoursSaved: { ...prev.stats.hoursSaved, label: e.target.value }
+                }
+              }))}
+              disabled={loading}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="שביעות רצון - ערך"
+              type="number"
+              value={form.stats.satisfaction.value}
+              onChange={(e) => setForm(prev => ({
+                ...prev,
+                stats: {
+                  ...prev.stats,
+                  satisfaction: { ...prev.stats.satisfaction, value: parseInt(e.target.value) || 0 }
+                }
+              }))}
+              disabled={loading}
+            />
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
+              label="סיומת"
+              value={form.stats.satisfaction.suffix}
+              onChange={(e) => setForm(prev => ({
+                ...prev,
+                stats: {
+                  ...prev.stats,
+                  satisfaction: { ...prev.stats.satisfaction, suffix: e.target.value }
+                }
+              }))}
+              disabled={loading}
+            />
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
+              label="תווית"
+              value={form.stats.satisfaction.label}
+              onChange={(e) => setForm(prev => ({
+                ...prev,
+                stats: {
+                  ...prev.stats,
+                  satisfaction: { ...prev.stats.satisfaction, label: e.target.value }
+                }
+              }))}
+              disabled={loading}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="עסקים משתמשים - ערך"
+              type="number"
+              value={form.stats.businesses.value}
+              onChange={(e) => setForm(prev => ({
+                ...prev,
+                stats: {
+                  ...prev.stats,
+                  businesses: { ...prev.stats.businesses, value: parseInt(e.target.value) || 0 }
+                }
+              }))}
+              disabled={loading}
+            />
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
+              label="סיומת"
+              value={form.stats.businesses.suffix}
+              onChange={(e) => setForm(prev => ({
+                ...prev,
+                stats: {
+                  ...prev.stats,
+                  businesses: { ...prev.stats.businesses, suffix: e.target.value }
+                }
+              }))}
+              disabled={loading}
+            />
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
+              label="תווית"
+              value={form.stats.businesses.label}
+              onChange={(e) => setForm(prev => ({
+                ...prev,
+                stats: {
+                  ...prev.stats,
+                  businesses: { ...prev.stats.businesses, label: e.target.value }
+                }
+              }))}
+              disabled={loading}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="תמיכה - ערך"
+              type="number"
+              value={form.stats.support.value}
+              onChange={(e) => setForm(prev => ({
+                ...prev,
+                stats: {
+                  ...prev.stats,
+                  support: { ...prev.stats.support, value: parseInt(e.target.value) || 0 }
+                }
+              }))}
+              disabled={loading}
+            />
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
+              label="סיומת"
+              value={form.stats.support.suffix}
+              onChange={(e) => setForm(prev => ({
+                ...prev,
+                stats: {
+                  ...prev.stats,
+                  support: { ...prev.stats.support, suffix: e.target.value }
+                }
+              }))}
+              disabled={loading}
+            />
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <TextField
+              fullWidth
+              label="תווית"
+              value={form.stats.support.label}
+              onChange={(e) => setForm(prev => ({
+                ...prev,
+                stats: {
+                  ...prev.stats,
+                  support: { ...prev.stats.support, label: e.target.value }
+                }
+              }))}
               disabled={loading}
             />
           </Grid>

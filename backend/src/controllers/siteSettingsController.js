@@ -20,6 +20,7 @@ exports.getPublic = async (req, res) => {
         contact: doc.contact || {},
         socials: doc.socials || {},
         hours: doc.hours || {},
+        stats: doc.stats || {},
         updatedAt: doc.updatedAt
       }
     });
@@ -41,7 +42,7 @@ exports.getAdmin = async (req, res) => {
 
 exports.updateAdmin = async (req, res) => {
   try {
-    const { company, contact, socials, hours } = req.body || {};
+    const { company, contact, socials, hours, stats } = req.body || {};
 
     const updated = await SiteSettings.findOneAndUpdate(
       { key: DEFAULT_KEY },
@@ -50,7 +51,8 @@ exports.updateAdmin = async (req, res) => {
           ...(company ? { company } : {}),
           ...(contact ? { contact } : {}),
           ...(socials ? { socials } : {}),
-          ...(hours ? { hours } : {})
+          ...(hours ? { hours } : {}),
+          ...(stats ? { stats } : {})
         }
       },
       { new: true, upsert: true, setDefaultsOnInsert: true }

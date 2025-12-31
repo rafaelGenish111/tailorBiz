@@ -13,21 +13,24 @@ const MotionPaper = motion(Paper);
 
 const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
-  if (imagePath.startsWith('http')) return imagePath;
+  // If it's already a full URL (http/https), return as is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
 
-  // Get API URL from env or default
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-  // Strip /api suffix to get origin
-  const origin = apiUrl.replace(/\/api\/?$/, '');
-
-  return `${origin}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+  // For local paths, use window.location.origin (works in both dev and production)
+  // The image path should be like /uploads/images/testimonial-xxx.jpg
+  const fullUrl = `${window.location.origin}${imagePath.startsWith('/') ? imagePath : `/${imagePath}`}`;
+  console.log('Testimonial image URL:', { imagePath, fullUrl });
+  return fullUrl;
 };
 
-function TestimonialCard({ testimonial, position, isCenter }) {
+function TestimonialCard({ testimonial, isCenter }) {
   const scale = isCenter ? 1 : 0.85;
   const opacity = isCenter ? 1 : 0.6;
   const zIndex = isCenter ? 10 : 1;
   const imageUrl = getImageUrl(testimonial.image);
+  const [imageError, setImageError] = useState(false);
 
   return (
     <MotionPaper
@@ -137,29 +140,24 @@ function TestimonialCard({ testimonial, position, isCenter }) {
 
       {/* פרטי הלקוח */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 'auto' }}>
-        <Box
+        <Avatar
+          src={imageUrl && !imageError ? imageUrl : undefined}
+          alt={testimonial.clientName}
+          onError={() => setImageError(true)}
           sx={{
             width: 56,
             height: 56,
-            borderRadius: 1,
-            bgcolor: 'grey.100',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '2rem',
+            borderRadius: '12px',
+            bgcolor: '#F5F5F7',
             border: isCenter ? '2px solid' : 'none',
-            borderColor: 'secondary.main',
-            overflow: 'hidden'
+            borderColor: '#0071E3',
+            fontSize: '1.5rem',
+            fontWeight: 700,
+            color: '#0071E3',
           }}
-          role="img"
-          aria-label={`אווטר של ${testimonial.clientName}`}
         >
-          {imageUrl ? (
-            <Box component="img" src={imageUrl} alt={testimonial.clientName} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          ) : (
-            testimonial.avatar || '👤'
-          )}
-        </Box>
+          {imageError || !imageUrl ? (testimonial.clientName?.charAt(0) || '👤') : null}
+        </Avatar>
         <Box>
           <Typography
             variant="h6"
@@ -190,14 +188,51 @@ function TestimonialCard({ testimonial, position, isCenter }) {
 function TestimonialsSection() {
   const [testimonials, setTestimonials] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [clientsCount, setClientsCount] = useState(0);
+  const [statsData, setStatsData] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await publicCMS.getTestimonials();
-        setTestimonials(res.data?.data || []);
+        const [testimonialsRes, settingsRes, clientsRes] = await Promise.all([
+          publicCMS.getTestimonials(),
+          publicCMS.getSiteSettings(),
+          publicCMS.getClientsCount().catch(() => ({ data: { data: { count: 0 } } }))
+        ]);
+
+        setTestimonials(testimonialsRes.data?.data || []);
+
+        const actualClientsCount = clientsRes.data?.data?.count || 0;
+        setClientsCount(actualClientsCount);
+
+        // Load stats from CMS
+        const settings = settingsRes.data?.data;
+        const cmsStats = settings?.stats || {};
+        const defaultStats = {
+          hoursSaved: { value: 10, suffix: '+', label: 'שעות חיסכון שבועי' },
+          satisfaction: { value: 95, suffix: '%', label: 'שביעות רצון' },
+          businesses: { value: 500, suffix: '+', label: 'עסקים משתמשים' },
+          support: { value: 24, suffix: '/7', label: 'תמיכה' }
+        };
+
+        // Use first 3 stats for testimonials section
+        const statsForTestimonials = [
+          { number: `${cmsStats.businesses?.value || defaultStats.businesses.value}${cmsStats.businesses?.suffix || defaultStats.businesses.suffix}`, label: cmsStats.businesses?.label || defaultStats.businesses.label },
+          { number: '4.9/5', label: 'דירוג ממוצע' },
+          { number: `${cmsStats.satisfaction?.value || defaultStats.satisfaction.value}${cmsStats.satisfaction?.suffix || defaultStats.satisfaction.suffix}`, label: cmsStats.satisfaction?.label || defaultStats.satisfaction.label }
+        ];
+
+        setStatsData(statsForTestimonials);
       } catch (err) {
         console.error('Failed to fetch testimonials', err);
+        setStatsData([
+          { number: '500+', label: 'לקוחות מרוצים' },
+          { number: '4.9/5', label: 'דירוג ממוצע' },
+          { number: '98%', label: 'שביעות רצון' }
+        ]);
+      } finally {
+        setStatsLoading(false);
       }
     };
     fetch();
@@ -249,25 +284,14 @@ function TestimonialsSection() {
     <Box
       ref={ref}
       sx={{
-        py: { xs: 8, md: 12 },
-        bgcolor: 'white',
+        py: { xs: 24, md: 32 },
+        bgcolor: '#FFFFFF',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-      {/* רקע עדין */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'linear-gradient(135deg, rgba(26,35,126,0.02) 0%, rgba(0,188,212,0.03) 100%)',
-        }}
-      />
 
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, mx: 'auto', px: { xs: 3, md: 6 } }}>
         {/* כותרת */}
         <MotionBox
           initial={{ opacity: 0, y: 30 }}
@@ -280,7 +304,7 @@ function TestimonialsSection() {
             sx={{
               mb: 2,
               fontWeight: 800,
-              color: 'primary.main',
+              color: '#1D1D1F',
             }}
           >
             מה הלקוחות שלנו אומרים
@@ -288,7 +312,7 @@ function TestimonialsSection() {
           <Typography
             variant="h6"
             sx={{
-              color: 'text.secondary',
+              color: '#86868B',
               fontWeight: 400,
             }}
           >
@@ -363,12 +387,11 @@ function TestimonialsSection() {
               px: { xs: 2, md: 0 },
             }}
           >
-            {visibleIndices.map((index, position) => (
+            {visibleIndices.map((index, pos) => (
               <TestimonialCard
-                key={`${testimonials[index]._id}-${position}`}
+                key={`${testimonials[index]._id}-${pos}`}
                 testimonial={testimonials[index]}
-                position={position}
-                isCenter={position === 1}
+                isCenter={pos === 1}
               />
             ))}
           </Box>
@@ -377,7 +400,6 @@ function TestimonialsSection() {
           <Box sx={{ display: { xs: 'block', md: 'none' }, px: 2 }}>
             <TestimonialCard
               testimonial={testimonials[currentIndex]}
-              position={1}
               isCenter={true}
             />
           </Box>
@@ -411,41 +433,36 @@ function TestimonialsSection() {
           ))}
         </Box>
 
-        {/* Stats */}
-        <Box
-          sx={{
-            mt: 8,
-            display: 'flex',
-            justifyContent: 'center',
-            gap: { xs: 3, md: 8 },
-            flexWrap: 'wrap',
-          }}
-        >
-          {[
-            { number: '500+', label: 'לקוחות מרוצים' },
-            { number: '4.9/5', label: 'דירוג ממוצע' },
-            { number: '98%', label: 'שביעות רצון' },
-          ].map((stat, index) => (
-            <Box key={index} sx={{ textAlign: 'center' }}>
-              <Typography
-                variant="h3"
-                sx={{
-                  fontWeight: 800,
-                  background: 'linear-gradient(135deg, #1a237e 0%, #00bcd4 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  mb: 0.5,
-                }}
-              >
-                {stat.number}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                {stat.label}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
+        {/* Stats - Only show if 10+ clients */}
+        {!statsLoading && clientsCount >= 10 && statsData && (
+          <Box
+            sx={{
+              mt: 8,
+              display: 'flex',
+              justifyContent: 'center',
+              gap: { xs: 3, md: 8 },
+              flexWrap: 'wrap',
+            }}
+          >
+            {statsData.map((stat, index) => (
+              <Box key={index} sx={{ textAlign: 'center' }}>
+                <Typography
+                  variant="h3"
+                  sx={{
+                    fontWeight: 800,
+                    color: '#0071E3',
+                    mb: 0.5,
+                  }}
+                >
+                  {stat.number}
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#86868B', fontWeight: 600 }}>
+                  {stat.label}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        )}
       </Container>
     </Box>
   );

@@ -1,10 +1,10 @@
 import React from 'react';
-import { Box, Container, Typography, Button, Stack } from '@mui/material';
+import { Box, Container, Typography, Stack } from '@mui/material';
 import { motion } from 'framer-motion';
 import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
-import { Link } from 'react-router-dom';
 import { publicCMS } from '../../utils/publicApi';
+import Button from '../ui/Button';
 
 const LOGO_SRC = '/assets/images/image-removebg-preview.png';
 
@@ -23,8 +23,8 @@ function HeroSection() {
     run();
   }, []);
 
-  const title = (cmsHero?.heroTitle || 'מערכת חכמה בתפירה אישית').trim();
-  const subtitle = (cmsHero?.heroSubtitle || 'ללא דמי מנוי חודשיים - הנכס נשאר שלך').trim();
+  const title = (cmsHero?.heroTitle || 'אוטומציה מותאמת אישית לעסק שלך').trim();
+  const subtitle = (cmsHero?.heroSubtitle || 'בלי דמי מנוי חודשיים - הנכס נשאר שלך').trim();
   const ctaText = (cmsHero?.heroCtaText || 'לבדיקת היתכנות ואפיון').trim();
   const ctaHref = cmsHero?.heroCtaHref || '/contact';
 
@@ -36,50 +36,78 @@ function HeroSection() {
         display: 'flex',
         alignItems: 'center',
         overflow: 'hidden',
-        bgcolor: 'background.default',
-      }}
-    >
-      <Box
-        sx={{
+        bgcolor: '#FFFFFF',
+        // Base layer - white background
+        '&::before': {
+          content: '""',
           position: 'absolute',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'linear-gradient(135deg, rgba(11,31,51,0.03) 0%, rgba(211,139,42,0.05) 100%)',
-          zIndex: 0,
-        }}
-      />
-
-      {/* עיגולים מטושטשים לאפקט */}
+          // Grid pattern using CSS
+          backgroundImage: `
+            linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px)
+          `,
+          backgroundSize: '40px 40px',
+          // Mask to fade out at bottom
+          maskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
+          zIndex: 1,
+        },
+      }}
+    >
+      {/* Aurora Blur Blobs */}
+      {/* Top-left blob - Royal Blue */}
       <Box
         sx={{
           position: 'absolute',
-          top: '10%',
+          top: '-20%',
+          left: '-10%',
+          width: '600px',
+          height: '600px',
+          background: 'radial-gradient(circle, rgba(0, 113, 227, 0.25) 0%, rgba(0, 113, 227, 0) 70%)',
+          filter: 'blur(100px)',
+          opacity: 0.3,
+          zIndex: 2,
+          pointerEvents: 'none',
+        }}
+      />
+      
+      {/* Bottom-right blob - Cyan/Purple mix */}
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: '-15%',
+          right: '-5%',
+          width: '500px',
+          height: '500px',
+          background: 'radial-gradient(circle, rgba(0, 188, 212, 0.2) 0%, rgba(147, 51, 234, 0.15) 50%, rgba(0, 188, 212, 0) 70%)',
+          filter: 'blur(120px)',
+          opacity: 0.25,
+          zIndex: 2,
+          pointerEvents: 'none',
+        }}
+      />
+      
+      {/* Additional subtle blob - middle right */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '30%',
           right: '5%',
-          width: 400,
-          height: 400,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(211,139,42,0.08) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-          zIndex: 0,
-        }}
-      />
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: '20%',
-          left: '10%',
-          width: 350,
-          height: 350,
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(11,31,51,0.06) 0%, transparent 70%)',
-          filter: 'blur(50px)',
-          zIndex: 0,
+          width: '400px',
+          height: '400px',
+          background: 'radial-gradient(circle, rgba(0, 113, 227, 0.15) 0%, rgba(0, 113, 227, 0) 60%)',
+          filter: 'blur(80px)',
+          opacity: 0.2,
+          zIndex: 2,
+          pointerEvents: 'none',
         }}
       />
 
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 10, mx: 'auto', px: { xs: 3, md: 6 } }}>
         <Box
           sx={{
             maxWidth: 800,
@@ -113,7 +141,7 @@ function HeroSection() {
             />
           </motion.div>
 
-          {/* Badge */}
+          {/* USP Badge - בלי דמי מנוי */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -124,23 +152,23 @@ function HeroSection() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 1,
-                px: 3,
-                py: 1,
-                mb: 4,
-                borderRadius: 6,
-                bgcolor: 'rgba(0,188,212,0.08)',
-                border: '1px solid',
-                borderColor: 'rgba(0,188,212,0.2)',
+                px: 4,
+                py: 1.5,
+                mb: 3,
+                borderRadius: 8,
+                bgcolor: 'rgba(211,139,42,0.12)',
+                border: '2px solid',
+                borderColor: 'rgba(211,139,42,0.3)',
+                boxShadow: '0 4px 12px rgba(211,139,42,0.15)',
               }}
             >
-              <RocketLaunchOutlinedIcon sx={{ fontSize: 20, color: 'secondary.main' }} aria-hidden="true" />
-              <Typography variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                הפתרון האוטומטי המוביל בישראל
+              <Typography variant="h6" sx={{ fontWeight: 700, color: 'secondary.main' }}>
+                בלי דמי מנוי חודשיים - הנכס נשאר שלך
               </Typography>
             </Box>
           </motion.div>
 
-          {/* כותרת ראשית */}
+          {/* כותרת ראשית - Apple/Big Tech Style */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -150,8 +178,11 @@ function HeroSection() {
               variant="h1"
               sx={{
                 mb: 3,
-                color: 'text.primary',
+                color: '#1D1D1F',
                 fontWeight: 700,
+                fontSize: { xs: '3rem', md: '5rem' }, // text-5xl md:text-7xl
+                letterSpacing: '-0.02em',
+                lineHeight: 1.1,
               }}
             >
               {title}
@@ -168,9 +199,10 @@ function HeroSection() {
               variant="h5"
               sx={{
                 mb: 5,
-                color: 'text.secondary',
+                color: '#86868B',
                 fontWeight: 400,
                 lineHeight: 1.6,
+                fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
               }}
             >
               <strong>{subtitle}</strong>
@@ -190,45 +222,26 @@ function HeroSection() {
               sx={{ mb: 6 }}
             >
               <Button
-                variant="contained"
+                variant="primary"
                 size="large"
-                color="secondary"
                 startIcon={<RocketLaunchOutlinedIcon />}
-                component={Link}
                 to={ctaHref}
-                sx={{
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                }}
               >
                 {ctaText}
               </Button>
               <Button
-                variant="outlined"
+                variant="secondary"
                 size="large"
                 startIcon={<PlayCircleOutlineIcon />}
-                component={Link}
                 to="/contact"
-                sx={{
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  borderColor: 'primary.main',
-                  color: 'primary.main',
-                  '&:hover': {
-                    borderColor: 'primary.dark',
-                    bgcolor: 'rgba(11,31,51,0.04)',
-                  },
-                }}
               >
                 רוצים לעצור את זליגת הכסף? בואו נדבר
               </Button>
             </Stack>
           </motion.div>
 
-          {/* נתונים מהירים */}
-          <motion.div
+          {/* נתונים מהירים - מוסתר עד שיש נתונים אמיתיים */}
+          {/* <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
@@ -265,7 +278,7 @@ function HeroSection() {
                 </Box>
               ))}
             </Stack>
-          </motion.div>
+          </motion.div> */}
         </Box>
       </Container>
     </Box>

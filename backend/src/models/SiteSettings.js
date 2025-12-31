@@ -38,6 +38,13 @@ const SiteSettingsSchema = new mongoose.Schema(
     hours: {
       sundayToThursday: { type: String, trim: true, default: 'ראשון - חמישי: 9:00 - 18:00' },
       friday: { type: String, trim: true, default: 'שישי: 9:00 - 13:00' }
+    },
+
+    stats: {
+      hoursSaved: { value: { type: Number, default: 10 }, suffix: { type: String, default: '+' }, label: { type: String, default: 'שעות חיסכון שבועי' } },
+      satisfaction: { value: { type: Number, default: 95 }, suffix: { type: String, default: '%' }, label: { type: String, default: 'שביעות רצון' } },
+      businesses: { value: { type: Number, default: 500 }, suffix: { type: String, default: '+' }, label: { type: String, default: 'עסקים משתמשים' } },
+      support: { value: { type: Number, default: 24 }, suffix: { type: String, default: '/7' }, label: { type: String, default: 'תמיכה' } }
     }
   },
   { timestamps: true }

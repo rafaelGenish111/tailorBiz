@@ -4,7 +4,7 @@ import ClientsLogoMarquee from '../components/home/ClientsLogoMarquee';
 import HomeCMSSections from '../components/home/HomeCMSSections';
 import ProcessFlowTimeline from '../components/home/ProcessFlowTimeline';
 import FeaturesSection from '../components/home/FeaturesSection';
-import StatsSection from '../components/home/StatsSection';
+// import StatsSection from '../components/home/StatsSection'; // Commented out until real data is available
 import TestimonialsSection from '../components/home/TestimonialsSection';
 
 function Home() {
@@ -15,7 +15,8 @@ function Home() {
       <HomeCMSSections />
       <ProcessFlowTimeline />
       <FeaturesSection />
-      <StatsSection />
+      {/* StatsSection commented out until real data is available */}
+      {/* <StatsSection /> */}
       <TestimonialsSection />
     </Box>
   );

@@ -4,28 +4,28 @@ import { heIL } from '@mui/material/locale';
 export const theme = createTheme({
   direction: 'rtl',
   palette: {
-    mode: 'light',
+    mode: 'light', // Light Mode - Premium Apple Aesthetic
     primary: {
-      // Navy/Steel - Clean Industrial
-      main: '#0B1F33',
-      light: '#203A55',
-      dark: '#071522',
+      // Electric Blue / Deep Royal Blue
+      main: '#0071E3',
+      light: '#0077ED',
+      dark: '#0066CC',
       contrastText: '#ffffff',
     },
     secondary: {
-      // Copper CTA
-      main: '#D38B2A',
-      light: '#F0B56C',
-      dark: '#9A5C12',
+      // Alternative accent
+      main: '#0071E3',
+      light: '#0077ED',
+      dark: '#0066CC',
       contrastText: '#ffffff',
     },
     background: {
-      default: '#FFFFFF',
-      paper: '#F7F8FA',
+      default: '#FFFFFF', // Pure white base
+      paper: '#F5F5F7', // Very light gray/off-white for sections
     },
     text: {
-      primary: '#0F172A',
-      secondary: '#475569',
+      primary: '#1D1D1F', // Deep charcoal gray for headings
+      secondary: '#86868B', // Medium gray for body text
     },
     grey: {
       50: '#F8FAFC',
@@ -39,39 +39,67 @@ export const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: "'Heebo', 'Assistant', sans-serif",
+    fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
     h1: {
+      fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
       fontWeight: 700,
-      fontSize: '3.5rem',
+      fontSize: '4.5rem', // text-5xl equivalent
       lineHeight: 1.1,
       letterSpacing: '-0.02em',
+      color: '#1D1D1F',
+      '@media (min-width:900px)': {
+        fontSize: '5rem', // text-7xl equivalent for md and up
+      },
       '@media (max-width:600px)': {
-        fontSize: '2.5rem',
+        fontSize: '3rem',
       },
     },
     h2: {
-      fontWeight: 650,
+      fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
+      fontWeight: 700,
       fontSize: '2.75rem',
       lineHeight: 1.2,
       letterSpacing: '-0.01em',
+      color: '#1D1D1F',
       '@media (max-width:600px)': {
         fontSize: '2rem',
       },
     },
     h3: {
-      fontWeight: 600,
+      fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
+      fontWeight: 700,
       fontSize: '2rem',
       lineHeight: 1.3,
+      color: '#1D1D1F',
+    },
+    h4: {
+      fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
+      fontWeight: 700,
+      color: '#1D1D1F',
     },
     h5: {
-      fontWeight: 500,
+      fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
+      fontWeight: 700,
       fontSize: '1.5rem',
       lineHeight: 1.4,
+      color: '#1D1D1F',
+    },
+    h6: {
+      fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
+      fontWeight: 700,
+      color: '#1D1D1F',
     },
     body1: {
+      fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
       fontSize: '1.125rem',
       lineHeight: 1.8,
-      color: '#475569',
+      color: '#86868B',
+      fontWeight: 400,
+    },
+    body2: {
+      fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+      color: '#86868B',
+      fontWeight: 400,
     },
     button: {
       fontWeight: 700,
@@ -87,27 +115,43 @@ export const theme = createTheme({
     '0px 2px 8px rgba(0,0,0,0.04)',
     '0px 4px 16px rgba(0,0,0,0.06)',
     '0px 8px 24px rgba(0,0,0,0.08)',
-    '0px 12px 32px rgba(0,0,0,0.1)',
-    ...Array(20).fill('0px 12px 32px rgba(0,0,0,0.1)'),
+    '0px 20px 40px -10px rgba(0,0,0,0.05)', // Super soft shadow for cards
+    '0px 20px 40px -10px rgba(0,0,0,0.05)',
+    ...Array(19).fill('0px 20px 40px -10px rgba(0,0,0,0.05)'),
   ],
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 6,
-          padding: '12px 32px',
+          borderRadius: '9999px', // rounded-full (pill shape)
+          padding: '12px 32px', // px-8 py-3 equivalent - "High Ticket" look
           fontSize: '1rem',
-          fontWeight: 700,
+          fontWeight: 500, // font-medium
+          textTransform: 'none',
           boxShadow: 'none',
-          transition: 'all 0.3s ease',
+          transition: 'all 0.3s ease', // transition-all duration-300
+          fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
           '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0px 8px 24px rgba(0,0,0,0.12)',
+            boxShadow: 'none',
           },
         },
         contained: {
+          background: '#0071E3', // Royal Blue
+          color: '#ffffff',
           '&:hover': {
-            boxShadow: '0px 8px 24px rgba(0,0,0,0.15)',
+            background: '#0077ED', // hover:bg-[#0077ED]
+            boxShadow: '0px 8px 24px rgba(0, 113, 227, 0.3)', // hover:shadow-lg
+            transform: 'scale(1.05)', // hover:scale-105
+          },
+        },
+        outlined: {
+          backgroundColor: 'transparent',
+          borderColor: '#D1D1D6', // border border-gray-300
+          color: '#1D1D1F', // text-[#1D1D1F]
+          '&:hover': {
+            borderColor: '#1D1D1F', // hover:border-gray-800
+            backgroundColor: 'rgba(29, 29, 31, 0.05)',
+            transform: 'scale(1.05)',
           },
         },
       },
@@ -115,12 +159,12 @@ export const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
-          boxShadow: '0px 4px 16px rgba(0,0,0,0.06)',
+          borderRadius: 24, // rounded-3xl
+          boxShadow: '0px 20px 40px -10px rgba(0,0,0,0.05)', // Super soft shadow
           transition: 'all 0.3s ease',
           '&:hover': {
-            transform: 'translateY(-8px)',
-            boxShadow: '0px 12px 32px rgba(0,0,0,0.12)',
+            transform: 'translateY(-4px)',
+            boxShadow: '0px 24px 48px -12px rgba(0,0,0,0.08)',
           },
         },
       },

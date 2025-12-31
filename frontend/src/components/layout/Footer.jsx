@@ -134,8 +134,7 @@ function Footer() {
                 תנאי שימוש
               </Link>
               <Link
-                component={RouterLink}
-                to="/privacy"
+                href="/privacy"
                 color="text.primary"
                 underline="hover"
                 sx={{

@@ -1,4 +1,4 @@
-import { Box, Container, Typography, Paper } from '@mui/material';
+import { Box, Container, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
@@ -12,52 +12,40 @@ const MotionBox = motion(Box);
 
 const features = [
   {
-    number: '01',
     icon: PersonOutlineIcon,
     title: 'CRM מותאם אישית',
     description: 'מערכת ניהול לקוחות שמותאמת בדיוק לתהליכי העבודה שלכם, עם מעקב פשוט ונוח ודיווחים מפורטים',
-    color: '#1a237e',
-    bgColor: 'rgba(26, 35, 126, 0.08)',
+    span: 1, // Regular card
   },
   {
-    number: '02',
     icon: NotificationsNoneIcon,
     title: 'תזכורות אוטומטיות',
     description: 'שליחת תזכורות תכנות לפגישות במייל, SMS והוואטסאפ בזמן המדויק, ללא צורך בעבודה ידנית',
-    color: '#00bcd4',
-    bgColor: 'rgba(0, 188, 212, 0.08)',
+    span: 2, // Spans 2 columns (Bento style)
   },
   {
-    number: '03',
     icon: EventNoteIcon,
     title: 'ניהול תורים חכם',
     description: 'מילוי אוטומטי של תורים מבוטלים ואופטימיזציה של לוח הזמנים להגדלת שיעור התפוסה',
-    color: '#1a237e',
-    bgColor: 'rgba(26, 35, 126, 0.08)',
+    span: 1,
   },
   {
-    number: '04',
     icon: TrendingUpIcon,
     title: 'מעקב אחרי לקוחות',
     description: 'זיהוי אוטומטי של לקוחות שלא חזרו ופניה אליהם בזמן הנכון, הגדלת שיעור ההחזרה המשמעותית',
-    color: '#00bcd4',
-    bgColor: 'rgba(0, 188, 212, 0.08)',
+    span: 1,
   },
   {
-    number: '05',
     icon: InventoryOutlinedIcon,
     title: 'ניהול מלאי וגביה',
     description: 'מעקב הכם אחרי מלאי, תזכורות לחשבוניות ואופטימיזציה של תהליכי גבייה שליטה מלאה',
-    color: '#1a237e',
-    bgColor: 'rgba(26, 35, 126, 0.08)',
+    span: 2, // Spans 2 columns (Bento style)
   },
   {
-    number: '06',
     icon: IntegrationInstructionsOutlinedIcon,
     title: 'אינטגרציות מלאות',
     description: 'חיבור חלק עם הכלים הקיימים שלכם - WhatsApp, Google, ועוד כדי ליצור מערכת אחת משולבת',
-    color: '#00bcd4',
-    bgColor: 'rgba(0, 188, 212, 0.08)',
+    span: 1,
   },
 ];
 
@@ -72,91 +60,85 @@ function FeatureCard({ feature, index }) {
   return (
     <MotionBox
       ref={ref}
-      initial={{ opacity: 0, y: 50 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      sx={{ height: '100%' }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      sx={{
+        gridColumn: {
+          xs: 'span 1',
+          md: feature.span === 2 ? 'span 2' : 'span 1',
+        },
+        height: '100%',
+      }}
     >
-      <Paper
-        elevation={0}
+      <Box
         sx={{
           position: 'relative',
           width: '100%',
           height: '100%',
-          minHeight: 420,
+          minHeight: { xs: 280, md: 320 },
           display: 'flex',
           flexDirection: 'column',
-          p: 5,
-          border: '1px solid',
-          borderColor: 'grey.200',
-          borderRadius: 1,
+          p: { xs: 4, md: 8 },
+          bgcolor: '#FFFFFF', // White cards
+          border: 'none', // No hard borders
+          borderRadius: '24px', // rounded-3xl
+          boxShadow: '0px 20px 40px -10px rgba(0,0,0,0.05)', // Super soft shadow
           boxSizing: 'border-box',
-          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          cursor: 'pointer',
           '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: '0px 12px 32px rgba(0,0,0,0.08)',
-            borderColor: feature.color,
+            transform: 'scale(1.02)',
+            boxShadow: '0px 24px 48px -12px rgba(0,0,0,0.08)',
           },
         }}
       >
+        {/* Icon at top left - large size */}
         <Box
           sx={{
-            position: 'absolute',
-            top: 20,
-            left: 20,
-            width: 36,
-            height: 36,
-            borderRadius: '50%',
-            bgcolor: feature.bgColor,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 700,
-            fontSize: '0.875rem',
-            color: feature.color,
-          }}
-        >
-          {feature.number}
-        </Box>
-
-        <Box
-          sx={{
-            width: 80,
-            height: 80,
-            borderRadius: '50%',
-            bgcolor: feature.bgColor,
+            width: { xs: 56, md: 64 },
+            height: { xs: 56, md: 64 },
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             mb: 3,
+            borderRadius: '16px',
+            bgcolor: 'rgba(0, 113, 227, 0.1)', // Electric Blue with transparency
+            background: 'linear-gradient(135deg, rgba(0, 113, 227, 0.12) 0%, rgba(0, 119, 237, 0.08) 100%)',
           }}
         >
-          <Icon sx={{ fontSize: 40, color: feature.color }} />
+          <Icon sx={{ fontSize: { xs: 28, md: 32 }, color: '#0071E3' }} />
         </Box>
 
+        {/* Headline - Bold, Charcoal Gray */}
         <Typography
           variant="h5"
           sx={{
             mb: 2,
             fontWeight: 700,
-            color: 'text.primary',
+            color: '#1D1D1F', // Deep charcoal gray
             lineHeight: 1.3,
+            fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
+            fontSize: { xs: '1.25rem', md: '1.5rem' },
           }}
         >
           {feature.title}
         </Typography>
 
+        {/* Description text at bottom - Medium Gray, readable */}
         <Typography
           variant="body1"
           sx={{
-            color: 'text.secondary',
+            color: '#86868B', // Medium gray
             lineHeight: 1.7,
             flexGrow: 1,
+            fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+            fontSize: { xs: '0.95rem', md: '1.125rem' },
           }}
         >
           {feature.description}
         </Typography>
-      </Paper>
+      </Box>
     </MotionBox>
   );
 }
@@ -166,11 +148,11 @@ function FeaturesSection() {
     <Box
       id="features"
       sx={{
-        py: { xs: 8, md: 12 },
-        bgcolor: 'background.default',
+        py: { xs: 24, md: 32 },
+        bgcolor: '#F5F5F7', // Very light gray/off-white for sections
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" sx={{ mx: 'auto', px: { xs: 3, md: 6 } }}>
         <Box sx={{ textAlign: 'center', mb: 8 }}>
           <Typography
             variant="h2"
@@ -201,10 +183,9 @@ function FeaturesSection() {
             display: 'grid',
             gridTemplateColumns: {
               xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              md: 'repeat(3, 1fr)',
+              md: 'repeat(4, 1fr)', // 4 columns for Bento grid
             },
-            gap: 4,
+            gap: { xs: 3, md: 4 },
             width: '100%',
           }}
         >

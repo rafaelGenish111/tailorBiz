@@ -10,6 +10,7 @@ router.get('/pages/:slug', cmsPublicController.getPublishedPageBySlug);
 router.get('/articles', cmsPublicController.getPublishedArticles);
 router.get('/articles/:slug', cmsPublicController.getPublishedArticleBySlug);
 router.get('/clients', cmsPublicController.getPublishedClients);
+router.get('/clients/count', cmsPublicController.getClientsCount);
 router.get('/testimonials', cmsPublicController.getPublishedTestimonials);
 router.get('/site-settings', siteSettingsController.getPublic);
 

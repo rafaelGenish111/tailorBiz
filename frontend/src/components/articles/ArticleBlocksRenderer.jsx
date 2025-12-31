@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Typography, Stack, Divider, Button } from '@mui/material';
+import { Box, Typography, Stack, Divider } from '@mui/material';
+import Button from '../ui/Button';
 
 const ArticleBlocksRenderer = ({ blocks }) => {
   return (
@@ -76,10 +77,8 @@ const ArticleBlocksRenderer = ({ blocks }) => {
                   {b.data?.text || 'בואו נבדוק יחד היתכנות ונבנה אפיון מדויק.'}
                 </Typography>
                 <Button
-                  variant="contained"
-                  color="secondary"
+                  variant="primary"
                   href={b.data?.href || '/contact'}
-                  sx={{ fontWeight: 800 }}
                 >
                   {b.data?.buttonText || 'לבדיקת היתכנות ואפיון'}
                 </Button>

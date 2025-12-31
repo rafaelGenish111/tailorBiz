@@ -2,6 +2,7 @@ const PageContent = require('../models/PageContent');
 const Article = require('../models/Article');
 const ClientLogo = require('../models/ClientLogo');
 const Testimonial = require('../models/Testimonial');
+const Client = require('../models/Client');
 
 exports.getPublishedTestimonials = async (req, res) => {
   try {
@@ -98,6 +99,17 @@ exports.getPublishedClients = async (req, res) => {
   } catch (error) {
     console.error('Error in getPublishedClients:', error);
     return res.status(500).json({ success: false, message: 'שגיאה בטעינת לקוחות', error: error.message });
+  }
+};
+
+exports.getClientsCount = async (req, res) => {
+  try {
+    // Count only clients with status 'won' (actual customers)
+    const count = await Client.countDocuments({ status: 'won' });
+    return res.json({ success: true, data: { count } });
+  } catch (error) {
+    console.error('Error in getClientsCount:', error);
+    return res.status(500).json({ success: false, message: 'שגיאה בספירת לקוחות', error: error.message });
   }
 };
 

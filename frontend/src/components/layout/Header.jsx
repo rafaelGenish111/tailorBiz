@@ -4,7 +4,7 @@ import {
   Toolbar,
   Container,
   Box,
-  Button,
+  Button as MuiButton,
   IconButton,
   Drawer,
   List,
@@ -18,6 +18,7 @@ import {
 import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
+import Button from '../ui/Button';
 
 const LOGO_SRC = '/assets/images/image-removebg-preview.png';
 
@@ -51,17 +52,19 @@ function Header() {
       position="sticky"
       elevation={0}
       sx={{
-        bgcolor: 'white',
+        bgcolor: trigger ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.95)', // Glassmorphism - Frosted Glass
         borderBottom: '1px solid',
-        borderColor: trigger ? 'grey.200' : 'transparent',
+        borderColor: trigger ? 'rgba(0, 0, 0, 0.05)' : 'transparent',
         boxShadow: trigger ? '0 2px 8px rgba(0,0,0,0.04)' : 'none',
         transition: 'all 0.3s ease',
         py: trigger ? 0.5 : 1.5,
+        backdropFilter: 'blur(20px)', // backdrop-blur-md
+        WebkitBackdropFilter: 'blur(20px)',
       }}
     >
       <Container maxWidth="lg">
         <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-          <Box
+            <Box
             component={Link}
             to="/"
             sx={{
@@ -69,7 +72,7 @@ function Header() {
               alignItems: 'center',
               gap: 1.25,
               textDecoration: 'none',
-              color: 'primary.main',
+              color: '#1D1D1F',
             }}
           >
             <Box
@@ -92,20 +95,22 @@ function Header() {
 
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Button
+              <MuiButton
                 onClick={(e) => setArticlesAnchorEl(e.currentTarget)}
                 sx={{
-                  color: 'text.primary',
+                  color: '#1D1D1F',
                   fontWeight: 500,
                   px: 2,
+                  fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+                  textTransform: 'none',
                   '&:hover': {
                     bgcolor: 'transparent',
-                    color: 'primary.main',
+                    color: '#0071E3',
                   },
                 }}
               >
                 מאמרים
-              </Button>
+              </MuiButton>
               <Menu
                 anchorEl={articlesAnchorEl}
                 open={Boolean(articlesAnchorEl)}
@@ -124,32 +129,29 @@ function Header() {
                 ))}
               </Menu>
               {navItems.map((item) => (
-                <Button
+                <MuiButton
                   key={item.label}
                   component={Link}
                   to={item.path}
                   sx={{
-                    color: 'text.primary',
+                    color: '#1D1D1F',
                     fontWeight: 500,
                     px: 2,
+                    fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+                    textTransform: 'none',
                     '&:hover': {
                       bgcolor: 'transparent',
-                      color: 'primary.main',
+                      color: '#0071E3',
                     },
                   }}
                 >
                   {item.label}
-                </Button>
+                </MuiButton>
               ))}
               <Button
-                variant="contained"
-                color="secondary"
-                component={Link}
+                variant="primary"
                 to="/contact"
-                sx={{
-                  mr: 2,
-                  boxShadow: '0px 4px 16px rgba(211,139,42,0.28)',
-                }}
+                size="medium"
               >
                 לבדיקת היתכנות ואפיון
               </Button>
@@ -159,7 +161,7 @@ function Header() {
           {isMobile && (
             <IconButton
               onClick={() => setMobileOpen(true)}
-              sx={{ color: 'primary.main' }}
+              sx={{ color: '#1D1D1F' }}
               aria-label="תפריט"
             >
               <MenuIcon />
@@ -211,9 +213,9 @@ function Header() {
                 py: 2,
                 fontSize: '1.25rem',
                 fontWeight: 600,
-                color: 'text.primary',
+                color: '#1D1D1F',
                 borderBottom: '1px solid',
-                borderColor: 'grey.200',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
                 textDecoration: 'none',
               }}
             >
@@ -222,13 +224,11 @@ function Header() {
           ))}
           <ListItem sx={{ pt: 3 }}>
             <Button
-              variant="contained"
-              color="secondary"
-              fullWidth
-              size="large"
-              component={Link}
+              variant="primary"
               to="/contact"
+              size="large"
               onClick={() => setMobileOpen(false)}
+              sx={{ width: '100%' }}
             >
               לבדיקת היתכנות ואפיון
             </Button>

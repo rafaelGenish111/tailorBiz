@@ -11,7 +11,7 @@ const HomeCMSSections = () => {
         const res = await publicCMS.getPage('home');
         const content = res.data?.data?.content || {};
         setSections(Array.isArray(content.sections) ? content.sections : []);
-      } catch (_) {
+      } catch {
         setSections([]);
       }
     };
@@ -21,8 +21,8 @@ const HomeCMSSections = () => {
   if (!sections.length) return null;
 
   return (
-    <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: 'background.default' }}>
-      <Container maxWidth="lg">
+    <Box sx={{ py: { xs: 24, md: 32 }, bgcolor: '#FFFFFF' }}>
+      <Container maxWidth="lg" sx={{ mx: 'auto', px: { xs: 3, md: 6 } }}>
         <Grid container spacing={3}>
           {sections.map((s, idx) => (
             <Grid item xs={12} md={4} key={idx}>
@@ -32,8 +32,9 @@ const HomeCMSSections = () => {
                   p: 3,
                   borderRadius: 3,
                   height: '100%',
-                  borderColor: 'grey.100',
-                  bgcolor: 'white'
+                  border: 'none',
+                  bgcolor: '#FFFFFF',
+                  boxShadow: '0px 20px 40px -10px rgba(0,0,0,0.05)'
                 }}
               >
                 {s.image?.url ? (

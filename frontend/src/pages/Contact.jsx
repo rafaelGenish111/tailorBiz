@@ -5,7 +5,6 @@ import {
   Typography,
   Grid,
   TextField,
-  Button,
   Paper,
   Alert,
 } from '@mui/material';
@@ -16,6 +15,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { COMPANY_INFO } from '../utils/constants';
 import { publicCMS, publicLeads } from '../utils/publicApi';
+import Button from '../components/ui/Button';
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -179,12 +179,11 @@ function Contact() {
                 />
                 <Button
                   type="submit"
-                  variant="contained"
-                  color="secondary"
+                  variant="primary"
                   size="large"
-                  fullWidth
                   endIcon={<SendIcon />}
                   disabled={submitting}
+                  sx={{ width: '100%' }}
                 >
                   {submitting ? 'שולח...' : 'שלחו הודעה'}
                 </Button>
