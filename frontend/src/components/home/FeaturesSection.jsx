@@ -15,37 +15,31 @@ const features = [
     icon: PersonOutlineIcon,
     title: 'CRM מותאם אישית',
     description: 'מערכת ניהול לקוחות שמותאמת בדיוק לתהליכי העבודה שלכם, עם מעקב פשוט ונוח ודיווחים מפורטים',
-    span: 1, // Regular card
   },
   {
     icon: NotificationsNoneIcon,
     title: 'תזכורות אוטומטיות',
     description: 'שליחת תזכורות תכנות לפגישות במייל, SMS והוואטסאפ בזמן המדויק, ללא צורך בעבודה ידנית',
-    span: 2, // Spans 2 columns (Bento style)
   },
   {
     icon: EventNoteIcon,
     title: 'ניהול תורים חכם',
     description: 'מילוי אוטומטי של תורים מבוטלים ואופטימיזציה של לוח הזמנים להגדלת שיעור התפוסה',
-    span: 1,
   },
   {
     icon: TrendingUpIcon,
     title: 'מעקב אחרי לקוחות',
     description: 'זיהוי אוטומטי של לקוחות שלא חזרו ופניה אליהם בזמן הנכון, הגדלת שיעור ההחזרה המשמעותית',
-    span: 1,
   },
   {
     icon: InventoryOutlinedIcon,
     title: 'ניהול מלאי וגביה',
     description: 'מעקב הכם אחרי מלאי, תזכורות לחשבוניות ואופטימיזציה של תהליכי גבייה שליטה מלאה',
-    span: 2, // Spans 2 columns (Bento style)
   },
   {
     icon: IntegrationInstructionsOutlinedIcon,
     title: 'אינטגרציות מלאות',
     description: 'חיבור חלק עם הכלים הקיימים שלכם - WhatsApp, Google, ועוד כדי ליצור מערכת אחת משולבת',
-    span: 1,
   },
 ];
 
@@ -64,10 +58,7 @@ function FeatureCard({ feature, index }) {
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.1 }}
       sx={{
-        gridColumn: {
-          xs: 'span 1',
-          md: feature.span === 2 ? 'span 2' : 'span 1',
-        },
+        gridColumn: 'span 1',
         height: '100%',
       }}
     >
@@ -75,8 +66,7 @@ function FeatureCard({ feature, index }) {
         sx={{
           position: 'relative',
           width: '100%',
-          height: '100%',
-          minHeight: { xs: 280, md: 320 },
+          height: { xs: '320px', md: '360px' }, // Fixed height for all cards
           display: 'flex',
           flexDirection: 'column',
           p: { xs: 4, md: 8 },
@@ -132,6 +122,11 @@ function FeatureCard({ feature, index }) {
             color: '#86868B', // Medium gray
             lineHeight: 1.7,
             flexGrow: 1,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: 4,
+            WebkitBoxOrient: 'vertical',
             fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
             fontSize: { xs: '0.95rem', md: '1.125rem' },
           }}
@@ -183,7 +178,11 @@ function FeaturesSection() {
             display: 'grid',
             gridTemplateColumns: {
               xs: '1fr',
-              md: 'repeat(4, 1fr)', // 4 columns for Bento grid
+              md: 'repeat(3, 1fr)', // 3 columns for uniform cards
+            },
+            gridAutoRows: {
+              xs: '320px',
+              md: '360px', // Fixed row height
             },
             gap: { xs: 3, md: 4 },
             width: '100%',
