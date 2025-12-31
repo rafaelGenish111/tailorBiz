@@ -27,8 +27,17 @@ if (!IS_VERCEL) {
 
       // אתחול WhatsApp Service
       const whatsappService = require('./src/services/whatsappService');
-      if (process.env.ENABLE_WHATSAPP === 'true' || process.env.NODE_ENV === 'development') {
-        whatsappService.initialize();
+      // אפשר להשבית עם ENABLE_WHATSAPP=false
+      if (process.env.ENABLE_WHATSAPP !== 'false') {
+        // ננסה לאתחל, אבל לא נכשל את השרת אם זה נכשל
+        setTimeout(() => {
+          try {
+            whatsappService.initialize();
+          } catch (err) {
+            console.warn('⚠️ WhatsApp Service initialization failed:', err.message);
+            console.warn('⚠️ WhatsApp will retry automatically when connection is available');
+          }
+        }, 2000); // המתנה קצרה כדי לא להפריע לאתחול השרת
       }
     });
   }).catch(err => {

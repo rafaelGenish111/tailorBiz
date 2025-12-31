@@ -10,64 +10,111 @@ class WhatsAppService {
   }
 
   // אתחול השירות
-  initialize() {
-    if (this.client) return;
+  initialize(retryCount = 0) {
+    const MAX_RETRIES = 5;
+    const RETRY_DELAY = 30000; // 30 seconds
+
+    if (this.client && this.isConnected) {
+      console.log('✅ WhatsApp Service already initialized and connected');
+      return;
+    }
+
+    // אם יש client קיים אבל לא מחובר, נסה לאתחל מחדש
+    if (this.client && !this.isConnected && retryCount === 0) {
+      console.log('🔄 WhatsApp client exists but not connected, reinitializing...');
+      this.client = null;
+    }
+
+    if (this.client) {
+      console.log('⚠️ WhatsApp client already exists, skipping initialization');
+      return;
+    }
 
     console.log('🔄 Initializing WhatsApp Service...');
 
-    this.client = new Client({
-      authStrategy: new LocalAuth({
-        dataPath: './.wwebjs_auth'
-      }),
-      puppeteer: {
-        headless: true, // במצב פרודקשן נרצה שזה ירוץ ברקע
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-accelerated-2d-canvas',
-          '--no-first-run',
-          '--no-zygote',
-          '--single-process',
-          '--disable-gpu'
-        ],
-        timeout: 60000
-      }
-    });
-
-    this.setupEventListeners();
-
-    // יצירת Promise שיושלם כשהלקוח מוכן
-    this.readyPromise = new Promise((resolve) => {
-      this.client.on('ready', () => {
-        this.isConnected = true;
-        console.log('✅ WhatsApp Service is ready!');
-        resolve();
-      });
-    });
-
-    console.log('🚀 Starting WhatsApp client initialization...');
-    this.client.initialize()
-      .then(() => {
-        console.log('✅ WhatsApp client.initialize() completed successfully');
-      })
-      .catch(err => {
-        console.error('❌ WhatsApp Service initialization error:', err.message);
-        console.error('❌ Error stack:', err.stack);
-        // אם יש שגיאה, נדחה את ה-readyPromise כדי שהקוד לא יחכה לנצח
-        if (this.readyPromise) {
-          // נדחה את ה-Promise כדי שהקוד לא יחכה לנצח
-          setTimeout(() => {
-            if (!this.isConnected) {
-              console.error('❌ WhatsApp Service failed to connect after initialization error');
-              console.error('❌ This usually means:');
-              console.error('   1. WhatsApp needs QR code scan (check for QR code in logs)');
-              console.error('   2. Authentication failed (check .wwebjs_auth folder)');
-              console.error('   3. Puppeteer/Chrome issue (check if Chrome is installed)');
-            }
-          }, 5000);
+    try {
+      this.client = new Client({
+        authStrategy: new LocalAuth({
+          dataPath: './.wwebjs_auth'
+        }),
+        puppeteer: {
+          headless: true, // במצב פרודקשן נרצה שזה ירוץ ברקע
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process',
+            '--disable-gpu'
+          ],
+          timeout: 60000
         }
       });
+
+      this.setupEventListeners();
+
+      // יצירת Promise שיושלם כשהלקוח מוכן
+      this.readyPromise = new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          if (!this.isConnected) {
+            reject(new Error('WhatsApp initialization timeout'));
+          }
+        }, 120000); // 2 minutes timeout
+
+        this.client.on('ready', () => {
+          clearTimeout(timeout);
+          this.isConnected = true;
+          console.log('✅ WhatsApp Service is ready!');
+          resolve();
+        });
+
+        this.client.on('auth_failure', (msg) => {
+          clearTimeout(timeout);
+          reject(new Error(`WhatsApp auth failure: ${msg}`));
+        });
+      });
+
+      console.log('🚀 Starting WhatsApp client initialization...');
+      this.client.initialize()
+        .then(() => {
+          console.log('✅ WhatsApp client.initialize() completed successfully');
+        })
+        .catch(err => {
+          console.error('❌ WhatsApp Service initialization error:', err.message);
+          
+          // אם זו שגיאת אינטרנט, ננסה שוב אחרי זמן
+          if (err.message.includes('ERR_INTERNET_DISCONNECTED') || 
+              err.message.includes('ECONNREFUSED') ||
+              err.message.includes('ENOTFOUND')) {
+            if (retryCount < MAX_RETRIES) {
+              console.log(`⏳ Retrying WhatsApp initialization in ${RETRY_DELAY / 1000} seconds... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+              setTimeout(() => {
+                this.client = null;
+                this.initialize(retryCount + 1);
+              }, RETRY_DELAY);
+            } else {
+              console.error('❌ WhatsApp Service failed after', MAX_RETRIES, 'retries');
+              console.error('❌ Please check your internet connection and try again');
+            }
+          } else {
+            console.error('❌ Error stack:', err.stack);
+            console.error('❌ This usually means:');
+            console.error('   1. WhatsApp needs QR code scan (check for QR code in logs)');
+            console.error('   2. Authentication failed (check .wwebjs_auth folder)');
+            console.error('   3. Puppeteer/Chrome issue (check if Chrome is installed)');
+          }
+        });
+    } catch (err) {
+      console.error('❌ Error creating WhatsApp client:', err.message);
+      if (retryCount < MAX_RETRIES) {
+        console.log(`⏳ Retrying WhatsApp initialization in ${RETRY_DELAY / 1000} seconds... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+        setTimeout(() => {
+          this.initialize(retryCount + 1);
+        }, RETRY_DELAY);
+      }
+    }
   }
 
   setupEventListeners() {
@@ -99,8 +146,16 @@ class WhatsAppService {
     this.client.on('disconnected', (reason) => {
       console.log('❌ WhatsApp Client was logged out:', reason);
       this.isConnected = false;
-      // אופציונלי: ניסיון חיבור מחדש
-      // this.client.initialize(); 
+      this.client = null;
+      
+      // ניסיון חיבור מחדש אוטומטי אחרי 10 שניות
+      console.log('⏳ Attempting to reconnect WhatsApp in 10 seconds...');
+      setTimeout(() => {
+        if (!this.isConnected) {
+          console.log('🔄 Reconnecting WhatsApp Service...');
+          this.initialize(0);
+        }
+      }, 10000);
     });
 
     // הוסף event listeners נוספים לזיהוי בעיות
@@ -311,7 +366,14 @@ class WhatsAppService {
 
 // ייצוא מופע יחיד (Singleton)
 const service = new WhatsAppService();
-// אתחול אוטומטי בטעינת הקובץ (או שאפשר לקרוא ל-initialize מ-app.js)
-service.initialize();
+// אתחול אוטומטי בטעינת הקובץ - אבל רק אם לא ב-Vercel ולא ב-tests
+// ב-Vercel נאתחל מ-server.js כדי לשלוט על התזמון
+// ב-tests לא נרצה לאתחל כדי לא להפריע ל-tests
+if (process.env.VERCEL !== '1' && process.env.NODE_ENV !== 'test' && !process.env.JEST_WORKER_ID) {
+  // נאתחל אחרי זמן קצר כדי לא להפריע לאתחול השרת
+  setTimeout(() => {
+    service.initialize();
+  }, 2000);
+}
 
 module.exports = service;
