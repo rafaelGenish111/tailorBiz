@@ -1,4 +1,4 @@
-import { Box, Container, Grid, Typography, Link, IconButton, Divider } from '@mui/material';
+import { Box, Container, Grid, Typography, Link, IconButton, Divider, Button as MuiButton } from '@mui/material';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import InstagramIcon from '@mui/icons-material/Instagram';
@@ -62,19 +62,20 @@ function Footer() {
         <Grid container spacing={4}>
           {/* עמודה 1 - אודות */}
           <Grid item xs={12} sm={6} md={3}>
-            <Typography
-              variant="h5"
-              fontWeight={700}
-              gutterBottom
+            <Box
+              component="img"
+              src="/assets/images/image-removebg-preview.png"
+              alt="לוגו TailorBiz"
               sx={{
-                background: 'linear-gradient(135deg, #1a237e 0%, #00bcd4 100%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                height: { xs: 60, md: 80 },
+                width: 'auto',
+                mb: 2,
+                objectFit: 'contain',
               }}
-            >
-              TailorBiz
-            </Typography>
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               מערכת ניהול אוטומטית לעסקים קטנים ובינוניים. חוסכת זמן ומחזירה לקוחות.
             </Typography>
@@ -153,24 +154,91 @@ function Footer() {
               יצירת קשר
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <EmailIcon sx={{ fontSize: 20, color: 'secondary.main' }} />
-                <Typography variant="body2" color="text.primary">{email}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <PhoneIcon sx={{ fontSize: 20, color: 'secondary.main' }} />
-                <Typography variant="body2" color="text.primary">{phone}</Typography>
-              </Box>
-              {whatsapp ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <WhatsAppIcon sx={{ fontSize: 20, color: 'secondary.main' }} />
-                  <Typography variant="body2" color="text.primary">{whatsapp}</Typography>
-                </Box>
-              ) : null}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <LocationOnIcon sx={{ fontSize: 20, color: 'secondary.main' }} />
-                <Typography variant="body2" color="text.primary">{address}</Typography>
-              </Box>
+              {/* Email Button */}
+              <MuiButton
+                component="a"
+                href={`mailto:${email}`}
+                startIcon={<EmailIcon />}
+                sx={{
+                  justifyContent: 'flex-start',
+                  color: '#1D1D1F',
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 113, 227, 0.08)',
+                    color: '#0071E3',
+                  },
+                }}
+              >
+                שלח מייל
+              </MuiButton>
+
+              {/* Phone Button */}
+              {phone && (
+                <MuiButton
+                  component="a"
+                  href={`tel:${phone.replace(/\s/g, '')}`}
+                  startIcon={<PhoneIcon />}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    color: '#1D1D1F',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    '&:hover': {
+                      backgroundColor: 'rgba(0, 113, 227, 0.08)',
+                      color: '#0071E3',
+                    },
+                  }}
+                >
+                  התקשר אלינו
+                </MuiButton>
+              )}
+
+              {/* WhatsApp Button */}
+              {whatsapp && (
+                <MuiButton
+                  component="a"
+                  href={whatsapp.startsWith('http') ? whatsapp : `https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  startIcon={<WhatsAppIcon />}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    color: '#1D1D1F',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    '&:hover': {
+                      backgroundColor: 'rgba(37, 211, 102, 0.08)',
+                      color: '#25D366',
+                    },
+                  }}
+                >
+                  שלח ווצאפ
+                </MuiButton>
+              )}
+
+              {/* Location Button - Google Maps */}
+              {address && (
+                <MuiButton
+                  component="a"
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  startIcon={<LocationOnIcon />}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    color: '#1D1D1F',
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    '&:hover': {
+                      backgroundColor: 'rgba(0, 113, 227, 0.08)',
+                      color: '#0071E3',
+                    },
+                  }}
+                >
+                  {address}
+                </MuiButton>
+              )}
             </Box>
           </Grid>
 

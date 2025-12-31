@@ -25,6 +25,13 @@ import { publicCMS } from '../../utils/publicApi';
 
 const LOGO_SRC = '/assets/images/image-removebg-preview.png';
 
+const articleCategories = [
+  { label: 'אוטומציות', value: 'automation', path: '/articles?category=automation' },
+  { label: 'תהליכים', value: 'process', path: '/articles?category=process' },
+  { label: 'CRM', value: 'crm', path: '/articles?category=crm' },
+  { label: 'כללי', value: 'general', path: '/articles?category=general' },
+];
+
 function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [articlesAnchorEl, setArticlesAnchorEl] = useState(null);
@@ -43,13 +50,6 @@ function Header() {
     { label: 'תכונות', path: '/#features' },
     { label: 'לקוחות', path: '/clients' },
     { label: 'צור קשר', path: '/contact' },
-  ];
-
-  const articleCategories = [
-    { label: 'אוטומציות', value: 'automation', path: '/articles?category=automation' },
-    { label: 'תהליכים', value: 'process', path: '/articles?category=process' },
-    { label: 'CRM', value: 'crm', path: '/articles?category=crm' },
-    { label: 'כללי', value: 'general', path: '/articles?category=general' },
   ];
 
   // טעינת מאמרים לכל קטגוריה
@@ -180,7 +180,7 @@ function Header() {
                       key={category.value}
                       onMouseEnter={(e) => hasArticles && handleCategorySubmenuOpen(category.value, e)}
                       onMouseLeave={() => hasArticles && handleCategorySubmenuClose(category.value)}
-                      sx={{ position: 'relative' }}
+                      sx={{ position: 'relative', p: 0 }}
                     >
                       <Box
                         component={Link}
@@ -193,6 +193,9 @@ function Header() {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
+                          px: 2,
+                          py: 1.5,
+                          width: '100%',
                         }}
                       >
                         {category.label}
@@ -296,9 +299,6 @@ function Header() {
         </Box>
         <List sx={{ px: 3 }}>
           <ListItem
-            component={Link}
-            to="/articles"
-            onClick={() => setMobileOpen(false)}
             sx={{
               py: 2,
               fontSize: '1.25rem',
@@ -306,10 +306,96 @@ function Header() {
               color: 'text.primary',
               borderBottom: '1px solid',
               borderColor: 'grey.200',
-              textDecoration: 'none',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
             }}
           >
-            מאמרים
+            <Box
+              component={Link}
+              to="/articles"
+              onClick={() => setMobileOpen(false)}
+              sx={{
+                textDecoration: 'none',
+                color: 'inherit',
+                width: '100%',
+                mb: 1,
+              }}
+            >
+              מאמרים
+            </Box>
+            {articleCategories.map((category) => {
+              const hasArticles = articlesByCategory[category.value]?.length > 0;
+              return (
+                <Box key={category.value} sx={{ width: '100%', mt: 1 }}>
+                  <Box
+                    onClick={() => hasArticles && handleMobileCategoryToggle(category.value)}
+                    component={hasArticles ? 'div' : Link}
+                    to={hasArticles ? undefined : category.path}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      py: 1,
+                      px: 2,
+                      fontSize: '1rem',
+                      fontWeight: 500,
+                      color: 'text.secondary',
+                      textDecoration: 'none',
+                      cursor: hasArticles ? 'pointer' : 'default',
+                      borderRadius: 1,
+                      '&:hover': {
+                        bgcolor: 'action.hover',
+                      },
+                    }}
+                  >
+                    <Box
+                      component={!hasArticles ? Link : 'div'}
+                      to={!hasArticles ? category.path : undefined}
+                      onClick={!hasArticles ? () => setMobileOpen(false) : undefined}
+                      sx={{ flex: 1, textDecoration: 'none', color: 'inherit' }}
+                    >
+                      {category.label}
+                    </Box>
+                    {hasArticles && (
+                      <KeyboardArrowLeftIcon
+                        sx={{
+                          fontSize: 20,
+                          transform: mobileCategoryOpen[category.value] ? 'rotate(-90deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.2s',
+                        }}
+                      />
+                    )}
+                  </Box>
+                  {hasArticles && (
+                    <Collapse in={mobileCategoryOpen[category.value]}>
+                      <List sx={{ pl: 2, pt: 0.5 }}>
+                        {articlesByCategory[category.value]?.map((article) => (
+                          <ListItem
+                            key={article.slug}
+                            component={Link}
+                            to={`/articles/${article.slug}`}
+                            onClick={() => setMobileOpen(false)}
+                            sx={{
+                              py: 1.5,
+                              fontSize: '0.95rem',
+                              fontWeight: 400,
+                              color: 'text.secondary',
+                              textDecoration: 'none',
+                              borderRadius: 1,
+                              '&:hover': {
+                                bgcolor: 'action.hover',
+                              },
+                            }}
+                          >
+                            {article.title}
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Collapse>
+                  )}
+                </Box>
+              );
+            })}
           </ListItem>
           {navItems.map((item) => (
             <ListItem
