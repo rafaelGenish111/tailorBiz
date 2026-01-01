@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Stack, Divider } from '@mui/material';
+import { Box, Typography, Stack, Divider, Link } from '@mui/material';
 import Button from '../ui/Button';
 import ROICalculator from '../ROICalculator';
 
@@ -66,6 +66,34 @@ const ArticleBlocksRenderer = ({ blocks }) => {
                     {b.data.by}
                   </Typography>
                 ) : null}
+              </Box>
+            );
+          case 'link':
+            return (
+              <Box key={idx}>
+                {b.data?.href && b.data?.text ? (
+                  <Link
+                    href={b.data.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      color: 'primary.main',
+                      textDecoration: 'underline',
+                      '&:hover': {
+                        color: 'primary.dark',
+                        textDecoration: 'underline'
+                      }
+                    }}
+                  >
+                    <Typography variant="body1" component="span">
+                      {b.data.text}
+                    </Typography>
+                  </Link>
+                ) : (
+                  <Typography variant="body1" color="text.secondary">
+                    {b.data?.text || b.data?.href || 'קישור לא מוגדר'}
+                  </Typography>
+                )}
               </Box>
             );
           case 'cta':

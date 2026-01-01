@@ -38,6 +38,7 @@ const BLOCK_TYPES = [
   { value: 'paragraph', label: 'פסקה' },
   { value: 'image', label: 'תמונה' },
   { value: 'quote', label: 'ציטוט' },
+  { value: 'link', label: 'קישור' },
   { value: 'cta', label: 'CTA' },
   { value: 'list', label: 'רשימה' },
   { value: 'divider', label: 'קו הפרדה' }
@@ -326,6 +327,13 @@ const ArticleEditor = () => {
                     <Stack spacing={1}>
                       <TextField label="ציטוט" value={b.data?.text || ''} onChange={(e) => setBlock(idx, { data: { text: e.target.value } })} fullWidth multiline minRows={3} />
                       <TextField label="מאת" value={b.data?.by || ''} onChange={(e) => setBlock(idx, { data: { by: e.target.value } })} fullWidth />
+                    </Stack>
+                  ) : null}
+
+                  {b.type === 'link' ? (
+                    <Stack spacing={1}>
+                      <TextField label="טקסט הקישור" value={b.data?.text || ''} onChange={(e) => setBlock(idx, { data: { text: e.target.value } })} fullWidth />
+                      <TextField label="URL" value={b.data?.href || ''} onChange={(e) => setBlock(idx, { data: { href: e.target.value } })} fullWidth placeholder="https://..." />
                     </Stack>
                   ) : null}
 
