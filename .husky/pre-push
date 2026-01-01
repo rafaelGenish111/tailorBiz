@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-push checks..."
+
+# Run frontend build to catch case-sensitivity and import issues
+echo "📦 Building frontend..."
+cd frontend
+if ! npm run build; then
+  echo "❌ Frontend build failed! Please fix the errors before pushing."
+  exit 1
+fi
+cd ..
+
+echo "✅ Pre-push checks passed!"
+
