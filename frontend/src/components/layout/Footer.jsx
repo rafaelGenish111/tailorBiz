@@ -128,6 +128,18 @@ function Footer() {
                 צור קשר
               </Link>
               <Link
+                component={RouterLink}
+                to="/roi-calculator"
+                color="text.primary"
+                underline="hover"
+                sx={{
+                  '&:hover': { color: 'secondary.main' },
+                  transition: 'color 0.3s',
+                }}
+              >
+                מחשבון עלות חוסר יעילות
+              </Link>
+              <Link
                 href="#"
                 color="text.primary"
                 underline="hover"
