@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Typography, Stack, Divider } from '@mui/material';
 import Button from '../ui/Button';
+import ROICalculator from '../ROICalculator';
 
 const ArticleBlocksRenderer = ({ blocks }) => {
   return (
@@ -96,6 +97,12 @@ const ArticleBlocksRenderer = ({ blocks }) => {
                     </li>
                   ))}
                 </ul>
+              </Box>
+            );
+          case 'roi-calculator':
+            return (
+              <Box key={idx} sx={{ my: 4 }}>
+                <ROICalculator />
               </Box>
             );
           default:
