@@ -5,10 +5,10 @@ import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { publicCMS } from '../../utils/publicApi';
 import Button from '../ui/Button';
+// Import logo to ensure it's included in build
+import logoImage from '../../assets/images/image-removebg-preview.png';
 
-// Logo path - files in public/ are served from root in Vite
-// Use absolute path from root for Vercel compatibility
-const LOGO_SRC = '/assets/images/image-removebg-preview.png';
+const LOGO_SRC = logoImage;
 
 function HeroSection() {
   const [cmsHero, setCmsHero] = React.useState(null);

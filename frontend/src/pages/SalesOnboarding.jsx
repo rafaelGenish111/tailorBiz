@@ -41,7 +41,9 @@ import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const drawerWidth = 300;
-const LOGO_SRC = '/assets/images/image-removebg-preview.png';
+// Import logo to ensure it's included in build
+import logoImage from '../assets/images/image-removebg-preview.png';
+const LOGO_SRC = logoImage;
 
 const NAV = [
   { id: 'home', label: 'ברוכים הבאים', icon: <MenuBookOutlinedIcon /> },

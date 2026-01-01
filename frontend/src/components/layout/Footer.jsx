@@ -11,9 +11,10 @@ import { Link as RouterLink } from 'react-router-dom';
 import React from 'react';
 import { COMPANY_INFO, SOCIAL_LINKS } from '../../utils/constants';
 import { publicCMS } from '../../utils/publicApi';
+// Import logo to ensure it's included in build
+import logoImage from '../../assets/images/image-removebg-preview.png';
 
-// Logo path - files in public/ are served from root in Vite
-const LOGO_SRC = '/assets/images/image-removebg-preview.png';
+const LOGO_SRC = logoImage;
 
 function Footer() {
   const currentYear = new Date().getFullYear();

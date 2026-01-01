@@ -53,7 +53,7 @@ function Layout({ children }) {
     '@context': 'https://schema.org',
     '@type': 'ProfessionalService',
     'name': companyName,
-    'image': 'https://tailorbiz-software.com/assets/images/image-removebg-preview.png',
+    'image': 'https://tailorbiz-software.com/assets/images/image-removebg-preview.png', // Keep public path for SEO schema
     '@id': 'https://tailorbiz-software.com',
     'url': 'https://tailorbiz-software.com',
     'telephone': phone,

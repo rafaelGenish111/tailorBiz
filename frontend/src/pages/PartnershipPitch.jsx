@@ -24,6 +24,8 @@ import {
   Filler
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
+// Import logo to ensure it's included in build
+import logoImage from '../assets/images/image-removebg-preview.png';
 
 // רישום רכיבי הגרפים
 ChartJS.register(
@@ -55,7 +57,7 @@ const PartnershipPitch = () => {
     }
   };
 
-  const LOGO_SRC = '/assets/images/image-removebg-preview.png';
+  const LOGO_SRC = logoImage;
 
   // --- נתונים ---
   const sectorData = {
