@@ -45,7 +45,10 @@ const SiteSettingsSchema = new mongoose.Schema(
       satisfaction: { value: { type: Number, default: 95 }, suffix: { type: String, default: '%' }, label: { type: String, default: 'שביעות רצון' } },
       businesses: { value: { type: Number, default: 500 }, suffix: { type: String, default: '+' }, label: { type: String, default: 'עסקים משתמשים' } },
       support: { value: { type: Number, default: 24 }, suffix: { type: String, default: '/7' }, label: { type: String, default: 'תמיכה' } }
-    }
+    },
+
+    showClientsInNav: { type: Boolean, default: false },
+    showClientsOnHome: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

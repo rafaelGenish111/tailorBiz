@@ -37,6 +37,8 @@ function Footer() {
     };
   }, []);
 
+  const showClientsInNav = settings?.showClientsInNav === true;
+
   const companyName = settings?.company?.name || COMPANY_INFO.name;
   const email = settings?.contact?.email || COMPANY_INFO.email;
   const phone = settings?.contact?.phone || COMPANY_INFO.phone;
@@ -114,6 +116,20 @@ function Footer() {
               >
                 תמחור
               </Link> */}
+              {showClientsInNav && (
+                <Link
+                  component={RouterLink}
+                  to="/clients"
+                  color="text.primary"
+                  underline="hover"
+                  sx={{
+                    '&:hover': { color: 'secondary.main' },
+                    transition: 'color 0.3s',
+                  }}
+                >
+                  לקוחות
+                </Link>
+              )}
               <Link
                 component={RouterLink}
                 to="/contact"

@@ -4,6 +4,25 @@ import { publicCMS } from '../../utils/publicApi';
 
 const ClientsLogoMarquee = () => {
   const [clients, setClients] = React.useState([]);
+  const [settings, setSettings] = React.useState(null);
+
+  React.useEffect(() => {
+    let mounted = true;
+    const run = async () => {
+      try {
+        const res = await publicCMS.getSiteSettings();
+        if (!mounted) return;
+        setSettings(res.data?.data || null);
+      } catch {
+        if (!mounted) return;
+        setSettings(null);
+      }
+    };
+    run();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   React.useEffect(() => {
     const run = async () => {
@@ -17,7 +36,8 @@ const ClientsLogoMarquee = () => {
     run();
   }, []);
 
-  if (!clients.length) return null;
+  const showClientsOnHome = settings?.showClientsOnHome === true;
+  if (!showClientsOnHome || !clients.length) return null;
 
   // simple marquee: duplicate items for seamless loop
   const items = [...clients, ...clients];

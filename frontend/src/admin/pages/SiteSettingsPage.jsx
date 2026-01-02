@@ -10,6 +10,8 @@ import {
   Divider,
   InputAdornment,
   IconButton,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -26,7 +28,9 @@ const empty = {
     satisfaction: { value: 95, suffix: '%', label: 'שביעות רצון' },
     businesses: { value: 500, suffix: '+', label: 'עסקים משתמשים' },
     support: { value: 24, suffix: '/7', label: 'תמיכה' }
-  }
+  },
+  showClientsInNav: false,
+  showClientsOnHome: false
 };
 
 function SiteSettingsPage() {
@@ -58,6 +62,8 @@ function SiteSettingsPage() {
           socials: { ...empty.socials, ...(data?.socials || {}) },
           hours: { ...empty.hours, ...(data?.hours || {}) },
           stats: { ...empty.stats, ...(data?.stats || {}) },
+          showClientsInNav: data?.showClientsInNav !== undefined ? data.showClientsInNav : false,
+          showClientsOnHome: data?.showClientsOnHome !== undefined ? data.showClientsOnHome : false,
         });
       } catch (e) {
         if (!mounted) return;
@@ -94,6 +100,8 @@ function SiteSettingsPage() {
         socials: form.socials,
         hours: form.hours,
         stats: form.stats,
+        showClientsInNav: form.showClientsInNav,
+        showClientsOnHome: form.showClientsOnHome,
       });
       setSuccess('נשמר בהצלחה');
     } catch (e) {
@@ -294,6 +302,45 @@ function SiteSettingsPage() {
               onChange={setNested('socials', 'twitter')}
               disabled={loading}
             />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Typography variant="h6" fontWeight={700}>
+              הצגת תוכן
+            </Typography>
+            <Divider sx={{ mt: 1 }} />
+          </Grid>
+
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={form.showClientsInNav}
+                  onChange={(e) => setForm(prev => ({ ...prev, showClientsInNav: e.target.checked }))}
+                  disabled={loading}
+                />
+              }
+              label="הצגת קישור ללקוחות בהדר ובפוטר"
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, ml: 4 }}>
+              כאשר הטוגל פעיל, קישור "לקוחות" יוצג בתפריט הניווט העליון ובפוטר
+            </Typography>
+          </Grid>
+
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={form.showClientsOnHome}
+                  onChange={(e) => setForm(prev => ({ ...prev, showClientsOnHome: e.target.checked }))}
+                  disabled={loading}
+                />
+              }
+              label="הצגת לקוחות בדף הבית"
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, ml: 4 }}>
+              כאשר הטוגל פעיל, רכיב הלקוחות יוצג בדף הבית
+            </Typography>
           </Grid>
 
           <Grid item xs={12}>

@@ -21,6 +21,8 @@ exports.getPublic = async (req, res) => {
         socials: doc.socials || {},
         hours: doc.hours || {},
         stats: doc.stats || {},
+        showClientsInNav: doc.showClientsInNav !== undefined ? doc.showClientsInNav : false,
+        showClientsOnHome: doc.showClientsOnHome !== undefined ? doc.showClientsOnHome : false,
         updatedAt: doc.updatedAt
       }
     });
@@ -42,19 +44,20 @@ exports.getAdmin = async (req, res) => {
 
 exports.updateAdmin = async (req, res) => {
   try {
-    const { company, contact, socials, hours, stats } = req.body || {};
+    const { company, contact, socials, hours, stats, showClientsInNav, showClientsOnHome } = req.body || {};
+
+    const updateData = {};
+    if (company) updateData.company = company;
+    if (contact) updateData.contact = contact;
+    if (socials) updateData.socials = socials;
+    if (hours) updateData.hours = hours;
+    if (stats) updateData.stats = stats;
+    if (showClientsInNav !== undefined) updateData.showClientsInNav = showClientsInNav;
+    if (showClientsOnHome !== undefined) updateData.showClientsOnHome = showClientsOnHome;
 
     const updated = await SiteSettings.findOneAndUpdate(
       { key: DEFAULT_KEY },
-      {
-        $set: {
-          ...(company ? { company } : {}),
-          ...(contact ? { contact } : {}),
-          ...(socials ? { socials } : {}),
-          ...(hours ? { hours } : {}),
-          ...(stats ? { stats } : {})
-        }
-      },
+      { $set: updateData },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
 

@@ -39,6 +39,7 @@ function Header() {
   const [categorySubmenuAnchors, setCategorySubmenuAnchors] = useState({});
   const [articlesByCategory, setArticlesByCategory] = useState({});
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState({});
+  const [settings, setSettings] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const trigger = useScrollTrigger({
@@ -46,12 +47,38 @@ function Header() {
     threshold: 50,
   });
 
-  const navItems = [
+  const baseNavItems = [
     { label: 'אודות', path: '/about' },
     { label: 'תכונות', path: '/#features' },
     { label: 'לקוחות', path: '/clients' },
     { label: 'צור קשר', path: '/contact' },
   ];
+
+  const navItems = baseNavItems.filter(item => {
+    if (item.path === '/clients') {
+      return settings?.showClientsInNav === true;
+    }
+    return true;
+  });
+
+  // טעינת הגדרות האתר
+  useEffect(() => {
+    let mounted = true;
+    const loadSettings = async () => {
+      try {
+        const res = await publicCMS.getSiteSettings();
+        if (!mounted) return;
+        setSettings(res.data?.data || null);
+      } catch {
+        if (!mounted) return;
+        setSettings(null);
+      }
+    };
+    loadSettings();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // טעינת מאמרים לכל קטגוריה
   useEffect(() => {
