@@ -318,6 +318,7 @@ function SiteSettingsPage() {
                   checked={form.showClientsInNav}
                   onChange={(e) => setForm(prev => ({ ...prev, showClientsInNav: e.target.checked }))}
                   disabled={loading}
+                  color="success"
                 />
               }
               label="הצגת קישור ללקוחות בהדר ובפוטר"
@@ -334,6 +335,7 @@ function SiteSettingsPage() {
                   checked={form.showClientsOnHome}
                   onChange={(e) => setForm(prev => ({ ...prev, showClientsOnHome: e.target.checked }))}
                   disabled={loading}
+                  color="success"
                 />
               }
               label="הצגת לקוחות בדף הבית"
