@@ -111,6 +111,8 @@ async function createApp() {
   }
 
   // CORS - הגדרה מרכזית שתעבוד גם בשגיאות
+  // Support dynamic frontend URL via environment variable
+  const frontendUrl = process.env.FRONTEND_URL;
   const allowedOrigins = [
     'https://tailorbiz-software.com',
     'https://www.tailorbiz-software.com',
@@ -118,6 +120,22 @@ async function createApp() {
     'http://localhost:3000',
     'http://localhost:5000'
   ];
+  
+  // Add FRONTEND_URL to allowed origins if provided
+  if (frontendUrl) {
+    // Support both with and without trailing slash
+    const normalizedUrl = frontendUrl.replace(/\/$/, '');
+    if (!allowedOrigins.includes(normalizedUrl)) {
+      allowedOrigins.push(normalizedUrl);
+    }
+    // Also add www variant if it's a production URL
+    if (normalizedUrl.startsWith('https://') && !normalizedUrl.includes('www.')) {
+      const wwwVariant = normalizedUrl.replace('https://', 'https://www.');
+      if (!allowedOrigins.includes(wwwVariant)) {
+        allowedOrigins.push(wwwVariant);
+      }
+    }
+  }
 
   const setCorsHeaders = (req, res) => {
     const origin = req.headers.origin;
@@ -289,13 +307,32 @@ async function createApp() {
   app.use((err, req, res, next) => {
     // הגדרת CORS headers גם בשגיאות - חשוב מאוד!
     const origin = req.headers.origin;
-    const allowedOrigins = [
+    // Use the same allowedOrigins array from above
+    // (Note: This is a copy for the error handler scope)
+    const errorHandlerAllowedOrigins = [
       'https://tailorbiz-software.com',
       'https://www.tailorbiz-software.com',
       'http://localhost:5173',
       'http://localhost:3000',
       'http://localhost:5000'
     ];
+    
+    // Add FRONTEND_URL to allowed origins if provided
+    const frontendUrl = process.env.FRONTEND_URL;
+    if (frontendUrl) {
+      const normalizedUrl = frontendUrl.replace(/\/$/, '');
+      if (!errorHandlerAllowedOrigins.includes(normalizedUrl)) {
+        errorHandlerAllowedOrigins.push(normalizedUrl);
+      }
+      if (normalizedUrl.startsWith('https://') && !normalizedUrl.includes('www.')) {
+        const wwwVariant = normalizedUrl.replace('https://', 'https://www.');
+        if (!errorHandlerAllowedOrigins.includes(wwwVariant)) {
+          errorHandlerAllowedOrigins.push(wwwVariant);
+        }
+      }
+    }
+    
+    const allowedOrigins = errorHandlerAllowedOrigins;
     if (origin) {
       if (allowedOrigins.includes(origin) || isDev) {
         res.header('Access-Control-Allow-Origin', origin);

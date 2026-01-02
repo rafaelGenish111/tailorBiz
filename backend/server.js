@@ -53,6 +53,8 @@ module.exports = async (req, res) => {
 
   // הגדרת CORS headers מיד בתחילת ה-handler - לפני כל דבר אחר!
   // ב-Vercel serverless functions, צריך להשתמש ב-setHeader במקום header
+  // Support dynamic frontend URL via environment variable
+  const frontendUrl = process.env.FRONTEND_URL;
   const allowedOrigins = [
     'https://tailorbiz-software.com',
     'https://www.tailorbiz-software.com',
@@ -60,6 +62,21 @@ module.exports = async (req, res) => {
     'http://localhost:3000',
     'http://localhost:5000'
   ];
+  
+  // Add FRONTEND_URL to allowed origins if provided
+  if (frontendUrl) {
+    const normalizedUrl = frontendUrl.replace(/\/$/, '');
+    if (!allowedOrigins.includes(normalizedUrl)) {
+      allowedOrigins.push(normalizedUrl);
+    }
+    // Also add www variant if it's a production URL
+    if (normalizedUrl.startsWith('https://') && !normalizedUrl.includes('www.')) {
+      const wwwVariant = normalizedUrl.replace('https://', 'https://www.');
+      if (!allowedOrigins.includes(wwwVariant)) {
+        allowedOrigins.push(wwwVariant);
+      }
+    }
+  }
 
   const origin = req.headers?.origin || req.headers?.['origin'];
   if (origin && allowedOrigins.includes(origin)) {

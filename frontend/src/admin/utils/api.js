@@ -1,21 +1,23 @@
 import axios from 'axios';
 
-// ב-Production (Vercel) נשתמש בנתיב יחסי /api, ובלוקאל אפשר להגדיר VITE_API_URL=http://localhost:5000/api
-// אם לא מוגדר, ננסה לזהות אוטומטית את ה-backend URL
+// API Base URL Configuration
+// In production (Vercel), VITE_API_URL must be set to the backend Vercel URL (e.g., https://your-backend.vercel.app/api)
+// In local development, set VITE_API_URL=http://localhost:5000/api or it will default to /api
 const getApiBaseUrl = () => {
-  // אם יש VITE_API_URL מוגדר, נשתמש בו
+  // Priority 1: Use VITE_API_URL if explicitly set (required for production)
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
   
-  // אם אנחנו ב-production ויש backend URL ידוע, נשתמש בו
+  // Priority 2: In production, VITE_API_URL is required - throw error if missing
   if (import.meta.env.PROD) {
-    // נבדוק אם יש backend URL ב-environment
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://tailor-biz-backend.vercel.app';
-    return `${backendUrl}/api`;
+    console.error('❌ VITE_API_URL is required in production but not set!');
+    console.error('Please set VITE_API_URL environment variable in Vercel project settings.');
+    // Fallback to prevent complete failure, but this should not happen in production
+    throw new Error('VITE_API_URL environment variable is required in production');
   }
   
-  // בלוקאל או אם אין הגדרה, נשתמש ב-relative path
+  // Priority 3: Local development - default to relative path
   return '/api';
 };
 
