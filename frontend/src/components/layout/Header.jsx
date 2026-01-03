@@ -22,9 +22,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import Button from '../ui/Button';
 import { publicCMS } from '../../utils/publicApi';
-import logoImage from '../../assets/images/image-removebg-preview.png';
+import logoSrc from '../../assets/images/logo.png';
 
-const LOGO_SRC = logoImage;
+const LOGO_SRC = logoSrc;
 
 const articleCategories = [
   { label: 'אוטומציות', value: 'automation', path: '/articles?category=automation' },
@@ -141,7 +141,7 @@ function Header() {
     >
       <Container maxWidth="lg">
         <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-            <Box
+          <Box
             component={Link}
             to="/"
             sx={{
@@ -162,10 +162,6 @@ function Header() {
                 width: 'auto',
                 display: 'block',
                 objectFit: 'contain',
-              }}
-              onError={(e) => {
-                // אם הקובץ לא קיים עדיין – לא לשבור את ההדר
-                e.currentTarget.style.display = 'none';
               }}
             />
           </Box>

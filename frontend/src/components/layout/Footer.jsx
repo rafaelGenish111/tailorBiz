@@ -11,9 +11,9 @@ import { Link as RouterLink } from 'react-router-dom';
 import React from 'react';
 import { COMPANY_INFO, SOCIAL_LINKS } from '../../utils/constants';
 import { publicCMS } from '../../utils/publicApi';
-import logoImage from '../../assets/images/image-removebg-preview.png';
+import logoSrc from '../../assets/images/logo.png';
 
-const LOGO_SRC = logoImage;
+const LOGO_SRC = logoSrc;
 
 function Footer() {
   const currentYear = new Date().getFullYear();
@@ -76,9 +76,6 @@ function Footer() {
                 width: 'auto',
                 mb: 2,
                 objectFit: 'contain',
-              }}
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
               }}
             />
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
