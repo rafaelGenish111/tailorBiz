@@ -34,10 +34,10 @@ uploads/
 *.png
 *.gif
 *.svg
-!public/**/*.svg
-!public/**/*.png
-!public/**/*.jpg
-!public/**/*.jpeg
+!**/public/**/*.svg
+!**/public/**/*.png
+!**/public/**/*.jpg
+!**/public/**/*.jpeg
 
 # Database
 *.db

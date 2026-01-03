@@ -22,9 +22,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import Button from '../ui/Button';
 import { publicCMS } from '../../utils/publicApi';
-import logoSrc from '../../assets/images/logo.png';
 
-const LOGO_SRC = logoSrc;
+const LOGO_SRC = '/logo.png';
 
 const articleCategories = [
   { label: 'אוטומציות', value: 'automation', path: '/articles?category=automation' },
