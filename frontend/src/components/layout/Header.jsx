@@ -22,9 +22,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import Button from '../ui/Button';
 import { publicCMS } from '../../utils/publicApi';
+import logoImage from '../../assets/images/image-removebg-preview.png';
 
-// Logo path - use public path for Vercel compatibility
-const LOGO_SRC = '/assets/images/image-removebg-preview.png';
+const LOGO_SRC = logoImage;
 
 const articleCategories = [
   { label: 'אוטומציות', value: 'automation', path: '/articles?category=automation' },

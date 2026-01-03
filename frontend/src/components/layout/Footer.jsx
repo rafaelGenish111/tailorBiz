@@ -11,9 +11,9 @@ import { Link as RouterLink } from 'react-router-dom';
 import React from 'react';
 import { COMPANY_INFO, SOCIAL_LINKS } from '../../utils/constants';
 import { publicCMS } from '../../utils/publicApi';
+import logoImage from '../../assets/images/image-removebg-preview.png';
 
-// Logo path - use public path for Vercel compatibility
-const LOGO_SRC = '/assets/images/image-removebg-preview.png';
+const LOGO_SRC = logoImage;
 
 function Footer() {
   const currentYear = new Date().getFullYear();

@@ -39,10 +39,10 @@ import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import ViewQuiltOutlinedIcon from '@mui/icons-material/ViewQuiltOutlined';
 import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import logoImage from '../assets/images/image-removebg-preview.png';
 
 const drawerWidth = 300;
-// Logo path - use public path for Vercel compatibility
-const LOGO_SRC = '/assets/images/image-removebg-preview.png';
+const LOGO_SRC = logoImage;
 
 const NAV = [
   { id: 'home', label: 'ברוכים הבאים', icon: <MenuBookOutlinedIcon /> },
