@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Container, Typography, Grid, Paper, Link as MuiLink, Stack } from '@mui/material';
 import { publicCMS } from '../utils/publicApi';
+import { getImageUrl } from '../utils/imageUtils';
 
 const OurClients = () => {
   const [clients, setClients] = React.useState([]);
@@ -62,7 +63,7 @@ const OurClients = () => {
               >
                 <Box
                   component="img"
-                  src={c.logo?.url}
+                  src={getImageUrl(c.logo)}
                   alt={c.logo?.alt || c.name}
                   sx={{
                     maxHeight: '100%',

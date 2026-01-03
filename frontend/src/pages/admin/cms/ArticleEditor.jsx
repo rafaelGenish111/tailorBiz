@@ -24,6 +24,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
 import { useAdminArticle, useUpdateAdminArticle, usePublishAdminArticle, useUploadImage } from '../../../admin/hooks/useCMS';
 import ArticleBlocksRenderer from '../../../components/articles/ArticleBlocksRenderer';
+import { getImageUrl } from '../../../utils/imageUtils';
 
 const CATEGORY_OPTIONS = [
   { value: 'general', label: 'כללי' },
@@ -233,7 +234,7 @@ const ArticleEditor = () => {
                     />
                   </Button>
                   {form.coverImage?.url ? (
-                    <Box component="img" src={form.coverImage.url} alt={form.coverImage.alt || ''} sx={{ height: 56, borderRadius: 2, border: '1px solid', borderColor: 'grey.200' }} />
+                    <Box component="img" src={getImageUrl(form.coverImage)} alt={form.coverImage.alt || ''} sx={{ height: 56, borderRadius: 2, border: '1px solid', borderColor: 'grey.200' }} />
                   ) : (
                     <Typography variant="body2" color="text.secondary">אין תמונת קאבר</Typography>
                   )}
@@ -425,7 +426,7 @@ const ArticleEditor = () => {
                 ) : null}
                 {form.coverImage?.url ? (
                   <Box sx={{ borderRadius: 3, overflow: 'hidden', mb: 3, border: '1px solid', borderColor: 'grey.100' }}>
-                    <Box component="img" src={form.coverImage.url} alt={form.coverImage.alt || form.title} sx={{ width: '100%', display: 'block' }} />
+                    <Box component="img" src={getImageUrl(form.coverImage)} alt={form.coverImage.alt || form.title} sx={{ width: '100%', display: 'block' }} />
                   </Box>
                 ) : null}
                 <ArticleBlocksRenderer blocks={form.draft?.blocks || []} />

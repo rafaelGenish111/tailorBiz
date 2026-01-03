@@ -21,12 +21,10 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useCreateTestimonial, useUpdateTestimonial } from '../../../hooks/useTestimonials';
+import { getImageUrl } from '../../../../utils/imageUtils';
 
 function getImageUrlFromTestimonial(testimonial) {
-  const img = testimonial?.image;
-  if (!img) return null;
-  if (img.startsWith('http://') || img.startsWith('https://')) return img;
-  return `${window.location.origin}${img.startsWith('/') ? img : `/${img}`}`;
+  return getImageUrl(testimonial?.image, null);
 }
 
 // Validation schema

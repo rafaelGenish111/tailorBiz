@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Box, Container, Typography, Stack, Paper } from '@mui/material';
 import { publicCMS } from '../utils/publicApi';
 import ArticleBlocksRenderer from '../components/articles/ArticleBlocksRenderer';
+import { getImageUrl } from '../utils/imageUtils';
 
 const ArticlePage = () => {
   const { slug } = useParams();
@@ -60,7 +61,7 @@ const ArticlePage = () => {
 
         {article.coverImage?.url ? (
           <Box sx={{ borderRadius: 3, overflow: 'hidden', mb: 4, border: '1px solid', borderColor: 'grey.100' }}>
-            <Box component="img" src={article.coverImage.url} alt={article.coverImage.alt || article.title} sx={{ width: '100%', display: 'block' }} />
+            <Box component="img" src={getImageUrl(article.coverImage)} alt={article.coverImage.alt || article.title} sx={{ width: '100%', display: 'block' }} />
           </Box>
         ) : null}
 

@@ -7,29 +7,16 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import StarIcon from '@mui/icons-material/Star';
 import { publicCMS } from '../../utils/publicApi';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const MotionBox = motion(Box);
 const MotionPaper = motion(Paper);
-
-const getImageUrl = (imagePath) => {
-  if (!imagePath) return null;
-  // If it's already a full URL (http/https), return as is
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-    return imagePath;
-  }
-
-  // For local paths, use window.location.origin (works in both dev and production)
-  // The image path should be like /uploads/images/testimonial-xxx.jpg
-  const fullUrl = `${window.location.origin}${imagePath.startsWith('/') ? imagePath : `/${imagePath}`}`;
-  console.log('Testimonial image URL:', { imagePath, fullUrl });
-  return fullUrl;
-};
 
 function TestimonialCard({ testimonial, isCenter }) {
   const scale = isCenter ? 1 : 0.85;
   const opacity = isCenter ? 1 : 0.6;
   const zIndex = isCenter ? 10 : 1;
-  const imageUrl = getImageUrl(testimonial.image);
+  const imageUrl = getImageUrl(testimonial.image, null);
   const [imageError, setImageError] = useState(false);
 
   return (

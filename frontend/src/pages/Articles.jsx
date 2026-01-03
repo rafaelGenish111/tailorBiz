@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Container, Typography, Grid, Card, CardContent, CardMedia, Chip, Stack, TextField, MenuItem } from '@mui/material';
 import { Link, useSearchParams } from 'react-router-dom';
 import { publicCMS } from '../utils/publicApi';
+import { getImageUrl } from '../utils/imageUtils';
 
 const CATEGORY_OPTIONS = [
   { value: '', label: 'כל הקטגוריות' },
@@ -85,7 +86,7 @@ const Articles = () => {
                 }}
               >
                 {a.coverImage?.url ? (
-                  <CardMedia component="img" height="180" image={a.coverImage.url} alt={a.coverImage.alt || a.title} />
+                  <CardMedia component="img" height="180" image={getImageUrl(a.coverImage)} alt={a.coverImage.alt || a.title} />
                 ) : (
                   <Box sx={{ height: 180, bgcolor: 'grey.100' }} />
                 )}

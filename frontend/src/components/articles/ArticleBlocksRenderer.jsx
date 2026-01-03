@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Typography, Stack, Divider, Link } from '@mui/material';
 import Button from '../ui/Button';
 import ROICalculator from '../ROICalculator';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const ArticleBlocksRenderer = ({ blocks }) => {
   return (
@@ -44,7 +45,7 @@ const ArticleBlocksRenderer = ({ blocks }) => {
             return (
               <Box key={idx} sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'grey.100' }}>
                 {b.data?.url ? (
-                  <Box component="img" src={b.data.url} alt={b.data.alt || ''} sx={{ width: '100%', display: 'block' }} />
+                  <Box component="img" src={getImageUrl(b.data.url)} alt={b.data.alt || ''} sx={{ width: '100%', display: 'block' }} />
                 ) : null}
                 {b.data?.caption ? (
                   <Box sx={{ p: 1.5, bgcolor: 'grey.50' }}>

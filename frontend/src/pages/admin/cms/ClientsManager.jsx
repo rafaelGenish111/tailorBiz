@@ -15,6 +15,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { getImageUrl } from '../../../utils/imageUtils';
 
 import {
   useAdminSiteClients,
@@ -152,7 +153,7 @@ const ClientsManager = () => {
                   }}
                 />
               </Button>
-              {form.logo?.url ? <Box component="img" src={form.logo.url} alt="" sx={{ height: 44 }} /> : null}
+              {form.logo?.url ? <Box component="img" src={getImageUrl(form.logo)} alt="" sx={{ height: 44 }} /> : null}
             </Stack>
           </Grid>
           <Grid item xs={12}>
@@ -179,7 +180,7 @@ const ClientsManager = () => {
           <Grid item xs={12} md={6} key={c._id}>
             <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
               <Stack direction="row" spacing={2} alignItems="center" sx={{ minWidth: 0 }}>
-                <Box component="img" src={c.logo?.url} alt={c.logo?.alt || c.name} sx={{ height: 44, maxWidth: 120 }} />
+                <Box component="img" src={getImageUrl(c.logo)} alt={c.logo?.alt || c.name} sx={{ height: 44, maxWidth: 120 }} />
                 <Box sx={{ minWidth: 0 }}>
                   <Typography fontWeight={700} sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Container, Typography } from '@mui/material';
 import { publicCMS } from '../../utils/publicApi';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const ClientsLogoMarquee = () => {
   const [clients, setClients] = React.useState([]);
@@ -124,7 +125,7 @@ const ClientsLogoMarquee = () => {
               <Box
                 key={`${c._id}_${idx}`}
                 component="img"
-                src={c.logo?.url}
+                src={getImageUrl(c.logo)}
                 alt={c.logo?.alt || c.name}
                 sx={{
                   height: { xs: 48, md: 64 },

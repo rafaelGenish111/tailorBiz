@@ -26,6 +26,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import { useTestimonials, useDeleteTestimonial, useUpdateTestimonialStatus } from '../../../hooks/useTestimonials';
 import TestimonialForm from './TestimonialForm';
 import ConfirmDialog from '../../common/ConfirmDialog';
+import { getImageUrl } from '../../../../utils/imageUtils';
 
 const STATUS_LABELS = {
   pending: { label: 'ממתין לאישור', color: 'warning' },
@@ -96,18 +97,11 @@ function TestimonialsList() {
       headerName: 'תמונה',
       width: 80,
       renderCell: (params) => {
-        let imageSrc;
-        if (params.value) {
-          if (params.value.startsWith('http://') || params.value.startsWith('https://')) {
-            imageSrc = params.value;
-          } else {
-            imageSrc = `${window.location.origin}${params.value.startsWith('/') ? params.value : `/${params.value}`}`;
-          }
-        }
+        const imageSrc = getImageUrl(params.value, null);
 
         return (
           <Avatar
-            src={imageSrc}
+            src={imageSrc || undefined}
             alt={params.row.clientName}
             sx={{ width: 50, height: 50 }}
           >
@@ -274,14 +268,7 @@ function TestimonialsList() {
         <Stack spacing={1.5}>
           {(data?.data || []).map((t) => {
             const status = STATUS_LABELS[t.status] || { label: t.status, color: 'default' };
-            let imageSrc;
-            if (t.image) {
-              if (t.image.startsWith('http://') || t.image.startsWith('https://')) {
-                imageSrc = t.image;
-              } else {
-                imageSrc = `${window.location.origin}${t.image.startsWith('/') ? t.image : `/${t.image}`}`;
-              }
-            }
+            const imageSrc = getImageUrl(t.image, null);
 
             return (
               <Paper key={t._id} variant="outlined" sx={{ borderRadius: 3, p: 1.5 }}>

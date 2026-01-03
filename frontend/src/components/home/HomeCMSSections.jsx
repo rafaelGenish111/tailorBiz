@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Container, Typography, Grid, Paper } from '@mui/material';
 import { publicCMS } from '../../utils/publicApi';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const HomeCMSSections = () => {
   const [sections, setSections] = React.useState([]);
@@ -40,7 +41,7 @@ const HomeCMSSections = () => {
                 {s.image?.url ? (
                   <Box
                     component="img"
-                    src={s.image.url}
+                    src={getImageUrl(s.image)}
                     alt={s.image.alt || s.title || ''}
                     sx={{ width: '100%', height: 160, objectFit: 'contain', mb: 2 }}
                   />

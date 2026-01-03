@@ -21,6 +21,7 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { useAdminPage, usePublishAdminPage, useRollbackAdminPage, useSaveAdminPageDraft } from '../../../admin/hooks/useCMS';
 import { useUploadImage } from '../../../admin/hooks/useCMS';
+import { getImageUrl } from '../../../utils/imageUtils';
 
 const DEFAULT_HOME = {
   heroTitle: 'מערכת חכמה בתפירה אישית',
@@ -261,7 +262,7 @@ const PageEditor = ({ slug, title }) => {
                           </Button>
                           {s.image?.url ? (
                             <Box sx={{ mt: 1 }}>
-                              <Box component="img" src={s.image.url} alt={s.image.alt || ''} sx={{ width: '100%', maxHeight: 120, objectFit: 'contain', borderRadius: 2, border: '1px solid', borderColor: 'grey.100' }} />
+                              <Box component="img" src={getImageUrl(s.image)} alt={s.image.alt || ''} sx={{ width: '100%', maxHeight: 120, objectFit: 'contain', borderRadius: 2, border: '1px solid', borderColor: 'grey.100' }} />
                             </Box>
                           ) : null}
                         </Grid>
