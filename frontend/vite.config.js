@@ -11,7 +11,8 @@ export default defineConfig({
       // קבצים סטטיים שייכנסו לבילד
       includeAssets: [
         'favicon.svg',
-        'robots.txt'
+        'robots.txt',
+        'logo.png'
       ],
       // FIX: Increase the file size limit for caching (set to 4MB)
       workbox: {
