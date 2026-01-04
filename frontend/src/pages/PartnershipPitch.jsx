@@ -25,9 +25,7 @@ import {
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 
-import logoImage from '../assets/images/image-removebg-preview.png';
-
-const LOGO_SRC = logoImage;
+const LOGO_SRC = '/logo.png';
 
 // רישום רכיבי הגרפים
 ChartJS.register(

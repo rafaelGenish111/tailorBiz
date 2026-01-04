@@ -5,9 +5,7 @@ import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { publicCMS } from '../../utils/publicApi';
 import Button from '../ui/Button';
-import logoImage from '../../assets/images/image-removebg-preview.png';
-
-const LOGO_SRC = logoImage;
+const LOGO_SRC = '/logo.png';
 
 function HeroSection() {
   const [cmsHero, setCmsHero] = React.useState(null);

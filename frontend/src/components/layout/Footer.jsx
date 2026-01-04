@@ -11,9 +11,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import React from 'react';
 import { COMPANY_INFO, SOCIAL_LINKS } from '../../utils/constants';
 import { publicCMS } from '../../utils/publicApi';
-import logoSrc from '../../assets/images/logo.png';
-
-const LOGO_SRC = logoSrc;
+const LOGO_SRC = '/logo.png';
 
 function Footer() {
   const currentYear = new Date().getFullYear();
