@@ -67,9 +67,8 @@ function AccessibilityMenu() {
         onClick={() => setOpen(true)}
         sx={{
           position: 'fixed',
-          top: { xs: 16, md: '50%' },
+          bottom: 16,
           left: 16,
-          transform: { md: 'translateY(-50%)' },
           zIndex: 1200,
           width: 56,
           height: 56,

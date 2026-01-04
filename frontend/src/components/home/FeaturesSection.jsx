@@ -66,7 +66,7 @@ function FeatureCard({ feature, index }) {
         sx={{
           position: 'relative',
           width: '100%',
-          minHeight: { xs: '320px', md: '360px' }, // Minimum height, allows expansion
+          height: '100%', // Fill the grid cell completely
           display: 'flex',
           flexDirection: 'column',
           p: { xs: 4, md: 8 },

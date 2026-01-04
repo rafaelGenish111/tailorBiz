@@ -70,9 +70,8 @@ const AccessibilityMenu = () => {
         aria-controls="accessibility-menu"
         sx={{
           position: 'fixed',
+          bottom: 16,
           left: 20,
-          top: '50%',
-          transform: 'translateY(-50%)',
           bgcolor: 'primary.main',
           color: 'white',
           width: 56,
