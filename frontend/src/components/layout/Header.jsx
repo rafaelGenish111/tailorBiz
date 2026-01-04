@@ -16,7 +16,7 @@ import {
   useScrollTrigger,
   Collapse,
 } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
@@ -33,6 +33,7 @@ const articleCategories = [
 ];
 
 function Header() {
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [articlesAnchorEl, setArticlesAnchorEl] = useState(null);
   const [categorySubmenuAnchors, setCategorySubmenuAnchors] = useState({});
@@ -48,7 +49,7 @@ function Header() {
 
   const baseNavItems = [
     { label: 'אודות', path: '/about' },
-    { label: 'תכונות', path: '/#features' },
+    { label: 'פיצ\'רים', path: '/features' },
     { label: 'לקוחות', path: '/clients' },
     { label: 'צור קשר', path: '/contact' },
   ];
@@ -167,6 +168,28 @@ function Header() {
 
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {/* אודות */}
+              {navItems.filter(item => item.label === 'אודות').map((item) => (
+                <MuiButton
+                  key={item.label}
+                  component={Link}
+                  to={item.path}
+                  sx={{
+                    color: '#1D1D1F',
+                    fontWeight: 500,
+                    px: 2,
+                    fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+                    textTransform: 'none',
+                    '&:hover': {
+                      bgcolor: 'transparent',
+                      color: '#0071E3',
+                    },
+                  }}
+                >
+                  {item.label}
+                </MuiButton>
+              ))}
+              {/* מאמרים */}
               <MuiButton
                 onClick={(e) => setArticlesAnchorEl(e.currentTarget)}
                 sx={{
@@ -199,33 +222,36 @@ function Header() {
                 {articleCategories.map((category) => {
                   const hasArticles = articlesByCategory[category.value]?.length > 0;
                   return (
-                    <MenuItem
-                      key={category.value}
-                      onMouseEnter={(e) => hasArticles && handleCategorySubmenuOpen(category.value, e)}
-                      onMouseLeave={() => hasArticles && handleCategorySubmenuClose(category.value)}
-                      sx={{ position: 'relative', p: 0 }}
+                    <Box 
+                      key={category.value} 
+                      sx={{ position: 'relative' }}
+                      onMouseEnter={(e) => {
+                        // Open submenu on hover if there are articles
+                        if (hasArticles) {
+                          handleCategorySubmenuOpen(category.value, e);
+                        }
+                      }}
                     >
-                      <Box
+                      <MenuItem
                         component={Link}
-                        to={category.path}
-                        onClick={() => setArticlesAnchorEl(null)}
+                        to={`/articles?category=${category.value}`}
+                        onClick={() => {
+                          setArticlesAnchorEl(null);
+                          handleCategorySubmenuClose(category.value);
+                        }}
                         sx={{
-                          flex: 1,
-                          textDecoration: 'none',
-                          color: 'inherit',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           px: 2,
                           py: 1.5,
-                          width: '100%',
                         }}
                       >
                         {category.label}
                         {hasArticles && (
                           <KeyboardArrowLeftIcon sx={{ fontSize: 20, ml: 1 }} />
                         )}
-                      </Box>
+                      </MenuItem>
                       {hasArticles && (
                         <Menu
                           anchorEl={categorySubmenuAnchors[category.value]}
@@ -240,6 +266,9 @@ function Header() {
                             horizontal: 'left',
                           }}
                           MenuListProps={{ sx: { minWidth: 240, maxHeight: 400 } }}
+                          onMouseEnter={() => {
+                            // Keep submenu open when hovering over it
+                          }}
                           onMouseLeave={() => handleCategorySubmenuClose(category.value)}
                         >
                           {articlesByCategory[category.value]?.map((article) => (
@@ -258,11 +287,12 @@ function Header() {
                           ))}
                         </Menu>
                       )}
-                    </MenuItem>
+                    </Box>
                   );
                 })}
               </Menu>
-              {navItems.map((item) => (
+              {/* שאר הכפתורים */}
+              {navItems.filter(item => item.label !== 'אודות').map((item) => (
                 <MuiButton
                   key={item.label}
                   component={Link}
@@ -321,6 +351,27 @@ function Header() {
           </IconButton>
         </Box>
         <List sx={{ px: 3 }}>
+          {/* אודות */}
+          {navItems.filter(item => item.label === 'אודות').map((item) => (
+            <ListItem
+              key={item.label}
+              component={Link}
+              to={item.path}
+              onClick={() => setMobileOpen(false)}
+              sx={{
+                py: 2,
+                fontSize: '1.25rem',
+                fontWeight: 600,
+                color: '#1D1D1F',
+                borderBottom: '1px solid',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                textDecoration: 'none',
+              }}
+            >
+              {item.label}
+            </ListItem>
+          ))}
+          {/* מאמרים */}
           <ListItem
             sx={{
               py: 2,
@@ -352,8 +403,6 @@ function Header() {
                 <Box key={category.value} sx={{ width: '100%', mt: 1 }}>
                   <Box
                     onClick={() => hasArticles && handleMobileCategoryToggle(category.value)}
-                    component={hasArticles ? 'div' : Link}
-                    to={hasArticles ? undefined : category.path}
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
@@ -363,7 +412,6 @@ function Header() {
                       fontSize: '1rem',
                       fontWeight: 500,
                       color: 'text.secondary',
-                      textDecoration: 'none',
                       cursor: hasArticles ? 'pointer' : 'default',
                       borderRadius: 1,
                       '&:hover': {
@@ -372,9 +420,9 @@ function Header() {
                     }}
                   >
                     <Box
-                      component={!hasArticles ? Link : 'div'}
-                      to={!hasArticles ? category.path : undefined}
-                      onClick={!hasArticles ? () => setMobileOpen(false) : undefined}
+                      component={Link}
+                      to={`/articles?category=${category.value}`}
+                      onClick={() => setMobileOpen(false)}
                       sx={{ flex: 1, textDecoration: 'none', color: 'inherit' }}
                     >
                       {category.label}
@@ -420,7 +468,8 @@ function Header() {
               );
             })}
           </ListItem>
-          {navItems.map((item) => (
+          {/* שאר הכפתורים */}
+          {navItems.filter(item => item.label !== 'אודות').map((item) => (
             <ListItem
               key={item.label}
               component={Link}

@@ -276,15 +276,6 @@ function TestimonialsSection() {
           >
             מה הלקוחות שלנו אומרים
           </Typography>
-          <Typography
-            variant="h6"
-            sx={{
-              color: '#86868B',
-              fontWeight: 400,
-            }}
-          >
-            אלפי עסקים כבר סומכים על TailorBiz
-          </Typography>
         </MotionBox>
 
         {/* Carousel */}

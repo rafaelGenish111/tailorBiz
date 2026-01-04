@@ -66,7 +66,7 @@ function FeatureCard({ feature, index }) {
         sx={{
           position: 'relative',
           width: '100%',
-          height: { xs: '320px', md: '360px' }, // Fixed height for all cards
+          minHeight: { xs: '320px', md: '360px' }, // Minimum height, allows expansion
           display: 'flex',
           flexDirection: 'column',
           p: { xs: 4, md: 8 },
@@ -122,11 +122,6 @@ function FeatureCard({ feature, index }) {
             color: '#86868B', // Medium gray
             lineHeight: 1.7,
             flexGrow: 1,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: 4,
-            WebkitBoxOrient: 'vertical',
             fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
             fontSize: { xs: '0.95rem', md: '1.125rem' },
           }}
@@ -170,7 +165,7 @@ function FeaturesSection() {
               lineHeight: 1.6,
             }}
           >
-            פתרונות אוטומציה מתקדמים שחוסכים זמן ומגדילים רווחים
+            מערכות ניהול ואוטומציות מתקדמות שחוסכות זמן ומגדילות רווחים
           </Typography>
         </Box>
 

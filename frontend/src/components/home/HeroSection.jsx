@@ -23,8 +23,8 @@ function HeroSection() {
     run();
   }, []);
 
-  const title = (cmsHero?.heroTitle || 'אוטומציה מותאמת אישית לעסק שלך').trim();
-  const subtitle = (cmsHero?.heroSubtitle || 'בלי דמי מנוי חודשיים - הנכס נשאר שלך').trim();
+  const title = (cmsHero?.heroTitle || 'מערכת ניהול חכמה בתפירה אישית').trim();
+  const subtitle = (cmsHero?.heroSubtitle || 'מערכות ניהול ואוטומציות בהתאמה אישית').trim();
   const ctaText = (cmsHero?.heroCtaText || 'לבדיקת היתכנות ואפיון').trim();
   const ctaHref = cmsHero?.heroCtaHref || '/contact';
 
@@ -323,29 +323,21 @@ function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
           >
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={2}
-              justifyContent="center"
-              sx={{ mb: 6 }}
-            >
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 6 }}>
               <Button
                 variant="primary"
                 size="large"
                 startIcon={<RocketLaunchOutlinedIcon />}
                 to={ctaHref}
+                sx={{
+                  fontSize: { xs: '1rem', md: '1.125rem' },
+                  px: { xs: 4, md: 6 },
+                  py: { xs: 1.5, md: 2 },
+                }}
               >
                 {ctaText}
               </Button>
-              <Button
-                variant="secondary"
-                size="large"
-                startIcon={<PlayCircleOutlineIcon />}
-                to="/contact"
-              >
-                רוצים לעצור את זליגת הכסף? בואו נדבר
-              </Button>
-            </Stack>
+            </Box>
           </motion.div>
 
           {/* נתונים מהירים - מוסתר עד שיש נתונים אמיתיים */}

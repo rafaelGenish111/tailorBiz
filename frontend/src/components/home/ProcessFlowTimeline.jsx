@@ -1,4 +1,4 @@
-import { Box, Container, Typography, Paper, Button } from '@mui/material';
+import { Box, Container, Typography, Paper } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import ContactPhoneOutlinedIcon from '@mui/icons-material/ContactPhoneOutlined';
@@ -191,24 +191,6 @@ function TimelineStep({ step, index }) {
           >
             {step.details}
           </Typography>
-        )}
-
-        {step.highlight && (
-          <Button
-            variant="contained"
-            color="secondary"
-            sx={{
-              mt: 2,
-              fontWeight: 700,
-                borderRadius: 1,
-              boxShadow: '0 4px 16px rgba(0, 188, 212, 0.4)',
-              '&:hover': {
-                boxShadow: '0 6px 24px rgba(0, 188, 212, 0.5)',
-              },
-            }}
-          >
-            קבעו דמו
-          </Button>
         )}
       </MotionPaper>
 

@@ -11,6 +11,7 @@ import SecurityIcon from '@mui/icons-material/Security';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { publicCMS } from '../utils/publicApi';
+import { getImageUrl } from '../utils/imageUtils';
 
 const MotionBox = motion(Box);
 const MotionPaper = motion(Paper);
@@ -62,15 +63,180 @@ function About() {
   }, []);
 
   if (cmsLoaded && cmsAbout) {
+    // Use sections if available, otherwise fall back to content parsing
+    const sections = Array.isArray(cmsAbout.sections) && cmsAbout.sections.length > 0
+      ? cmsAbout.sections
+      : (() => {
+          // Fallback: parse content with headings
+          const text = cmsAbout.content || '';
+          if (!text) return [];
+          const parsedSections = [];
+          const lines = text.split('\n');
+          let currentSection = { title: null, content: '', image: null };
+          
+          lines.forEach((line) => {
+            if (line.startsWith('## ')) {
+              if (currentSection.title || currentSection.content) {
+                parsedSections.push(currentSection);
+              }
+              currentSection = { title: line.replace('## ', '').trim(), content: '', image: null };
+            } else if (line.startsWith('# ')) {
+              // Main title - skip, already handled
+            } else if (line.trim()) {
+              currentSection.content += (currentSection.content ? '\n' : '') + line.trim();
+            }
+          });
+          
+          if (currentSection.title || currentSection.content) {
+            parsedSections.push(currentSection);
+          }
+          
+          return parsedSections.length > 0 ? parsedSections : [{ title: null, content: text, image: null }];
+        })();
+    
+    const mainImage = cmsAbout.coverImage || cmsAbout.image;
+
     return (
-      <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: 'background.default' }}>
-        <Container maxWidth="md">
-          <Typography variant="h2" fontWeight={800} sx={{ mb: 2, textAlign: 'center' }}>
-            {cmsAbout.title || 'אודות'}
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ whiteSpace: 'pre-wrap' }}>
-            {cmsAbout.content || ''}
-          </Typography>
+      <Box>
+        {/* Hero Section */}
+        <Box
+          sx={{
+            position: 'relative',
+            py: { xs: 12, md: 16 },
+            bgcolor: '#FFFFFF',
+            overflow: 'hidden',
+          }}
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(135deg, rgba(0, 113, 227, 0.03) 0%, rgba(0, 188, 212, 0.05) 100%)',
+              zIndex: 0,
+            }}
+          />
+          <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+            <MotionBox
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              sx={{ textAlign: 'center', maxWidth: 800, mx: 'auto' }}
+            >
+              <Typography
+                variant="overline"
+                sx={{
+                  color: '#0071E3',
+                  fontWeight: 700,
+                  fontSize: '0.875rem',
+                  letterSpacing: '2px',
+                  mb: 2,
+                  display: 'block',
+                }}
+              >
+                ABOUT US
+              </Typography>
+              <Typography
+                variant="h1"
+                sx={{
+                  mb: 3,
+                  fontWeight: 800,
+                  color: '#1D1D1F',
+                  fontSize: { xs: '2.5rem', md: '4rem' },
+                  lineHeight: 1.1,
+                }}
+              >
+                {cmsAbout.title || 'אודות TailorBiz'}
+              </Typography>
+            </MotionBox>
+          </Container>
+        </Box>
+
+        {/* Content Sections */}
+        <Container maxWidth="lg" sx={{ py: { xs: 8, md: 12 } }}>
+          {mainImage && (
+            <MotionBox
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              sx={{ mb: 6, textAlign: 'center' }}
+            >
+              <Box
+                component="img"
+                src={mainImage.url || mainImage}
+                alt={mainImage.alt || cmsAbout.title || 'אודות'}
+                sx={{
+                  width: '100%',
+                  maxWidth: 800,
+                  height: 'auto',
+                  borderRadius: '24px',
+                  boxShadow: '0px 20px 40px -10px rgba(0,0,0,0.1)',
+                  mx: 'auto',
+                }}
+              />
+            </MotionBox>
+          )}
+          
+          {sections.map((section, index) => (
+            <MotionBox
+              key={index}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              sx={{ mb: 6 }}
+            >
+              <Grid container spacing={4} alignItems="center">
+                {section.image?.url && (
+                  <Grid item xs={12} md={section.title ? 6 : 12}>
+                    <Box
+                      component="img"
+                      src={getImageUrl(section.image)}
+                      alt={section.image.alt || section.title || 'תמונה'}
+                      sx={{
+                        width: '100%',
+                        height: 'auto',
+                        borderRadius: '24px',
+                        boxShadow: '0px 20px 40px -10px rgba(0,0,0,0.1)',
+                      }}
+                    />
+                  </Grid>
+                )}
+                <Grid item xs={12} md={section.image?.url && section.title ? 6 : 12}>
+                  {section.title && (
+                    <Typography
+                      variant="h3"
+                      sx={{
+                        mb: 3,
+                        fontWeight: 700,
+                        color: '#1D1D1F',
+                      }}
+                    >
+                      {section.title}
+                    </Typography>
+                  )}
+                  {section.content && (
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        mb: 2,
+                        color: '#86868B',
+                        lineHeight: 1.8,
+                        fontSize: '1.125rem',
+                        fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+                        whiteSpace: 'pre-wrap',
+                      }}
+                    >
+                      {section.content}
+                    </Typography>
+                  )}
+                </Grid>
+              </Grid>
+            </MotionBox>
+          ))}
         </Container>
       </Box>
     );

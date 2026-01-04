@@ -24,8 +24,8 @@ import { useUploadImage } from '../../../admin/hooks/useCMS';
 import { getImageUrl } from '../../../utils/imageUtils';
 
 const DEFAULT_HOME = {
-  heroTitle: 'מערכת חכמה בתפירה אישית',
-  heroSubtitle: 'ללא דמי מנוי חודשיים - הנכס נשאר שלך',
+  heroTitle: 'מערכת ניהול חכמה בתפירה אישית',
+  heroSubtitle: 'מערכות ניהול ואוטומציות בהתאמה אישית',
   heroCtaText: 'לבדיקת היתכנות ואפיון',
   heroCtaHref: '/contact',
   sections: []
@@ -33,7 +33,9 @@ const DEFAULT_HOME = {
 
 const DEFAULT_ABOUT = {
   title: 'אודות',
-  content: ''
+  content: '',
+  sections: [],
+  coverImage: null
 };
 
 const PageEditor = ({ slug, title }) => {
@@ -297,20 +299,198 @@ const PageEditor = ({ slug, title }) => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="כותרת"
+                label="כותרת ראשית"
                 value={draft.title || ''}
                 onChange={(e) => setDraft((p) => ({ ...p, title: e.target.value }))}
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="תוכן"
-                value={draft.content || ''}
-                onChange={(e) => setDraft((p) => ({ ...p, content: e.target.value }))}
-                multiline
-                minRows={10}
-              />
+              <Button variant="outlined" component="label" fullWidth>
+                העלה תמונת כותרת
+                <input
+                  hidden
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const fd = new FormData();
+                    fd.append('file', file);
+                    fd.append('folder', 'tailorbiz/site/about');
+                    const res = await uploadImage.mutateAsync(fd);
+                    setDraft((p) => ({ ...p, coverImage: { url: res?.data?.data?.url, publicId: res?.data?.data?.publicId, alt: draft.title || 'אודות' } }));
+                  }}
+                />
+              </Button>
+              {draft.coverImage?.url ? (
+                <Box sx={{ mt: 1 }}>
+                  <Box component="img" src={getImageUrl(draft.coverImage)} alt={draft.coverImage.alt || ''} sx={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 2, border: '1px solid', borderColor: 'grey.100' }} />
+                  <Button
+                    size="small"
+                    color="error"
+                    onClick={() => setDraft((p) => ({ ...p, coverImage: null }))}
+                    sx={{ mt: 1 }}
+                  >
+                    מחק תמונה
+                  </Button>
+                </Box>
+              ) : null}
+            </Grid>
+            <Grid item xs={12}>
+              <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, borderColor: 'grey.100' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box>
+                    <Typography fontWeight={800}>פסקאות עם כותרות משנה</Typography>
+                    <Typography variant="body2" color="text.secondary">כל פסקה יכולה לכלול כותרת משנה, תוכן ותמונה</Typography>
+                  </Box>
+                  <Button
+                    variant="contained"
+                    onClick={() =>
+                      setDraft((p) => ({
+                        ...p,
+                        sections: [
+                          ...(Array.isArray(p.sections) ? p.sections : []),
+                          { title: '', content: '', image: null }
+                        ]
+                      }))
+                    }
+                  >
+                    הוסף פסקה
+                  </Button>
+                </Box>
+
+                <Stack spacing={2}>
+                  {(Array.isArray(draft?.sections) ? draft.sections : []).map((s, idx) => (
+                    <Paper key={idx} variant="outlined" sx={{ p: 2, borderRadius: 3, borderColor: 'grey.100' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <Typography fontWeight={700}>פסקה {idx + 1}</Typography>
+                        <Stack direction="row" spacing={0.5}>
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              if (idx === 0) return;
+                              setDraft((p) => {
+                                const arr = [...(p.sections || [])];
+                                const tmp = arr[idx - 1];
+                                arr[idx - 1] = arr[idx];
+                                arr[idx] = tmp;
+                                return { ...p, sections: arr };
+                              });
+                            }}
+                          >
+                            <ArrowUpwardIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              if (idx === (draft.sections || []).length - 1) return;
+                              setDraft((p) => {
+                                const arr = [...(p.sections || [])];
+                                const tmp = arr[idx + 1];
+                                arr[idx + 1] = arr[idx];
+                                arr[idx] = tmp;
+                                return { ...p, sections: arr };
+                              });
+                            }}
+                          >
+                            <ArrowDownwardIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => {
+                              setDraft((p) => ({
+                                ...p,
+                                sections: (p.sections || []).filter((_, i) => i !== idx)
+                              }));
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Stack>
+                      </Box>
+
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth
+                            label="כותרת משנה"
+                            value={s.title || ''}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              setDraft((p) => ({
+                                ...p,
+                                sections: (p.sections || []).map((it, i) => (i === idx ? { ...it, title: v } : it))
+                              }));
+                            }}
+                          />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <TextField
+                            fullWidth
+                            label="תוכן הפסקה"
+                            value={s.content || ''}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              setDraft((p) => ({
+                                ...p,
+                                sections: (p.sections || []).map((it, i) => (i === idx ? { ...it, content: v } : it))
+                              }));
+                            }}
+                            multiline
+                            minRows={4}
+                          />
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                          <Button variant="outlined" component="label" fullWidth>
+                            העלה תמונה
+                            <input
+                              hidden
+                              type="file"
+                              accept="image/*"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const fd = new FormData();
+                                fd.append('file', file);
+                                fd.append('folder', 'tailorbiz/site/about/sections');
+                                const res = await uploadImage.mutateAsync(fd);
+                                setDraft((p) => ({
+                                  ...p,
+                                  sections: (p.sections || []).map((it, i) =>
+                                    i === idx ? { ...it, image: { url: res?.data?.data?.url, publicId: res?.data?.data?.publicId, alt: s.title || '' } } : it
+                                  )
+                                }));
+                              }}
+                            />
+                          </Button>
+                          {s.image?.url ? (
+                            <Box sx={{ mt: 1 }}>
+                              <Box component="img" src={getImageUrl(s.image)} alt={s.image.alt || ''} sx={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 2, border: '1px solid', borderColor: 'grey.100' }} />
+                              <Button
+                                size="small"
+                                color="error"
+                                onClick={() => {
+                                  setDraft((p) => ({
+                                    ...p,
+                                    sections: (p.sections || []).map((it, i) => (i === idx ? { ...it, image: null } : it))
+                                  }));
+                                }}
+                                sx={{ mt: 1 }}
+                              >
+                                מחק תמונה
+                              </Button>
+                            </Box>
+                          ) : null}
+                        </Grid>
+                      </Grid>
+                    </Paper>
+                  ))}
+                  {(Array.isArray(draft?.sections) ? draft.sections : []).length === 0 ? (
+                    <Typography variant="body2" color="text.secondary">אין פסקאות עדיין. לחץ על \"הוסף פסקה\".</Typography>
+                  ) : null}
+                </Stack>
+              </Paper>
             </Grid>
           </>
         )}

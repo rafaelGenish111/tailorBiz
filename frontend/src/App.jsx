@@ -20,6 +20,7 @@ import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import ROICalculatorPage from './pages/ROICalculatorPage';
+import Features from './pages/Features';
 import AdminPanel from './admin/pages/AdminPanel';
 import LoginPage from './admin/pages/LoginPage';
 import BootstrapAdminPage from './admin/pages/BootstrapAdminPage';
@@ -76,6 +77,7 @@ function App() {
                   <Route path="/about" element={<About />} />
                   <Route path="/articles" element={<Articles />} />
                   <Route path="/articles/:slug" element={<ArticlePage />} />
+                  <Route path="/features" element={<Features />} />
                   <Route path="/clients" element={<OurClients />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/contact" element={<Contact />} />
