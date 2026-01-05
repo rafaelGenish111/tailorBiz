@@ -27,6 +27,7 @@ import BootstrapAdminPage from './admin/pages/BootstrapAdminPage';
 import RequireAdminAuth from './admin/components/auth/RequireAdminAuth';
 import SalesOnboarding from './pages/SalesOnboarding';
 import PartnershipPitch from './pages/PartnershipPitch';
+import LandingPage from './components/LandingPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -61,6 +62,15 @@ function App() {
             <ThemeProvider theme={theme}>
               <CssBaseline />
               <PartnershipPitch />
+            </ThemeProvider>
+          }
+        />
+        <Route
+          path="/audit-offer"
+          element={
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <LandingPage />
             </ThemeProvider>
           }
         />

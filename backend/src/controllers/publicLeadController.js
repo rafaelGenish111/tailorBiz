@@ -40,6 +40,10 @@ exports.submitWebsiteLead = async (req, res) => {
     const email = String(req.body?.email || '').trim().toLowerCase();
     const company = String(req.body?.company || '').trim();
     const message = String(req.body?.message || '').trim();
+    const leadSource = String(req.body?.leadSource || 'website_form').trim();
+
+    // Check if this is from landing page campaign
+    const isLandingPageCampaign = leadSource === 'landing_page_campaign';
 
     const phoneDigits = normalizeILPhoneToDigits(req.body?.phone);
     if (!phoneDigits) {
@@ -83,13 +87,16 @@ exports.submitWebsiteLead = async (req, res) => {
         existing.businessInfo.businessName = company;
       }
 
-      existing.tags = Array.from(new Set([...(existing.tags || []), 'טופס אתר', 'website_form']));
+      const newTags = isLandingPageCampaign 
+        ? ['קמפיין דף נחיתה', 'landing_page_campaign']
+        : ['טופס אתר', 'website_form'];
+      existing.tags = Array.from(new Set([...(existing.tags || []), ...newTags]));
 
       existing.interactions = existing.interactions || [];
       existing.interactions.push({
         type: 'note',
         direction: 'inbound',
-        subject: '🌐 פניה חדשה מהאתר',
+        subject: isLandingPageCampaign ? '🎯 פניה מדף נחיתה - אבחון חינם' : '🌐 פניה חדשה מהאתר',
         content: interactionContent,
         timestamp: new Date(),
         completed: true,
@@ -120,14 +127,16 @@ exports.submitWebsiteLead = async (req, res) => {
       businessInfo: {
         businessName: company || 'לא צוין',
       },
-      leadSource: 'website_form',
+      leadSource: isLandingPageCampaign ? 'landing_page_campaign' : 'website_form',
       status: 'new_lead',
-      tags: ['ליד חדש', 'טופס אתר', 'website_form'],
+      tags: isLandingPageCampaign 
+        ? ['ליד חדש', 'קמפיין דף נחיתה', 'landing_page_campaign']
+        : ['ליד חדש', 'טופס אתר', 'website_form'],
       interactions: [
         {
           type: 'note',
           direction: 'inbound',
-          subject: '🌐 פניה מהאתר',
+          subject: isLandingPageCampaign ? '🎯 פניה מדף נחיתה - אבחון חינם' : '🌐 פניה מהאתר',
           content: interactionContent,
           timestamp: new Date(),
           completed: true,
