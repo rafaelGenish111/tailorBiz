@@ -521,7 +521,7 @@ function Features() {
                 transition: 'all 0.3s ease',
               }}
             >
-              בדיקת התאמה (ללא עלות)
+              לבדיקת היתכנות ואפיון
             </Button>
           </MotionBox>
         </Container>
