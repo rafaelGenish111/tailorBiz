@@ -203,7 +203,7 @@ const ClientSchema = new mongoose.Schema({
   // מקור הליד
   leadSource: {
     type: String,
-    enum: ['whatsapp', 'website_form', 'referral', 'cold_call', 'social_media', 'linkedin', 'facebook', 'google_ads', 'other'],
+    enum: ['whatsapp', 'website_form', 'referral', 'cold_call', 'social_media', 'linkedin', 'facebook', 'google_ads', 'landing_page_campaign', 'other'],
     required: true
   },
 
@@ -529,6 +529,7 @@ ClientSchema.methods.calculateLeadScore = function () {
   const sourceScores = {
     'referral': 25,
     'website_form': 20,
+    'landing_page_campaign': 22,
     'linkedin': 18,
     'whatsapp': 15,
     'facebook': 12,

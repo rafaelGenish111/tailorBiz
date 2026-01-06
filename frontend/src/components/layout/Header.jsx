@@ -223,7 +223,7 @@ function Header() {
                   const hasArticles = articlesByCategory[category.value]?.length > 0;
                   return (
                     <Box 
-                      key={category.value} 
+                      key={category.value}
                       sx={{ position: 'relative' }}
                       onMouseEnter={(e) => {
                         // Open submenu on hover if there are articles

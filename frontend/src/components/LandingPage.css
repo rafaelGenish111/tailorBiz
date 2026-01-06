@@ -2,36 +2,42 @@
 
 /* Global variables for this component only */
 .landing-page-wrapper {
-  --primary-color: #2563eb; /* Royal Blue */
-  --secondary-color: #1e40af; /* Darker Blue */
-  --accent-color: #0ea5e9; /* Light Blue */
-  --text-dark: #0f172a; /* Slate 900 */
-  --text-gray: #475569; /* Slate 600 */
-  --bg-light: #f8fafc; /* Slate 50 */
-  --white: #ffffff;
-  --success: #10b981;
-  
-  font-family: 'Heebo', sans-serif;
-  direction: rtl;
-  line-height: 1.6;
-  background-color: var(--white);
-  color: var(--text-dark);
-  overflow-x: hidden;
-  text-align: right;
+    --primary-color: #2563eb;
+    /* Royal Blue */
+    --secondary-color: #1e40af;
+    /* Darker Blue */
+    --accent-color: #0ea5e9;
+    /* Light Blue */
+    --text-dark: #0f172a;
+    /* Slate 900 */
+    --text-gray: #475569;
+    /* Slate 600 */
+    --bg-light: #f8fafc;
+    /* Slate 50 */
+    --white: #ffffff;
+    --success: #10b981;
+
+    font-family: 'Heebo', sans-serif;
+    direction: rtl;
+    line-height: 1.6;
+    background-color: var(--white);
+    color: var(--text-dark);
+    overflow-x: hidden;
+    text-align: right;
 }
 
 .landing-page-wrapper * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 /* TYPOGRAPHY */
-.landing-page-wrapper h1, 
-.landing-page-wrapper h2, 
-.landing-page-wrapper h3, 
+.landing-page-wrapper h1,
+.landing-page-wrapper h2,
+.landing-page-wrapper h3,
 .landing-page-wrapper h4 {
-  font-family: 'Rubik', sans-serif;
-  font-weight: 700;
-  line-height: 1.2;
+    font-family: 'Rubik', sans-serif;
+    font-weight: 700;
+    line-height: 1.2;
 }
 
 .landing-page-wrapper h1 {
@@ -235,9 +241,17 @@
     z-index: 1;
 }
 
-.right { right: 0; }
-.left { right: 50%; }
-.left::after { right: -10px; }
+.right {
+    right: 0;
+}
+
+.left {
+    right: 50%;
+}
+
+.left::after {
+    right: -10px;
+}
 
 .content-box {
     padding: 20px 30px;
@@ -280,17 +294,21 @@
 }
 
 .pricing-card::before {
-    content: '10 הראשונים חינם';
+    content: '24 השעות הקרובות בחינם';
     position: absolute;
-    top: 30px;
-    left: -40px;
+    top: 40px;
+    left: -50px;
     background-color: var(--success);
     color: white;
-    padding: 5px 45px;
+    padding: 8px 50px;
     transform: rotate(-45deg);
     font-weight: 700;
-    font-size: 0.875rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 0.8rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 20;
+    white-space: nowrap;
+    text-align: center;
+    
 }
 
 .price-tag {
@@ -319,15 +337,16 @@
     padding-right: 25px;
     position: relative;
     font-size: 1rem;
-    color: var(--text-dark); 
+    color: var(--text-dark);
 }
+
 .check-list.white-text li {
     color: var(--white);
 }
 
 .check-list li::before {
     content: '\f00c';
-    font-family: 'Font Awesome 6 Free'; 
+    font-family: 'Font Awesome 6 Free';
     font-weight: 900;
     position: absolute;
     right: 0;
@@ -368,6 +387,12 @@
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
+
+.form-input select {
+    background-color: var(--white);
+    cursor: pointer;
+}
+
 
 /* TESTIMONIALS */
 .testimonials-section {
@@ -448,30 +473,53 @@
     flex-shrink: 0;
 }
 
+.testimonial-avatar-generic {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    border: 2px solid var(--primary-color);
+    flex-shrink: 0;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
-    .hero-grid, .cards-grid, .pricing-grid {
+
+    .hero-grid,
+    .cards-grid,
+    .pricing-grid {
         grid-template-columns: 1fr;
     }
+
     .timeline::after {
         right: 31px;
     }
+
     .timeline-item {
         width: 100%;
         padding-right: 70px;
         padding-left: 25px;
     }
+
     .timeline-item::after {
         right: 21px;
     }
-    .left { right: 0%; }
-    .pricing-card { order: 2; }
+
+    .left {
+        right: 0%;
+    }
+
+    .pricing-card {
+        order: 2;
+    }
+
     .whatsapp-text {
         display: none;
     }
+
     .testimonial-card-full {
         padding: 30px 20px;
     }
+
     .testimonial-quote-icon {
         top: 20px;
         right: 20px;
@@ -479,8 +527,8 @@
         height: 40px;
         font-size: 20px;
     }
+
     .testimonial-text {
         font-size: 1rem;
     }
 }
-

@@ -23,6 +23,7 @@ router.post(
     body('email').optional({ checkFalsy: true }).isEmail().withMessage('אימייל לא תקין'),
     body('company').optional({ checkFalsy: true }).trim().isLength({ max: 200 }).withMessage('שם העסק ארוך מדי'),
     body('message').optional({ checkFalsy: true }).trim().isLength({ max: 5000 }).withMessage('הודעה ארוכה מדי'),
+    body('leadSource').optional({ checkFalsy: true }).trim().isLength({ max: 100 }).withMessage('מקור ליד ארוך מדי'),
   ],
   publicLeadController.submitWebsiteLead
 );

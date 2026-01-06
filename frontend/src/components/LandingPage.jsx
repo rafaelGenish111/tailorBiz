@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './LandingPage.css';
-import { publicCMS } from '../utils/publicApi';
+import { publicCMS, publicLeads } from '../utils/publicApi';
 import { getImageUrl } from '../utils/imageUtils';
 
 const LandingPage = () => {
@@ -9,7 +9,8 @@ const LandingPage = () => {
     phone: '',
     email: '',
     companyName: '',
-    website: ''
+    website: '',
+    employeeCount: ''
   });
 
   const [status, setStatus] = useState('idle'); // idle, submitting, success, error
@@ -22,7 +23,46 @@ const LandingPage = () => {
       try {
         const res = await publicCMS.getTestimonials();
         if (!mounted) return;
-        const testimonialsData = res.data?.data || [];
+        let testimonialsData = res.data?.data || [];
+        
+        // Remove Leah Genish from testimonials
+        testimonialsData = testimonialsData.filter(t => 
+          !(t.clientName?.includes('Leah') || t.clientName?.includes('ליה') || t.clientName?.includes('גניש'))
+        );
+        
+        // Replace Roni Eitan with Hagi (if exists) or add Hagi as one of the first 3
+        const roniIndex = testimonialsData.findIndex(t => 
+          t.clientName?.includes('רוני') || t.clientName?.includes('איתן')
+        );
+        
+        if (roniIndex !== -1) {
+          // Replace with Hagi testimonial
+          testimonialsData[roniIndex] = {
+            ...testimonialsData[roniIndex],
+            clientName: 'חגי',
+            clientRole: 'מנהל תפעול',
+            companyName: 'C3 Systems',
+            content: 'היינו טובעים בניירת בייצור. תוך חודשיים המערכת הורידה לנו 30% מהפחת וחסכה למנהלת המשרד 4 שעות ביום. זה לא עוד תוכנה, זה שקט נפשי.',
+            rating: 5,
+            image: null // Generic logo - will use placeholder
+          };
+        } else {
+          // If Roni not found, ensure we have Hagi as one of the first 3
+          const hasHagi = testimonialsData.some(t => t.clientName?.includes('חגי'));
+          if (!hasHagi && testimonialsData.length >= 3) {
+            // Replace the third one with Hagi
+            testimonialsData[2] = {
+              _id: `hagi-${Date.now()}`,
+              clientName: 'חגי',
+              clientRole: 'מנהל תפעול',
+              companyName: 'C3 Systems',
+              content: 'היינו טובעים בניירת בייצור. תוך חודשיים המערכת הורידה לנו 30% מהפחת וחסכה למנהלת המשרד 4 שעות ביום. זה לא עוד תוכנה, זה שקט נפשי.',
+              rating: 5,
+              image: null // Generic logo - will use placeholder
+            };
+          }
+        }
+        
         // Take first 3 testimonials
         setTestimonials(testimonialsData.slice(0, 3));
       } catch (error) {
@@ -61,22 +101,16 @@ const LandingPage = () => {
 
     try {
       // POST request to the backend - map form fields to API expected format
-      const response = await fetch('/api/public/leads', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.fullName,
-          phone: formData.phone,
-          email: formData.email,
-          company: formData.companyName,
-          message: formData.website ? `אתר/לינקדאין: ${formData.website}\nמקור: דף נחיתה - אבחון חינם` : 'מקור: דף נחיתה - אבחון חינם',
-          leadSource: 'landing_page_campaign',
-        }),
+      const response = await publicLeads.submit({
+        name: formData.fullName,
+        phone: formData.phone,
+        email: formData.email,
+        company: formData.companyName,
+        message: `מספר עובדים: ${formData.employeeCount}\n${formData.website ? `אתר/לינקדאין: ${formData.website}\n` : ''}מקור: דף נחיתה - אבחון חינם`,
+        leadSource: 'landing_page_campaign',
       });
 
-      if (response.ok) {
+      if (response.status === 200 || response.status === 201) {
         setStatus('success');
       } else {
         setStatus('error');
@@ -113,9 +147,9 @@ const LandingPage = () => {
             <div>
               <span className="badge">אבחון טכנולוגי-עסקי</span>
               <h1>העסק גדל, אבל התפעול <span className="text-highlight">נשאר באקסל?</span></h1>
-              <p>קבלו מיפוי מלא של "דליפות הכסף" בעסק ותוכנית עבודה פרקטית לאוטומציה ושליטה – בתוך 90 דקות בלבד.</p>
+              <p>קבלו מיפוי מלא של "דליפות הכסף" בעסק ותוכנית עבודה אסטרטגית לאוטומציה ושליטה – שיחת אפיון ממוקדת (90 דק') + קבלת דוח אסטרטגי מקיף.</p>
               <div style={{ display: 'flex', gap: '15px' }}>
-                <a href="#offer" className="landing-btn">שריינו אבחון חינם (ל-10 הראשונים)</a>
+                <a href="#offer" className="landing-btn">שריינו אבחון חינם (24 השעות הקרובות)</a>
               </div>
               <p style={{ fontSize: '0.875rem', marginTop: '15px', color: 'var(--text-gray)' }}>
                 <i className="fa-solid fa-bolt"></i> נשארו מקומות בודדים במבצע.
@@ -207,14 +241,33 @@ const LandingPage = () => {
                       </div>
                       <p className="testimonial-text">"{testimonial.content}"</p>
                       <div className="testimonial-author">
-                        <img 
-                          src={imageUrl || '/assets/placeholder.png'} 
-                          alt={testimonial.clientName}
-                          className="testimonial-avatar"
-                          onError={(e) => {
-                            e.target.src = '/assets/placeholder.png';
+                        {imageUrl && !imageUrl.includes('placeholder') && imageUrl !== '/assets/placeholder.png' ? (
+                          <img 
+                            src={imageUrl} 
+                            alt={testimonial.clientName}
+                            className="testimonial-avatar"
+                            onError={(e) => {
+                              // Hide image and show generic avatar
+                              e.target.style.display = 'none';
+                              const fallback = e.target.nextSibling;
+                              if (fallback) fallback.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div 
+                          className="testimonial-avatar testimonial-avatar-generic"
+                          style={{ 
+                            display: (!imageUrl || imageUrl.includes('placeholder') || imageUrl === '/assets/placeholder.png') ? 'flex' : 'none',
+                            backgroundColor: '#2563eb',
+                            color: 'white',
+                            fontSize: '1.5rem',
+                            fontWeight: 700,
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}
-                        />
+                        >
+                          {testimonial.clientName?.charAt(0) || '?'}
+                        </div>
                         <div>
                           <h4 style={{ margin: 0, marginBottom: '4px', fontFamily: "'Heebo', system-ui, -apple-system, sans-serif" }}>{testimonial.clientName}</h4>
                           <p style={{ margin: 0, color: 'var(--text-gray)', fontSize: '0.9rem', fontFamily: "'Assistant', system-ui, -apple-system, sans-serif" }}>{testimonial.clientRole}</p>
@@ -238,7 +291,7 @@ const LandingPage = () => {
       <section id="offer" className="pricing-section">
         <div className="landing-container">
           <h2 style={{ textAlign: 'center', color: 'var(--white)' }}>השקעה קטנה, שקט נפשי גדול</h2>
-          <p style={{ textAlign: 'center', color: 'var(--white)', maxWidth: '600px', margin: '0 auto' }}>אנחנו מחפשים את הלקוחות הרציניים ביותר. לכן אנחנו מציעים את האבחון חינם למספר מצומצם של עסקים שמתאימים לפרופיל.</p>
+          <p style={{ textAlign: 'center', color: 'var(--white)', maxWidth: '600px', margin: '0 auto' }}>אנחנו מחפשים את הלקוחות הרציניים ביותר. לכן אנחנו מציעים את האבחון חינם למספר מצומצם של עסקים שמתאימים לפרופיל - ב-24 השעות הקרובות בלבד.</p>
           
           <div className="pricing-grid">
             {/* Value Description */}
@@ -247,8 +300,8 @@ const LandingPage = () => {
               <p style={{ color: 'var(--white)' }}>האבחון מבוצע על ידי יועץ טכנולוגי בכיר ומיועד לתת לכם ערך אמיתי, לא רק שיחת מכירה.</p>
               
               <ul className="check-list white-text" style={{color: 'white'}}>
-                <li><strong>פגישת אבחון עומק (90 דק')</strong> - שווי 1,500 ₪</li>
-                <li><strong>דו"ח אבחון מקיף (PDF)</strong> - שווי 800 ₪</li>
+                <li><strong>שיחת אפיון ממוקדת (90 דק')</strong> - שווי 1,500 ₪</li>
+                <li><strong>דוח אסטרטגי מקיף (PDF)</strong> - שווי 800 ₪</li>
                 <li><strong>בונוס סייבר:</strong> בדיקת חוסן בסיסי והרשאות</li>
                 <li><strong>בונוס AI:</strong> סקירת הזדמנויות לשימוש בבינה מלאכותית</li>
               </ul>
@@ -264,7 +317,7 @@ const LandingPage = () => {
             <div className="pricing-card">
               <div className="price-old">1,500 ₪</div>
               <div className="price-tag">0 ₪</div>
-              <p style={{ fontSize: '0.875rem', marginBottom: '20px' }}>ל-10 הנרשמים הראשונים בלבד</p>
+              <p style={{  fontSize: '0.875rem', marginBottom: '20px', color: 'var(--text-gray)' }}>24 השעות הקרובות בלבד</p>
               
               {status === 'success' ? (
                 <div style={{ textAlign: 'center', padding: '40px 0' }}>
@@ -294,10 +347,35 @@ const LandingPage = () => {
                     <label htmlFor="website" className="form-label">אתר אינטרנט / לינקדאין</label>
                     <input type="url" id="website" name="website" className="form-input" placeholder="https://www.your-site.com" value={formData.website} onChange={handleChange} />
                   </div>
+                  <div className="form-group">
+                    <label htmlFor="employeeCount" className="form-label">מספר עובדים בחברה *</label>
+                    <select 
+                      id="employeeCount" 
+                      name="employeeCount" 
+                      className="form-input" 
+                      required 
+                      value={formData.employeeCount} 
+                      onChange={handleChange}
+                      style={{ 
+                        fontFamily: "'Heebo', sans-serif",
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="">בחר מספר עובדים</option>
+                      <option value="1-5">1-5 (לא רלוונטי כרגע)</option>
+                      <option value="6-20">6-20 (מתאים לצמיחה)</option>
+                      <option value="21-50">21-50 (מתאים לאוטומציה מלאה)</option>
+                      <option value="50+">50+ (Enterprise)</option>
+                    </select>
+                  </div>
                   
                   <button type="submit" className="landing-btn landing-btn-full" disabled={status === 'submitting'}>
                     {status === 'submitting' ? 'שולח...' : 'שריינו לי מקום בחינם'}
                   </button>
+                  
+                  <p style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center', marginTop: '15px', lineHeight: 1.6 }}>
+                    אנו מתחייבים לסודיות מלאה (NDA). המידע נשמר בסטנדרט אבטחה מחמיר.
+                  </p>
                   
                   {status === 'error' && <p style={{ color: 'red', fontSize: '0.8rem', marginTop: '10px', textAlign: 'center' }}>אירעה שגיאה בשליחת הטופס. אנא נסו שנית.</p>}
                 </form>
