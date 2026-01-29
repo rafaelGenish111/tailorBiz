@@ -43,7 +43,7 @@ import LoadingSpinner from '../../../components/marketing/shared/LoadingSpinner'
 // ב-Production (Vercel) נשתמש ב-/api, בלוקאל נגדיר VITE_API_URL=http://localhost:5000/api
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
-const MotionCard = motion(Card);
+const MotionCard = motion.create(Card);
 
 const actionIcons = {
   send_email: EmailIcon,

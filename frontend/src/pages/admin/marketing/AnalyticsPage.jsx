@@ -38,7 +38,7 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 import PeopleIcon from '@mui/icons-material/People';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
-const MotionPaper = motion(Paper);
+const MotionPaper = motion.create(Paper);
 
 const COLORS = ['#1a237e', '#00bcd4', '#4caf50', '#ff9800', '#f44336', '#9c27b0'];
 
@@ -46,7 +46,7 @@ const AnalyticsPage = () => {
   const [period, setPeriod] = useState('30');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   const [overview, setOverview] = useState(null);
   const [roiAnalysis, setRoiAnalysis] = useState(null);
   const [campaignsPerf, setCampaignsPerf] = useState([]);

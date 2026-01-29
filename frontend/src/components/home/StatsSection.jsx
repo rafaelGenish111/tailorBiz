@@ -4,7 +4,7 @@ import { useInView } from 'react-intersection-observer';
 import { useEffect, useState } from 'react';
 import { publicCMS } from '../../utils/publicApi';
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 function CountUp({ end, duration = 2 }) {
   const [count, setCount] = useState(0);
@@ -17,7 +17,7 @@ function CountUp({ end, duration = 2 }) {
     const animate = (currentTime) => {
       if (!startTime) startTime = currentTime;
       const progress = Math.min((currentTime - startTime) / (duration * 1000), 1);
-      
+
       setCount(Math.floor(progress * end));
 
       if (progress < 1) {
@@ -105,7 +105,7 @@ function StatsSection() {
 
         const settings = settingsRes.data?.data;
         const actualClientsCount = clientsRes.data?.data?.count || 0;
-        
+
         setClientsCount(actualClientsCount);
 
         // Use CMS stats or defaults

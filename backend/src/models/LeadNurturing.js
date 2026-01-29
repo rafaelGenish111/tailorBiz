@@ -19,14 +19,18 @@ const LeadNurturingSchema = new mongoose.Schema({
     type: {
       type: String,
       enum: [
-        'new_lead',              // ליד חדש נוצר
-        'no_response',           // אין תגובה X ימים
-        'status_change',         // שינוי סטטוס
-        'engaged',               // ליד הפך ל-engaged
-        'proposal_sent',         // הצעה נשלחה
-        'interaction',           // אינטראקציה חדשה (שיחה, וואטסאפ, פגישה וכו')
-        'time_based',            // טריגר זמן כללי (ימים מאז קשר אחרון וכו')
-        'manual'                 // ידני
+        'new_lead',                      // ליד חדש נוצר
+        'no_response',                   // אין תגובה X ימים
+        'status_change',                 // שינוי סטטוס
+        'engaged',                       // ליד הפך ל-engaged
+        'proposal_sent',                 // הצעה נשלחה
+        'interaction',                   // אינטראקציה חדשה (שיחה, וואטסאפ, פגישה וכו')
+        'time_based',                    // טריגר זמן כללי (ימים מאז קשר אחרון וכו')
+        'manual',                        // ידני
+        'bot_conversation_completed',    // NEW: שיחת בוט הושלמה
+        'bot_conversation_abandoned',    // NEW: שיחת בוט נזנחה
+        'bot_intent_detected',           // NEW: בוט זיהה intent מסוים
+        'keyword_mentioned'              // NEW: מילת מפתח הוזכרה בשיחה
       ],
       required: true
     },
@@ -47,7 +51,12 @@ const LeadNurturingSchema = new mongoose.Schema({
       interactionTypes: [String],      // סוגי אינטראקציה רלוונטיים (call/email/whatsapp/meeting/note/task)
       directions: [String],            // inbound / outbound
       subjectContains: String,         // מחרוזת שמופיעה בנושא
-      hasNextFollowUp: Boolean         // האם נדרש שתהיה אינטראקציה עם nextFollowUp
+      hasNextFollowUp: Boolean,        // האם נדרש שתהיה אינטראקציה עם nextFollowUp
+
+      // NEW: תנאים על שיחות בוט
+      botIntents: [String],            // רשימת intents לזיהוי
+      keywords: [String],              // מילות מפתח לחיפוש
+      conversationOutcome: String      // תוצאת שיחה: 'success', 'failed', 'abandoned'
     }
   },
 
@@ -63,15 +72,18 @@ const LeadNurturingSchema = new mongoose.Schema({
     actionType: {
       type: String,
       enum: [
-        'send_whatsapp',         // שלח WhatsApp
-        'create_task',           // צור משימה
-        'send_email',            // שלח אימייל
-        'change_status',         // שנה סטטוס (שם היסטורי)
-        'update_lead_score',     // עדכון ציון ליד
-        'update_client_status',  // עדכון סטטוס לקוח
-        'schedule_followup',     // יצירת אינטראקציית follow-up עתידית
-        'add_tag',               // הוסף תג
-        'create_notification'    // צור התראה
+        'send_whatsapp',           // שלח WhatsApp
+        'create_task',             // צור משימה
+        'send_email',              // שלח אימייל
+        'change_status',           // שנה סטטוס (שם היסטורי)
+        'update_lead_score',       // עדכון ציון ליד
+        'update_client_status',    // עדכון סטטוס לקוח
+        'schedule_followup',       // יצירת אינטראקציית follow-up עתידית
+        'add_tag',                 // הוסף תג
+        'create_notification',     // צור התראה
+        'start_bot_conversation',  // NEW: התחל שיחת בוט
+        'stop_bot_conversation',   // NEW: עצור שיחת בוט
+        'send_bot_message'         // NEW: שלח הודעת בוט
       ],
       required: true
     },

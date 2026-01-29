@@ -4,17 +4,17 @@ import { motion } from 'framer-motion';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 
-const MotionCard = motion(Card);
+const MotionCard = motion.create(Card);
 
-const StatCard = ({ 
-  title, 
-  value, 
-  subtitle, 
-  icon: Icon, 
-  trend, 
+const StatCard = ({
+  title,
+  value,
+  subtitle,
+  icon: Icon,
+  trend,
   trendValue,
   color = 'primary',
-  loading = false 
+  loading = false
 }) => {
   const getTrendColor = () => {
     if (!trend) return 'text.secondary';
@@ -53,7 +53,7 @@ const StatCard = ({
             <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
               {title}
             </Typography>
-            
+
             {loading ? (
               <Typography variant="h4">...</Typography>
             ) : (
@@ -61,13 +61,13 @@ const StatCard = ({
                 {value}
               </Typography>
             )}
-            
+
             {subtitle && (
               <Typography variant="caption" sx={{ opacity: 0.8 }}>
                 {subtitle}
               </Typography>
             )}
-            
+
             {trend && trendValue && (
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, gap: 0.5 }}>
                 <TrendIcon sx={{ fontSize: 16, color: getTrendColor() }} />
@@ -77,7 +77,7 @@ const StatCard = ({
               </Box>
             )}
           </Box>
-          
+
           {Icon && (
             <Box
               sx={{

@@ -19,7 +19,7 @@ import EventIcon from '@mui/icons-material/Event';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../shared/LoadingSpinner';
 
-const MotionListItem = motion(ListItem);
+const MotionListItem = motion.create(ListItem);
 
 const campaignTypeLabels = {
   holiday: 'חג',
@@ -83,18 +83,18 @@ const UpcomingCampaigns = ({ campaigns = [], loading = false }) => {
         <Typography variant="h6" fontWeight={600}>
           קמפיינים קרובים
         </Typography>
-        <Chip 
-          label={campaigns.length} 
-          size="small" 
+        <Chip
+          label={campaigns.length}
+          size="small"
           sx={{ ml: 1 }}
           color="primary"
         />
       </Box>
 
       {campaigns.length === 0 ? (
-        <Box 
-          sx={{ 
-            textAlign: 'center', 
+        <Box
+          sx={{
+            textAlign: 'center',
             py: 4,
             color: 'text.secondary'
           }}
@@ -141,7 +141,7 @@ const UpcomingCampaigns = ({ campaigns = [], loading = false }) => {
                     <Typography variant="subtitle1" fontWeight={600}>
                       {campaign.name}
                     </Typography>
-                    <Chip 
+                    <Chip
                       label={campaignTypeLabels[campaign.type] || campaign.type}
                       size="small"
                       variant="outlined"

@@ -8,7 +8,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import InventoryOutlinedIcon from '@mui/icons-material/InventoryOutlined';
 import IntegrationInstructionsOutlinedIcon from '@mui/icons-material/IntegrationInstructionsOutlined';
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const features = [
   {

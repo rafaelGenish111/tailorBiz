@@ -6,8 +6,8 @@ import SettingsSuggestOutlinedIcon from '@mui/icons-material/SettingsSuggestOutl
 import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
 import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
 
-const MotionBox = motion(Box);
-const MotionPaper = motion(Paper);
+const MotionBox = motion.create(Box);
+const MotionPaper = motion.create(Paper);
 
 const steps = [
   {
@@ -90,8 +90,8 @@ function TimelineStep({ step, index }) {
           borderRadius: 1,
           cursor: 'pointer',
           transition: 'all 0.3s ease',
-          boxShadow: step.highlight 
-            ? '0 8px 32px rgba(0, 188, 212, 0.2)' 
+          boxShadow: step.highlight
+            ? '0 8px 32px rgba(0, 188, 212, 0.2)'
             : '0 4px 16px rgba(0, 0, 0, 0.1)',
           '&:hover': {
             borderColor: step.highlight ? 'secondary.light' : 'rgba(0, 188, 212, 0.3)',
@@ -119,7 +119,7 @@ function TimelineStep({ step, index }) {
             width: 60,
             height: 60,
             borderRadius: 1,
-            bgcolor: step.highlight 
+            bgcolor: step.highlight
               ? 'linear-gradient(135deg, rgba(0, 188, 212, 0.2) 0%, rgba(0, 188, 212, 0.1) 100%)'
               : 'rgba(26, 35, 126, 0.08)',
             display: 'flex',
@@ -158,7 +158,7 @@ function TimelineStep({ step, index }) {
             mb: 2,
             fontWeight: 700,
             color: 'white',
-            background: step.highlight 
+            background: step.highlight
               ? 'linear-gradient(135deg, #00bcd4 0%, #00e5ff 100%)'
               : 'none',
             backgroundClip: step.highlight ? 'text' : 'none',

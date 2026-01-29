@@ -13,8 +13,8 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { publicCMS } from '../utils/publicApi';
 import { getImageUrl } from '../utils/imageUtils';
 
-const MotionBox = motion(Box);
-const MotionPaper = motion(Paper);
+const MotionBox = motion.create(Box);
+const MotionPaper = motion.create(Paper);
 
 function InViewMotionBox({
   children,
@@ -67,33 +67,33 @@ function About() {
     const sections = Array.isArray(cmsAbout.sections) && cmsAbout.sections.length > 0
       ? cmsAbout.sections
       : (() => {
-          // Fallback: parse content with headings
-          const text = cmsAbout.content || '';
-          if (!text) return [];
-          const parsedSections = [];
-          const lines = text.split('\n');
-          let currentSection = { title: null, content: '', image: null };
-          
-          lines.forEach((line) => {
-            if (line.startsWith('## ')) {
-              if (currentSection.title || currentSection.content) {
-                parsedSections.push(currentSection);
-              }
-              currentSection = { title: line.replace('## ', '').trim(), content: '', image: null };
-            } else if (line.startsWith('# ')) {
-              // Main title - skip, already handled
-            } else if (line.trim()) {
-              currentSection.content += (currentSection.content ? '\n' : '') + line.trim();
+        // Fallback: parse content with headings
+        const text = cmsAbout.content || '';
+        if (!text) return [];
+        const parsedSections = [];
+        const lines = text.split('\n');
+        let currentSection = { title: null, content: '', image: null };
+
+        lines.forEach((line) => {
+          if (line.startsWith('## ')) {
+            if (currentSection.title || currentSection.content) {
+              parsedSections.push(currentSection);
             }
-          });
-          
-          if (currentSection.title || currentSection.content) {
-            parsedSections.push(currentSection);
+            currentSection = { title: line.replace('## ', '').trim(), content: '', image: null };
+          } else if (line.startsWith('# ')) {
+            // Main title - skip, already handled
+          } else if (line.trim()) {
+            currentSection.content += (currentSection.content ? '\n' : '') + line.trim();
           }
-          
-          return parsedSections.length > 0 ? parsedSections : [{ title: null, content: text, image: null }];
-        })();
-    
+        });
+
+        if (currentSection.title || currentSection.content) {
+          parsedSections.push(currentSection);
+        }
+
+        return parsedSections.length > 0 ? parsedSections : [{ title: null, content: text, image: null }];
+      })();
+
     const mainImage = cmsAbout.coverImage || cmsAbout.image;
 
     return (
@@ -179,7 +179,7 @@ function About() {
               />
             </MotionBox>
           )}
-          
+
           {sections.map((section, index) => (
             <MotionBox
               key={index}

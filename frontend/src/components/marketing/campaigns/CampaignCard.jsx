@@ -18,7 +18,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import PeopleIcon from '@mui/icons-material/People';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
-const MotionCard = motion(Card);
+const MotionCard = motion.create(Card);
 
 const campaignTypeLabels = {
   holiday: '🎉 חג',

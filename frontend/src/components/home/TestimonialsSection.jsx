@@ -9,8 +9,8 @@ import StarIcon from '@mui/icons-material/Star';
 import { publicCMS } from '../../utils/publicApi';
 import { getImageUrl } from '../../utils/imageUtils';
 
-const MotionBox = motion(Box);
-const MotionPaper = motion(Paper);
+const MotionBox = motion.create(Box);
+const MotionPaper = motion.create(Paper);
 
 function TestimonialCard({ testimonial, isCenter }) {
   const scale = isCenter ? 1 : 0.85;

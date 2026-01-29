@@ -63,10 +63,19 @@ const marketingAutomationSchema = new mongoose.Schema({
         'tag_customer',
         'move_lead_stage',
         'start_campaign',
-        'webhook'
+        'webhook',
+        'ai_bot_conversation',    // NEW: Start AI bot conversation
+        'ai_bot_handoff'         // NEW: Handoff to human from AI bot
       ]
     },
     config: mongoose.Schema.Types.Mixed,
+    // AI Bot specific config fields (when type is ai_bot_conversation):
+    // {
+    //   botConfigId: ObjectId,          // Reference to AIBotConfig
+    //   conversationGoal: String,       // What should bot achieve
+    //   maxTurns: Number,               // Max conversation turns
+    //   fallbackAction: Object          // What to do if bot fails
+    // }
     delay: {
       type: Number,
       default: 0,

@@ -405,6 +405,43 @@ const ClientSchema = new mongoose.Schema({
     }
   }],
 
+  // NEW: AI Bot Conversation History
+  conversationHistory: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ConversationContext'
+  }],
+
+  // NEW: AI Bot Preferences for this client
+  aiPreferences: {
+    // Whether bot is enabled for this client
+    botEnabled: {
+      type: Boolean,
+      default: true
+    },
+    // Preferred language for bot communication
+    preferredLanguage: {
+      type: String,
+      default: 'he',
+      enum: ['he', 'en', 'ar']
+    },
+    // Communication style preference
+    communicationStyle: {
+      type: String,
+      enum: ['formal', 'casual', 'professional'],
+      default: 'professional'
+    },
+    // Custom bot config for this specific client (if needed)
+    customBotConfigId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'AIBotConfig'
+    },
+    // Web chat session ID for website chat widget
+    webChatSessionId: {
+      type: String,
+      sparse: true // Allow multiple nulls but unique non-null values
+    }
+  },
+
   // משימות ותזכורות
   tasks: [{
     title: {

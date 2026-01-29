@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const clientController = require('../controllers/clientController');
+// Split controllers for better organization
+const clientCrud = require('../controllers/client-crud');
+const clientInteractions = require('../controllers/client-interactions');
+const clientAssessment = require('../controllers/client-assessment');
+const clientPayments = require('../controllers/client-payments');
 const { protect, requireAnyModule } = require('../middleware/auth.middleware');
 const { body } = require('express-validator');
 const uploadContract = require('../middleware/contractUpload.middleware');
@@ -18,71 +22,78 @@ const validateClient = [
 router.use(protect);
 router.use(requireAnyModule(['clients', 'leads']));
 
-// Routes כלליים
-router.get('/stats/overview', clientController.getOverviewStats);
-router.get('/stats/pipeline', clientController.getPipelineStats);
-router.get('/stats/morning-focus', clientController.getMorningFocus);
+// ============================================================================
+// Statistics Routes - client-payments.js
+// ============================================================================
+router.get('/stats/overview', clientPayments.getOverviewStats);
+router.get('/stats/pipeline', clientPayments.getPipelineStats);
+router.get('/stats/morning-focus', clientPayments.getMorningFocus);
 
+// ============================================================================
+// CRUD Routes - client-crud.js
+// ============================================================================
 router.route('/')
-  .get(clientController.getAllClients)
-  .post(validateClient, clientController.createClient);
+  .get(clientCrud.getAllClients)
+  .post(validateClient, clientCrud.createClient);
 
 router.route('/:id')
-  .get(clientController.getClientById)
-  .put(clientController.updateClient)
-  .patch(clientController.updateClient)
-  .delete(clientController.deleteClient);
+  .get(clientCrud.getClientById)
+  .put(clientCrud.updateClient)
+  .patch(clientCrud.updateClient)
+  .delete(clientCrud.deleteClient);
 
 // המרת ליד ללקוח (סגירת עסקה)
-router.post('/:id/convert', uploadContract.single('contract'), clientController.convertLeadToClient);
+router.post('/:id/convert', uploadContract.single('contract'), clientCrud.convertLeadToClient);
 
-// חוזה ללקוח/ליד
+// ============================================================================
+// Contract & Assessment Routes - client-assessment.js
+// ============================================================================
 router
   .route('/:id/contract')
-  .get(clientController.getContract)
-  .post(uploadContract.single('contract'), clientController.uploadContract);
+  .get(clientAssessment.getContract)
+  .post(uploadContract.single('contract'), clientAssessment.uploadContract);
 
-// Routes לשאלון אפיון
 router.route('/:id/assessment')
-  .get(clientController.getAssessmentForm)
-  .post(clientController.fillAssessmentForm);
+  .get(clientAssessment.getAssessmentForm)
+  .post(clientAssessment.fillAssessmentForm);
 
-// Routes לאינטראקציות
+// ============================================================================
+// Interactions, Orders & Tasks Routes - client-interactions.js
+// ============================================================================
 router.route('/:id/interactions')
-  .get(clientController.getInteractions)
-  .post(clientController.addInteraction);
+  .get(clientInteractions.getInteractions)
+  .post(clientInteractions.addInteraction);
 
 router.route('/:id/interactions/:interactionId')
-  .put(clientController.updateInteraction)
-  .delete(clientController.deleteInteraction);
+  .put(clientInteractions.updateInteraction)
+  .delete(clientInteractions.deleteInteraction);
 
-// Routes להזמנות
 router.route('/:id/orders')
-  .get(clientController.getOrders)
-  .post(clientController.createOrder);
+  .get(clientInteractions.getOrders)
+  .post(clientInteractions.createOrder);
 
 router.route('/:id/orders/:orderId')
-  .put(clientController.updateOrder);
+  .put(clientInteractions.updateOrder);
 
-// Routes לתוכנית תשלומים
-router.route('/:id/payment-plan')
-  .post(clientController.createPaymentPlan);
-
-router.route('/:id/payment-plan/installments/:installmentId')
-  .put(clientController.updateInstallment);
-
-// Routes לחשבוניות
-router.route('/:id/invoices')
-  .get(clientController.getInvoices)
-  .post(clientController.createInvoice);
-
-// Routes למשימות
 router.route('/:id/tasks')
-  .get(clientController.getTasks)
-  .post(clientController.createTask);
+  .get(clientInteractions.getTasks)
+  .post(clientInteractions.createTask);
 
 router.route('/:id/tasks/:taskId')
-  .put(clientController.updateTask);
+  .put(clientInteractions.updateTask);
+
+// ============================================================================
+// Payment Plans & Invoices Routes - client-payments.js
+// ============================================================================
+router.route('/:id/payment-plan')
+  .post(clientPayments.createPaymentPlan);
+
+router.route('/:id/payment-plan/installments/:installmentId')
+  .put(clientPayments.updateInstallment);
+
+router.route('/:id/invoices')
+  .get(clientPayments.getInvoices)
+  .post(clientPayments.createInvoice);
 
 module.exports = router;
 

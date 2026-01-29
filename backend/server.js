@@ -16,6 +16,9 @@ if (!IS_VERCEL) {
   const reminderService = require('./src/services/reminderService');
   const leadNurturingService = require('./src/services/leadServiceV2');
   const { initializeAutomationEngine } = require('./src/services/marketing/automationEngine');
+  const automationOrchestrator = require('./src/services/automationOrchestrator');
+  const triggerHandler = require('./src/services/triggerHandler');
+  const AIBotConfig = require('./src/models/AIBotConfig');
 
   connectDB().then(async () => {
     const app = await createApp();
@@ -24,6 +27,26 @@ if (!IS_VERCEL) {
       if (process.env.ENABLE_REMINDERS === 'true') reminderService.startAllReminders();
       if (process.env.ENABLE_LEAD_NURTURING === 'true') leadNurturingService.start();
       initializeAutomationEngine().catch(console.error);
+
+      // אתחול AutomationOrchestrator & TriggerHandler
+      if (process.env.ENABLE_AI_BOT !== 'false') {
+        automationOrchestrator.initialize()
+          .then(() => {
+            console.log('✅ AutomationOrchestrator initialized');
+            return triggerHandler.initialize();
+          })
+          .then(() => {
+            console.log('✅ TriggerHandler initialized');
+            // יצירת Default Bot אם לא קיים
+            return AIBotConfig.ensureDefaultBot();
+          })
+          .then(() => {
+            console.log('✅ AI Bot system ready');
+          })
+          .catch(err => {
+            console.error('❌ AI Bot system initialization failed:', err.message);
+          });
+      }
 
       // אתחול WhatsApp Service
       const whatsappService = require('./src/services/whatsappService');

@@ -27,7 +27,7 @@ import InsightsPanel from '../../../components/marketing/dashboard/InsightsPanel
 import { useUpcomingCampaigns } from '../../../hooks/marketing/useCampaigns';
 import { getOverview, getInsights } from '../../../services/marketing/analyticsService';
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const MarketingDashboard = () => {
   const navigate = useNavigate();
@@ -155,8 +155,8 @@ const MarketingDashboard = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <UpcomingCampaigns 
-              campaigns={upcomingCampaigns} 
+            <UpcomingCampaigns
+              campaigns={upcomingCampaigns}
               loading={campaignsLoading}
             />
           </MotionBox>

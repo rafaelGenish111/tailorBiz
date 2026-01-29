@@ -4,20 +4,16 @@ import axios from 'axios';
 // In production (Vercel), VITE_API_URL must be set to the backend Vercel URL (e.g., https://your-backend.vercel.app/api)
 // In local development, set VITE_API_URL=http://localhost:5000/api or it will default to /api
 const getApiBaseUrl = () => {
-  // Priority 1: Use VITE_API_URL if explicitly set (required for production)
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
-  }
-  
-  // Priority 2: In production, VITE_API_URL is required - throw error if missing
+  // In production, VITE_API_URL is required
   if (import.meta.env.PROD) {
-    console.error('❌ VITE_API_URL is required in production but not set!');
-    console.error('Please set VITE_API_URL environment variable in Vercel project settings.');
-    // Fallback to prevent complete failure, but this should not happen in production
-    throw new Error('VITE_API_URL environment variable is required in production');
+    const url = import.meta.env.VITE_API_URL;
+    if (!url) {
+      console.error('❌ VITE_API_URL is required in production but not set!');
+      throw new Error('VITE_API_URL environment variable is required in production');
+    }
+    return url;
   }
-  
-  // Priority 3: Local development - default to relative path
+  // In development: use relative /api so Vite proxy forwards to backend (avoids 404 and CORS)
   return '/api';
 };
 

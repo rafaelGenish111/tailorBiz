@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 // Parse Server - רק אם לא ב-Vercel (conditional import כדי למנוע בעיות עם PostgreSQL adapter)
 let ParseServer = null;
 if (process.env.VERCEL !== '1') {
@@ -24,6 +25,8 @@ const projectRoutes = require('./routes/projectRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const leadNurturingRoutes = require('./routes/leadNurturingRoutes');
 const marketingRoutes = require('./routes/marketing');
+const aiBotRoutes = require('./routes/aiBotRoutes');
+const publicChatRoutes = require('./routes/publicChatRoutes');
 const testRoutes = require('./routes/testRoutes');
 const timeEntryRoutes = require('./routes/timeEntryRoutes');
 const documentRoutes = require('./routes/documentRoutes');
@@ -120,7 +123,7 @@ async function createApp() {
     'http://localhost:3000',
     'http://localhost:5000'
   ];
-  
+
   // Add FRONTEND_URL to allowed origins if provided
   if (frontendUrl) {
     // Support both with and without trailing slash
@@ -215,7 +218,7 @@ async function createApp() {
     return statusResponse;
   };
 
-  // Rate Limiting
+  // Rate Limiting - limiter כללי עם הגבלות גבוהות
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: isDev ? 2000 : 1000,
@@ -224,7 +227,24 @@ async function createApp() {
     legacyHeaders: false,
   });
 
-  // מחילים את ה-Limiter רק על ה-API שלנו, לא על Parse (ל-Parse יש הגנות משלו אם רוצים)
+  // Rate Limiting עבור auth endpoints - הגבלות גבוהות יותר כדי למנוע חסימה בטעות
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 דקות
+    max: isDev ? 500 : 200, // הגבלות גבוהות מאוד במצב פיתוח כדי למנוע חסימה בטעות
+    message: 'יותר מדי ניסיונות התחברות, נסה שוב מאוחר יותר',
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: true, // לא לספור בקשות מוצלחות
+    skip: (req) => {
+      // במצב פיתוח, לדלג על rate limiting עבור bootstrap-needed
+      return isDev && req.path === '/bootstrap-needed';
+    },
+  });
+
+  // מחילים את ה-auth limiter על auth endpoints לפני ה-limiter הכללי
+  app.use('/api/auth', authLimiter);
+
+  // מחילים את ה-Limiter הכללי על שאר ה-API, לא על Parse (ל-Parse יש הגנות משלו אם רוצים)
   app.use('/api/', limiter);
 
   // Body parser - מגיע אחרי Parse!
@@ -245,12 +265,14 @@ async function createApp() {
   app.use('/api/notifications', notificationRoutes);
   app.use('/api/lead-nurturing', leadNurturingRoutes);
   app.use('/api/marketing', marketingRoutes);
+  app.use('/api/ai-bots', aiBotRoutes);
   app.use('/api/time-entries', timeEntryRoutes);
   app.use('/api/documents', documentRoutes);
   app.use('/api/quotes', quoteRoutes);
   app.use('/api/hunting-pools', huntingPoolRoutes);
   app.use('/api/referrer-partners', referrerPartnersRoutes);
   app.use('/api/public', publicCmsRoutes);
+  app.use('/api/public/chat', publicChatRoutes);
   app.use('/api/admin/pages', adminPagesRoutes);
   app.use('/api/admin/articles', adminArticlesRoutes);
   app.use('/api/admin/clients', adminClientsRoutes);
@@ -289,70 +311,15 @@ async function createApp() {
     res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
   });
 
-  // 404 handler - לפני error handler
-  app.use((req, res) => {
-    console.log(`[404] Route not found: ${req.method} ${req.url}`);
-    console.log(`[404] Original URL: ${req.originalUrl}`);
-    console.log(`[404] Path: ${req.path}`);
-    setCorsHeaders(req, res);
-    res.status(404).json({
-      success: false,
-      message: 'Route not found',
-      path: req.path,
-      method: req.method
-    });
-  });
+  // 404 handler - must be after all routes
+  app.use(notFoundHandler);
 
-  // Error handler - חייב להגדיר CORS headers גם בשגיאות
+  // Global error handler - must be last
   app.use((err, req, res, next) => {
-    // הגדרת CORS headers גם בשגיאות - חשוב מאוד!
-    const origin = req.headers.origin;
-    // Use the same allowedOrigins array from above
-    // (Note: This is a copy for the error handler scope)
-    const errorHandlerAllowedOrigins = [
-      'https://tailorbiz-software.com',
-      'https://www.tailorbiz-software.com',
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'http://localhost:5000'
-    ];
-    
-    // Add FRONTEND_URL to allowed origins if provided
-    const frontendUrl = process.env.FRONTEND_URL;
-    if (frontendUrl) {
-      const normalizedUrl = frontendUrl.replace(/\/$/, '');
-      if (!errorHandlerAllowedOrigins.includes(normalizedUrl)) {
-        errorHandlerAllowedOrigins.push(normalizedUrl);
-      }
-      if (normalizedUrl.startsWith('https://') && !normalizedUrl.includes('www.')) {
-        const wwwVariant = normalizedUrl.replace('https://', 'https://www.');
-        if (!errorHandlerAllowedOrigins.includes(wwwVariant)) {
-          errorHandlerAllowedOrigins.push(wwwVariant);
-        }
-      }
-    }
-    
-    const allowedOrigins = errorHandlerAllowedOrigins;
-    if (origin) {
-      if (allowedOrigins.includes(origin) || isDev) {
-        res.header('Access-Control-Allow-Origin', origin);
-        res.header('Vary', 'Origin');
-      } else if (!isDev) {
-        res.header('Access-Control-Allow-Origin', allowedOrigins[0]);
-      }
-    } else if (!isDev) {
-      res.header('Access-Control-Allow-Origin', allowedOrigins[0]);
-    }
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Parse-Application-Id, X-Parse-Session-Token');
-
-    console.error('Error:', err.stack);
-    res.status(err.statusCode || 500).json({
-      success: false,
-      message: err.message || 'שגיאת שרת',
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-    });
+    // Keep CORS headers - critical for frontend!
+    setCorsHeaders(req, res);
+    // Pass to our error handler
+    errorHandler(err, req, res, next);
   });
 
   return app;

@@ -310,15 +310,12 @@ class WhatsAppService {
     console.log(`📩 Received message from ${fromNumber}: ${msg.body}`);
 
     try {
-      // כאן נדרשת קריאה לשירותים אחרים במערכת
-      // מכיוון שיש תלות מעגלית (Services תלויים ב-WhatsAppService),
-      // עדיף להשתמש ב-Event Emitter או לייבא את השירותים הנדרשים בתוך הפונקציה (Lazy Loading)
-
-      const leadNurturingService = require('./leadServiceV2');
-      const Client = require('../models/Client'); // נדרש לייבוא המודל כדי למצוא את הלקוח
+      // Lazy loading למניעת circular dependencies
+      const Client = require('../models/Client');
+      const ConversationContext = require('../models/ConversationContext');
+      const triggerHandler = require('./triggerHandler');
 
       // מציאת הלקוח לפי מספר טלפון
-      // נחפש גם עם 05X וגם עם פורמט בינלאומי ליתר ביטחון
       const phoneNumber = fromNumber;
       const cleanPhone = fromNumber.startsWith('0') ? fromNumber.substring(1) : fromNumber;
 
@@ -329,33 +326,52 @@ class WhatsAppService {
         ]
       });
 
-      if (client) {
-        // יצירת אובייקט אינטראקציה
-        const interaction = {
-          type: 'whatsapp',
-          direction: 'inbound',
-          subject: 'הודעה נכנסת',
-          content: msg.body,
-          timestamp: new Date(),
-          completed: true
-        };
-
-        // הוספה ללקוח ושמירה
-        client.interactions.push(interaction);
-        await client.save();
-
-        // קריאה לשירות ה-Nurturing לעצירת אוטומציות
-        // אנו מעבירים את האינטראקציה החדשה (האחרונה במערך)
-        const savedInteraction = client.interactions[client.interactions.length - 1];
-
-        // בדיקה אם הלקוח הגיב - עצירת רצפים אוטומטיים
-        await leadNurturingService.checkInteractionForActiveNurturing(client._id, savedInteraction);
-
-        // בדיקת טריגרים חדשים המבוססים על התגובה
-        await leadNurturingService.checkTriggersForInteraction(client._id, savedInteraction);
-      } else {
+      if (!client) {
         console.log(`⚠️ Message from unknown number: ${fromNumber}`);
+        return;
       }
+
+      // ✅ NEW: בדיקה אם יש שיחת AI bot פעילה
+      const activeConversation = await ConversationContext.findOne({
+        client: client._id,
+        channel: 'whatsapp',
+        status: 'active'
+      });
+
+      if (activeConversation) {
+        // מנתב ל-AI Bot
+        console.log(`🤖 Routing to active AI bot conversation: ${activeConversation.sessionId}`);
+        await triggerHandler.handleNewMessage(client._id, msg.body, 'whatsapp');
+        return;
+      }
+
+      // יצירת אובייקט אינטראקציה
+      const interaction = {
+        type: 'whatsapp',
+        direction: 'inbound',
+        subject: 'הודעה נכנסת',
+        content: msg.body,
+        timestamp: new Date(),
+        completed: true
+      };
+
+      // הוספה ללקוח ושמירה
+      client.interactions.push(interaction);
+      await client.save();
+
+      const savedInteraction = client.interactions[client.interactions.length - 1];
+
+      // ✅ NEW: טריגר של הודעה חדשה (יכול להפעיל AI bot)
+      await triggerHandler.handleNewMessage(client._id, msg.body, 'whatsapp');
+
+      // Existing flow: leadNurturingService
+      const leadNurturingService = require('./leadServiceV2');
+
+      // בדיקה אם הלקוח הגיב - עצירת רצפים אוטומטיים
+      await leadNurturingService.checkInteractionForActiveNurturing(client._id, savedInteraction);
+
+      // בדיקת טריגרים חדשים המבוססים על התגובה
+      await leadNurturingService.checkTriggersForInteraction(client._id, savedInteraction);
 
     } catch (error) {
       console.error('Error processing incoming message logic:', error);

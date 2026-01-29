@@ -7,7 +7,7 @@ import SettingsSuggestOutlinedIcon from '@mui/icons-material/SettingsSuggestOutl
 import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
 import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const steps = [
   {

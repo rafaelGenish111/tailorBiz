@@ -51,7 +51,8 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: process.env.VITE_API_URL || 'http://localhost:5000',
+        // פורט 5001 = שרת bizflow-website (5000 עלול להיות תפוס על ידי פרויקט אחר)
+        target: (process.env.VITE_PROXY_TARGET || 'http://localhost:5001').replace(/\/api\/?$/, '') || 'http://localhost:5001',
         changeOrigin: true,
         secure: false,
       }

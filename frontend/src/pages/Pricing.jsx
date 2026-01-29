@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import CheckIcon from '@mui/icons-material/Check';
 import StarIcon from '@mui/icons-material/Star';
 
-const MotionCard = motion(Card);
+const MotionCard = motion.create(Card);
 
 function Pricing() {
   const plans = [
@@ -88,7 +88,7 @@ function Pricing() {
                   position: 'relative',
                   border: plan.recommended ? '2px solid' : '1px solid',
                   borderColor: plan.recommended ? 'secondary.main' : 'grey.200',
-                        borderRadius: 1,
+                  borderRadius: 1,
                 }}
               >
                 {plan.recommended && (
@@ -102,7 +102,7 @@ function Pricing() {
                       color: 'white',
                       px: 3,
                       py: 0.5,
-                            borderRadius: 6,
+                      borderRadius: 6,
                       display: 'flex',
                       alignItems: 'center',
                       gap: 0.5,

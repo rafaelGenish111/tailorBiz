@@ -5,7 +5,7 @@ import { Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 const features = [
   {
