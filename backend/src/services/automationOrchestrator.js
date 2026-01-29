@@ -176,14 +176,19 @@ class AutomationOrchestrator {
         await this.executeLeadNurturing(automation, client);
       }
 
-      // בדיקה אם צריך להפעיל AI Bot
+      // בדיקה אם צריך להפעיל AI Bot (כולל לידים מטופס צור קשר / website_form)
+      const leadSource = client.leadSource || client.source;
+      const fromContactForm = ['website_form', 'landing_page_campaign'].includes(leadSource);
       const botConfig = await AIBotConfig.findOne({ isActive: true });
-      if (botConfig && botConfig.shouldTrigger('new_lead', { leadSource: client.source })) {
-        console.log(`🤖 Starting AI bot conversation for new lead: ${clientId}`);
+      const shouldStartBot = botConfig && botConfig.shouldTrigger('new_lead', { leadSource });
 
-        // שליחת הודעת ברוכים הבאים
-        const welcomeMessage = await this.getWelcomeMessage(client);
-        await aiBotEngine.handleMessage(clientId, welcomeMessage, 'whatsapp');
+      if (shouldStartBot || fromContactForm) {
+        const hasPhone = client.personalInfo?.whatsappPhone || client.personalInfo?.phone;
+        if (hasPhone) {
+          console.log(`🤖 Sending WhatsApp welcome for new lead: ${clientId} (source: ${leadSource})`);
+          const welcomeMessage = await this.getWelcomeMessage(client);
+          await aiBotEngine.sendWelcomeAndInitContext(clientId, welcomeMessage, 'whatsapp');
+        }
       }
 
       console.log(`✅ New lead handled: ${clientId}`);
@@ -321,7 +326,7 @@ class AutomationOrchestrator {
       // בדיקה אם צריך להפעיל AI Bot חדש
       const botConfig = await AIBotConfig.getBotForEvent('new_message', {
         message,
-        leadSource: client.source,
+        leadSource: client.leadSource || client.source,
         status: client.status
       });
 
@@ -629,9 +634,12 @@ class AutomationOrchestrator {
    * קבלת הודעת ברוכים הבאים מותאמת אישית
    */
   async getWelcomeMessage(client) {
-    const defaultMessage = `שלום ${client.fullName || 'לקוח יקר'}, תודה על פנייתך! איך אוכל לעזור לך היום?`;
+    const name = client.personalInfo?.fullName || client.fullName || 'לקוח יקר';
+    const defaultMessage = `שלום ${name}, תודה שפנית אלינו! 👋
 
-    // אפשר להוסיף לוגיקה מתקדמת יותר בהתאם למקור הליד
+קיבלנו את הפרטים שהשארת ונשמח לעזור.
+אפשר לכתוב כאן כל שאלה או לבקש שיחה עם נציג – איך שנוח לך.`;
+
     return defaultMessage;
   }
 }

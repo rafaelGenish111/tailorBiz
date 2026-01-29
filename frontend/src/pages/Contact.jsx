@@ -109,7 +109,7 @@ function Contact() {
 
       <Container maxWidth="lg" sx={{ py: 10 }}>
         <Grid container spacing={6}>
-          <Grid item xs={12} md={7}>
+          <Grid size={{ xs: 12, md: 7 }}>
             <Paper elevation={2} sx={{ p: 4, borderRadius: 1 }}>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 שלחו לנו הודעה
@@ -191,7 +191,7 @@ function Contact() {
             </Paper>
           </Grid>
 
-          <Grid item xs={12} md={5}>
+          <Grid size={{ xs: 12, md: 5 }}>
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 פרטי התקשרות

@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const Client = require('../models/Client');
 const leadNurturingService = require('../services/leadServiceV2');
+const triggerHandler = require('../services/triggerHandler');
 
 function normalizeILPhoneToDigits(phone) {
   if (!phone) return '';
@@ -87,7 +88,7 @@ exports.submitWebsiteLead = async (req, res) => {
         existing.businessInfo.businessName = company;
       }
 
-      const newTags = isLandingPageCampaign 
+      const newTags = isLandingPageCampaign
         ? ['קמפיין דף נחיתה', 'landing_page_campaign']
         : ['טופס אתר', 'website_form'];
       existing.tags = Array.from(new Set([...(existing.tags || []), ...newTags]));
@@ -107,6 +108,10 @@ exports.submitWebsiteLead = async (req, res) => {
       // הפעל טריגרים לליד חדש (אסינכרוני)
       leadNurturingService.checkTriggersForNewLead(existing._id).catch((err) => {
         console.error('Error triggering nurturing for website lead (existing):', err);
+      });
+      // אוטומציה: שליחת הודעת WhatsApp והפעלת בוט לשיחה (גם ליד קיים ששלח שוב מטופס)
+      triggerHandler.handleNewLead(existing._id).catch((err) => {
+        console.error('Error triggering automation for website lead (existing):', err);
       });
 
       return res.status(200).json({
@@ -129,7 +134,7 @@ exports.submitWebsiteLead = async (req, res) => {
       },
       leadSource: isLandingPageCampaign ? 'landing_page_campaign' : 'website_form',
       status: 'new_lead',
-      tags: isLandingPageCampaign 
+      tags: isLandingPageCampaign
         ? ['ליד חדש', 'קמפיין דף נחיתה', 'landing_page_campaign']
         : ['ליד חדש', 'טופס אתר', 'website_form'],
       interactions: [
@@ -153,6 +158,10 @@ exports.submitWebsiteLead = async (req, res) => {
     // הפעל טריגרים לליד חדש (אסינכרוני)
     leadNurturingService.checkTriggersForNewLead(client._id).catch((err) => {
       console.error('Error triggering nurturing for website lead (new):', err);
+    });
+    // אוטומציה: שליחת הודעת WhatsApp והפעלת בוט לשיחה
+    triggerHandler.handleNewLead(client._id).catch((err) => {
+      console.error('Error triggering automation for website lead (new):', err);
     });
 
     return res.status(201).json({

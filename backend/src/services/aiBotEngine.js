@@ -553,6 +553,36 @@ class AIBotEngine {
   // ============================================================================
 
   /**
+   * שליחת הודעת ברוכים הבאים ב-WhatsApp ואתחול הקשר לשיחה (כך שהבוט יענה כשהלקוח ישלח הודעה)
+   * @param {String} clientId - מזהה הלקוח
+   * @param {String} welcomeText - טקסט ההודעה לשליחה
+   * @param {String} channel - ערוץ (whatsapp)
+   */
+  async sendWelcomeAndInitContext(clientId, welcomeText, channel = 'whatsapp') {
+    if (!welcomeText) return;
+    const client = await Client.findById(clientId);
+    if (!client) {
+      console.error(`❌ sendWelcomeAndInitContext: Client not found ${clientId}`);
+      return;
+    }
+    const phone = client.personalInfo?.whatsappPhone || client.personalInfo?.phone;
+    if (!phone) {
+      console.warn(`⚠️ sendWelcomeAndInitContext: No phone for client ${clientId}`);
+      return;
+    }
+    try {
+      await whatsappService.sendMessage(phone, welcomeText);
+      const context = await this.getOrCreateContext(clientId, channel);
+      context.addMessage('assistant', welcomeText);
+      await context.save();
+      console.log(`✅ Welcome sent and context initialized for client ${clientId}`);
+    } catch (error) {
+      console.error('Error in sendWelcomeAndInitContext:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get or create conversation context
    */
   async getOrCreateContext(clientId, channel) {

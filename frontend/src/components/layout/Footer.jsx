@@ -64,7 +64,7 @@ function Footer() {
       <Container maxWidth="lg">
         <Grid container spacing={4}>
           {/* עמודה 1 - אודות */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Box
               component="img"
               src={LOGO_SRC}
@@ -82,7 +82,7 @@ function Footer() {
           </Grid>
 
           {/* עמודה 2 - קישורים */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="h6" fontWeight={600} gutterBottom color="primary.main">
               קישורים מהירים
             </Typography>
@@ -175,7 +175,7 @@ function Footer() {
           </Grid>
 
           {/* עמודה 3 - יצירת קשר */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="h6" fontWeight={600} gutterBottom color="primary.main">
               יצירת קשר
             </Typography>
@@ -269,7 +269,7 @@ function Footer() {
           </Grid>
 
           {/* עמודה 4 - רשתות חברתיות */}
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Typography variant="h6" fontWeight={600} gutterBottom color="primary.main">
               עקבו אחרינו
             </Typography>

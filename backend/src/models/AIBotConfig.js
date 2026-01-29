@@ -277,7 +277,7 @@ aiBotConfigSchema.index({ 'triggers.event': 1 });
 /**
  * Get active functions for OpenAI
  */
-aiBotConfigSchema.methods.getActiveFunctions = function() {
+aiBotConfigSchema.methods.getActiveFunctions = function () {
   return this.functions
     .filter(f => f.enabled)
     .map(f => ({
@@ -290,7 +290,7 @@ aiBotConfigSchema.methods.getActiveFunctions = function() {
 /**
  * Update statistics
  */
-aiBotConfigSchema.methods.updateStats = function(updates) {
+aiBotConfigSchema.methods.updateStats = function (updates) {
   Object.keys(updates).forEach(key => {
     if (this.stats.hasOwnProperty(key)) {
       if (typeof this.stats[key] === 'number' && typeof updates[key] === 'number') {
@@ -305,7 +305,7 @@ aiBotConfigSchema.methods.updateStats = function(updates) {
 /**
  * Check if bot should trigger for given event and conditions
  */
-aiBotConfigSchema.methods.shouldTrigger = function(event, context = {}) {
+aiBotConfigSchema.methods.shouldTrigger = function (event, context = {}) {
   if (!this.isActive) return false;
 
   const matchingTrigger = this.triggers.find(t =>
@@ -352,7 +352,7 @@ aiBotConfigSchema.methods.shouldTrigger = function(event, context = {}) {
 /**
  * Get function mapping by function name
  */
-aiBotConfigSchema.methods.getFunctionMapping = function(functionName) {
+aiBotConfigSchema.methods.getFunctionMapping = function (functionName) {
   const func = this.functions.find(f => f.name === functionName && f.enabled);
   return func ? func.actionMapping : null;
 };
@@ -360,7 +360,7 @@ aiBotConfigSchema.methods.getFunctionMapping = function(functionName) {
 /**
  * Check if handoff keyword detected
  */
-aiBotConfigSchema.methods.isHandoffKeyword = function(message) {
+aiBotConfigSchema.methods.isHandoffKeyword = function (message) {
   const messageText = message.toLowerCase().trim();
   return this.rules.handoffToHumanKeywords.some(keyword =>
     messageText.includes(keyword.toLowerCase())
@@ -370,7 +370,7 @@ aiBotConfigSchema.methods.isHandoffKeyword = function(message) {
 /**
  * Check if stop keyword detected
  */
-aiBotConfigSchema.methods.isStopKeyword = function(message) {
+aiBotConfigSchema.methods.isStopKeyword = function (message) {
   const messageText = message.toLowerCase().trim();
   return this.rules.autoStopKeywords.some(keyword =>
     messageText.includes(keyword.toLowerCase())
@@ -382,14 +382,14 @@ aiBotConfigSchema.methods.isStopKeyword = function(message) {
 /**
  * Get active bot configs
  */
-aiBotConfigSchema.statics.getActiveBots = async function() {
+aiBotConfigSchema.statics.getActiveBots = async function () {
   return this.find({ isActive: true }).sort({ createdAt: -1 });
 };
 
 /**
  * Get bot config for specific event
  */
-aiBotConfigSchema.statics.getBotForEvent = async function(event, context = {}) {
+aiBotConfigSchema.statics.getBotForEvent = async function (event, context = {}) {
   const bots = await this.find({ isActive: true });
 
   for (const bot of bots) {
@@ -404,14 +404,14 @@ aiBotConfigSchema.statics.getBotForEvent = async function(event, context = {}) {
 /**
  * Get default bot config
  */
-aiBotConfigSchema.statics.getDefaultBot = async function() {
+aiBotConfigSchema.statics.getDefaultBot = async function () {
   return this.findOne({ name: 'Default Bot', isActive: true });
 };
 
 /**
  * Create default bot if doesn't exist
  */
-aiBotConfigSchema.statics.ensureDefaultBot = async function() {
+aiBotConfigSchema.statics.ensureDefaultBot = async function () {
   const existingBot = await this.findOne({ name: 'Default Bot' });
 
   if (!existingBot) {
@@ -511,6 +511,13 @@ aiBotConfigSchema.statics.ensureDefaultBot = async function() {
         {
           event: 'new_message',
           conditions: {},
+          enabled: true
+        },
+        {
+          event: 'new_lead',
+          conditions: {
+            leadSources: ['whatsapp', 'website_form', 'landing_page_campaign']
+          },
           enabled: true
         }
       ]
