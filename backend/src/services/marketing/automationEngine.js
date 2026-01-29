@@ -3,6 +3,7 @@ const MarketingCampaign = require('../../models/marketing/MarketingCampaign');
 const TaskManager = require('../../models/TaskManager');
 const Notification = require('../../models/Notification');
 const whatsappService = require('../whatsappService');
+const emailService = require('../emailService');
 const cron = require('node-cron');
 
 // Store for active cron jobs
@@ -148,18 +149,26 @@ async function executeAction(action, automation, testMode) {
           console.log('    [TEST] Would send email:', action.config);
           return { success: true, message: 'Email sent (test mode)' };
         }
-        // TODO: Implement actual email sending
-        console.log('    Sending email:', action.config?.to);
-        return { success: true, message: 'Email sent' };
+        if (action.config && action.config.to && action.config.subject && action.config.body) {
+          console.log(`📧 Sending email to ${action.config.to}: "${action.config.subject}"`);
+          const result = await emailService.sendEmail(
+            action.config.to,
+            action.config.subject,
+            action.config.body,
+            action.config.text || ''
+          );
+          if (result.success) {
+            return { success: true, message: 'Email sent', data: { messageId: result.messageId } };
+          } else {
+            return { success: false, error: result.error };
+          }
+        }
+        return { success: false, error: 'Missing email configuration (to, subject, body)' };
         
       case 'send_sms':
-        if (testMode) {
-          console.log('    [TEST] Would send SMS:', action.config);
-          return { success: true, message: 'SMS sent (test mode)' };
-        }
-        // TODO: Implement actual SMS sending
-        console.log('    Sending SMS:', action.config?.to);
-        return { success: true, message: 'SMS sent' };
+        // SMS removed - use WhatsApp or Email instead
+        console.log('⚠️ SMS action is deprecated. Use send_whatsapp or send_email instead');
+        return { success: false, error: 'SMS action is deprecated. Use send_whatsapp or send_email instead' };
         
       case 'send_whatsapp':
         if (action.config && action.config.phone && action.config.message) {
@@ -167,10 +176,14 @@ async function executeAction(action, automation, testMode) {
             console.log('    [TEST] Would send WhatsApp:', action.config);
             return { success: true, message: 'WhatsApp sent (test mode)' };
           }
-          // TODO: Implement actual WhatsApp sending
-          // await whatsappService.sendMessage(action.config.phone, action.config.message);
-          console.log(`📱 Sending WhatsApp to ${action.config.phone}: ${action.config.message}`);
-          return { success: true, message: 'WhatsApp sent', data: {} };
+          try {
+            console.log(`📱 Sending WhatsApp to ${action.config.phone}: ${action.config.message}`);
+            const result = await whatsappService.sendMessage(action.config.phone, action.config.message);
+            return { success: true, message: 'WhatsApp sent', data: { messageId: result.messageId } };
+          } catch (error) {
+            console.error('WhatsApp send error:', error.message);
+            return { success: false, error: error.message };
+          }
         }
         return { success: false, error: 'Missing phone or message' };
         

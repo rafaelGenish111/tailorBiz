@@ -33,6 +33,7 @@
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
     "node-cron": "^3.0.3",
+    "nodemailer": "^7.0.13",
     "parse": "^8.0.0",
     "parse-server": "^9.1.1",
     "pdfkit": "^0.17.2",

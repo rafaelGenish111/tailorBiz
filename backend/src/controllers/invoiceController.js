@@ -1,5 +1,6 @@
 const Invoice = require('../models/Invoice');
 const Client = require('../models/Client');
+const emailService = require('../services/emailService');
 const mongoose = require('mongoose');
 
 // Helper function to check if string is valid ObjectId
@@ -312,7 +313,37 @@ exports.sendInvoice = async (req, res) => {
 
     await invoice.save();
 
-    // TODO: כאן תהיה שליחה בפועל של החשבונית באימייל/WhatsApp
+    // שליחת החשבונית במייל
+    const emailTo = sentTo || invoice.clientDetails.email;
+
+    if (emailTo) {
+      try {
+        const dueDate = invoice.dueDate
+          ? new Date(invoice.dueDate).toLocaleDateString('he-IL')
+          : 'לא צוין';
+
+        const invoiceData = {
+          invoiceNumber: invoice.invoiceNumber,
+          clientName: invoice.clientDetails.fullName || invoice.clientDetails.businessName,
+          amount: invoice.total,
+          dueDate: dueDate,
+          pdfUrl: invoice.pdfUrl || `${process.env.CLIENT_URL}/invoices/${invoice._id}/pdf`
+        };
+
+        const emailResult = await emailService.sendInvoice(emailTo, invoiceData);
+
+        if (emailResult.success) {
+          console.log(`✅ Invoice ${invoice.invoiceNumber} sent successfully to ${emailTo}`);
+        } else {
+          console.warn(`⚠️ Failed to send invoice email to ${emailTo}:`, emailResult.error);
+        }
+      } catch (emailError) {
+        console.error('Error sending invoice email:', emailError);
+        // לא נכשיל את כל הפעולה אם המייל נכשל
+      }
+    } else {
+      console.warn('⚠️ No email address provided for invoice sending');
+    }
 
     res.json({
       success: true,
