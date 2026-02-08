@@ -1,0 +1,1 @@
+ALWAYS use Git Worktrees when executing multiple tasks in Agent Mode to prevent file overwrites.

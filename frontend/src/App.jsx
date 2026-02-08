@@ -28,6 +28,13 @@ import RequireAdminAuth from './admin/components/auth/RequireAdminAuth';
 import SalesOnboarding from './pages/SalesOnboarding';
 import PartnershipPitch from './pages/PartnershipPitch';
 import LandingPage from './components/LandingPage';
+import ProductsPage from './pages/products/ProductsPage';
+import ProductLayout from './pages/products/ProductLayout';
+import ProductOverview from './pages/products/ProductOverview';
+import ProductTechnologies from './pages/products/ProductTechnologies';
+import ProductDemo from './pages/products/ProductDemo';
+import ProductFeatures from './pages/products/ProductFeatures';
+import ProductContact from './pages/products/ProductContact';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,6 +82,23 @@ function App() {
           }
         />
 
+        {/* Product mini-sites (standalone, no main Layout) */}
+        <Route
+          path="/products/:productId"
+          element={
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <ProductLayout />
+            </ThemeProvider>
+          }
+        >
+          <Route index element={<ProductOverview />} />
+          <Route path="technologies" element={<ProductTechnologies />} />
+          <Route path="demo" element={<ProductDemo />} />
+          <Route path="features" element={<ProductFeatures />} />
+          <Route path="contact" element={<ProductContact />} />
+        </Route>
+
         {/* Public Routes */}
         <Route
           path="/*"
@@ -87,6 +111,7 @@ function App() {
                   <Route path="/about" element={<About />} />
                   <Route path="/articles" element={<Articles />} />
                   <Route path="/articles/:slug" element={<ArticlePage />} />
+                  <Route path="/products" element={<ProductsPage />} />
                   <Route path="/features" element={<Features />} />
                   <Route path="/clients" element={<OurClients />} />
                   <Route path="/pricing" element={<Pricing />} />

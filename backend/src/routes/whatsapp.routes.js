@@ -21,6 +21,10 @@ router.get('/conversations/:clientId', whatsappController.getClientConversation)
 
 // סטטוס חיבור
 router.get('/status', whatsappController.getConnectionStatus);
+// QR code (לצפייה בדפדפן; נדרש אימות)
+router.get('/qr', whatsappController.getQrCode);
+// QR כתמונה (SVG) לסריקה נוחה בדפדפן; נדרש אימות
+router.get('/qr.svg', whatsappController.getQrSvg);
 
 module.exports = router;
 

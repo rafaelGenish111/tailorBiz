@@ -37,6 +37,7 @@
     "parse": "^8.0.0",
     "parse-server": "^9.1.1",
     "pdfkit": "^0.17.2",
+    "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0",
     "streamifier": "^0.1.1",
     "whatsapp-web.js": "^1.23.1-alpha.0"

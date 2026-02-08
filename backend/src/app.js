@@ -283,6 +283,57 @@ async function createApp() {
   if (process.env.NODE_ENV === 'development') {
     app.use('/api/test', testRoutes);
 
+    // --- WhatsApp debug endpoints (DEV only) ---
+    // מאפשר לראות סטטוס/QR בדפדפן בלי התחברות (נוח לפיתוח מקומי בלבד)
+    app.get('/api/dev/whatsapp/status', async (req, res) => {
+      try {
+        const whatsappService = require('./services/whatsappService');
+        const status = await whatsappService.getStatus();
+        return res.json({ success: true, data: status });
+      } catch (error) {
+        return res.status(500).json({ success: false, message: 'שגיאה בבדיקת סטטוס WhatsApp', error: error.message });
+      }
+    });
+
+    app.get('/api/dev/whatsapp/qr.svg', async (req, res) => {
+      try {
+        const whatsappService = require('./services/whatsappService');
+        const QRCode = require('qrcode');
+        const qr = await whatsappService.getQr();
+        if (qr.connected) return res.status(204).send();
+        if (!qr.qr) {
+          return res.status(404).json({ success: false, message: 'אין QR זמין כרגע' });
+        }
+        const svg = await QRCode.toString(qr.qr, { type: 'svg', margin: 1, scale: 6 });
+        res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+        return res.status(200).send(svg);
+      } catch (error) {
+        return res.status(500).json({ success: false, message: 'שגיאה ביצירת QR (SVG)', error: error.message });
+      }
+    });
+
+    // Force restart WhatsApp service (DEV only)
+    app.post('/api/dev/whatsapp/restart', async (req, res) => {
+      try {
+        const whatsappService = require('./services/whatsappService');
+        const result = await whatsappService.restart({ resetSession: false });
+        return res.json({ success: true, data: result });
+      } catch (error) {
+        return res.status(500).json({ success: false, message: 'שגיאה ב-restart ל-WhatsApp', error: error.message });
+      }
+    });
+
+    // Force reset session + restart (DEV only) - ייצור QR חדש
+    app.post('/api/dev/whatsapp/reset', async (req, res) => {
+      try {
+        const whatsappService = require('./services/whatsappService');
+        const result = await whatsappService.restart({ resetSession: true });
+        return res.json({ success: true, data: result });
+      } catch (error) {
+        return res.status(500).json({ success: false, message: 'שגיאה ב-reset ל-WhatsApp', error: error.message });
+      }
+    });
+
     app.get('/api/automation/status', async (req, res) => {
       try {
         const reminderService = require('./services/reminderService');

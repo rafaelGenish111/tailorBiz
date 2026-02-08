@@ -2,6 +2,7 @@ const Client = require('../models/Client');
 const whatsappService = require('../services/whatsappService');
 const leadNurturingService = require('../services/leadServiceV2');
 const mongoose = require('mongoose');
+const QRCode = require('qrcode');
 
 // Helper function to check if string is valid ObjectId
 const isValidObjectId = (id) => {
@@ -331,3 +332,54 @@ exports.getConnectionStatus = async (req, res) => {
   }
 };
 
+// QR code (לצפייה בדפדפן; נדרש אימות)
+exports.getQrCode = async (req, res) => {
+  try {
+    const qr = await whatsappService.getQr();
+    // אם כבר מחובר – אין QR להציג
+    if (qr.connected) {
+      return res.json({ success: true, data: { connected: true } });
+    }
+    if (!qr.qr) {
+      return res.status(404).json({
+        success: false,
+        message: 'אין QR זמין כרגע. ייתכן שהשירות עדיין מאתחל, או שכבר מחובר.'
+      });
+    }
+    return res.json({ success: true, data: qr });
+  } catch (error) {
+    console.error('Error in getQrCode:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'שגיאה בקבלת QR',
+      error: error.message
+    });
+  }
+};
+
+// QR כתמונה (SVG) לסריקה נוחה בדפדפן; נדרש אימות
+exports.getQrSvg = async (req, res) => {
+  try {
+    const qr = await whatsappService.getQr();
+    if (qr.connected) {
+      return res.status(204).send();
+    }
+    if (!qr.qr) {
+      return res.status(404).json({
+        success: false,
+        message: 'אין QR זמין כרגע. ייתכן שהשירות עדיין מאתחל, או שכבר מחובר.'
+      });
+    }
+
+    const svg = await QRCode.toString(qr.qr, { type: 'svg', margin: 1, scale: 6 });
+    res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+    return res.status(200).send(svg);
+  } catch (error) {
+    console.error('Error in getQrSvg:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'שגיאה ביצירת QR (SVG)',
+      error: error.message
+    });
+  }
+};

@@ -1,16 +1,42 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const { templates } = require('../utils/messageTemplates');
+const fs = require('fs');
+const path = require('path');
+const axios = require('axios');
 
 class WhatsAppService {
   constructor() {
     this.isConnected = false;
+    this.isAuthenticated = false;
     this.client = null;
     this.readyPromise = null;
+    this.initializing = false;
+    this.lastQr = null;
+    this.lastQrAt = null;
+
+    // Provider selection:
+    // - cloud: WhatsApp Cloud API (no QR)
+    // - webjs: whatsapp-web.js (requires QR)
+    const cloudConfigured = Boolean(process.env.WHATSAPP_CLOUD_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID);
+    this.provider = process.env.WHATSAPP_PROVIDER || (cloudConfigured ? 'cloud' : 'webjs');
   }
 
   // אתחול השירות
   initialize(retryCount = 0) {
+    // Cloud API לא דורש אתחול/QR
+    if (this.provider === 'cloud') {
+      this.isConnected = Boolean(process.env.WHATSAPP_CLOUD_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID);
+      this.isAuthenticated = this.isConnected;
+      this.initializing = false;
+      if (!this.isConnected) {
+        console.warn('⚠️ WhatsApp Cloud API selected but missing env vars (WHATSAPP_CLOUD_TOKEN / WHATSAPP_PHONE_NUMBER_ID)');
+      } else {
+        console.log('✅ WhatsApp Cloud API enabled (no QR required)');
+      }
+      return;
+    }
+
     const MAX_RETRIES = 5;
     const RETRY_DELAY = 30000; // 30 seconds
 
@@ -19,10 +45,10 @@ class WhatsAppService {
       return;
     }
 
-    // אם יש client קיים אבל לא מחובר, נסה לאתחל מחדש
-    if (this.client && !this.isConnected && retryCount === 0) {
-      console.log('🔄 WhatsApp client exists but not connected, reinitializing...');
-      this.client = null;
+    // מניעת כפל אתחול (המערכת קוראת initialize גם מ-server.js וגם מטעינת המודול)
+    if (this.initializing) {
+      console.log('⏳ WhatsApp Service is already initializing - skipping');
+      return;
     }
 
     if (this.client) {
@@ -31,6 +57,7 @@ class WhatsAppService {
     }
 
     console.log('🔄 Initializing WhatsApp Service...');
+    this.initializing = true;
 
     try {
       this.client = new Client({
@@ -69,6 +96,11 @@ class WhatsAppService {
         this.client.on('ready', () => {
           if (timeoutHandle) clearTimeout(timeoutHandle);
           this.isConnected = true;
+          this.isAuthenticated = true;
+          // אחרי חיבור - אין צורך ב-QR
+          this.lastQr = null;
+          this.lastQrAt = null;
+          this.initializing = false;
           console.log('✅ WhatsApp Service is ready!');
           resolve();
         });
@@ -76,12 +108,16 @@ class WhatsAppService {
         this.client.on('auth_failure', (msg) => {
           if (timeoutHandle) clearTimeout(timeoutHandle);
           console.error('❌ WhatsApp auth failure:', msg);
+          this.isAuthenticated = false;
+          this.isConnected = false;
+          this.initializing = false;
           // לא נדחה את ה-Promise כדי לא לקרוס את השרת
           // השרת ימשיך לעבוד גם בלי WhatsApp
         });
       }).catch(err => {
         // Catch any errors in the promise to prevent uncaught exceptions
         console.error('❌ WhatsApp readyPromise error (non-fatal):', err.message);
+        this.initializing = false;
         return null; // Return null so the promise resolves instead of rejecting
       });
 
@@ -92,11 +128,12 @@ class WhatsAppService {
         })
         .catch(err => {
           console.error('❌ WhatsApp Service initialization error:', err.message);
-          
+          this.initializing = false;
+
           // אם זו שגיאת אינטרנט, ננסה שוב אחרי זמן
-          if (err.message.includes('ERR_INTERNET_DISCONNECTED') || 
-              err.message.includes('ECONNREFUSED') ||
-              err.message.includes('ENOTFOUND')) {
+          if (err.message.includes('ERR_INTERNET_DISCONNECTED') ||
+            err.message.includes('ECONNREFUSED') ||
+            err.message.includes('ENOTFOUND')) {
             if (retryCount < MAX_RETRIES) {
               console.log(`⏳ Retrying WhatsApp initialization in ${RETRY_DELAY / 1000} seconds... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
               setTimeout(() => {
@@ -119,6 +156,7 @@ class WhatsAppService {
         });
     } catch (err) {
       console.error('❌ Error creating WhatsApp client:', err.message);
+      this.initializing = false;
       if (retryCount < MAX_RETRIES) {
         console.log(`⏳ Retrying WhatsApp initialization in ${RETRY_DELAY / 1000} seconds... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
         setTimeout(() => {
@@ -136,6 +174,10 @@ class WhatsAppService {
     this.client.on('qr', (qr) => {
       console.log('📱 WhatsApp QR Code generated - Please scan with your phone!');
       console.log('📱 QR Code (scan this with WhatsApp on your phone):');
+      // שמירה כדי לאפשר צפייה דרך API (מוגן)
+      this.lastQr = qr;
+      this.lastQrAt = new Date();
+      this.isAuthenticated = false;
       // בסביבת שרת אולי נרצה לשמור את ה-QR כתמונה או לשלוח אותו למקום אחר
       // כרגע נדפיס ללוג למקרה הצורך (למשל בהרצה ידנית)
       qrcode.generate(qr, { small: true });
@@ -143,11 +185,14 @@ class WhatsAppService {
 
     this.client.on('authenticated', () => {
       console.log('🔐 WhatsApp Authenticated successfully');
+      this.isAuthenticated = true;
     });
 
     this.client.on('auth_failure', (msg) => {
       console.error('❌ WhatsApp Authentication failed:', msg);
       this.isConnected = false;
+      this.isAuthenticated = false;
+      this.initializing = false;
       // נדחה את ה-readyPromise כדי שהקוד לא יחכה לנצח
       if (this.readyPromise) {
         console.error('❌ WhatsApp auth failure - rejecting readyPromise');
@@ -157,8 +202,10 @@ class WhatsAppService {
     this.client.on('disconnected', (reason) => {
       console.log('❌ WhatsApp Client was logged out:', reason);
       this.isConnected = false;
+      this.isAuthenticated = false;
+      this.initializing = false;
       this.client = null;
-      
+
       // ניסיון חיבור מחדש אוטומטי אחרי 10 שניות
       console.log('⏳ Attempting to reconnect WhatsApp in 10 seconds...');
       setTimeout(() => {
@@ -210,6 +257,38 @@ class WhatsAppService {
   // שליחת הודעה פשוטה
   async sendMessage(to, message) {
     try {
+      // Cloud API path (no QR required)
+      if (this.provider === 'cloud') {
+        const token = process.env.WHATSAPP_CLOUD_TOKEN;
+        const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+        if (!token || !phoneNumberId) {
+          throw new Error('WhatsApp Cloud API is not configured (missing WHATSAPP_CLOUD_TOKEN / WHATSAPP_PHONE_NUMBER_ID)');
+        }
+
+        // normalize to digits and convert IL local to 972 format
+        const clean = String(to || '').replace(/\D/g, '');
+        if (!clean) throw new Error('Missing destination phone number');
+        const e164 = clean.startsWith('972') ? clean : (clean.startsWith('0') ? `972${clean.slice(1)}` : `972${clean}`);
+
+        const url = `https://graph.facebook.com/v19.0/${phoneNumberId}/messages`;
+        const payload = {
+          messaging_product: 'whatsapp',
+          to: e164,
+          type: 'text',
+          text: { body: message }
+        };
+
+        const resp = await axios.post(url, payload, {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 15000
+        });
+
+        return {
+          success: true,
+          messageId: resp.data?.messages?.[0]?.id
+        };
+      }
+
       if (!this.isConnected) {
         // נסה לחכות לחיבור אם אנחנו בתהליך אתחול
         if (this.readyPromise) {
@@ -380,10 +459,85 @@ class WhatsAppService {
 
   // בדיקת סטטוס חיבור
   async getStatus() {
+    if (this.provider === 'cloud') {
+      const cloudConfigured = Boolean(process.env.WHATSAPP_CLOUD_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID);
+      return {
+        provider: 'cloud',
+        connected: cloudConfigured,
+        authenticated: cloudConfigured,
+        needsQr: false,
+        hasQr: false,
+        lastQrAt: null,
+        initializing: false
+      };
+    }
+
+    return {
+      provider: 'webjs',
+      connected: this.isConnected,
+      authenticated: this.isAuthenticated,
+      phoneNumber: this.client?.info?.wid?.user,
+      // אם לא מחובר - כנראה שנדרש QR; האם יש QR זמין כרגע?
+      needsQr: !this.isConnected,
+      hasQr: Boolean(this.lastQr),
+      lastQrAt: this.lastQrAt,
+      initializing: this.initializing
+    };
+  }
+
+  async getQr({ waitMs = 8000 } = {}) {
+    // אם לא מחובר ועדיין אין client, ננסה לאתחל (DEV נוח)
+    if (!this.isConnected && !this.client) {
+      this.initialize(0);
+    }
+
+    // נחכה קצת להיווצרות QR (האירוע מגיע אסינכרונית)
+    const start = Date.now();
+    while (!this.isConnected && !this.lastQr && Date.now() - start < waitMs) {
+      await new Promise((r) => setTimeout(r, 250));
+    }
+
     return {
       connected: this.isConnected,
-      phoneNumber: this.client?.info?.wid?.user
+      qr: this.lastQr,
+      lastQrAt: this.lastQrAt
     };
+  }
+
+  async restart({ resetSession = false } = {}) {
+    try {
+      // עצירה/ניקוי instance קיים
+      this.isConnected = false;
+      this.lastQr = null;
+      this.lastQrAt = null;
+      this.readyPromise = null;
+
+      if (this.client) {
+        try {
+          await this.client.destroy();
+        } catch (_) {
+          // ignore
+        }
+        this.client = null;
+      }
+
+      if (resetSession) {
+        const authDir = path.join(process.cwd(), '.wwebjs_auth');
+        try {
+          fs.rmSync(authDir, { recursive: true, force: true });
+          console.log('🧹 WhatsApp auth folder removed (.wwebjs_auth)');
+        } catch (e) {
+          console.warn('⚠️ Could not remove .wwebjs_auth:', e.message);
+        }
+      }
+
+      console.log(`🔄 Restarting WhatsApp Service (resetSession=${resetSession})...`);
+      this.initialize(0);
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Failed to restart WhatsApp Service:', error.message);
+      return { success: false, error: error.message };
+    }
   }
 
   get templates() {

@@ -1,0 +1,74 @@
+---
+description: ORCHESTRATOR: Core logic for managing Subagents, Skills, and PARALLEL execution.
+globs: *
+---
+# Role: Senior Technical Orchestrator (MERN Stack)
+
+You are the project lead. Your goal is to maximize efficiency by running independent tasks in parallel WITHOUT file conflicts.
+
+## ⚡ Concurrency & Worktree Protocol (CRITICAL)
+**You must enforce this protocol automatically without user prompting:**
+
+1.  **Analyze Dependencies**: When a request involves multiple domains (e.g., "Build the API and the UI"), check if they can run independently.
+    * *Dependent*: If B needs A (e.g., UI needs API response schema), run sequentially or mock A first.
+    * *Independent*: If tasks touch different files/folders (e.g., `server/` vs `client/`), run in PARALLEL.
+
+2.  **Mandatory Worktree Usage**:
+    * **NEVER** run parallel agents on the main branch.
+    * **ALWAYS** spawn a new Git Worktree for each sub-task.
+    * Naming convention: `agent/frontend-feature`, `agent/backend-logic`.
+    * Command pattern: "Create a worktree for [Task Name] and assign it to [Skill Name]."
+
+3.  **Merge Strategy**:
+    * Do not merge worktrees back to main until tests pass (invoke `qa_testing` skill).
+
+## Core Responsibilities
+1.  **State Management**: Read/Update `.cursor/scratchpad.md` at the start/end of every turn.
+2.  **Delegation**: Identify the correct SKILL for the job.
+    * Need Mongo Schema? -> Call `backend_mongo`.
+    * Need React Component? -> Call `ui_ux_design`.
+    * Need Security Scan? -> Call `security_cyber`.
+
+## 🤝 Delegation Strategy (Skill Mapping)
+You have access to specialized agents. DO NOT attempt to do their work. Delegate immediately:
+
+- **IF** task involves UI, React Components, CSS, or Client-side logic:
+  -> **INVOKE Skill**: `ui_ux_design` (Frontend Specialist).
+  -> **Instruction**: "Act as Frontend Specialist. [Task Description]. Use mocks if API is missing."
+
+- **IF** task involves Node.js, Express, MongoDB, or API Routes:
+  -> **INVOKE Skill**: `backend_mongo` (Backend Architect).
+
+- **IF** task is a purely visual design question (no code yet):
+  -> **INVOKE Skill**: `ui_ux_design`.
+
+  ## 🏗 Architecture Constraints (Strict Monorepo)
+**You must enforce a SINGLE repository structure. DO NOT create separate projects.**
+- **IF** tests fail, build crashes, or user explicitly asks to "fix/debug":
+  -> **INVOKE Skill**: `debug_expert`.
+  -> **Instruction**: "Act as Debug Expert. Analyze the failure output. Don't guess—instrument the code if needed."
+
+- **IF** the issue seems to be a logical "Race Condition" or performance issue:
+  -> **INVOKE Skill**: `debug_expert` with instructions to check async/await flows.
+
+### Allowed Folder Structure:
+/ (Root)
+├── /client          # React Frontend (Vite)
+├── /server          # Node.js/Express Backend
+├── /shared          # Shared types/utils (optional)
+├── .cursor/         # Agent Rules & Skills
+└── package.json     # Root scripts (optional)
+
+**Rules:**
+1.  **NEVER** initialize new git repositories inside subfolders.
+2.  **NEVER** create separate root folders for features (e.g., NO `/auth-service`, NO `/backend-app`).
+3.  **Authentication**: Auth is a MODULE inside `/server` and `/client`, NOT a separate project.
+4.  **Worktrees**: When using worktrees for parallelism, they must track branches of THIS main repository, not create new independent projects.
+
+## Tech Stack Constraints
+- Node.js / Express
+- React.js (Functional Components, Hooks)
+- MongoDB (Mongoose schemas)
+
+## Emergency Override
+If you detect a file conflict or a race condition, STOP immediately and ask the user for manual resolution.

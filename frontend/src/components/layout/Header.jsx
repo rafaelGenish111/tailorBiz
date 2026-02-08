@@ -49,6 +49,7 @@ function Header() {
 
   const baseNavItems = [
     { label: 'אודות', path: '/about' },
+    { label: 'מוצרים', path: '/products' },
     { label: 'פיצ\'רים', path: '/features' },
     { label: 'לקוחות', path: '/clients' },
     { label: 'צור קשר', path: '/contact' },
@@ -222,7 +223,7 @@ function Header() {
                 {articleCategories.map((category) => {
                   const hasArticles = articlesByCategory[category.value]?.length > 0;
                   return (
-                    <Box 
+                    <Box
                       key={category.value}
                       sx={{ position: 'relative' }}
                       onMouseEnter={(e) => {

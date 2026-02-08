@@ -99,6 +99,18 @@ function Footer() {
               >
                 אודות
               </Link>
+              <Link
+                component={RouterLink}
+                to="/products"
+                color="text.primary"
+                underline="hover"
+                sx={{
+                  '&:hover': { color: 'secondary.main' },
+                  transition: 'color 0.3s',
+                }}
+              >
+                מוצרים
+              </Link>
               {/* <Link
                 component={RouterLink}
                 to="/pricing"
