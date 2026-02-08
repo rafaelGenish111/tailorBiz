@@ -59,6 +59,9 @@ function Header() {
     if (item.path === '/clients') {
       return settings?.showClientsInNav === true;
     }
+    if (item.path === '/products') {
+      return settings?.showProductsInNav !== false;
+    }
     return true;
   });
 

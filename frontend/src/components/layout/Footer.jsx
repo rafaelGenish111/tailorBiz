@@ -36,6 +36,7 @@ function Footer() {
   }, []);
 
   const showClientsInNav = settings?.showClientsInNav === true;
+  const showProductsInNav = settings?.showProductsInNav !== false;
 
   const companyName = settings?.company?.name || COMPANY_INFO.name;
   const email = settings?.contact?.email || COMPANY_INFO.email;
@@ -99,18 +100,20 @@ function Footer() {
               >
                 אודות
               </Link>
-              <Link
-                component={RouterLink}
-                to="/products"
-                color="text.primary"
-                underline="hover"
-                sx={{
-                  '&:hover': { color: 'secondary.main' },
-                  transition: 'color 0.3s',
-                }}
-              >
-                מוצרים
-              </Link>
+              {showProductsInNav && (
+                <Link
+                  component={RouterLink}
+                  to="/products"
+                  color="text.primary"
+                  underline="hover"
+                  sx={{
+                    '&:hover': { color: 'secondary.main' },
+                    transition: 'color 0.3s',
+                  }}
+                >
+                  מוצרים
+                </Link>
+              )}
               {/* <Link
                 component={RouterLink}
                 to="/pricing"

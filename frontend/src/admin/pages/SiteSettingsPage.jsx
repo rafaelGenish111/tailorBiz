@@ -30,7 +30,8 @@ const empty = {
     support: { value: 24, suffix: '/7', label: 'תמיכה' }
   },
   showClientsInNav: false,
-  showClientsOnHome: false
+  showClientsOnHome: false,
+  showProductsInNav: true
 };
 
 function SiteSettingsPage() {
@@ -64,6 +65,7 @@ function SiteSettingsPage() {
           stats: { ...empty.stats, ...(data?.stats || {}) },
           showClientsInNav: data?.showClientsInNav !== undefined ? data.showClientsInNav : false,
           showClientsOnHome: data?.showClientsOnHome !== undefined ? data.showClientsOnHome : false,
+          showProductsInNav: data?.showProductsInNav !== undefined ? data.showProductsInNav : true,
         });
       } catch (e) {
         if (!mounted) return;
@@ -102,6 +104,7 @@ function SiteSettingsPage() {
         stats: form.stats,
         showClientsInNav: form.showClientsInNav,
         showClientsOnHome: form.showClientsOnHome,
+        showProductsInNav: form.showProductsInNav,
       });
       setSuccess('נשמר בהצלחה');
     } catch (e) {
@@ -309,6 +312,23 @@ function SiteSettingsPage() {
               הצגת תוכן
             </Typography>
             <Divider sx={{ mt: 1 }} />
+          </Grid>
+
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={form.showProductsInNav}
+                  onChange={(e) => setForm(prev => ({ ...prev, showProductsInNav: e.target.checked }))}
+                  disabled={loading}
+                  color="success"
+                />
+              }
+              label="הצגת דף מוצרים בהדר ובפוטר"
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, ml: 4 }}>
+              כאשר הטוגל פעיל, קישור "מוצרים" יוצג בתפריט הניווט העליון ובפוטר
+            </Typography>
           </Grid>
 
           <Grid item xs={12}>

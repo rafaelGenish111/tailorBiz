@@ -23,6 +23,7 @@ exports.getPublic = async (req, res) => {
         stats: doc.stats || {},
         showClientsInNav: doc.showClientsInNav !== undefined ? doc.showClientsInNav : false,
         showClientsOnHome: doc.showClientsOnHome !== undefined ? doc.showClientsOnHome : false,
+        showProductsInNav: doc.showProductsInNav !== undefined ? doc.showProductsInNav : true,
         updatedAt: doc.updatedAt
       }
     });
@@ -44,7 +45,7 @@ exports.getAdmin = async (req, res) => {
 
 exports.updateAdmin = async (req, res) => {
   try {
-    const { company, contact, socials, hours, stats, showClientsInNav, showClientsOnHome } = req.body || {};
+    const { company, contact, socials, hours, stats, showClientsInNav, showClientsOnHome, showProductsInNav } = req.body || {};
 
     const updateData = {};
     if (company) updateData.company = company;
@@ -54,6 +55,7 @@ exports.updateAdmin = async (req, res) => {
     if (stats) updateData.stats = stats;
     if (showClientsInNav !== undefined) updateData.showClientsInNav = showClientsInNav;
     if (showClientsOnHome !== undefined) updateData.showClientsOnHome = showClientsOnHome;
+    if (showProductsInNav !== undefined) updateData.showProductsInNav = showProductsInNav;
 
     const updated = await SiteSettings.findOneAndUpdate(
       { key: DEFAULT_KEY },

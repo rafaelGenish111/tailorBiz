@@ -48,7 +48,8 @@ const SiteSettingsSchema = new mongoose.Schema(
     },
 
     showClientsInNav: { type: Boolean, default: false },
-    showClientsOnHome: { type: Boolean, default: false }
+    showClientsOnHome: { type: Boolean, default: false },
+    showProductsInNav: { type: Boolean, default: true }
   },
   { timestamps: true }
 );
