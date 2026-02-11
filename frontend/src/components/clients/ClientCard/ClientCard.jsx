@@ -28,16 +28,15 @@ import {
   Star as StarIcon,
   TrendingUp as TrendingUpIcon
 } from '@mui/icons-material';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useClient, useUpdateClient } from '../../../admin/hooks/useClients';
 import { getCurrentUserFromQueryData, useCurrentUserQuery } from '../../../admin/hooks/useCurrentUser';
 import { useAdminUsers } from '../../../admin/hooks/useAdminUsers';
 
 import PersonalInfoTab from './tabs/PersonalInfoTab';
 import BusinessInfoTab from './tabs/BusinessInfoTab';
-import AssessmentTab from './tabs/AssessmentTab';
 import InteractionsTab from './tabs/InteractionsTab';
-import OrdersTab from './tabs/OrdersTab';
+import ProjectsTab from './tabs/ProjectsTab';
 import PaymentsTab from './tabs/PaymentsTab';
 import InvoicesTab from './tabs/InvoicesTab';
 import ClientTimer from '../../timer/ClientTimer';
@@ -51,7 +50,10 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 // תוכן ראשי - מופרד כדי לשמור על Rules of Hooks (אין early returns לפני hooks)
 function ClientCardContent({ client, id }) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('personal');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab');
+  const editQuoteId = searchParams.get('editQuote');
+  const [activeTab, setActiveTab] = useState(tabFromUrl || 'personal');
   const { data: meData } = useCurrentUserQuery();
   const me = getCurrentUserFromQueryData(meData);
   const canAssignLead = me?.role === 'admin' || me?.role === 'super_admin';
@@ -65,6 +67,10 @@ function ClientCardContent({ client, id }) {
     const currentAssigned = client?.metadata?.assignedTo?._id || client?.metadata?.assignedTo || '';
     setAssignedTo(currentAssigned ? String(currentAssigned) : '');
   }, [client?._id, client?.metadata?.assignedTo]);
+
+  useEffect(() => {
+    if (tabFromUrl) setActiveTab(tabFromUrl);
+  }, [tabFromUrl]);
 
   const isLead = client.status && client.status !== 'won';
 
@@ -379,9 +385,8 @@ function ClientCardContent({ client, id }) {
         >
           <Tab label="פרטים אישיים" value="personal" />
           <Tab label="פרטי העסק" value="business" />
-          <Tab label="שאלון אפיון" value="assessment" />
+          <Tab label="פרויקטים" value="projects" />
           <Tab label="אינטראקציות" value="interactions" />
-          <Tab label="הזמנות" value="orders" />
           <Tab label="תשלומים" value="payments" />
           <Tab label="חשבוניות" value="invoices" />
           <Tab label="זמנים" value="time" icon={<TimerIcon />} iconPosition="start" />
@@ -394,14 +399,24 @@ function ClientCardContent({ client, id }) {
         <Box sx={{ p: 3 }}>
           {activeTab === 'personal' && <PersonalInfoTab client={client} />}
           {activeTab === 'business' && <BusinessInfoTab client={client} />}
-          {activeTab === 'assessment' && <AssessmentTab client={client} />}
+          {activeTab === 'projects' && <ProjectsTab clientId={id} />}
           {activeTab === 'interactions' && <InteractionsTab clientId={id} />}
-          {activeTab === 'orders' && <OrdersTab clientId={id} />}
           {activeTab === 'payments' && <PaymentsTab client={client} />}
           {activeTab === 'invoices' && <InvoicesTab clientId={id} />}
           {activeTab === 'time' && <TimeEntriesTab clientId={id} />}
           {activeTab === 'documents' && <DocumentsTab clientId={id} />}
-          {activeTab === 'quotes' && <QuotesTab clientId={id} clientName={client.personalInfo?.fullName} />}
+          {activeTab === 'quotes' && (
+            <QuotesTab
+              clientId={id}
+              clientName={client.personalInfo?.fullName}
+              initialEditQuoteId={editQuoteId}
+              onClearEditQuote={() => {
+                const next = new URLSearchParams(searchParams);
+                next.delete('editQuote');
+                setSearchParams(next, { replace: true });
+              }}
+            />
+          )}
         </Box>
       </Card>
     </Box>

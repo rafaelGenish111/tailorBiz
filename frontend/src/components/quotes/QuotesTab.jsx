@@ -1,5 +1,5 @@
 // frontend/src/components/quotes/QuotesTab.jsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -103,7 +103,7 @@ const openPdf = (url) => {
   }
 };
 
-const QuotesTab = ({ clientId, clientName }) => {
+const QuotesTab = ({ clientId, clientName, initialEditQuoteId, onClearEditQuote }) => {
   const queryClient = useQueryClient();
   const [editorOpen, setEditorOpen] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState(null);
@@ -127,6 +127,20 @@ const QuotesTab = ({ clientId, clientName }) => {
     queryKey: ['clientQuotes', clientId],
     queryFn: () => api.get(`/quotes/client/${clientId}`).then(res => res.data)
   });
+
+  const quotes = quotesData?.data?.quotes || [];
+
+  useEffect(() => {
+    if (initialEditQuoteId && quotes.length > 0) {
+      const quote = quotes.find((q) => q._id === initialEditQuoteId);
+      if (quote) {
+        setSelectedQuote(quote);
+        setEditorOpen(true);
+        onClearEditQuote?.();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialEditQuoteId, quotes]);
 
   const deleteMutation = useMutation({
     mutationFn: (quoteId) => api.delete(`/quotes/${quoteId}`),
@@ -205,8 +219,6 @@ const QuotesTab = ({ clientId, clientName }) => {
     }
     handleMenuClose();
   };
-
-  const quotes = quotesData?.data?.quotes || [];
 
   // ההצעה העיקרית שתוצג – ההצעה האחרונה (לפי createdAt מהשרת)
   const primaryQuote = quotes[0] || null;

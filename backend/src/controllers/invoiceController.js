@@ -12,9 +12,10 @@ const isValidObjectId = (id) => {
 // קבלת כל החשבוניות
 exports.getAllInvoices = async (req, res) => {
   try {
-    const { 
-      status, 
+    const {
+      status,
       clientId,
+      projectId,
       search,
       sortBy = '-metadata.createdAt',
       page = 1,
@@ -29,6 +30,10 @@ exports.getAllInvoices = async (req, res) => {
 
     if (clientId) {
       query.clientId = clientId;
+    }
+
+    if (projectId) {
+      query.projectId = projectId;
     }
 
     if (search) {
@@ -411,10 +416,10 @@ exports.generatePDF = async (req, res) => {
 
     // כאן תוכל להוסיף לוגיקה ליצירת PDF
     // לדוגמה באמצעות ספריית PDFKit או puppeteer
-    
+
     // לצורך הדוגמה, נניח שיש לנו URL
     const pdfUrl = `/invoices/${invoice.invoiceNumber}.pdf`;
-    
+
     invoice.pdfUrl = pdfUrl;
     invoice.pdfGeneratedAt = new Date();
     await invoice.save();

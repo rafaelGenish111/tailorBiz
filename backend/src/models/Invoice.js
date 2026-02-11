@@ -6,27 +6,35 @@ const InvoiceSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  
+
   // קישור ללקוח
   clientId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Client',
     required: true
   },
-  
+
+  // קישור לפרויקט (אופציונלי - Project-centric)
+  projectId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Project',
+    required: false,
+    default: null
+  },
+
   // קישור להזמנה (אופציונלי)
   orderId: String,
-  
+
   // פרטי החשבונית
-  issueDate: { 
-    type: Date, 
-    default: Date.now 
+  issueDate: {
+    type: Date,
+    default: Date.now
   },
-  dueDate: { 
-    type: Date, 
-    required: true 
+  dueDate: {
+    type: Date,
+    required: true
   },
-  
+
   // פרטי העסק שלנו (לצורך החשבונית)
   businessDetails: {
     name: { type: String, default: 'BizFlow' },
@@ -36,7 +44,7 @@ const InvoiceSchema = new mongoose.Schema({
     taxId: String, // ח.ע או ע.מ
     businessNumber: String // מספר עוסק מורשה
   },
-  
+
   // פרטי הלקוח (עותק סטטי לחשבונית)
   clientDetails: {
     name: String,
@@ -46,20 +54,20 @@ const InvoiceSchema = new mongoose.Schema({
     email: String,
     taxId: String
   },
-  
+
   // פריטים בחשבונית
   items: [{
-    description: { 
-      type: String, 
-      required: true 
+    description: {
+      type: String,
+      required: true
     },
-    quantity: { 
-      type: Number, 
+    quantity: {
+      type: Number,
       default: 1,
       min: 0
     },
-    unitPrice: { 
-      type: Number, 
+    unitPrice: {
+      type: Number,
       required: true,
       min: 0
     },
@@ -69,37 +77,37 @@ const InvoiceSchema = new mongoose.Schema({
       min: 0,
       max: 100 // אחוז הנחה
     },
-    vatRate: { 
-      type: Number, 
-      default: 17 
+    vatRate: {
+      type: Number,
+      default: 17
     },
     subtotal: Number, // לפני מע"מ
     totalPrice: Number // אחרי מע"מ
   }],
-  
+
   // סכומים
   subtotal: Number, // סה"כ לפני מע"מ
   discountAmount: Number, // סכום הנחה כולל
   vatAmount: Number, // סכום מע"מ
-  totalAmount: { 
-    type: Number, 
-    required: true 
+  totalAmount: {
+    type: Number,
+    required: true
   },
-  
+
   // מטבע
   currency: {
     type: String,
     default: 'ILS',
     enum: ['ILS', 'USD', 'EUR']
   },
-  
+
   // סטטוס
   status: {
     type: String,
     enum: ['draft', 'sent', 'viewed', 'paid', 'partially_paid', 'overdue', 'cancelled'],
     default: 'draft'
   },
-  
+
   // תשלום
   paymentDetails: {
     method: {
@@ -120,7 +128,7 @@ const InvoiceSchema = new mongoose.Schema({
       accountNumber: String
     }
   },
-  
+
   // הערות ותנאים
   notes: String,
   paymentTerms: {
@@ -128,16 +136,16 @@ const InvoiceSchema = new mongoose.Schema({
     default: 'תשלום תוך 14 יום'
   },
   footerText: String,
-  
+
   // קבצים
   pdfUrl: String,
   pdfGeneratedAt: Date,
-  
+
   // שליחה
   sentDate: Date,
   sentTo: String, // אימייל שנשלח אליו
   viewedDate: Date,
-  
+
   // תזכורות
   reminders: [{
     sentDate: Date,
@@ -147,20 +155,20 @@ const InvoiceSchema = new mongoose.Schema({
     },
     notes: String
   }],
-  
+
   // מטאדאטה
   metadata: {
-    createdAt: { 
-      type: Date, 
-      default: Date.now 
+    createdAt: {
+      type: Date,
+      default: Date.now
     },
-    updatedAt: { 
-      type: Date, 
-      default: Date.now 
+    updatedAt: {
+      type: Date,
+      default: Date.now
     },
-    createdBy: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: 'User' 
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
     }
   }
 }, {
@@ -170,33 +178,34 @@ const InvoiceSchema = new mongoose.Schema({
 // אינדקסים
 // הערה: invoiceNumber כבר יש לו unique: true שיוצר אינדקס אוטומטית
 InvoiceSchema.index({ clientId: 1 });
+InvoiceSchema.index({ projectId: 1 });
 InvoiceSchema.index({ status: 1 });
 InvoiceSchema.index({ dueDate: 1 });
 InvoiceSchema.index({ 'metadata.createdAt': -1 });
 
 // חישוב אוטומטי של סכומים
-InvoiceSchema.methods.calculateTotals = function() {
+InvoiceSchema.methods.calculateTotals = function () {
   let subtotal = 0;
   let vatAmount = 0;
-  
+
   this.items.forEach(item => {
     const itemSubtotal = item.quantity * item.unitPrice;
     const discountAmount = itemSubtotal * (item.discount / 100);
     const afterDiscount = itemSubtotal - discountAmount;
-    
+
     item.subtotal = afterDiscount;
-    
+
     const itemVat = afterDiscount * (item.vatRate / 100);
     item.totalPrice = afterDiscount + itemVat;
-    
+
     subtotal += afterDiscount;
     vatAmount += itemVat;
   });
-  
+
   this.subtotal = subtotal;
   this.vatAmount = vatAmount;
   this.totalAmount = subtotal + vatAmount;
-  
+
   return {
     subtotal: this.subtotal,
     vatAmount: this.vatAmount,
@@ -205,32 +214,32 @@ InvoiceSchema.methods.calculateTotals = function() {
 };
 
 // יצירת מספר חשבונית אוטומטי
-InvoiceSchema.statics.generateInvoiceNumber = async function() {
+InvoiceSchema.statics.generateInvoiceNumber = async function () {
   const year = new Date().getFullYear();
   const prefix = `INV-${year}-`;
-  
+
   const lastInvoice = await this.findOne({
     invoiceNumber: new RegExp(`^${prefix}`)
   }).sort({ invoiceNumber: -1 });
-  
+
   let nextNumber = 1;
   if (lastInvoice) {
     const lastNumber = parseInt(lastInvoice.invoiceNumber.split('-').pop());
     nextNumber = lastNumber + 1;
   }
-  
+
   return `${prefix}${String(nextNumber).padStart(4, '0')}`;
 };
 
 // בדיקה אם חשבונית באיחור
-InvoiceSchema.virtual('isOverdue').get(function() {
-  return this.status !== 'paid' && 
-         this.status !== 'cancelled' && 
-         new Date() > new Date(this.dueDate);
+InvoiceSchema.virtual('isOverdue').get(function () {
+  return this.status !== 'paid' &&
+    this.status !== 'cancelled' &&
+    new Date() > new Date(this.dueDate);
 });
 
 // עדכון סטטוס אוטומטי
-InvoiceSchema.methods.updateStatus = function() {
+InvoiceSchema.methods.updateStatus = function () {
   if (this.paymentDetails.paidAmount >= this.totalAmount) {
     this.status = 'paid';
   } else if (this.paymentDetails.paidAmount > 0) {
@@ -241,7 +250,7 @@ InvoiceSchema.methods.updateStatus = function() {
 };
 
 // Middleware
-InvoiceSchema.pre('save', function(next) {
+InvoiceSchema.pre('save', function (next) {
   this.metadata.updatedAt = new Date();
   this.calculateTotals();
   this.updateStatus();

@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminLayout from '../components/layout/AdminLayout';
 import ClientsList from '../components/content/clients/ClientsList';
 import ClientCard from '../../components/clients/ClientCard/ClientCard';
+import ProjectPage from './ProjectPage';
 import Dashboard from '../../pages/Dashboard';
 import SiteSettingsPage from './SiteSettingsPage';
 import EmployeesPage from './EmployeesPage';
@@ -20,6 +21,7 @@ function AdminPanel() {
           <Route path="customers" element={<RequireModuleAccess requiredModule="clients"><ClientsList viewMode="clients" /></RequireModuleAccess>} />
           <Route path="clients" element={<RequireModuleAccess requiredModule="clients"><ClientsList /></RequireModuleAccess>} />
           <Route path="clients/:id" element={<RequireModuleAccess anyOfModules={['clients', 'leads']}><ClientCard /></RequireModuleAccess>} />
+          <Route path="projects/:id" element={<RequireModuleAccess anyOfModules={['clients', 'leads']}><ProjectPage /></RequireModuleAccess>} />
           <Route path="whatsapp-setup" element={<WhatsAppSetupPage />} />
           <Route path="whatsapp-broadcast" element={<RequireModuleAccess anyOfModules={['leads', 'clients']}><BulkWhatsAppPage /></RequireModuleAccess>} />
           <Route path="settings" element={<RequireModuleAccess requiredModule="settings"><SiteSettingsPage /></RequireModuleAccess>} />

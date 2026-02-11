@@ -22,6 +22,7 @@ const whatsappRoutes = require('./routes/whatsapp.routes');
 const testRoutes = require('./routes/testRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const quoteRoutes = require('./routes/quoteRoutes');
+const projectsRoutes = require('./routes/projects.routes');
 const referrerPartnersRoutes = require('./routes/referrerPartnersRoutes');
 const authRoutes = require('./routes/authRoutes');
 const publicCmsRoutes = require('./routes/publicCmsRoutes');
@@ -250,6 +251,7 @@ async function createApp() {
   app.use('/api/whatsapp', whatsappRoutes);
   app.use('/api/documents', documentRoutes);
   app.use('/api/quotes', quoteRoutes);
+  app.use('/api/projects', projectsRoutes);
   app.use('/api/referrer-partners', referrerPartnersRoutes);
   app.use('/api/public', publicCmsRoutes);
   app.use('/api/admin/uploads', adminUploadsRoutes);

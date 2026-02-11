@@ -34,6 +34,21 @@ const quoteSchema = new mongoose.Schema({
     required: true,
     index: true
   },
+  projectId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Project',
+    required: false,
+    default: null,
+    index: true
+  },
+  version: {
+    type: Number,
+    default: 1
+  },
+  // Requirement IDs from Project.requirements covered by this quote
+  linkedRequirements: [{
+    type: mongoose.Schema.Types.ObjectId
+  }],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -125,7 +140,7 @@ const quoteSchema = new mongoose.Schema({
 
 // יצירת מספר הצעה אוטומטי
 // חשוב: משתמשים ב-max quoteNumber לשנה במקום countDocuments כדי להימנע מדופליקייטים
-quoteSchema.pre('save', async function(next) {
+quoteSchema.pre('save', async function (next) {
   try {
     if (!this.quoteNumber) {
       const year = new Date().getFullYear();
@@ -156,7 +171,7 @@ quoteSchema.pre('save', async function(next) {
 });
 
 // חישוב סכומים
-quoteSchema.methods.calculateTotals = function() {
+quoteSchema.methods.calculateTotals = function () {
   this.subtotal = this.items.reduce((sum, item) => {
     item.totalPrice = item.quantity * item.unitPrice;
     return sum + item.totalPrice;

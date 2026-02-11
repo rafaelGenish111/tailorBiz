@@ -73,7 +73,10 @@ const ClientSchema = new mongoose.Schema({
     }
   },
 
-  // שאלון אפיון מלא
+  /**
+   * @deprecated Use Project.assessmentSnapshot - kept for backward compatibility during migration
+   * שאלון אפיון מלא
+   */
   assessmentForm: {
     filledAt: Date,
 
@@ -272,7 +275,10 @@ const ClientSchema = new mongoose.Schema({
     completedAt: Date
   }],
 
-  // הזמנות/פרויקטים
+  /**
+   * @deprecated Use Project.orders - kept for backward compatibility during migration
+   * הזמנות/פרויקטים
+   */
   orders: [{
     orderNumber: {
       type: String
@@ -320,7 +326,10 @@ const ClientSchema = new mongoose.Schema({
     }]
   }],
 
-  // לוח תשלומים
+  /**
+   * @deprecated Use Project.paymentPlan - kept for backward compatibility during migration
+   * לוח תשלומים
+   */
   paymentPlan: {
     totalAmount: Number,
     currency: {
@@ -545,6 +554,13 @@ ClientSchema.index({ 'metadata.lastContactedAt': -1 });
 // Virtual לשם מלא של הלקוח
 ClientSchema.virtual('fullDisplayName').get(function () {
   return `${this.personalInfo.fullName} - ${this.businessInfo.businessName}`;
+});
+
+// Virtual לקישור לפרויקטים (Project-centric architecture)
+ClientSchema.virtual('projects', {
+  ref: 'Project',
+  localField: '_id',
+  foreignField: 'clientId'
 });
 
 // Helper methods לבדיקת סוג הלקוח

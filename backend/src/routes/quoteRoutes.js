@@ -10,13 +10,16 @@ const {
   deleteQuote,
   updateQuoteStatus,
   duplicateQuote,
-  uploadExternalPDF
+  uploadExternalPDF,
+  generateFromProject
 } = require('../controllers/quoteController');
 const { protect, requireModule } = require('../middleware/auth.middleware');
 const uploadQuotePdf = require('../middleware/quotePdfUpload.middleware');
 
 router.use(protect);
 router.use(requireModule('invoices_docs'));
+
+router.post('/generate/:projectId', generateFromProject);
 
 router.route('/client/:clientId')
   .get(getClientQuotes)

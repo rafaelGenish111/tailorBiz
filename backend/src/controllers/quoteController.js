@@ -1,13 +1,13 @@
 // backend/controllers/quoteController.js
 const Quote = require('../models/Quote');
 const Client = require('../models/Client');
+const Project = require('../models/Project');
 const Document = require('../models/Document');
-const PDFDocument = require('pdfkit');
 const { cloudinary } = require('../config/cloudinary');
 const streamifier = require('streamifier');
 const mongoose = require('mongoose');
-const path = require('path');
 const fs = require('fs');
+const pdfService = require('../services/pdfService');
 
 // Helper function to check if string is valid ObjectId
 const isValidObjectId = (id) => {
@@ -186,12 +186,12 @@ exports.getQuote = async (req, res) => {
   }
 };
 
-// יצירת PDF
+// יצירת PDF - משתמש ב-pdfService (Puppeteer HTML-to-PDF) עם RTL ועברית
 exports.generatePDF = async (req, res) => {
   try {
     const { quoteId } = req.params;
 
-    const quote = await Quote.findById(quoteId);
+    const quote = await Quote.findById(quoteId).lean();
     if (!quote) {
       return res.status(404).json({
         success: false,
@@ -199,131 +199,25 @@ exports.generatePDF = async (req, res) => {
       });
     }
 
+    // מיפוי מפורש מ-quote.items - unitPrice ו-totalPrice מההצעה (לא מ-requirements)
+    const pdfData = {
+      ...quote,
+      items: (quote.items || []).map((item) => ({
+        name: item.name,
+        description: item.description,
+        quantity: Number(item.quantity) ?? 1,
+        unitPrice: Number(item.unitPrice) ?? 0,
+        totalPrice: Number(item.totalPrice) ?? (Number(item.unitPrice) ?? 0) * (Number(item.quantity) ?? 1)
+      }))
+    };
+
+    if (process.env.NODE_ENV !== 'production' && pdfData.items.length > 0) {
+      console.log('[Quote PDF] items for', quote.quoteNumber, ':', JSON.stringify(pdfData.items.map((i) => ({ name: i.name, unitPrice: i.unitPrice, totalPrice: i.totalPrice }))));
+    }
+
     const userId = req.user?.id || req.user?._id;
 
-    const doc = new PDFDocument({
-      size: 'A4',
-      margin: 50,
-      info: {
-        Title: `הצעת מחיר ${quote.quoteNumber}`,
-        Author: quote.businessInfo?.name
-      }
-    });
-
-    // נסה להשתמש בגופן עברי אם קיים (כדי למנוע ג'יבריש)
-    try {
-      const fontPath = path.join(__dirname, '..', 'assets', 'fonts', 'NotoSansHebrew-Regular.ttf');
-      if (fs.existsSync(fontPath)) {
-        doc.registerFont('hebrew', fontPath);
-        doc.font('hebrew');
-      }
-    } catch (fontError) {
-      console.warn('Hebrew font not loaded, using default PDF font:', fontError.message);
-    }
-
-    const buffers = [];
-
-    doc.on('data', buffers.push.bind(buffers));
-
-    // כותרת
-    doc.fontSize(24).text(quote.title || 'הצעת מחיר', { align: 'center' });
-    doc.fontSize(12).text(`מספר: ${quote.quoteNumber}`, { align: 'center' });
-    doc.text(`תאריך: ${new Date(quote.createdAt).toLocaleDateString('he-IL')}`, { align: 'center' });
-    doc.moveDown();
-
-    // פרטי עסק
-    doc.fontSize(14).text('פרטי העסק:', { underline: true });
-    doc.fontSize(10);
-    if (quote.businessInfo?.name) doc.text(quote.businessInfo.name);
-    if (quote.businessInfo?.address) doc.text(quote.businessInfo.address);
-    if (quote.businessInfo?.phone) doc.text(`טלפון: ${quote.businessInfo.phone}`);
-    if (quote.businessInfo?.email) doc.text(`אימייל: ${quote.businessInfo.email}`);
-    if (quote.businessInfo?.taxId) doc.text(`ח.פ/ע.מ: ${quote.businessInfo.taxId}`);
-    doc.moveDown();
-
-    // פרטי לקוח
-    doc.fontSize(14).text('פרטי הלקוח:', { underline: true });
-    doc.fontSize(10);
-    if (quote.clientInfo?.name) doc.text(quote.clientInfo.name);
-    if (quote.clientInfo?.businessName) doc.text(quote.clientInfo.businessName);
-    if (quote.clientInfo?.address) doc.text(quote.clientInfo.address);
-    if (quote.clientInfo?.phone) doc.text(`טלפון: ${quote.clientInfo.phone}`);
-    if (quote.clientInfo?.email) doc.text(`אימייל: ${quote.clientInfo.email}`);
-    doc.moveDown(2);
-
-    // טבלת פריטים
-    doc.fontSize(14).text('פירוט:', { underline: true });
-    doc.moveDown(0.5);
-
-    const tableTop = doc.y;
-
-    doc.fontSize(10);
-    doc.text('מוצר/שירות', 50, tableTop);
-    doc.text('תיאור', 150, tableTop);
-    doc.text('כמות', 320, tableTop);
-    doc.text('מחיר יחידה', 380, tableTop);
-    doc.text('סה"כ', 480, tableTop);
-    
-    doc.moveTo(50, tableTop + 15).lineTo(550, tableTop + 15).stroke();
-
-    let yPosition = tableTop + 25;
-    quote.items.forEach(item => {
-      doc.text(item.name, 50, yPosition, { width: 95 });
-      doc.text(item.description || '-', 150, yPosition, { width: 165 });
-      doc.text(String(item.quantity), 320, yPosition);
-      doc.text(`₪${item.unitPrice.toLocaleString()}`, 380, yPosition);
-      doc.text(`₪${item.totalPrice.toLocaleString()}`, 480, yPosition);
-      yPosition += 25;
-    });
-
-    doc.moveTo(50, yPosition).lineTo(550, yPosition).stroke();
-    yPosition += 15;
-
-    // סיכומים
-    doc.fontSize(11);
-    doc.text(`סה"כ לפני מע"מ:`, 380, yPosition);
-    doc.text(`₪${quote.subtotal.toLocaleString()}`, 480, yPosition);
-    yPosition += 20;
-
-    if (quote.includeVat) {
-      doc.text(`מע"מ (${quote.vatRate}%):`, 380, yPosition);
-      doc.text(`₪${quote.vatAmount.toLocaleString()}`, 480, yPosition);
-      yPosition += 20;
-    }
-
-    doc.fontSize(14).font('Helvetica-Bold');
-    doc.text('סה"כ לתשלום:', 380, yPosition);
-    doc.text(`₪${quote.total.toLocaleString()}`, 480, yPosition);
-    doc.font('Helvetica');
-
-    // הערות
-    if (quote.notes) {
-      doc.moveDown(2);
-      doc.fontSize(12).text('הערות:', { underline: true });
-      doc.fontSize(10).text(quote.notes);
-    }
-
-    // תנאים
-    if (quote.terms) {
-      doc.moveDown();
-      doc.fontSize(12).text('תנאים:', { underline: true });
-      doc.fontSize(10).text(quote.terms);
-    }
-
-    // תוקף
-    if (quote.validUntil) {
-      doc.moveDown();
-      doc.fontSize(10).text(
-        `הצעה זו בתוקף עד: ${new Date(quote.validUntil).toLocaleDateString('he-IL')}`,
-        { align: 'center' }
-      );
-    }
-
-    doc.end();
-
-    await new Promise(resolve => doc.on('end', resolve));
-
-    const pdfBuffer = Buffer.concat(buffers);
+    const pdfBuffer = await pdfService.generateQuotePDF(pdfData);
 
     // ניצור תמיד data URL לצורך תצוגה מקדימה בצד ה-Frontend
     const base64 = pdfBuffer.toString('base64');
@@ -364,9 +258,10 @@ exports.generatePDF = async (req, res) => {
     }
 
     // לתצוגה מקדימה ב-Frontend נשתמש תמיד ב-data URL
-    quote.pdfUrl = pdfDataUrl;
-    quote.pdfCloudinaryId = pdfCloudinaryId;
-    await quote.save();
+    await Quote.findByIdAndUpdate(quoteId, {
+      pdfUrl: pdfDataUrl,
+      pdfCloudinaryId: pdfCloudinaryId || undefined
+    });
 
     // צור גם מסמך בטבלת Documents
     await Document.create({
@@ -390,7 +285,7 @@ exports.generatePDF = async (req, res) => {
       message: 'PDF נוצר בהצלחה',
       data: {
         pdfUrl: pdfDataUrl,
-        quote
+        quote: { ...quote, pdfUrl: pdfDataUrl, pdfCloudinaryId: pdfCloudinaryId }
       }
     });
 
@@ -449,9 +344,9 @@ exports.uploadExternalPDF = async (req, res) => {
 
     // ב-Vercel (serverless) אין גישה לדיסק, צריך להעלות ל-Cloudinary
     // או אם req.file.filename לא קיים (memory storage)
-    const hasCloudinaryConfig = 
-      process.env.CLOUDINARY_CLOUD_NAME && 
-      process.env.CLOUDINARY_API_KEY && 
+    const hasCloudinaryConfig =
+      process.env.CLOUDINARY_CLOUD_NAME &&
+      process.env.CLOUDINARY_API_KEY &&
       process.env.CLOUDINARY_API_SECRET;
 
     if (IS_VERCEL || !req.file.filename) {
@@ -598,6 +493,132 @@ exports.updateQuoteStatus = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון סטטוס',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Generate Quote from Project approved requirements
+ * Maps Project.requirements (status=approved) to Quote items as placeholders for pricing.
+ * User can send requirementIds in body to override which requirements to include.
+ */
+exports.generateFromProject = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { requirementIds } = req.body || {};
+
+    if (!isValidObjectId(projectId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'מזהה פרויקט לא תקין'
+      });
+    }
+
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: 'פרויקט לא נמצא'
+      });
+    }
+
+    const clientId = project.clientId;
+    if (!clientId) {
+      return res.status(400).json({
+        success: false,
+        message: 'לפרויקט אין לקוח משויך'
+      });
+    }
+
+    // Resolve Client for clientInfo (in case clientId is ObjectId, not populated)
+    const client = await Client.findById(clientId);
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: 'לקוח הפרויקט לא נמצא'
+      });
+    }
+
+    let requirementsToInclude = [];
+
+    if (requirementIds && Array.isArray(requirementIds) && requirementIds.length > 0) {
+      // User explicitly selected requirement IDs
+      const validIds = requirementIds.filter((id) => isValidObjectId(id));
+      requirementsToInclude = (project.requirements || []).filter((r) =>
+        validIds.some((id) => r._id.toString() === id.toString())
+      );
+    } else {
+      // Default: only approved requirements
+      requirementsToInclude = (project.requirements || []).filter(
+        (r) => r.status === 'approved'
+      );
+    }
+
+    if (requirementsToInclude.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'אין דרישות מאושרות לבחירה. אנא אשר דרישות בפרויקט או שלח מזהה דרישות ספציפיות.'
+      });
+    }
+
+    // Map requirements to quote items
+    // Use global hourly rate if available (HOURLY_RATE_ILS env), else placeholder 0 for user to edit
+    const hourlyRate = parseFloat(process.env.HOURLY_RATE_ILS) || 0;
+    const items = requirementsToInclude.map((req) => {
+      const quantity = 1;
+      const unitPrice =
+        hourlyRate > 0 && req.estimatedHours > 0
+          ? req.estimatedHours * hourlyRate
+          : 0;
+      return {
+        name: req.title,
+        description: req.description || '',
+        quantity,
+        unitPrice,
+        totalPrice: unitPrice * quantity
+      };
+    });
+
+    const nextVersion =
+      (await Quote.findOne({ projectId }).sort({ version: -1 }).select('version').lean())
+        ?.version ?? 0;
+    const version = nextVersion + 1;
+
+    const quote = new Quote({
+      clientId,
+      projectId: project._id,
+      version,
+      linkedRequirements: requirementsToInclude.map((r) => r._id),
+      createdBy: isValidObjectId(req.user?.id) ? req.user.id : req.user?._id || null,
+      businessInfo: getBusinessDefaults(),
+      clientInfo: {
+        name: client.personalInfo?.fullName,
+        businessName: client.businessInfo?.businessName,
+        address: client.personalInfo?.address || client.businessInfo?.address,
+        phone: client.personalInfo?.phone,
+        email: client.personalInfo?.email,
+        taxId: client.businessInfo?.taxId
+      },
+      title: `הצעת מחיר - ${project.name}`,
+      items,
+      status: 'draft'
+    });
+
+    quote.calculateTotals();
+    await quote.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'הצעת מחיר נוצרה מהפרויקט',
+      data: quote
+    });
+  } catch (error) {
+    console.error('Generate from project error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'שגיאה ביצירת הצעת מחיר מהפרויקט',
       error: error.message
     });
   }

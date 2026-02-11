@@ -189,7 +189,7 @@ const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
 
   // Generate PDF mutation
   const pdfMutation = useMutation({
-    mutationFn: (quoteId) => 
+    mutationFn: (quoteId) =>
       api.post(`/quotes/${quoteId}/generate-pdf`).then(res => res.data),
     onSuccess: (data) => {
       // רק רענון הנתונים ועדכון ה-state - לא פותח אוטומטית
@@ -251,22 +251,30 @@ const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
     saveMutation.mutate(dataToSave);
   };
 
-  // יצירת PDF
+  // יצירת PDF - תמיד שומר קודם כדי שהמחירים המעודכנים יישמרו ב-DB
   const handleGeneratePDF = async () => {
-    if (!existingQuote?._id) {
-      const result = await saveMutation.mutateAsync({
-        ...quote,
-        subtotal,
-        vatAmount,
-        total,
-        items: quote.items.map(item => ({
-          ...item,
-          totalPrice: item.quantity * item.unitPrice
-        }))
-      });
-      pdfMutation.mutate(result.data._id);
-    } else {
-      pdfMutation.mutate(existingQuote._id);
+    const dataToSave = {
+      ...quote,
+      subtotal,
+      vatAmount,
+      total,
+      items: quote.items.map(item => ({
+        ...item,
+        unitPrice: Number(item.unitPrice) || 0,
+        quantity: Number(item.quantity) || 1,
+        totalPrice: (Number(item.quantity) || 1) * (Number(item.unitPrice) || 0)
+      }))
+    };
+    try {
+      if (!existingQuote?._id) {
+        const result = await saveMutation.mutateAsync(dataToSave);
+        pdfMutation.mutate(result.data._id);
+      } else {
+        await saveMutation.mutateAsync(dataToSave);
+        pdfMutation.mutate(existingQuote._id);
+      }
+    } catch (err) {
+      setErrors((prev) => ({ ...prev, save: err?.response?.data?.message || 'שגיאה בשמירה לפני יצירת PDF' }));
     }
   };
 
@@ -423,7 +431,7 @@ const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, height: '100%' }}>
             <Typography variant="h6" gutterBottom>הגדרות</Typography>
-            
+
             <FormControlLabel
               control={
                 <Switch
@@ -570,7 +578,7 @@ const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
           <Card sx={{ bgcolor: 'primary.main', color: 'white' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>סיכום</Typography>
-              
+
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography>סה"כ לפני מע"מ:</Typography>
                 <Typography fontWeight={600}>₪{subtotal.toLocaleString()}</Typography>

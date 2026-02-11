@@ -177,11 +177,36 @@ export const tasksAPI = {
 
 // ========== Projects API ==========
 export const projectsAPI = {
+  getByClient: (clientId) => api.get('/projects', { params: { clientId } }),
   getAll: (params) => api.get('/projects', { params }),
   getById: (id) => api.get(`/projects/${id}`),
   create: (data) => api.post('/projects', data),
   update: (id, data) => api.put(`/projects/${id}`, data),
-  delete: (id) => api.delete(`/projects/${id}`)
+  delete: (id) => api.delete(`/projects/${id}`),
+  addRequirement: (projectId, data) =>
+    api.post(`/projects/${projectId}/requirements`, data),
+  updateRequirement: (projectId, requirementId, data) =>
+    api.put(`/projects/${projectId}/requirements/${requirementId}`, data),
+  deleteRequirement: (projectId, requirementId) =>
+    api.delete(`/projects/${projectId}/requirements/${requirementId}`)
+};
+
+// ========== Quotes API ==========
+export const quotesAPI = {
+  getByClient: (clientId) => api.get(`/quotes/client/${clientId}`),
+  getById: (id) => api.get(`/quotes/${id}`),
+  create: (clientId, data) => api.post(`/quotes/client/${clientId}`, data),
+  update: (id, data) => api.put(`/quotes/${id}`, data),
+  delete: (id) => api.delete(`/quotes/${id}`),
+  generateFromProject: (projectId, body) =>
+    api.post(`/quotes/generate/${projectId}`, body || {}),
+  generatePDF: (quoteId) => api.post(`/quotes/${quoteId}/generate-pdf`),
+  uploadPDF: (quoteId, formData) =>
+    api.post(`/quotes/${quoteId}/upload-pdf`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+  duplicate: (quoteId) => api.post(`/quotes/${quoteId}/duplicate`),
+  updateStatus: (quoteId, status) => api.put(`/quotes/${quoteId}/status`, { status })
 };
 
 // ========== Lead Nurturing API ==========
