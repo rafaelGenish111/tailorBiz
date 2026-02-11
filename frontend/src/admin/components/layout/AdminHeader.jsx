@@ -1,13 +1,10 @@
-import { AppBar, Toolbar, Typography, IconButton, Avatar, Box, Badge, InputBase, alpha, useTheme, Button } from '@mui/material';
-import { Notifications as NotificationsIcon, Search as SearchIcon, Menu as MenuIcon, HelpOutline as HelpIcon, Dashboard as DashboardIcon } from '@mui/icons-material';
+import { AppBar, Toolbar, Typography, IconButton, Avatar, Box, InputBase, alpha, useTheme, Button } from '@mui/material';
+import { Search as SearchIcon, HelpOutline as HelpIcon, Dashboard as DashboardIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useNotifications } from '../../hooks/useTasks';
 
 function AdminHeader() {
   const navigate = useNavigate();
   const theme = useTheme();
-  const { data: notificationsResponse } = useNotifications({ read: false });
-  const unreadCount = notificationsResponse?.unreadCount || 0;
 
   return (
     <AppBar
@@ -35,7 +32,7 @@ function AdminHeader() {
             noWrap
             component="div"
             sx={{ fontWeight: 700, letterSpacing: 0.5, cursor: 'pointer' }}
-            onClick={() => navigate('/admin/dashboard')}
+            onClick={() => navigate('/admin')}
           >
             TailorBiz <Box component="span" sx={{ color: 'secondary.main' }}>Admin</Box>
           </Typography>
@@ -46,7 +43,7 @@ function AdminHeader() {
             color="secondary"
             size="small"
             startIcon={<DashboardIcon />}
-            onClick={() => navigate('/admin/dashboard')}
+            onClick={() => navigate('/admin')}
             sx={{
               ml: 1,
               display: { xs: 'inline-flex', md: 'none' },
@@ -68,7 +65,7 @@ function AdminHeader() {
             ml: { xs: 0, md: 4 }
           }}
         >
-           <Box
+          <Box
             sx={{
               position: 'relative',
               borderRadius: 1,
@@ -115,22 +112,12 @@ function AdminHeader() {
         {/* Right Actions */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <IconButton color="inherit" size="large">
-             <HelpIcon />
-          </IconButton>
-
-          <IconButton
-            color="inherit"
-            size="large"
-            onClick={() => navigate('/admin/notifications')}
-          >
-            <Badge badgeContent={unreadCount} color="secondary">
-              <NotificationsIcon />
-            </Badge>
+            <HelpIcon />
           </IconButton>
 
           <Box sx={{ ml: 1, display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer', p: 0.5, borderRadius: 1, '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' } }}>
-             <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main', fontSize: '0.9rem' }}>A</Avatar>
-             <Typography variant="body2" sx={{ display: { xs: 'none', md: 'block' }, fontWeight: 500 }}>Admin</Typography>
+            <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main', fontSize: '0.9rem' }}>A</Avatar>
+            <Typography variant="body2" sx={{ display: { xs: 'none', md: 'block' }, fontWeight: 500 }}>Admin</Typography>
           </Box>
         </Box>
       </Toolbar>

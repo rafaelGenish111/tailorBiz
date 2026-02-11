@@ -60,12 +60,16 @@ class WhatsAppService {
     this.initializing = true;
 
     try {
+      // WHATSAPP_HEADLESS=false לבדיקות מקומיות - חלון Chrome גלוי עוזר כש-ready לא נשלח
+      const headless = process.env.WHATSAPP_HEADLESS !== 'false';
+      if (!headless) console.log('🖥️ WhatsApp running in visible mode (WHATSAPP_HEADLESS=false)');
+
       this.client = new Client({
         authStrategy: new LocalAuth({
           dataPath: './.wwebjs_auth'
         }),
         puppeteer: {
-          headless: true, // במצב פרודקשן נרצה שזה ירוץ ברקע
+          headless,
           args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -74,7 +78,10 @@ class WhatsAppService {
             '--no-first-run',
             '--no-zygote',
             '--single-process',
-            '--disable-gpu'
+            '--disable-gpu',
+            // מונע מ-WhatsApp לזהות דפדפן אוטומטי (פתרון לבעיית ready שלא נשלח)
+            '--disable-blink-features=AutomationControlled',
+            '--disable-features=IsolateOrigins,site-per-process'
           ],
           timeout: 60000
         }
@@ -335,7 +342,8 @@ class WhatsAppService {
         console.warn('⚠️ Could not resolve full contact ID, trying direct send');
       }
 
-      const response = await this.client.sendMessage(targetId, message);
+      // sendSeen: false - מונע שגיאת markedUnread כשהצ'אט טרם נטען
+      const response = await this.client.sendMessage(targetId, message, { sendSeen: false });
 
       return {
         success: true,
@@ -389,10 +397,7 @@ class WhatsAppService {
     console.log(`📩 Received message from ${fromNumber}: ${msg.body}`);
 
     try {
-      // Lazy loading למניעת circular dependencies
       const Client = require('../models/Client');
-      const ConversationContext = require('../models/ConversationContext');
-      const triggerHandler = require('./triggerHandler');
 
       // מציאת הלקוח לפי מספר טלפון
       const phoneNumber = fromNumber;
@@ -410,20 +415,6 @@ class WhatsAppService {
         return;
       }
 
-      // ✅ NEW: בדיקה אם יש שיחת AI bot פעילה
-      const activeConversation = await ConversationContext.findOne({
-        client: client._id,
-        channel: 'whatsapp',
-        status: 'active'
-      });
-
-      if (activeConversation) {
-        // מנתב ל-AI Bot
-        console.log(`🤖 Routing to active AI bot conversation: ${activeConversation.sessionId}`);
-        await triggerHandler.handleNewMessage(client._id, msg.body, 'whatsapp');
-        return;
-      }
-
       // יצירת אובייקט אינטראקציה
       const interaction = {
         type: 'whatsapp',
@@ -437,20 +428,6 @@ class WhatsAppService {
       // הוספה ללקוח ושמירה
       client.interactions.push(interaction);
       await client.save();
-
-      const savedInteraction = client.interactions[client.interactions.length - 1];
-
-      // ✅ NEW: טריגר של הודעה חדשה (יכול להפעיל AI bot)
-      await triggerHandler.handleNewMessage(client._id, msg.body, 'whatsapp');
-
-      // Existing flow: leadNurturingService
-      const leadNurturingService = require('./leadServiceV2');
-
-      // בדיקה אם הלקוח הגיב - עצירת רצפים אוטומטיים
-      await leadNurturingService.checkInteractionForActiveNurturing(client._id, savedInteraction);
-
-      // בדיקת טריגרים חדשים המבוססים על התגובה
-      await leadNurturingService.checkTriggersForInteraction(client._id, savedInteraction);
 
     } catch (error) {
       console.error('Error processing incoming message logic:', error);
@@ -523,11 +500,18 @@ class WhatsAppService {
 
       if (resetSession) {
         const authDir = path.join(process.cwd(), '.wwebjs_auth');
+        const cacheDir = path.join(process.cwd(), '.wwebjs_cache');
         try {
-          fs.rmSync(authDir, { recursive: true, force: true });
-          console.log('🧹 WhatsApp auth folder removed (.wwebjs_auth)');
+          if (fs.existsSync(authDir)) {
+            fs.rmSync(authDir, { recursive: true, force: true });
+            console.log('🧹 WhatsApp auth folder removed (.wwebjs_auth)');
+          }
+          if (fs.existsSync(cacheDir)) {
+            fs.rmSync(cacheDir, { recursive: true, force: true });
+            console.log('🧹 WhatsApp cache folder removed (.wwebjs_cache)');
+          }
         } catch (e) {
-          console.warn('⚠️ Could not remove .wwebjs_auth:', e.message);
+          console.warn('⚠️ Could not remove WhatsApp folders:', e.message);
         }
       }
 

@@ -50,6 +50,14 @@ function getRulesForPath(pathname) {
     return { requiredModule: 'cms' };
   }
 
+  // WhatsApp
+  if (p.startsWith('/admin/whatsapp-setup')) {
+    return { anyOfModules: ['leads', 'clients', 'settings'] };
+  }
+  if (p.startsWith('/admin/whatsapp-broadcast')) {
+    return { anyOfModules: ['leads', 'clients'] };
+  }
+
   // Leads / clients
   if (p.startsWith('/admin/leads')) {
     return { requiredModule: 'leads' };

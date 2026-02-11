@@ -10,33 +10,17 @@ import {
   Typography,
   Collapse,
 } from '@mui/material';
-import { FaChartLine, FaCrosshairs } from 'react-icons/fa';
 import {
   Dashboard as DashboardIcon,
-  RateReview as TestimonialsIcon,
-  Article as BlogIcon,
-  Business as PortfolioIcon,
-  ShoppingCart as ProductsIcon,
   People as ClientsIcon,
   Settings as SettingsIcon,
-  Today as TodayIcon,
-  CalendarMonth as CalendarIcon,
-  ViewKanban as KanbanIcon,
-  Timeline as ProjectsIcon,
-  Timeline as GanttIcon,
-  AutoAwesome as NurturingIcon,
-  Timeline as TimelineIcon,
-  Campaign as CampaignIcon,
-  Analytics as AnalyticsIcon,
-  SettingsInputAntenna as ChannelsIcon,
-  SmartToy as AutomationsIcon,
   ExpandLess,
   ExpandMore,
   Circle as CircleIcon,
 } from '@mui/icons-material';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import { getCurrentUserFromQueryData, hasAnyModuleAccess, hasModuleAccess, useCurrentUserQuery } from '../../hooks/useCurrentUser';
 
 const DRAWER_WIDTH = 260;
@@ -44,54 +28,13 @@ const DRAWER_WIDTH = 260;
 const menuItems = [
   { text: 'דשבורד', icon: <DashboardIcon />, path: '/admin' },
 
-  // Employee-focused: Sales onboarding inside admin
-  { text: 'הדרכת מכירות', icon: <MenuBookOutlinedIcon />, path: '/admin/sales-training', employeeOnly: true },
-
-  { divider: true, label: 'משימות ותזכורות' },
-  { text: 'סדר היום שלי', icon: <TodayIcon />, path: '/admin/today', requiredModule: 'tasks_calendar' },
-  { text: 'יומן', icon: <CalendarIcon />, path: '/admin/calendar', requiredModule: 'tasks_calendar' },
-  { text: 'לוח משימות', icon: <KanbanIcon />, path: '/admin/tasks', requiredModule: 'tasks_calendar' },
-  { text: 'פרויקטים', icon: <ProjectsIcon />, path: '/admin/projects', requiredModule: 'tasks_calendar' },
-  { text: 'לוח גאנט', icon: <GanttIcon />, path: '/admin/gantt', requiredModule: 'tasks_calendar' },
-
-  { divider: true, label: 'אוטומציות טיפוח' },
-  {
-    text: 'טיפוח לידים',
-    icon: <NurturingIcon />,
-    requiredModule: 'marketing',
-    children: [
-      { text: 'אוטומציות', path: '/admin/nurturing', requiredModule: 'marketing' },
-      { text: 'רצפים פעילים', path: '/admin/nurturing/active', requiredModule: 'marketing' },
-    ]
-  },
-
-  { divider: true, label: 'מרכז שיווק' },
-  {
-    text: 'מרכז שיווק',
-    icon: <CampaignIcon />,
-    requiredModule: 'marketing',
-    children: [
-      { text: 'דשבורד', path: '/admin/marketing', requiredModule: 'marketing' },
-      { text: 'קמפיינים', path: '/admin/marketing/campaigns', requiredModule: 'marketing' },
-      { text: 'ערוצים', path: '/admin/marketing/channels', requiredModule: 'marketing' },
-      { text: 'אוטומציות', path: '/admin/marketing/automations', requiredModule: 'marketing' },
-      { text: 'אנליטיקה', path: '/admin/marketing/analytics', requiredModule: 'marketing' },
-    ]
-  },
-
-  { divider: true, label: 'ניהול תוכן' },
-  { text: 'המלצות', icon: <TestimonialsIcon />, path: '/admin/testimonials', requiredModule: 'cms' },
-  { text: 'דפי אתר', icon: <TimelineIcon />, path: '/admin/cms/pages', requiredModule: 'cms' },
-  { text: 'מאמרים', icon: <BlogIcon />, path: '/admin/cms/articles', requiredModule: 'cms' },
-  { text: 'לקוחות (אתר)', icon: <ClientsIcon />, path: '/admin/cms/clients', requiredModule: 'cms' },
-  { text: 'תיק עבודות', icon: <PortfolioIcon />, path: '/admin/portfolio', requiredModule: 'cms' },
-  { text: 'מוצרים', icon: <ProductsIcon />, path: '/admin/products', requiredModule: 'cms' },
-
-  { divider: true, label: 'ניהול לידים ולקוחות' },
+  { divider: true, label: 'לידים ולקוחות' },
   { text: 'לידים', icon: <ClientsIcon />, path: '/admin/leads', requiredModule: 'leads' },
-  { text: 'Sales Pipeline', icon: <FaChartLine />, path: '/admin/pipeline', anyOfModules: ['leads', 'clients'] },
-  { text: 'Hunting Pools', icon: <FaCrosshairs />, path: '/admin/hunting-pools', anyOfModules: ['leads', 'clients'] },
   { text: 'לקוחות', icon: <ClientsIcon />, path: '/admin/customers', requiredModule: 'clients' },
+
+  { divider: true, label: 'התקנות' },
+  { text: 'התקנת WhatsApp', icon: <WhatsAppIcon />, path: '/admin/whatsapp-setup', anyOfModules: ['leads', 'clients', 'settings'] },
+  { text: 'שליחת WhatsApp מרובה', icon: <WhatsAppIcon />, path: '/admin/whatsapp-broadcast', anyOfModules: ['leads', 'clients'] },
 
   { divider: true, label: 'הגדרות' },
   { text: 'עובדים', icon: <ClientsIcon />, path: '/admin/employees', adminOnly: true },

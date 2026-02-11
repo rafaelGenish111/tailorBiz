@@ -153,7 +153,10 @@ export const whatsappAPI = {
   getConversations: () => api.get('/whatsapp/conversations'),
   getClientConversation: (clientId) =>
     api.get(`/whatsapp/conversations/${clientId}`),
-  getStatus: () => api.get('/whatsapp/status')
+  getStatus: () => api.get('/whatsapp/status'),
+  previewBulk: (params) => api.get('/whatsapp/bulk/preview', { params }),
+  sendBulk: (data) => api.post('/whatsapp/bulk/send', data),
+  restart: (resetSession = false) => api.post('/whatsapp/restart', { resetSession })
 };
 
 // ========== Tasks API ==========

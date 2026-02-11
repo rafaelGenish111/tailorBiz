@@ -24,11 +24,11 @@ import {
   Phone as PhoneIcon,
   Email as EmailIcon,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
-import { useClients, useDeleteClient, useClient } from '../../../hooks/useClients';
+import { useClients, useDeleteClient } from '../../../hooks/useClients';
 import ConfirmDialog from '../../common/ConfirmDialog';
 import ClientForm from './ClientForm';
-import ClientDetail from './ClientDetail';
 import { getCurrentUserFromQueryData, useCurrentUserQuery } from '../../../hooks/useCurrentUser';
 
 const STATUS_LABELS = {
@@ -57,6 +57,7 @@ const LEAD_STATUSES = ['new_lead', 'contacted', 'engaged', 'meeting_set', 'propo
 const CLIENT_STATUSES = ['won'];
 
 function ClientsList({ viewMode }) {
+  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { data: meData } = useCurrentUserQuery();
@@ -68,8 +69,6 @@ function ClientsList({ viewMode }) {
   const [statusFilter, setStatusFilter] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [clientToView, setClientToView] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clientToDelete, setClientToDelete] = useState(null);
 
@@ -85,9 +84,6 @@ function ClientsList({ viewMode }) {
 
   // Mutations
   const deleteMutation = useDeleteClient();
-
-  // Load full client details when viewing
-  const { data: fullClientData } = useClient(clientToView);
 
   // Handlers
   const handleAdd = () => {
@@ -106,13 +102,7 @@ function ClientsList({ viewMode }) {
   };
 
   const handleView = (client) => {
-    setClientToView(client._id);
-    setDetailOpen(true);
-  };
-
-  const handleDetailClose = () => {
-    setDetailOpen(false);
-    setClientToView(null);
+    navigate(`/admin/clients/${client._id}`);
   };
 
   const handleDeleteClick = (client) => {
@@ -279,31 +269,21 @@ function ClientsList({ viewMode }) {
     {
       field: 'actions',
       headerName: 'פעולות',
-      width: 200,
+      width: 140,
       renderCell: (params) => (
-        <Box>
-          <IconButton
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Button
+            variant="contained"
             size="small"
-            color="primary"
-            onClick={() => handleView(params.row)}
-            title="צפה"
+            onClick={() => navigate(`/admin/clients/${params.row._id}`)}
+            sx={{ minWidth: 70 }}
           >
-            <VisibilityIcon />
-          </IconButton>
-          <IconButton
-            size="small"
-            color="primary"
-            onClick={() => handleEdit(params.row)}
-            title="ערוך"
-          >
+            פתח
+          </Button>
+          <IconButton size="small" color="primary" onClick={() => handleEdit(params.row)} title="ערוך">
             <EditIcon />
           </IconButton>
-          <IconButton
-            size="small"
-            color="error"
-            onClick={() => handleDeleteClick(params.row)}
-            title="מחק"
-          >
+          <IconButton size="small" color="error" onClick={() => handleDeleteClick(params.row)} title="מחק">
             <DeleteIcon />
           </IconButton>
         </Box>
@@ -540,13 +520,6 @@ function ClientsList({ viewMode }) {
         open={formOpen}
         onClose={handleFormClose}
         client={selectedClient}
-      />
-
-      {/* Client Detail Dialog */}
-      <ClientDetail
-        open={detailOpen}
-        onClose={handleDetailClose}
-        client={fullClientData?.data || null}
       />
 
       {/* Delete Confirmation Dialog */}

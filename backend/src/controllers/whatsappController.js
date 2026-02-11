@@ -1,6 +1,5 @@
 const Client = require('../models/Client');
 const whatsappService = require('../services/whatsappService');
-const leadNurturingService = require('../services/leadServiceV2');
 const mongoose = require('mongoose');
 const QRCode = require('qrcode');
 
@@ -71,14 +70,6 @@ exports.handleWebhook = async (req, res) => {
       });
 
       await client.save();
-
-      // בדוק אם צריך לעצור רצפי טיפוח פעילים (רק עבור אינטראקציות inbound)
-      if (process.env.ENABLE_LEAD_NURTURING === 'true') {
-        const savedInteraction = client.interactions[client.interactions.length - 1];
-        leadNurturingService.checkInteractionForActiveNurturing(client._id, savedInteraction).catch(err => {
-          console.error('Error checking interaction for active nurturing:', err);
-        });
-      }
 
       // עדכון שיחה
       const conversation = client.whatsappConversations.find(
@@ -379,6 +370,175 @@ exports.getQrSvg = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת QR (SVG)',
+      error: error.message
+    });
+  }
+};
+
+// שליחת הודעה מרובה (broadcast)
+exports.sendBulk = async (req, res) => {
+  try {
+    const { message, viewMode = 'all', status: statusFilter, tags: tagsFilter, clientIds } = req.body;
+
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      return res.status(400).json({ success: false, message: 'חסרה הודעה לשליחה' });
+    }
+
+    // בניית שאילתה
+    const query = { $or: [{ 'personalInfo.whatsappPhone': { $exists: true, $ne: '' } }, { 'personalInfo.phone': { $exists: true, $ne: '' } }] };
+
+    if (clientIds && Array.isArray(clientIds) && clientIds.length > 0) {
+      query._id = { $in: clientIds.filter(id => isValidObjectId(id)).map(id => new mongoose.Types.ObjectId(id)) };
+    } else {
+      if (viewMode === 'leads') query.status = { $ne: 'won' };
+      else if (viewMode === 'clients') query.status = 'won';
+
+      if (statusFilter && Array.isArray(statusFilter) && statusFilter.length > 0) {
+        query.status = { $in: statusFilter };
+      }
+      if (tagsFilter && Array.isArray(tagsFilter) && tagsFilter.length > 0) {
+        query.tags = { $all: tagsFilter };
+      }
+    }
+
+    const clients = await Client.find(query)
+      .select('personalInfo businessInfo status _id')
+      .lean();
+
+    const withPhone = clients.filter(c => {
+      const phone = c.personalInfo?.whatsappPhone || c.personalInfo?.phone;
+      return phone && String(phone).replace(/\D/g, '').length >= 9;
+    });
+
+    if (withPhone.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'לא נמצאו נמענים עם מספר טלפון תקין'
+      });
+    }
+
+    const DELAY_MS = 2500; // השהיה בין הודעות למניעת חסימה
+    const results = { sent: 0, failed: 0, errors: [] };
+    const userId = isValidObjectId(req.user?._id) ? req.user._id : (isValidObjectId(req.user?.id) ? req.user.id : null);
+
+    for (let i = 0; i < withPhone.length; i++) {
+      const client = withPhone[i];
+      const phone = client.personalInfo?.whatsappPhone || client.personalInfo?.phone;
+      const fullName = client.personalInfo?.fullName || client.businessInfo?.businessName || 'לקוח/ת';
+      const personalizedMsg = message.replace(/\{name\}/gi, fullName).replace(/\{fullName\}/gi, fullName).trim();
+
+      try {
+        await whatsappService.sendMessage(phone, personalizedMsg);        await Client.findByIdAndUpdate(client._id, {
+          $push: {
+            interactions: {
+              type: 'whatsapp',
+              direction: 'outbound',
+              subject: 'הודעת WhatsApp (שליחה מרובה)',
+              content: personalizedMsg,
+              timestamp: new Date(),
+              createdBy: userId
+            }
+          }
+        });
+
+        results.sent++;
+      } catch (err) {
+        results.failed++;
+        results.errors.push({
+          clientId: client._id,
+          name: fullName,
+          error: err.message || 'שגיאה לא ידועה'
+        });
+      }
+
+      if (i < withPhone.length - 1) {
+        await new Promise(r => setTimeout(r, DELAY_MS));
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        total: withPhone.length,
+        sent: results.sent,
+        failed: results.failed,
+        errors: results.errors.slice(0, 20) // מחזיר עד 20 שגיאות ראשונות
+      }
+    });
+  } catch (error) {
+    console.error('Error in sendBulk:', error);
+    res.status(500).json({
+      success: false,
+      message: 'שגיאה בשליחה מרובה',
+      error: error.message
+    });
+  }
+};
+
+// תצוגה מקדימה לנמענים (בלי שליחה)
+exports.previewBulk = async (req, res) => {
+  try {
+    const { viewMode = 'all', status: statusFilter, tags: tagsFilter, clientIds } = req.query;
+
+    const query = { $or: [{ 'personalInfo.whatsappPhone': { $exists: true, $ne: '' } }, { 'personalInfo.phone': { $exists: true, $ne: '' } }] };
+
+    if (clientIds) {
+      const ids = (typeof clientIds === 'string' ? clientIds.split(',') : clientIds).filter(id => isValidObjectId(id));
+      if (ids.length > 0) query._id = { $in: ids.map(id => new mongoose.Types.ObjectId(id)) };
+    } else {
+      if (viewMode === 'leads') query.status = { $ne: 'won' };
+      else if (viewMode === 'clients') query.status = 'won';
+
+      if (statusFilter) {
+        const statuses = (typeof statusFilter === 'string' ? statusFilter.split(',') : statusFilter).filter(Boolean);
+        if (statuses.length > 0) query.status = { $in: statuses };
+      }
+      if (tagsFilter) {
+        const tags = (typeof tagsFilter === 'string' ? tagsFilter.split(',') : tagsFilter).filter(Boolean);
+        if (tags.length > 0) query.tags = { $all: tags };
+      }
+    }
+
+    const count = await Client.countDocuments(query);
+    const sample = await Client.find(query)
+      .select('personalInfo.fullName personalInfo.phone businessInfo.businessName')
+      .limit(5)
+      .lean();
+
+    res.json({
+      success: true,
+      data: {
+        count,
+        sample: sample.map(c => ({
+          name: c.personalInfo?.fullName || c.businessInfo?.businessName || 'ללא שם',
+          phone: (c.personalInfo?.whatsappPhone || c.personalInfo?.phone || '').slice(-4)
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Error in previewBulk:', error);
+    res.status(500).json({
+      success: false,
+      message: 'שגיאה בבדיקת נמענים',
+      error: error.message
+    });
+  }
+};
+
+// איתחול שירות WhatsApp (resetSession: true = מחיקת session וסריקת QR מחדש)
+exports.restart = async (req, res) => {
+  try {
+    const resetSession = Boolean(req.body?.resetSession);
+    const result = await whatsappService.restart({ resetSession });
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error in WhatsApp restart:', error);
+    res.status(500).json({
+      success: false,
+      message: 'שגיאה באיתחול WhatsApp',
       error: error.message
     });
   }

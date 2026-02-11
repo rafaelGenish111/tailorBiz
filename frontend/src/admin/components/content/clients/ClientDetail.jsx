@@ -47,12 +47,10 @@ import {
   useAddInteraction,
   useUpdateInteraction,
   useDeleteInteraction,
-  useClientNurturingInstances,
   useConvertLead
 } from '../../../hooks/useClients';
 import AssessmentTab from '../../../../components/clients/ClientCard/tabs/AssessmentTab';
 import ContractTab from '../../../../components/clients/ClientCard/tabs/ContractTab';
-import SmartSequenceProgress from '../../../../components/clients/SmartSequenceProgress';
 import ClientTimer from '../../../../components/timer/ClientTimer';
 import TimeEntriesTab from '../../../../components/timer/TimeEntriesTab';
 import DocumentsTab from '../../../../components/documents/DocumentsTab';
@@ -182,9 +180,6 @@ function ClientDetail({ open, onClose, client }) {
   const websiteMessage = websiteInquiry
     ? extractWebsiteMessageFromInteraction(websiteInquiry.content || websiteInquiry.notes)
     : '';
-
-  const { data: nurturingInstancesResponse } = useClientNurturingInstances(clientId);
-  const nurturingInstances = nurturingInstancesResponse?.data || [];
 
   const updateClient = useUpdateClient();
   const addInteraction = useAddInteraction();
@@ -554,20 +549,6 @@ function ClientDetail({ open, onClose, client }) {
             ))}
           </Tabs>
         </Box>
-
-        {/* סטטוס רצפי טיפוח פעילים */}
-        {nurturingInstances.length > 0 && (
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle1" sx={{ mb: 1 }}>
-              רצפי טיפוח פעילים
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {nurturingInstances.map((instance) => (
-                <SmartSequenceProgress key={instance._id} instance={instance} />
-              ))}
-            </Box>
-          </Box>
-        )}
 
         {currentTabKey === 'personal' && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

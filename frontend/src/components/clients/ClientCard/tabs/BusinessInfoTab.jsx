@@ -1,11 +1,12 @@
 import React from 'react';
 import { Box, Typography, Grid, Paper, Divider } from '@mui/material';
+import { cardSection } from '../../../../admin/styles/cardStyles';
 
 const BusinessInfoTab = ({ client }) => {
   return (
     <Box>
-      <Paper sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>מידע עסקי</Typography>
+      <Paper variant="outlined" sx={cardSection}>
+        <Typography variant="h6" gutterBottom fontWeight={600}>מידע עסקי</Typography>
         <Divider sx={{ mb: 2 }} />
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>

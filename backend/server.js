@@ -2,7 +2,7 @@ require('dotenv').config();
 const createApp = require('./src/app');
 const connectDB = require('./src/config/database');
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const IS_VERCEL = process.env.VERCEL === '1';
 
 console.log(`[System] Starting... VERCEL=${IS_VERCEL}, NODE_ENV=${process.env.NODE_ENV}`);
@@ -85,7 +85,7 @@ module.exports = async (req, res) => {
     'http://localhost:3000',
     'http://localhost:5000'
   ];
-  
+
   // Add FRONTEND_URL to allowed origins if provided
   if (frontendUrl) {
     const normalizedUrl = frontendUrl.replace(/\/$/, '');

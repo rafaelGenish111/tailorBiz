@@ -24,8 +24,7 @@ import {
   Phone as PhoneIcon,
   Email as EmailIcon,
   WhatsApp as WhatsAppIcon,
-  Business as BusinessIcon,
-  Edit as EditIcon,
+  ArrowForward as ArrowBackIcon,
   Star as StarIcon,
   TrendingUp as TrendingUpIcon
 } from '@mui/icons-material';
@@ -49,13 +48,10 @@ import TimerIcon from '@mui/icons-material/Timer';
 import FolderIcon from '@mui/icons-material/Folder';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 
-const ClientCard = () => {
-  const { id } = useParams();
+// תוכן ראשי - מופרד כדי לשמור על Rules of Hooks (אין early returns לפני hooks)
+function ClientCardContent({ client, id }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('personal');
-
-  const { data: response, isLoading } = useClient(id);
-  const client = response?.data;
   const { data: meData } = useCurrentUserQuery();
   const me = getCurrentUserFromQueryData(meData);
   const canAssignLead = me?.role === 'admin' || me?.role === 'super_admin';
@@ -65,29 +61,12 @@ const ClientCard = () => {
   const updateClientMutation = useUpdateClient();
   const [assignedTo, setAssignedTo] = useState('');
 
-  if (isLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-        <Typography>טוען...</Typography>
-      </Box>
-    );
-  }
-
-  if (!client) {
-    return (
-      <Box sx={{ p: 4 }}>
-        <Typography>לקוח לא נמצא</Typography>
-      </Box>
-    );
-  }
-
-  const isLead = client.status && client.status !== 'won';
-
   useEffect(() => {
     const currentAssigned = client?.metadata?.assignedTo?._id || client?.metadata?.assignedTo || '';
     setAssignedTo(currentAssigned ? String(currentAssigned) : '');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [client?._id]);
+  }, [client?._id, client?.metadata?.assignedTo]);
+
+  const isLead = client.status && client.status !== 'won';
 
   const getStatusColor = (status) => {
     const colors = {
@@ -153,10 +132,19 @@ const ClientCard = () => {
     ? extractWebsiteMessageFromInteraction(websiteInquiry.content || websiteInquiry.notes)
     : '';
 
+  const backPath = isLead ? '/admin/leads' : '/admin/customers';
+
   return (
     <Box sx={{ width: '100%', p: { xs: 1.5, md: 0 } }}>
+      <Button
+        startIcon={<ArrowBackIcon sx={{ transform: 'rotate(180deg)' }} />}
+        onClick={() => navigate(backPath)}
+        sx={{ mb: 2, textTransform: 'none', fontWeight: 600 }}
+      >
+        חזור ל{isLead ? 'לידים' : 'לקוחות'}
+      </Button>
       {/* Header Card */}
-      <Card sx={{ p: { xs: 2, md: 3 }, mb: 3 }}>
+      <Card sx={{ p: { xs: 2, md: 3 }, mb: 3, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
         <Grid container spacing={3}>
           {/* Left - Client Info */}
           <Grid item xs={12} md={8}>
@@ -191,9 +179,6 @@ const ClientCard = () => {
                   <Typography variant="h4">
                     {client.personalInfo?.fullName || 'ללא שם'}
                   </Typography>
-                  <IconButton size="small" onClick={() => navigate(`/admin/clients/${id}/edit`)}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
                 </Box>
 
                 <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -421,6 +406,29 @@ const ClientCard = () => {
       </Card>
     </Box>
   );
+}
+
+// wrapper - טוען נתונים ועושה early returns; התוכן ב-ClientCardContent (Rules of Hooks)
+const ClientCard = () => {
+  const { id } = useParams();
+  const { data: response, isLoading } = useClient(id);
+  const client = response?.data;
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+        <Typography>טוען...</Typography>
+      </Box>
+    );
+  }
+  if (!client) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Typography>לקוח לא נמצא</Typography>
+      </Box>
+    );
+  }
+  return <ClientCardContent client={client} id={id} />;
 };
 
 export default ClientCard;

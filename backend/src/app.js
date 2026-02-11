@@ -16,31 +16,20 @@ if (process.env.VERCEL !== '1') {
 }
 
 // Import routes
-const testimonialRoutes = require('./routes/testimonials.routes');
 const clientRoutes = require('./routes/clients.routes');
 const invoiceRoutes = require('./routes/invoices.routes');
 const whatsappRoutes = require('./routes/whatsapp.routes');
-const taskManagerRoutes = require('./routes/taskManagerRoutes');
-const projectRoutes = require('./routes/projectRoutes');
-const notificationRoutes = require('./routes/notificationRoutes');
-const leadNurturingRoutes = require('./routes/leadNurturingRoutes');
-const marketingRoutes = require('./routes/marketing');
-const aiBotRoutes = require('./routes/aiBotRoutes');
-const publicChatRoutes = require('./routes/publicChatRoutes');
 const testRoutes = require('./routes/testRoutes');
-const timeEntryRoutes = require('./routes/timeEntryRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const quoteRoutes = require('./routes/quoteRoutes');
-const huntingPoolRoutes = require('./routes/huntingPoolRoutes');
 const referrerPartnersRoutes = require('./routes/referrerPartnersRoutes');
 const authRoutes = require('./routes/authRoutes');
 const publicCmsRoutes = require('./routes/publicCmsRoutes');
-const adminPagesRoutes = require('./routes/adminPagesRoutes');
-const adminArticlesRoutes = require('./routes/adminArticlesRoutes');
-const adminClientsRoutes = require('./routes/adminClientsRoutes');
 const adminUploadsRoutes = require('./routes/adminUploadsRoutes');
 const adminSiteSettingsRoutes = require('./routes/adminSiteSettingsRoutes');
 const adminUsersRoutes = require('./routes/adminUsersRoutes');
+const timeEntriesRoutes = require('./routes/timeEntries.routes');
+const notificationsRoutes = require('./routes/notifications.routes');
 
 // אנו עוטפים את הכל בפונקציה אסינכרונית כדי לאפשר ל-Parse לעלות לפני שהאפליקציה מוכנה
 async function createApp() {
@@ -256,29 +245,18 @@ async function createApp() {
 
   // --- Routes ---
   app.use('/api/auth', authRoutes);
-  app.use('/api/testimonials', testimonialRoutes);
   app.use('/api/clients', clientRoutes);
   app.use('/api/invoices', invoiceRoutes);
   app.use('/api/whatsapp', whatsappRoutes);
-  app.use('/api/tasks', taskManagerRoutes);
-  app.use('/api/projects', projectRoutes);
-  app.use('/api/notifications', notificationRoutes);
-  app.use('/api/lead-nurturing', leadNurturingRoutes);
-  app.use('/api/marketing', marketingRoutes);
-  app.use('/api/ai-bots', aiBotRoutes);
-  app.use('/api/time-entries', timeEntryRoutes);
   app.use('/api/documents', documentRoutes);
   app.use('/api/quotes', quoteRoutes);
-  app.use('/api/hunting-pools', huntingPoolRoutes);
   app.use('/api/referrer-partners', referrerPartnersRoutes);
   app.use('/api/public', publicCmsRoutes);
-  app.use('/api/public/chat', publicChatRoutes);
-  app.use('/api/admin/pages', adminPagesRoutes);
-  app.use('/api/admin/articles', adminArticlesRoutes);
-  app.use('/api/admin/clients', adminClientsRoutes);
   app.use('/api/admin/uploads', adminUploadsRoutes);
   app.use('/api/admin/site-settings', adminSiteSettingsRoutes);
   app.use('/api/admin/users', adminUsersRoutes);
+  app.use('/api/time-entries', timeEntriesRoutes);
+  app.use('/api/notifications', notificationsRoutes);
 
   if (process.env.NODE_ENV === 'development') {
     app.use('/api/test', testRoutes);
@@ -334,28 +312,6 @@ async function createApp() {
       }
     });
 
-    app.get('/api/automation/status', async (req, res) => {
-      try {
-        const reminderService = require('./services/reminderService');
-        const leadNurturingService = require('./services/leadServiceV2');
-
-        res.json({
-          success: true,
-          data: {
-            reminderService: {
-              active: reminderService.jobs && reminderService.jobs.length > 0,
-              jobCount: reminderService.jobs ? reminderService.jobs.length : 0
-            },
-            leadNurturingService: {
-              active: leadNurturingService.jobs && leadNurturingService.jobs.length > 0,
-              jobCount: leadNurturingService.jobs ? leadNurturingService.jobs.length : 0
-            }
-          }
-        });
-      } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-      }
-    });
   }
 
   app.get('/health', (req, res) => {

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { clientAPI, leadNurturingAPI } from '../utils/api';
+import { clientAPI } from '../utils/api';
 import { toast } from 'react-toastify';
 
 export const useClients = (filters) => {
@@ -88,18 +88,6 @@ export const useClientInteractions = (clientId) => {
     enabled: !!clientId,
     refetchOnMount: 'always',
     refetchOnWindowFocus: true
-  });
-};
-
-// Lead nurturing instances for a specific client
-export const useClientNurturingInstances = (clientId) => {
-  return useQuery({
-    queryKey: ['client-nurturing', clientId],
-    queryFn: () =>
-      leadNurturingAPI
-        .getActiveInstances({ clientId })
-        .then((res) => res.data),
-    enabled: !!clientId
   });
 };
 
