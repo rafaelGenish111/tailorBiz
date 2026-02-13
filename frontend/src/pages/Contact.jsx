@@ -207,13 +207,13 @@ function Contact() {
                       width: 50,
                       height: 50,
                       borderRadius: '50%',
-                      bgcolor: 'rgba(0,230,118,0.1)',
+                      bgcolor: 'rgba(0,255,153,0.1)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
                   >
-                    <EmailIcon sx={{ color: '#00E676' }} />
+                    <EmailIcon sx={{ color: '#00FF99' }} />
                   </Box>
                   <Box>
                     <Typography variant="body2" color="text.secondary">
@@ -231,13 +231,13 @@ function Contact() {
                       width: 50,
                       height: 50,
                       borderRadius: '50%',
-                      bgcolor: 'rgba(0,230,118,0.1)',
+                      bgcolor: 'rgba(0,255,153,0.1)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
                   >
-                    <PhoneIcon sx={{ color: '#00E676' }} />
+                    <PhoneIcon sx={{ color: '#00FF99' }} />
                   </Box>
                   <Box>
                     <Typography variant="body2" color="text.secondary">
@@ -256,13 +256,13 @@ function Contact() {
                         width: 50,
                         height: 50,
                         borderRadius: '50%',
-                        bgcolor: 'rgba(0,230,118,0.1)',
+                        bgcolor: 'rgba(0,255,153,0.1)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}
                     >
-                      <WhatsAppIcon sx={{ color: '#00E676' }} />
+                      <WhatsAppIcon sx={{ color: '#00FF99' }} />
                     </Box>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
@@ -281,13 +281,13 @@ function Contact() {
                       width: 50,
                       height: 50,
                       borderRadius: '50%',
-                      bgcolor: 'rgba(0,230,118,0.1)',
+                      bgcolor: 'rgba(0,255,153,0.1)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
                   >
-                    <LocationOnIcon sx={{ color: '#00E676' }} />
+                    <LocationOnIcon sx={{ color: '#00FF99' }} />
                   </Box>
                   <Box>
                     <Typography variant="body2" color="text.secondary">
@@ -304,7 +304,7 @@ function Contact() {
                 sx={{
                   mt: 6,
                   p: 4,
-                  bgcolor: '#1E1E1E',
+                  bgcolor: '#262626',
                   borderRadius: 1,
                 }}
               >

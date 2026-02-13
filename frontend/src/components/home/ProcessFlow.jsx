@@ -69,7 +69,7 @@ function ProcessStep({ step, index, isLast }) {
                 transform: 'translateX(-50%)',
                 fontSize: '6rem',
                 fontWeight: 900,
-                color: 'rgba(0, 230, 118, 0.06)',
+                color: 'rgba(0, 255, 153, 0.06)',
                 lineHeight: 1,
                 zIndex: 0,
               }}
@@ -85,18 +85,18 @@ function ProcessStep({ step, index, isLast }) {
                 width: 100,
                 height: 100,
                 borderRadius: '50%',
-                bgcolor: '#1E1E1E',
+                bgcolor: '#262626',
                 border: '4px solid',
-                borderColor: '#00E676',
+                borderColor: '#00FF99',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 mx: 'auto',
                 mb: 3,
-                boxShadow: '0px 8px 24px rgba(0, 230, 118, 0.2)',
+                boxShadow: '0px 8px 24px rgba(0, 255, 153, 0.2)',
               }}
             >
-              <Icon sx={{ fontSize: 50, color: '#00E676' }} aria-hidden="true" />
+              <Icon sx={{ fontSize: 50, color: '#00FF99' }} aria-hidden="true" />
             </Box>
 
             {/* כותרת */}
@@ -146,7 +146,7 @@ function ProcessStep({ step, index, isLast }) {
             <ArrowBackIcon
               sx={{
                 fontSize: 40,
-                color: '#00E676',
+                color: '#00FF99',
                 opacity: 0.5,
               }}
               aria-hidden="true"

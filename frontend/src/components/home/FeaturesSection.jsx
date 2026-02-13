@@ -58,8 +58,9 @@ function FeatureCard({ feature, index }) {
           display: 'flex',
           flexDirection: 'column',
           p: { xs: 4, md: 5 },
-          bgcolor: 'rgba(30, 30, 30, 0.6)',
-          backdropFilter: 'blur(10px)',
+          bgcolor: 'rgba(26, 26, 26, 0.8)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
           border: '1px solid #333333',
           borderRadius: '24px',
           boxSizing: 'border-box',
@@ -67,8 +68,9 @@ function FeatureCard({ feature, index }) {
           cursor: 'pointer',
           '&:hover': {
             transform: 'scale(1.02)',
-            borderColor: '#00E676',
-            boxShadow: '0px 24px 48px -12px rgba(0, 230, 118, 0.15)',
+            borderColor: 'rgba(0, 255, 153, 0.5)',
+            boxShadow: '0px 24px 48px -12px rgba(0, 255, 153, 0.15)',
+            bgcolor: 'rgba(26, 26, 26, 0.9)',
           },
         }}
       >
@@ -81,11 +83,11 @@ function FeatureCard({ feature, index }) {
             justifyContent: 'center',
             mb: 3,
             borderRadius: '16px',
-            bgcolor: 'rgba(0, 230, 118, 0.1)',
-            border: '1px solid rgba(0, 230, 118, 0.2)',
+            bgcolor: 'rgba(0, 255, 153, 0.1)',
+            border: '1px solid rgba(0, 255, 153, 0.2)',
           }}
         >
-          <Icon sx={{ fontSize: { xs: 28, md: 32 }, color: '#00E676' }} />
+          <Icon sx={{ fontSize: { xs: 28, md: 32 }, color: '#00FF99' }} />
         </Box>
 
         <Typography
@@ -104,7 +106,7 @@ function FeatureCard({ feature, index }) {
         <Typography
           variant="body1"
           sx={{
-            color: '#E0E0E0',
+            color: '#B0B0B0',
             lineHeight: 1.7,
             flexGrow: 1,
             fontSize: { xs: '0.95rem', md: '1.125rem' },
@@ -123,7 +125,7 @@ function FeaturesSection() {
       id="features"
       sx={{
         py: { xs: 12, md: 16 },
-        bgcolor: '#1A1A1A',
+        bgcolor: '#0A0A0A',
       }}
     >
       <Container maxWidth="lg" sx={{ mx: 'auto', px: { xs: 3, md: 6 } }}>
@@ -142,7 +144,7 @@ function FeaturesSection() {
           <Typography
             variant="h6"
             sx={{
-              color: '#E0E0E0',
+              color: '#B0B0B0',
               fontWeight: 400,
               maxWidth: 700,
               mx: 'auto',

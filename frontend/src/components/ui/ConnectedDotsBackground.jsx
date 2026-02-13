@@ -2,8 +2,8 @@ import { useRef, useEffect } from 'react';
 import { Box } from '@mui/material';
 
 function ConnectedDotsBackground({
-  dotColor = 'rgba(0, 230, 118, 0.4)',
-  lineColor = 'rgba(0, 230, 118, 0.12)',
+  dotColor = 'rgba(0, 255, 153, 0.4)',
+  lineColor = 'rgba(0, 255, 153, 0.12)',
   dotCount = 80,
   connectionDistance = 150,
   dotRadius = 2,
@@ -51,7 +51,7 @@ function ConnectedDotsBackground({
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < connectionDistance) {
             const opacity = 1 - dist / connectionDistance;
-            ctx.strokeStyle = `rgba(0, 230, 118, ${opacity * 0.12})`;
+            ctx.strokeStyle = `rgba(0, 255, 153, ${opacity * 0.12})`;
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(dots[i].x, dots[i].y);

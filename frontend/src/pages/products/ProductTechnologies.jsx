@@ -7,7 +7,7 @@ import { getProductById } from '../../utils/productsConfig';
 
 const MotionBox = motion.create(Box);
 
-const textSx = { color: '#E0E0E0', lineHeight: 1.9, fontFamily: "'Heebo', system-ui, sans-serif" };
+const textSx = { color: '#B0B0B0', lineHeight: 1.9, fontFamily: "'Heebo', system-ui, sans-serif" };
 
 function ProductTechnologies() {
   const { productId } = useParams();

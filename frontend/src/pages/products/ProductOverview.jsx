@@ -11,7 +11,7 @@ import InlineBold from '../../components/common/InlineBold';
 const MotionBox = motion.create(Box);
 
 const textSx = {
-  color: '#E0E0E0',
+  color: '#B0B0B0',
   fontWeight: 400,
   lineHeight: 1.9,
   fontFamily: "'Heebo', system-ui, sans-serif",
@@ -38,7 +38,7 @@ function ProductOverview() {
           position: 'relative',
           py: { xs: 8, md: 12 },
           overflow: 'hidden',
-          bgcolor: '#111111',
+          bgcolor: '#0A0A0A',
         }}
       >
         <Box
@@ -164,7 +164,7 @@ function ProductOverview() {
       </Box>
 
       {/* Features preview */}
-      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: '#111111' }}>
+      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: '#0A0A0A' }}>
         <Container maxWidth="lg">
           <Typography
             variant="h4"
@@ -190,7 +190,7 @@ function ProductOverview() {
                     gap: 2,
                     p: 2,
                     borderRadius: 2,
-                    bgcolor: '#111111',
+                    bgcolor: '#0A0A0A',
                     border: '1px solid',
                     borderColor: '#333333',
                   }}

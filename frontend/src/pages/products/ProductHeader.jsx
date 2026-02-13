@@ -43,7 +43,7 @@ function ProductHeader({ productId }) {
       position="sticky"
       elevation={0}
       sx={{
-        bgcolor: 'rgba(17, 17, 17, 0.95)',
+        bgcolor: 'rgba(10, 10, 10, 0.95)',
         borderBottom: '1px solid',
         borderColor: 'rgba(0, 0, 0, 0.06)',
         backdropFilter: 'blur(20px)',

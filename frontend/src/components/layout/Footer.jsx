@@ -55,7 +55,7 @@ function Footer() {
     <Box
       component="footer"
       sx={{
-        bgcolor: '#111111',
+        bgcolor: '#0A0A0A',
         borderTop: '1px solid',
         borderColor: '#333333',
         pt: 8,
@@ -77,14 +77,14 @@ function Footer() {
                 objectFit: 'contain',
               }}
             />
-            <Typography variant="body2" sx={{ color: '#E0E0E0', mb: 2 }}>
+            <Typography variant="body2" sx={{ color: '#B0B0B0', mb: 2 }}>
               מערכת ניהול אוטומטית לעסקים קטנים ובינוניים. חוסכת זמן ומחזירה לקוחות.
             </Typography>
           </Grid>
 
           {/* עמודה 2 - קישורים */}
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#00E676' }}>
+            <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#00FF99' }}>
               קישורים מהירים
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -93,8 +93,8 @@ function Footer() {
                 to="/about"
                 underline="hover"
                 sx={{
-                  color: '#E0E0E0',
-                  '&:hover': { color: '#00E676' },
+                  color: '#B0B0B0',
+                  '&:hover': { color: '#00FF99' },
                   transition: 'color 0.3s',
                 }}
               >
@@ -106,8 +106,8 @@ function Footer() {
                   to="/products"
                   underline="hover"
                   sx={{
-                    color: '#E0E0E0',
-                    '&:hover': { color: '#00E676' },
+                    color: '#B0B0B0',
+                    '&:hover': { color: '#00FF99' },
                     transition: 'color 0.3s',
                   }}
                 >
@@ -120,8 +120,8 @@ function Footer() {
                   to="/clients"
                   underline="hover"
                   sx={{
-                    color: '#E0E0E0',
-                    '&:hover': { color: '#00E676' },
+                    color: '#B0B0B0',
+                    '&:hover': { color: '#00FF99' },
                     transition: 'color 0.3s',
                   }}
                 >
@@ -133,8 +133,8 @@ function Footer() {
                 to="/contact"
                 underline="hover"
                 sx={{
-                  color: '#E0E0E0',
-                  '&:hover': { color: '#00E676' },
+                  color: '#B0B0B0',
+                  '&:hover': { color: '#00FF99' },
                   transition: 'color 0.3s',
                 }}
               >
@@ -145,8 +145,8 @@ function Footer() {
                 to="/roi-calculator"
                 underline="hover"
                 sx={{
-                  color: '#E0E0E0',
-                  '&:hover': { color: '#00E676' },
+                  color: '#B0B0B0',
+                  '&:hover': { color: '#00FF99' },
                   transition: 'color 0.3s',
                 }}
               >
@@ -156,8 +156,8 @@ function Footer() {
                 href="#"
                 underline="hover"
                 sx={{
-                  color: '#E0E0E0',
-                  '&:hover': { color: '#00E676' },
+                  color: '#B0B0B0',
+                  '&:hover': { color: '#00FF99' },
                   transition: 'color 0.3s',
                 }}
               >
@@ -167,8 +167,8 @@ function Footer() {
                 href="/privacy"
                 underline="hover"
                 sx={{
-                  color: '#E0E0E0',
-                  '&:hover': { color: '#00E676' },
+                  color: '#B0B0B0',
+                  '&:hover': { color: '#00FF99' },
                   transition: 'color 0.3s',
                 }}
               >
@@ -179,7 +179,7 @@ function Footer() {
 
           {/* עמודה 3 - יצירת קשר */}
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#00E676' }}>
+            <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#00FF99' }}>
               יצירת קשר
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -193,8 +193,8 @@ function Footer() {
                   textTransform: 'none',
                   fontWeight: 500,
                   '&:hover': {
-                    backgroundColor: 'rgba(0, 230, 118, 0.08)',
-                    color: '#00E676',
+                    backgroundColor: 'rgba(0, 255, 153, 0.08)',
+                    color: '#00FF99',
                   },
                 }}
               >
@@ -212,8 +212,8 @@ function Footer() {
                     textTransform: 'none',
                     fontWeight: 500,
                     '&:hover': {
-                      backgroundColor: 'rgba(0, 230, 118, 0.08)',
-                      color: '#00E676',
+                      backgroundColor: 'rgba(0, 255, 153, 0.08)',
+                      color: '#00FF99',
                     },
                   }}
                 >
@@ -256,8 +256,8 @@ function Footer() {
                     textTransform: 'none',
                     fontWeight: 500,
                     '&:hover': {
-                      backgroundColor: 'rgba(0, 230, 118, 0.08)',
-                      color: '#00E676',
+                      backgroundColor: 'rgba(0, 255, 153, 0.08)',
+                      color: '#00FF99',
                     },
                   }}
                 >
@@ -269,7 +269,7 @@ function Footer() {
 
           {/* עמודה 4 - רשתות חברתיות */}
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#00E676' }}>
+            <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#00FF99' }}>
               עקבו אחרינו
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -279,10 +279,10 @@ function Footer() {
                   target="_blank"
                   sx={{
                     color: '#FFFFFF',
-                    bgcolor: '#1E1E1E',
+                    bgcolor: '#262626',
                     '&:hover': {
-                      bgcolor: '#00E676',
-                      color: '#111111',
+                      bgcolor: '#00FF99',
+                      color: '#0A0A0A',
                     },
                     transition: 'all 0.3s',
                   }}
@@ -297,10 +297,10 @@ function Footer() {
                   target="_blank"
                   sx={{
                     color: '#FFFFFF',
-                    bgcolor: '#1E1E1E',
+                    bgcolor: '#262626',
                     '&:hover': {
-                      bgcolor: '#00E676',
-                      color: '#111111',
+                      bgcolor: '#00FF99',
+                      color: '#0A0A0A',
                     },
                     transition: 'all 0.3s',
                   }}
@@ -315,10 +315,10 @@ function Footer() {
                   target="_blank"
                   sx={{
                     color: '#FFFFFF',
-                    bgcolor: '#1E1E1E',
+                    bgcolor: '#262626',
                     '&:hover': {
-                      bgcolor: '#00E676',
-                      color: '#111111',
+                      bgcolor: '#00FF99',
+                      color: '#0A0A0A',
                     },
                     transition: 'all 0.3s',
                   }}
@@ -333,10 +333,10 @@ function Footer() {
                   target="_blank"
                   sx={{
                     color: '#FFFFFF',
-                    bgcolor: '#1E1E1E',
+                    bgcolor: '#262626',
                     '&:hover': {
-                      bgcolor: '#00E676',
-                      color: '#111111',
+                      bgcolor: '#00FF99',
+                      color: '#0A0A0A',
                     },
                     transition: 'all 0.3s',
                   }}

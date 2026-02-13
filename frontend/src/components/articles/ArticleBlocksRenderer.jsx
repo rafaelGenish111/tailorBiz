@@ -16,7 +16,7 @@ const ArticleBlocksRenderer = ({ blocks }) => {
                 sx={{
                   p: { xs: 2.5, md: 4 },
                   borderRadius: 3,
-                  bgcolor: '#1E1E1E',
+                  bgcolor: '#262626',
                   border: '1px solid',
                   borderColor: '#333333'
                 }}
@@ -48,7 +48,7 @@ const ArticleBlocksRenderer = ({ blocks }) => {
                   <Box component="img" src={getImageUrl(b.data.url)} alt={b.data.alt || ''} sx={{ width: '100%', display: 'block' }} />
                 ) : null}
                 {b.data?.caption ? (
-                  <Box sx={{ p: 1.5, bgcolor: '#1E1E1E' }}>
+                  <Box sx={{ p: 1.5, bgcolor: '#262626' }}>
                     <Typography variant="caption" color="text.secondary">
                       {b.data.caption}
                     </Typography>
@@ -58,7 +58,7 @@ const ArticleBlocksRenderer = ({ blocks }) => {
             );
           case 'quote':
             return (
-              <Box key={idx} sx={{ p: 3, borderRight: '4px solid', borderColor: 'primary.main', bgcolor: '#1E1E1E', borderRadius: 2 }}>
+              <Box key={idx} sx={{ p: 3, borderRight: '4px solid', borderColor: 'primary.main', bgcolor: '#262626', borderRadius: 2 }}>
                 <Typography variant="body1" fontWeight={700} sx={{ whiteSpace: 'pre-wrap' }}>
                   {b.data?.text || ''}
                 </Typography>

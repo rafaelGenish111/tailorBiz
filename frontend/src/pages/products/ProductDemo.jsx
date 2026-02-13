@@ -9,7 +9,7 @@ import Button from '../../components/ui/Button';
 
 const MotionBox = motion.create(Box);
 
-const textSx = { color: '#E0E0E0', lineHeight: 1.9, fontFamily: "'Heebo', system-ui, sans-serif" };
+const textSx = { color: '#B0B0B0', lineHeight: 1.9, fontFamily: "'Heebo', system-ui, sans-serif" };
 
 function ProductDemo() {
   const { productId } = useParams();
@@ -59,7 +59,7 @@ function ProductDemo() {
                   {demoContent.sides?.length > 0 && (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 4 }}>
                       {demoContent.sides.map((side, i) => (
-                        <Box key={i} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: '#333333', bgcolor: '#111111' }}>
+                        <Box key={i} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: '#333333', bgcolor: '#0A0A0A' }}>
                           <Typography sx={{ fontWeight: 700, color: product.accentColor, mb: 0.5, fontFamily: "'Heebo', system-ui, sans-serif" }}>
                             {side.title}
                           </Typography>
@@ -122,7 +122,7 @@ function ProductDemo() {
               overflow: 'hidden',
               border: '1px solid',
               borderColor: '#333333',
-              bgcolor: '#111111',
+              bgcolor: '#0A0A0A',
               aspectRatio: '16/9',
               maxHeight: 500,
               display: 'flex',

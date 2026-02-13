@@ -58,7 +58,7 @@ function FeatureSection({ feature, index }) {
         py: { xs: 12, md: 16 },
         position: 'relative',
         overflow: 'hidden',
-        bgcolor: index % 2 === 0 ? '#111111' : '#1A1A1A',
+        bgcolor: index % 2 === 0 ? '#0A0A0A' : '#1A1A1A',
       }}
     >
       {/* Background decorative elements */}
@@ -70,8 +70,8 @@ function FeatureSection({ feature, index }) {
           right: 0,
           bottom: 0,
           background: index % 2 === 0
-            ? 'linear-gradient(135deg, rgba(0, 230, 118, 0.02) 0%, rgba(139, 92, 246, 0.02) 100%)'
-            : 'linear-gradient(135deg, rgba(139, 92, 246, 0.02) 0%, rgba(0, 230, 118, 0.02) 100%)',
+            ? 'linear-gradient(135deg, rgba(0, 255, 153, 0.02) 0%, rgba(139, 92, 246, 0.02) 100%)'
+            : 'linear-gradient(135deg, rgba(139, 92, 246, 0.02) 0%, rgba(0, 255, 153, 0.02) 100%)',
           zIndex: 0,
         }}
       />
@@ -107,7 +107,7 @@ function FeatureSection({ feature, index }) {
                 variant="body1"
                 sx={{
                   mb: 4,
-                  color: '#E0E0E0',
+                  color: '#B0B0B0',
                   lineHeight: 1.8,
                   fontSize: { xs: '1rem', md: '1.125rem' },
                   fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
@@ -133,7 +133,7 @@ function FeatureSection({ feature, index }) {
                         width: 24,
                         height: 24,
                         borderRadius: '50%',
-                        bgcolor: 'rgba(0, 230, 118, 0.1)',
+                        bgcolor: 'rgba(0, 255, 153, 0.1)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -143,7 +143,7 @@ function FeatureSection({ feature, index }) {
                     >
                       <Check
                         size={16}
-                        style={{ color: '#00E676', strokeWidth: 3 }}
+                        style={{ color: '#00FF99', strokeWidth: 3 }}
                       />
                     </Box>
                     <Typography
@@ -200,7 +200,7 @@ function FeatureSection({ feature, index }) {
                   sx={{
                     width: '100%',
                     height: { xs: 300, md: 500 },
-                    background: 'linear-gradient(135deg, rgba(0, 230, 118, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%)',
+                    background: 'linear-gradient(135deg, rgba(0, 255, 153, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%)',
                     backdropFilter: 'blur(20px)',
                     WebkitBackdropFilter: 'blur(20px)',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -210,7 +210,7 @@ function FeatureSection({ feature, index }) {
                     justifyContent: 'center',
                     position: 'relative',
                     overflow: 'hidden',
-                    boxShadow: '0px 20px 60px -10px rgba(0, 230, 118, 0.15)',
+                    boxShadow: '0px 20px 60px -10px rgba(0, 255, 153, 0.15)',
                   }}
                 >
                   {/* Animated gradient orbs */}
@@ -231,7 +231,7 @@ function FeatureSection({ feature, index }) {
                       width: '60%',
                       height: '60%',
                       borderRadius: '50%',
-                      background: 'radial-gradient(circle, rgba(0, 230, 118, 0.2) 0%, transparent 70%)',
+                      background: 'radial-gradient(circle, rgba(0, 255, 153, 0.2) 0%, transparent 70%)',
                       filter: 'blur(40px)',
                     }}
                   />
@@ -271,8 +271,8 @@ function FeatureSection({ feature, index }) {
                         height: { xs: 120, md: 180 },
                         mx: 'auto',
                         borderRadius: '24px',
-                        background: 'linear-gradient(135deg, rgba(0, 230, 118, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
-                        border: '2px dashed rgba(0, 230, 118, 0.3)',
+                        background: 'linear-gradient(135deg, rgba(0, 255, 153, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
+                        border: '2px dashed rgba(0, 255, 153, 0.3)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -281,7 +281,7 @@ function FeatureSection({ feature, index }) {
                       <Typography
                         variant="body2"
                         sx={{
-                          color: '#E0E0E0',
+                          color: '#B0B0B0',
                           fontSize: { xs: '0.75rem', md: '0.875rem' },
                           fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
                         }}
@@ -307,7 +307,7 @@ function Features() {
   });
 
   return (
-    <Box sx={{ bgcolor: '#111111', minHeight: '100vh' }}>
+    <Box sx={{ bgcolor: '#0A0A0A', minHeight: '100vh' }}>
       {/* Hero Section */}
       <Box
         ref={heroRef}
@@ -315,7 +315,7 @@ function Features() {
           position: 'relative',
           py: { xs: 12, md: 20 },
           overflow: 'hidden',
-          bgcolor: '#111111',
+          bgcolor: '#0A0A0A',
         }}
       >
         {/* Subtle background gradient */}
@@ -326,7 +326,7 @@ function Features() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'linear-gradient(135deg, rgba(0, 230, 118, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%)',
+            background: 'linear-gradient(135deg, rgba(0, 255, 153, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%)',
             zIndex: 0,
           }}
         />
@@ -349,7 +349,7 @@ function Features() {
             width: 400,
             height: 400,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(0, 230, 118, 0.08) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(0, 255, 153, 0.08) 0%, transparent 70%)',
             filter: 'blur(80px)',
             zIndex: 0,
           }}
@@ -402,7 +402,7 @@ function Features() {
               variant="h5"
               sx={{
                 mb: 5,
-                color: '#E0E0E0',
+                color: '#B0B0B0',
                 fontWeight: 400,
                 lineHeight: 1.7,
                 fontSize: { xs: '1.125rem', md: '1.5rem' },
@@ -427,11 +427,11 @@ function Features() {
                   fontSize: { xs: '1rem', md: '1.125rem' },
                   px: { xs: 5, md: 7 },
                   py: { xs: 1.5, md: 2 },
-                  background: 'linear-gradient(135deg, #00E676 0%, #8B5CF6 100%)',
-                  boxShadow: '0px 8px 24px rgba(0, 230, 118, 0.3)',
+                  background: 'linear-gradient(135deg, #00FF99 0%, #8B5CF6 100%)',
+                  boxShadow: '0px 8px 24px rgba(0, 255, 153, 0.3)',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #00C853 0%, #7C3AED 100%)',
-                    boxShadow: '0px 12px 32px rgba(0, 230, 118, 0.4)',
+                    background: 'linear-gradient(135deg, #00E676 0%, #7C3AED 100%)',
+                    boxShadow: '0px 12px 32px rgba(0, 255, 153, 0.4)',
                     transform: 'translateY(-2px)',
                   },
                   transition: 'all 0.3s ease',
@@ -453,7 +453,7 @@ function Features() {
       <Box
         sx={{
           py: { xs: 12, md: 16 },
-          bgcolor: '#111111',
+          bgcolor: '#0A0A0A',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -465,7 +465,7 @@ function Features() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'linear-gradient(135deg, rgba(0, 230, 118, 0.02) 0%, rgba(139, 92, 246, 0.02) 100%)',
+            background: 'linear-gradient(135deg, rgba(0, 255, 153, 0.02) 0%, rgba(139, 92, 246, 0.02) 100%)',
             zIndex: 0,
           }}
         />
@@ -493,7 +493,7 @@ function Features() {
               variant="h6"
               sx={{
                 mb: 5,
-                color: '#E0E0E0',
+                color: '#B0B0B0',
                 fontWeight: 400,
                 fontSize: { xs: '1rem', md: '1.25rem' },
                 fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
@@ -511,11 +511,11 @@ function Features() {
                 fontSize: { xs: '1rem', md: '1.125rem' },
                 px: { xs: 5, md: 7 },
                 py: { xs: 1.5, md: 2 },
-                background: 'linear-gradient(135deg, #00E676 0%, #8B5CF6 100%)',
-                boxShadow: '0px 8px 24px rgba(0, 230, 118, 0.3)',
+                background: 'linear-gradient(135deg, #00FF99 0%, #8B5CF6 100%)',
+                boxShadow: '0px 8px 24px rgba(0, 255, 153, 0.3)',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #00C853 0%, #7C3AED 100%)',
-                  boxShadow: '0px 12px 32px rgba(0, 230, 118, 0.4)',
+                  background: 'linear-gradient(135deg, #00E676 0%, #7C3AED 100%)',
+                  boxShadow: '0px 12px 32px rgba(0, 255, 153, 0.4)',
                   transform: 'translateY(-2px)',
                 },
                 transition: 'all 0.3s ease',

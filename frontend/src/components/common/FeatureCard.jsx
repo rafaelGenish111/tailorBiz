@@ -8,14 +8,18 @@ function FeatureCard({ icon: Icon, title, description, color }) {
         height: '100%',
         border: '1px solid',
         borderColor: '#333333',
+        backgroundColor: 'rgba(26, 26, 26, 0.8)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         '&:hover': {
-          borderColor: color || '#00E676',
-          boxShadow: `0px 12px 32px rgba(0, 230, 118, 0.1)`,
+          borderColor: color ? `${color}80` : 'rgba(0, 255, 153, 0.5)',
+          boxShadow: `0px 12px 32px rgba(0, 255, 153, 0.1)`,
           transform: 'translateY(-8px)',
+          backgroundColor: 'rgba(26, 26, 26, 0.9)',
           '& .feature-icon': {
             transform: 'scale(1.1) rotate(5deg)',
-            bgcolor: color ? `${color}15` : 'rgba(0, 230, 118, 0.1)',
+            bgcolor: color ? `${color}15` : 'rgba(0, 255, 153, 0.1)',
           },
         },
       }}
@@ -32,11 +36,11 @@ function FeatureCard({ icon: Icon, title, description, color }) {
             justifyContent: 'center',
             mx: 'auto',
             mb: 3,
-            bgcolor: '#1E1E1E',
+            bgcolor: '#262626',
             transition: 'all 0.4s ease',
           }}
         >
-          <Icon sx={{ fontSize: 40, color: color || '#00E676' }} />
+          <Icon sx={{ fontSize: 40, color: color || '#00FF99' }} />
         </Box>
 
         <Typography

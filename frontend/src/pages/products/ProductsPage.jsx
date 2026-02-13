@@ -111,7 +111,7 @@ function ProductsPage() {
   const [heroRef, heroInView] = useInView({ triggerOnce: true, threshold: 0.2 });
 
   return (
-    <Box sx={{ bgcolor: '#111111', minHeight: '100vh' }}>
+    <Box sx={{ bgcolor: '#0A0A0A', minHeight: '100vh' }}>
       <Helmet>
         <title>מוצרים | TailorBiz - פתרונות דיגיטליים בהתאמה אישית</title>
         <meta name="description" content="אפליקציית מטפלים, המפעל החכם, בית ספר של העתיד - פתרונות דיגיטליים מותאמים לעסק שלכם." />
@@ -124,7 +124,7 @@ function ProductsPage() {
           position: 'relative',
           py: { xs: 10, md: 14 },
           overflow: 'hidden',
-          bgcolor: '#111111',
+          bgcolor: '#0A0A0A',
         }}
       >
         <Box
@@ -134,7 +134,7 @@ function ProductsPage() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'linear-gradient(135deg, rgba(0, 230, 118, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%)',
+            background: 'linear-gradient(135deg, rgba(0, 255, 153, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%)',
             zIndex: 0,
           }}
         />
@@ -161,7 +161,7 @@ function ProductsPage() {
             <Typography
               variant="h6"
               sx={{
-                color: '#E0E0E0',
+                color: '#B0B0B0',
                 fontWeight: 400,
                 lineHeight: 1.7,
                 fontSize: { xs: '1rem', md: '1.25rem' },

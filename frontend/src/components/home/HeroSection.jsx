@@ -37,13 +37,18 @@ function HeroSection() {
         display: 'flex',
         alignItems: 'center',
         overflow: 'hidden',
-        bgcolor: '#111111',
+        background: `
+          radial-gradient(ellipse at 20% 50%, rgba(0, 255, 153, 0.07) 0%, transparent 50%),
+          radial-gradient(ellipse at 80% 20%, rgba(0, 255, 153, 0.05) 0%, transparent 50%),
+          radial-gradient(ellipse at 50% 100%, rgba(0, 255, 153, 0.03) 0%, transparent 40%),
+          #0A0A0A
+        `,
       }}
     >
       {/* Connected Dots Animation - Layer 1 */}
       <ConnectedDotsBackground
-        dotColor="rgba(0, 230, 118, 0.4)"
-        lineColor="rgba(0, 230, 118, 0.12)"
+        dotColor="rgba(0, 255, 153, 0.4)"
+        lineColor="rgba(0, 255, 153, 0.12)"
         dotCount={80}
         connectionDistance={150}
         speed={0.3}
@@ -79,7 +84,7 @@ function HeroSection() {
             width: '320px',
             height: '320px',
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(0, 230, 118, 0.15) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(0, 255, 153, 0.15) 0%, transparent 70%)',
             filter: 'blur(60px)',
           }}
         />
@@ -99,7 +104,7 @@ function HeroSection() {
             width: '350px',
             height: '350px',
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(0, 230, 118, 0.10) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(0, 255, 153, 0.10) 0%, transparent 70%)',
             filter: 'blur(60px)',
           }}
         />
@@ -142,12 +147,13 @@ function HeroSection() {
             maxWidth: 800,
             mx: 'auto',
             textAlign: 'center',
-            backgroundColor: 'rgba(26, 26, 26, 0.6)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
+            backgroundColor: 'rgba(26, 26, 26, 0.7)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(51, 51, 51, 0.6)',
             borderRadius: '24px',
             padding: { xs: 3, md: 5 },
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
           }}
         >
           {/* Logo */}
@@ -168,7 +174,7 @@ function HeroSection() {
                 display: 'block',
                 mb: 4,
                 objectFit: 'contain',
-                filter: 'drop-shadow(0px 10px 30px rgba(0,230,118,0.15))',
+                filter: 'drop-shadow(0px 10px 30px rgba(0,255,153,0.15))',
               }}
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
@@ -208,7 +214,7 @@ function HeroSection() {
               variant="h5"
               sx={{
                 mb: 5,
-                color: '#E0E0E0',
+                color: '#B0B0B0',
                 fontWeight: 400,
                 lineHeight: 1.6,
                 fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",

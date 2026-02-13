@@ -40,8 +40,8 @@ const OurClients = () => {
                 gap: { xs: 3, md: 6 },
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  borderColor: '#00E676',
-                  boxShadow: '0 10px 40px -12px rgba(0, 230, 118, 0.15)'
+                  borderColor: '#00FF99',
+                  boxShadow: '0 10px 40px -12px rgba(0, 255, 153, 0.15)'
                 }
               }}
             >
@@ -54,7 +54,7 @@ const OurClients = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   p: 2,
-                  bgcolor: '#1E1E1E',
+                  bgcolor: '#262626',
                   borderRadius: 3,
                   border: '1px solid',
                   borderColor: '#333333',

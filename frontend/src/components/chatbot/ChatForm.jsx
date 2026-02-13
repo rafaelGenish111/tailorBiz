@@ -28,7 +28,7 @@ function ChatForm({ fields, onSubmit, onCancel }) {
       onSubmit={handleSubmit}
       sx={{
         p: 2,
-        bgcolor: '#1E1E1E',
+        bgcolor: '#262626',
         borderRadius: 1,
         m: 2,
       }}

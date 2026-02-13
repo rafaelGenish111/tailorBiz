@@ -193,7 +193,7 @@ const ChatWidget = () => {
               flex: 1,
               overflowY: 'auto',
               p: 2,
-              bgcolor: '#1E1E1E',
+              bgcolor: '#262626',
               display: 'flex',
               flexDirection: 'column',
               gap: 2
@@ -296,7 +296,7 @@ const ChatWidget = () => {
                   },
                   '&.Mui-disabled': {
                     bgcolor: 'grey.300',
-                    color: '#1E1E1E0'
+                    color: '#2626260'
                   }
                 }}
               >

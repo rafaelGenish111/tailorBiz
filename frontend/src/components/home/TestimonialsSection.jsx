@@ -37,16 +37,16 @@ function TestimonialCard({ testimonial, isCenter }) {
         p: 4,
         height: '100%',
         minHeight: 320,
-        bgcolor: isCenter ? 'rgba(0, 230, 118, 0.05)' : '#1E1E1E',
+        bgcolor: isCenter ? 'rgba(0, 255, 153, 0.05)' : '#262626',
         border: '1px solid',
-        borderColor: isCenter ? '#00E676' : '#333333',
+        borderColor: isCenter ? '#00FF99' : '#333333',
         borderRadius: 1,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
         zIndex,
         boxShadow: isCenter
-          ? '0 20px 60px rgba(0, 230, 118, 0.2)'
+          ? '0 20px 60px rgba(0, 255, 153, 0.2)'
           : '0 4px 16px rgba(0,0,0,0.3)',
         transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
@@ -60,7 +60,7 @@ function TestimonialCard({ testimonial, isCenter }) {
           width: 50,
           height: 50,
           borderRadius: 1,
-          bgcolor: isCenter ? 'rgba(0, 230, 118, 0.15)' : 'rgba(0, 230, 118, 0.08)',
+          bgcolor: isCenter ? 'rgba(0, 255, 153, 0.15)' : 'rgba(0, 255, 153, 0.08)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -68,7 +68,7 @@ function TestimonialCard({ testimonial, isCenter }) {
       >
         <FormatQuoteIcon
           sx={{
-            color: '#00E676',
+            color: '#00FF99',
             fontSize: 28,
             transform: 'rotate(180deg)',
           }}
@@ -116,10 +116,10 @@ function TestimonialCard({ testimonial, isCenter }) {
             borderRadius: '12px',
             bgcolor: '#333333',
             border: isCenter ? '2px solid' : 'none',
-            borderColor: '#00E676',
+            borderColor: '#00FF99',
             fontSize: '1.5rem',
             fontWeight: 700,
-            color: '#00E676',
+            color: '#00FF99',
           }}
         >
           {imageError || !imageUrl ? (testimonial.clientName?.charAt(0) || '') : null}
@@ -130,13 +130,13 @@ function TestimonialCard({ testimonial, isCenter }) {
             variant="h6"
             fontWeight={700}
             sx={{
-              color: isCenter ? '#00E676' : '#FFFFFF',
+              color: isCenter ? '#00FF99' : '#FFFFFF',
               transition: 'color 0.5s',
             }}
           >
             {testimonial.clientName}
           </Typography>
-          <Typography variant="body2" sx={{ color: '#E0E0E0' }}>
+          <Typography variant="body2" sx={{ color: '#B0B0B0' }}>
             {testimonial.clientRole}
           </Typography>
           <Typography
@@ -250,7 +250,7 @@ function TestimonialsSection() {
       ref={ref}
       sx={{
         py: { xs: 12, md: 16 },
-        bgcolor: '#111111',
+        bgcolor: '#141414',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -289,15 +289,15 @@ function TestimonialsSection() {
               zIndex: 20,
               width: 48,
               height: 48,
-              bgcolor: '#1E1E1E',
+              bgcolor: '#262626',
               border: '1px solid',
               borderColor: '#333333',
               color: '#FFFFFF',
               boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
               '&:hover': {
-                bgcolor: '#00E676',
-                borderColor: '#00E676',
-                color: '#111111',
+                bgcolor: '#00FF99',
+                borderColor: '#00FF99',
+                color: '#0A0A0A',
                 transform: 'translateY(-50%) scale(1.1)',
               },
               transition: 'all 0.3s',
@@ -317,15 +317,15 @@ function TestimonialsSection() {
               zIndex: 20,
               width: 48,
               height: 48,
-              bgcolor: '#1E1E1E',
+              bgcolor: '#262626',
               border: '1px solid',
               borderColor: '#333333',
               color: '#FFFFFF',
               boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
               '&:hover': {
-                bgcolor: '#00E676',
-                borderColor: '#00E676',
-                color: '#111111',
+                bgcolor: '#00FF99',
+                borderColor: '#00FF99',
+                color: '#0A0A0A',
                 transform: 'translateY(-50%) scale(1.1)',
               },
               transition: 'all 0.3s',
@@ -380,7 +380,7 @@ function TestimonialsSection() {
                 width: currentIndex === index ? 32 : 8,
                 height: 8,
                 borderRadius: 1,
-                bgcolor: currentIndex === index ? '#00E676' : '#424242',
+                bgcolor: currentIndex === index ? '#00FF99' : '#333333',
                 cursor: 'pointer',
                 transition: 'all 0.3s',
                 '&:hover': {
@@ -408,13 +408,13 @@ function TestimonialsSection() {
                   variant="h3"
                   sx={{
                     fontWeight: 800,
-                    color: '#00E676',
+                    color: '#00FF99',
                     mb: 0.5,
                   }}
                 >
                   {stat.number}
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#E0E0E0', fontWeight: 600 }}>
+                <Typography variant="body2" sx={{ color: '#B0B0B0', fontWeight: 600 }}>
                   {stat.label}
                 </Typography>
               </Box>

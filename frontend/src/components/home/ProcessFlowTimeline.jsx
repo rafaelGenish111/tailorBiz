@@ -73,21 +73,21 @@ function TimelineStep({ step, index }) {
           position: 'relative',
           width: { xs: '100%', md: '45%' },
           p: 4,
-          bgcolor: step.highlight ? 'rgba(0, 230, 118, 0.05)' : 'rgba(255, 255, 255, 0.03)',
+          bgcolor: step.highlight ? 'rgba(0, 255, 153, 0.05)' : 'rgba(255, 255, 255, 0.03)',
           backdropFilter: 'blur(10px)',
           border: '1px solid',
-          borderColor: step.highlight ? '#00E676' : 'rgba(255, 255, 255, 0.1)',
+          borderColor: step.highlight ? '#00FF99' : 'rgba(255, 255, 255, 0.1)',
           borderRadius: 1,
           cursor: 'pointer',
           transition: 'all 0.3s ease',
           boxShadow: step.highlight
-            ? '0 8px 32px rgba(0, 230, 118, 0.2)'
+            ? '0 8px 32px rgba(0, 255, 153, 0.2)'
             : '0 4px 16px rgba(0, 0, 0, 0.1)',
           '&:hover': {
-            borderColor: step.highlight ? '#00FF99' : 'rgba(0, 230, 118, 0.3)',
+            borderColor: step.highlight ? '#00FF99' : 'rgba(0, 255, 153, 0.3)',
             boxShadow: step.highlight
-              ? '0 12px 48px rgba(0, 230, 118, 0.3)'
-              : '0 8px 32px rgba(0, 230, 118, 0.15)',
+              ? '0 12px 48px rgba(0, 255, 153, 0.3)'
+              : '0 8px 32px rgba(0, 255, 153, 0.15)',
           },
           '&::before': {
             content: '""',
@@ -97,10 +97,10 @@ function TimelineStep({ step, index }) {
             transform: 'translateY(-50%)',
             width: 15,
             height: 15,
-            bgcolor: step.highlight ? '#00E676' : 'rgba(255, 255, 255, 0.3)',
+            bgcolor: step.highlight ? '#00FF99' : 'rgba(255, 255, 255, 0.3)',
             borderRadius: '50%',
             display: { xs: 'none', md: 'block' },
-            boxShadow: step.highlight ? '0 0 20px rgba(0, 230, 118, 0.8)' : 'none',
+            boxShadow: step.highlight ? '0 0 20px rgba(0, 255, 153, 0.8)' : 'none',
           },
         }}
       >
@@ -110,21 +110,21 @@ function TimelineStep({ step, index }) {
             height: 60,
             borderRadius: 1,
             bgcolor: step.highlight
-              ? 'rgba(0, 230, 118, 0.1)'
+              ? 'rgba(0, 255, 153, 0.1)'
               : 'rgba(255, 255, 255, 0.05)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             mb: 3,
             border: '1px solid',
-            borderColor: step.highlight ? 'rgba(0, 230, 118, 0.3)' : 'rgba(255, 255, 255, 0.1)',
-            boxShadow: step.highlight ? '0 4px 20px rgba(0, 230, 118, 0.3)' : 'none',
+            borderColor: step.highlight ? 'rgba(0, 255, 153, 0.3)' : 'rgba(255, 255, 255, 0.1)',
+            boxShadow: step.highlight ? '0 4px 20px rgba(0, 255, 153, 0.3)' : 'none',
           }}
         >
           <Icon
             sx={{
               fontSize: 30,
-              color: step.highlight ? '#00E676' : 'rgba(255, 255, 255, 0.7)',
+              color: step.highlight ? '#00FF99' : 'rgba(255, 255, 255, 0.7)',
             }}
           />
         </Box>
@@ -149,7 +149,7 @@ function TimelineStep({ step, index }) {
             fontWeight: 700,
             color: 'white',
             background: step.highlight
-              ? 'linear-gradient(135deg, #00E676 0%, #00FF99 100%)'
+              ? 'linear-gradient(135deg, #00FF99 0%, #00FF99 100%)'
               : 'none',
             backgroundClip: step.highlight ? 'text' : 'none',
             WebkitBackgroundClip: step.highlight ? 'text' : 'none',
@@ -193,19 +193,19 @@ function TimelineStep({ step, index }) {
           width: 16,
           height: 16,
           borderRadius: '50%',
-          bgcolor: step.highlight ? '#00E676' : 'rgba(255, 255, 255, 0.3)',
+          bgcolor: step.highlight ? '#00FF99' : 'rgba(255, 255, 255, 0.3)',
           border: '3px solid',
-          borderColor: step.highlight ? 'rgba(0, 230, 118, 0.3)' : 'rgba(255, 255, 255, 0.1)',
+          borderColor: step.highlight ? 'rgba(0, 255, 153, 0.3)' : 'rgba(255, 255, 255, 0.1)',
           zIndex: 2,
           display: { xs: 'none', md: 'block' },
-          boxShadow: step.highlight ? '0 0 20px rgba(0, 230, 118, 0.8)' : 'none',
+          boxShadow: step.highlight ? '0 0 20px rgba(0, 255, 153, 0.8)' : 'none',
           animation: step.highlight ? 'pulse 2s infinite' : 'none',
           '@keyframes pulse': {
             '0%, 100%': {
-              boxShadow: '0 0 20px rgba(0, 230, 118, 0.8)',
+              boxShadow: '0 0 20px rgba(0, 255, 153, 0.8)',
             },
             '50%': {
-              boxShadow: '0 0 40px rgba(0, 230, 118, 1), 0 0 60px rgba(0, 230, 118, 0.6)',
+              boxShadow: '0 0 40px rgba(0, 255, 153, 1), 0 0 60px rgba(0, 255, 153, 0.6)',
             },
           },
         }}
@@ -225,7 +225,7 @@ function ProcessFlowTimeline() {
       sx={{
         position: 'relative',
         py: { xs: 8, md: 12 },
-        background: 'linear-gradient(135deg, #0a0a0a 0%, #111111 50%, #0a0a0a 100%)',
+        background: 'linear-gradient(135deg, #0F0F0F 0%, #141414 50%, #0F0F0F 100%)',
         overflow: 'hidden',
       }}
     >
@@ -238,8 +238,8 @@ function ProcessFlowTimeline() {
           right: 0,
           bottom: 0,
           backgroundImage: `
-            linear-gradient(rgba(0, 230, 118, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 230, 118, 0.03) 1px, transparent 1px)
+            linear-gradient(rgba(0, 255, 153, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 255, 153, 0.03) 1px, transparent 1px)
           `,
           backgroundSize: '50px 50px',
         }}
@@ -254,7 +254,7 @@ function ProcessFlowTimeline() {
           width: 500,
           height: 500,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0, 230, 118, 0.10) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(0, 255, 153, 0.10) 0%, transparent 70%)',
           filter: 'blur(100px)',
           animation: 'float 8s ease-in-out infinite',
           '@keyframes float': {
@@ -271,7 +271,7 @@ function ProcessFlowTimeline() {
           width: 400,
           height: 400,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0, 230, 118, 0.06) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(0, 255, 153, 0.06) 0%, transparent 70%)',
           filter: 'blur(90px)',
           animation: 'float 10s ease-in-out infinite',
           animationDelay: '2s',
@@ -284,7 +284,7 @@ function ProcessFlowTimeline() {
           <Typography
             variant="overline"
             sx={{
-              color: '#00E676',
+              color: '#00FF99',
               fontWeight: 700,
               fontSize: '0.875rem',
               letterSpacing: '2px',
@@ -299,7 +299,7 @@ function ProcessFlowTimeline() {
             sx={{
               mb: 2,
               fontWeight: 800,
-              background: 'linear-gradient(135deg, #ffffff 0%, #00E676 100%)',
+              background: 'linear-gradient(135deg, #ffffff 0%, #00FF99 100%)',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -340,11 +340,11 @@ function ProcessFlowTimeline() {
               top: 0,
               bottom: 0,
               width: 2,
-              background: 'linear-gradient(180deg, rgba(0, 230, 118, 0.1) 0%, rgba(0, 230, 118, 0.5) 50%, rgba(0, 230, 118, 0.1) 100%)',
+              background: 'linear-gradient(180deg, rgba(0, 255, 153, 0.1) 0%, rgba(0, 255, 153, 0.5) 50%, rgba(0, 255, 153, 0.1) 100%)',
               transform: 'translateX(-50%)',
               transformOrigin: 'top',
               display: { xs: 'none', md: 'block' },
-              boxShadow: '0 0 20px rgba(0, 230, 118, 0.5)',
+              boxShadow: '0 0 20px rgba(0, 255, 153, 0.5)',
             }}
           />
 
@@ -358,7 +358,7 @@ function ProcessFlowTimeline() {
           <Typography
             variant="h6"
             sx={{
-              color: '#E0E0E0',
+              color: '#B0B0B0',
               fontStyle: 'italic',
               fontWeight: 400,
               maxWidth: 700,
@@ -368,7 +368,7 @@ function ProcessFlowTimeline() {
               '&::before': {
                 content: '"\\201D"',
                 fontSize: '3rem',
-                color: '#00E676',
+                color: '#00FF99',
                 position: 'absolute',
                 top: -20,
                 right: -10,

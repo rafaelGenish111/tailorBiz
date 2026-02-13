@@ -37,7 +37,7 @@ function ProductFeatures() {
           <Typography variant="h3" sx={{ mb: 2, fontWeight: 800, color: '#FFFFFF', fontSize: { xs: '1.75rem', md: '2.5rem' }, fontFamily: "'Heebo', system-ui, sans-serif" }}>
             {comparison ? 'יתרונות על פני המוצרים בשוק' : 'יתרונות ופיצ\'רים'}
           </Typography>
-          <Typography variant="body1" sx={{ mb: 5, color: '#E0E0E0', lineHeight: 1.8, maxWidth: 600, fontFamily: "'Heebo', system-ui, sans-serif" }}>
+          <Typography variant="body1" sx={{ mb: 5, color: '#B0B0B0', lineHeight: 1.8, maxWidth: 600, fontFamily: "'Heebo', system-ui, sans-serif" }}>
             {comparison
               ? (comparison[0]?.desc ? 'יתרונות על פני מוצרים בשוק.' : 'השוואה בין Glass Dynamics לבין חלופות טיפוסיות בשוק.')
               : featuresStages
@@ -55,13 +55,13 @@ function ProductFeatures() {
                     borderRadius: 2,
                     border: '1px solid',
                     borderColor: '#333333',
-                    bgcolor: '#111111',
+                    bgcolor: '#0A0A0A',
                   }}
                 >
                   <Typography sx={{ fontWeight: 700, color: product.accentColor, mb: 0.5, fontFamily: "'Heebo', system-ui, sans-serif" }}>
                     {row.aspect}
                   </Typography>
-                  <Typography sx={{ color: '#E0E0E0', lineHeight: 1.7, fontFamily: "'Heebo', system-ui, sans-serif" }}>
+                  <Typography sx={{ color: '#B0B0B0', lineHeight: 1.7, fontFamily: "'Heebo', system-ui, sans-serif" }}>
                     {row.desc}
                   </Typography>
                 </Box>
@@ -77,7 +77,7 @@ function ProductFeatures() {
                     borderRadius: 2,
                     border: '1px solid',
                     borderColor: '#333333',
-                    bgcolor: '#111111',
+                    bgcolor: '#0A0A0A',
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -88,7 +88,7 @@ function ProductFeatures() {
                       {s.title}
                     </Typography>
                   </Box>
-                  <Box component="ul" sx={{ m: 0, pl: 3, color: '#E0E0E0', lineHeight: 1.9, fontFamily: "'Heebo', system-ui, sans-serif" }}>
+                  <Box component="ul" sx={{ m: 0, pl: 3, color: '#B0B0B0', lineHeight: 1.9, fontFamily: "'Heebo', system-ui, sans-serif" }}>
                     {s.items.map((item, i) => (
                       <li key={i}>{item}</li>
                     ))}
@@ -109,7 +109,7 @@ function ProductFeatures() {
                   </TableHead>
                   <TableBody>
                     {comparison.map((row, idx) => (
-                      <TableRow key={idx} sx={{ '&:nth-of-type(even)': { bgcolor: '#1E1E1E' } }}>
+                      <TableRow key={idx} sx={{ '&:nth-of-type(even)': { bgcolor: '#262626' } }}>
                         <TableCell sx={{ fontWeight: 600, fontFamily: "'Heebo', system-ui, sans-serif" }}>{row.aspect}</TableCell>
                         <TableCell sx={{ color: '#FFFFFF', fontFamily: "'Heebo', system-ui, sans-serif" }}>{row.us}</TableCell>
                         <TableCell sx={{ color: '#6B7280', fontFamily: "'Heebo', system-ui, sans-serif" }}>{row.others}</TableCell>
@@ -135,7 +135,7 @@ function ProductFeatures() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={inView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.4, delay: idx * 0.08 }}
-                    sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: '#333333', bgcolor: '#111111', height: '100%' }}
+                    sx={{ p: 3, borderRadius: 2, border: '1px solid', borderColor: '#333333', bgcolor: '#0A0A0A', height: '100%' }}
                   >
                     <Box sx={{ width: 48, height: 48, borderRadius: 2, bgcolor: `${product.accentColor}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
                       <StarIcon sx={{ color: product.accentColor, fontSize: 28 }} />

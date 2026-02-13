@@ -43,7 +43,7 @@ const ClientsLogoMarquee = () => {
   const items = [...clients, ...clients];
 
   return (
-    <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: '#1A1A1A' }}>
+    <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: '#141414' }}>
       <Container maxWidth="lg" sx={{ px: { xs: 3, md: 6 } }}>
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Typography
@@ -60,7 +60,7 @@ const ClientsLogoMarquee = () => {
           <Typography
             variant="body1"
             sx={{
-              color: '#E0E0E0',
+              color: '#B0B0B0',
               maxWidth: 600,
               mx: 'auto'
             }}
@@ -73,7 +73,7 @@ const ClientsLogoMarquee = () => {
           sx={{
             overflow: 'hidden',
             borderRadius: '24px',
-            bgcolor: '#1E1E1E',
+            bgcolor: '#262626',
             boxShadow: '0px 20px 40px -10px rgba(0,0,0,0.3)',
             border: '1px solid #333333',
             maxWidth: '900px',
@@ -86,7 +86,7 @@ const ClientsLogoMarquee = () => {
               top: 0,
               bottom: 0,
               width: '80px',
-              background: 'linear-gradient(to right, rgba(30,30,30,1) 0%, rgba(30,30,30,0) 100%)',
+              background: 'linear-gradient(to right, rgba(38,38,38,1) 0%, rgba(38,38,38,0) 100%)',
               zIndex: 2,
               pointerEvents: 'none',
             },
@@ -97,7 +97,7 @@ const ClientsLogoMarquee = () => {
               top: 0,
               bottom: 0,
               width: '80px',
-              background: 'linear-gradient(to left, rgba(30,30,30,1) 0%, rgba(30,30,30,0) 100%)',
+              background: 'linear-gradient(to left, rgba(38,38,38,1) 0%, rgba(38,38,38,0) 100%)',
               zIndex: 2,
               pointerEvents: 'none',
             },

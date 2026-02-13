@@ -61,25 +61,25 @@ const Button = ({
   // Variant styles
   const variantStyles = {
     primary: {
-      backgroundColor: '#00E676',
-      color: '#111111',
+      backgroundColor: '#00FF99',
+      color: '#0A0A0A',
       '&:hover': {
         backgroundColor: '#00FF99',
-        boxShadow: '0px 8px 24px rgba(0, 230, 118, 0.3)',
+        boxShadow: '0px 8px 24px rgba(0, 255, 153, 0.3)',
         transform: 'scale(1.05)',
       },
       '&:disabled': {
-        backgroundColor: '#424242',
+        backgroundColor: '#333333',
         color: '#9E9E9E',
       },
     },
     secondary: {
       backgroundColor: 'transparent',
       color: '#FFFFFF',
-      border: '1px solid #424242',
+      border: '1px solid #333333',
       '&:hover': {
-        borderColor: '#00E676',
-        backgroundColor: 'rgba(0, 230, 118, 0.08)',
+        borderColor: '#00FF99',
+        backgroundColor: 'rgba(0, 255, 153, 0.08)',
         transform: 'scale(1.05)',
       },
       '&:disabled': {

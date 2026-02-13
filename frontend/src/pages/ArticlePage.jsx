@@ -51,7 +51,7 @@ const ArticlePage = () => {
             {article.title}
           </Typography>
           {article.excerpt ? (
-            <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, borderColor: '#333333', bgcolor: '#1E1E1E' }}>
+            <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, borderColor: '#333333', bgcolor: '#262626' }}>
               <Typography variant="body1" sx={{ fontWeight: 800 }}>
                 {article.excerpt}
               </Typography>

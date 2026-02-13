@@ -15,21 +15,21 @@
   line-height: 1.5;
   font-weight: 400;
 
-  /* Dark Mode - Automation/Tech Aesthetic */
+  /* Neutral Monochrome Dark + Neon Green */
   color-scheme: dark;
-  color: #E0E0E0;
-  background-color: #111111;
+  color: #B0B0B0;
+  background-color: #0A0A0A;
 
   /* CSS Custom Properties */
-  --primary-color: #00E676;
-  --primary-color-hover: #00FF99;
-  --bg-color: #111111;
+  --primary-color: #00FF99;
+  --primary-color-hover: #66FFB8;
+  --bg-color: #0A0A0A;
   --bg-secondary: #1A1A1A;
-  --bg-card: #1E1E1E;
-  --text-color: #E0E0E0;
+  --bg-card: #262626;
+  --text-color: #B0B0B0;
   --text-heading: #FFFFFF;
-  --text-muted: #9E9E9E;
-  --border-color: #424242;
+  --text-muted: #808080;
+  --border-color: #333333;
   --border-color-light: #333333;
 
   font-synthesis: none;
@@ -48,7 +48,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Apply Heebo to all body elements */
 p, body, span, div {
   font-family: 'Heebo', system-ui, -apple-system, sans-serif;
-  color: #E0E0E0;
+  color: #B0B0B0;
 }
 
 html {
@@ -59,8 +59,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #111111;
-  color: #E0E0E0;
+  background-color: #0A0A0A;
+  color: #B0B0B0;
 }
 
 #root {
@@ -83,7 +83,7 @@ body.underline-links a {
 
 /* Focus visible for keyboard navigation */
 *:focus-visible {
-  outline: 3px solid #00E676;
+  outline: 3px solid #00FF99;
   outline-offset: 2px;
 }
 

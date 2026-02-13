@@ -35,7 +35,7 @@ function ProductContact() {
             borderRadius: 3,
             border: '1px solid',
             borderColor: '#333333',
-            bgcolor: '#111111',
+            bgcolor: '#0A0A0A',
           }}
         >
           <Box
@@ -68,7 +68,7 @@ function ProductContact() {
             variant="body1"
             sx={{
               mb: 4,
-              color: '#E0E0E0',
+              color: '#B0B0B0',
               lineHeight: 1.8,
               fontFamily: "'Heebo', system-ui, sans-serif",
             }}

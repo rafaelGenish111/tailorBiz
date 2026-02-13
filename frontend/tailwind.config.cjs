@@ -6,36 +6,53 @@ module.exports = {
   ],
   theme: {
     extend: {
-      // Apple/Big Tech Typography
+      // Typography - Heebo only
       fontFamily: {
         'heading': ['Heebo', 'system-ui', '-apple-system', 'sans-serif'],
         'body': ['Heebo', 'system-ui', '-apple-system', 'sans-serif'],
       },
-      // Dark Mode Color Palette - Automation/Tech Aesthetic
+      // Neutral Monochrome + Neon Green (NO blue tint)
       colors: {
-        'primary': {
-          DEFAULT: '#00E676',
-          light: '#00FF99',
-          dark: '#00C853',
+        // 1. The Brand Green (Neon/Matrix)
+        'brand-green': {
+          DEFAULT: '#00FF99',
+          glow: '#00E676',
+          dim: 'rgba(0, 255, 153, 0.1)',
         },
-        'midnight': '#111111',
+        'primary': {
+          DEFAULT: '#00FF99',
+          light: '#66FFB8',
+          dark: '#00E676',
+        },
+
+        // 2. The Neutral Greys (NO BLUE TINT)
+        'bg-main': '#0A0A0A',
+        'bg-surface': '#1A1A1A',
+        'bg-highlight': '#262626',
+        'border-subtle': '#333333',
+        'border-medium': '#4D4D4D',
+        'text-primary': '#FFFFFF',
+        'text-secondary': '#B0B0B0',
+
+        // Legacy aliases (for Tailwind class compat)
+        'midnight': '#0A0A0A',
         'off-white': '#1A1A1A',
         'text-heading': '#FFFFFF',
-        'text-body': '#E0E0E0',
-        'surface': '#1E1E1E',
-        'border': '#424242',
+        'text-body': '#B0B0B0',
+        'surface': '#262626',
+        'border': '#333333',
       },
-      // Big Tech Spacing
+      // Spacing
       spacing: {
-        'section': '6rem', // py-24
-        'section-lg': '8rem', // py-32
+        'section': '6rem',
+        'section-lg': '8rem',
       },
-      // Gradient for buttons and accents
+      // Gradients
       backgroundImage: {
-        'gradient-primary': 'linear-gradient(135deg, #00E676 0%, #00C853 100%)',
-        'gradient-primary-alt': 'linear-gradient(135deg, #00E676 0%, #69F0AE 100%)',
+        'gradient-primary': 'linear-gradient(135deg, #00FF99 0%, #00E676 100%)',
+        'gradient-primary-alt': 'linear-gradient(135deg, #00FF99 0%, #66FFB8 100%)',
       },
-      // Animated Mesh Gradient - Aurora effect
+      // Animated Mesh Gradient
       keyframes: {
         blob: {
           '0%': {
@@ -62,12 +79,9 @@ module.exports = {
     },
   },
   corePlugins: {
-    // חשוב: לא להחיל Tailwind preflight על כל האתר (כבר יש לנו MUI + CSS גלובלי)
     preflight: false,
   },
   plugins: [
     require('tailwindcss-animate'),
   ],
 };
-
-

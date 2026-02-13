@@ -50,14 +50,14 @@ function StatCard({ stat, index }) {
             textAlign: 'center',
             p: 4,
             borderRadius: '24px',
-            bgcolor: '#1E1E1E',
+            bgcolor: '#262626',
             border: '1px solid #333333',
             boxShadow: '0px 20px 40px -10px rgba(0,0,0,0.3)',
             transition: 'all 0.3s ease',
             '&:hover': {
               transform: 'translateY(-4px)',
-              borderColor: '#00E676',
-              boxShadow: '0px 24px 48px -12px rgba(0, 230, 118, 0.1)',
+              borderColor: '#00FF99',
+              boxShadow: '0px 24px 48px -12px rgba(0, 255, 153, 0.1)',
             },
           }}
         >
@@ -65,7 +65,7 @@ function StatCard({ stat, index }) {
             variant="h2"
             sx={{
               fontWeight: 900,
-              color: '#00E676',
+              color: '#00FF99',
               mb: 1,
               fontSize: { xs: '2.5rem', md: '3.5rem' },
             }}
@@ -76,7 +76,7 @@ function StatCard({ stat, index }) {
           <Typography
             variant="body1"
             sx={{
-              color: '#E0E0E0',
+              color: '#B0B0B0',
               fontWeight: 500,
             }}
           >
@@ -160,7 +160,7 @@ function StatsSection() {
     <Box
       sx={{
         py: { xs: 24, md: 32 },
-        bgcolor: '#1A1A1A',
+        bgcolor: '#141414',
         position: 'relative',
         overflow: 'hidden',
       }}

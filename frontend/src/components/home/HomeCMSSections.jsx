@@ -22,7 +22,7 @@ const HomeCMSSections = () => {
   if (!sections.length) return null;
 
   return (
-    <Box sx={{ py: { xs: 12, md: 16 }, bgcolor: '#111111' }}>
+    <Box sx={{ py: { xs: 12, md: 16 }, bgcolor: '#0A0A0A' }}>
       <Container maxWidth="lg" sx={{ mx: 'auto', px: { xs: 3, md: 6 } }}>
         <Grid container spacing={3}>
           {sections.map((s, idx) => (
@@ -34,12 +34,12 @@ const HomeCMSSections = () => {
                   borderRadius: 3,
                   height: '100%',
                   border: '1px solid #333333',
-                  bgcolor: '#1E1E1E',
+                  bgcolor: '#262626',
                   boxShadow: '0px 20px 40px -10px rgba(0,0,0,0.3)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    borderColor: '#00E676',
-                    boxShadow: '0px 24px 48px -12px rgba(0, 230, 118, 0.1)',
+                    borderColor: '#00FF99',
+                    boxShadow: '0px 24px 48px -12px rgba(0, 255, 153, 0.1)',
                   },
                 }}
               >
@@ -54,7 +54,7 @@ const HomeCMSSections = () => {
                 <Typography variant="h5" fontWeight={800} sx={{ mb: 1, color: '#FFFFFF' }}>
                   {s.title || ''}
                 </Typography>
-                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', color: '#E0E0E0' }}>
+                <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', color: '#B0B0B0' }}>
                   {s.description || ''}
                 </Typography>
               </Paper>

@@ -131,7 +131,7 @@ function Header() {
       position="sticky"
       elevation={0}
       sx={{
-        bgcolor: trigger ? 'rgba(17, 17, 17, 0.85)' : 'rgba(17, 17, 17, 0.95)',
+        bgcolor: trigger ? 'rgba(10, 10, 10, 0.85)' : 'rgba(10, 10, 10, 0.95)',
         borderBottom: '1px solid',
         borderColor: trigger ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
         boxShadow: trigger ? '0 2px 8px rgba(0,0,0,0.3)' : 'none',
@@ -183,7 +183,7 @@ function Header() {
                     textTransform: 'none',
                     '&:hover': {
                       bgcolor: 'transparent',
-                      color: '#00E676',
+                      color: '#00FF99',
                     },
                   }}
                 >
@@ -200,7 +200,7 @@ function Header() {
                   textTransform: 'none',
                   '&:hover': {
                     bgcolor: 'transparent',
-                    color: '#00E676',
+                    color: '#00FF99',
                   },
                 }}
               >
@@ -301,7 +301,7 @@ function Header() {
                     textTransform: 'none',
                     '&:hover': {
                       bgcolor: 'transparent',
-                      color: '#00E676',
+                      color: '#00FF99',
                     },
                   }}
                 >
@@ -337,7 +337,7 @@ function Header() {
         PaperProps={{
           sx: {
             height: '100vh',
-            bgcolor: '#111111',
+            bgcolor: '#0A0A0A',
           },
         }}
       >
@@ -405,11 +405,11 @@ function Header() {
                       px: 2,
                       fontSize: '1rem',
                       fontWeight: 500,
-                      color: '#E0E0E0',
+                      color: '#B0B0B0',
                       cursor: hasArticles ? 'pointer' : 'default',
                       borderRadius: 1,
                       '&:hover': {
-                        bgcolor: 'rgba(0, 230, 118, 0.08)',
+                        bgcolor: 'rgba(0, 255, 153, 0.08)',
                       },
                     }}
                   >
@@ -444,11 +444,11 @@ function Header() {
                               py: 1.5,
                               fontSize: '0.95rem',
                               fontWeight: 400,
-                              color: '#E0E0E0',
+                              color: '#B0B0B0',
                               textDecoration: 'none',
                               borderRadius: 1,
                               '&:hover': {
-                                bgcolor: 'rgba(0, 230, 118, 0.08)',
+                                bgcolor: 'rgba(0, 255, 153, 0.08)',
                               },
                             }}
                           >

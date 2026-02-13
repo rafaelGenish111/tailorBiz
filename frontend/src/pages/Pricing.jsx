@@ -56,7 +56,7 @@ function Pricing() {
     <Box>
       <Box
         sx={{
-          bgcolor: '#111111',
+          bgcolor: '#0A0A0A',
           color: '#FFFFFF',
           py: 10,
           textAlign: 'center',
@@ -67,7 +67,7 @@ function Pricing() {
           <Typography variant="h2" fontWeight={800} gutterBottom sx={{ color: '#FFFFFF' }}>
             תמחור שקוף ופשוט
           </Typography>
-          <Typography variant="h5" sx={{ maxWidth: 700, mx: 'auto', color: '#E0E0E0' }}>
+          <Typography variant="h5" sx={{ maxWidth: 700, mx: 'auto', color: '#B0B0B0' }}>
             תשלום חד-פעמי ללא מנוי חודשי - שלמו פעם אחת ותהנו לתמיד
           </Typography>
         </Container>
@@ -88,7 +88,7 @@ function Pricing() {
                   flexDirection: 'column',
                   position: 'relative',
                   border: plan.recommended ? '2px solid' : '1px solid',
-                  borderColor: plan.recommended ? '#00E676' : '#333333',
+                  borderColor: plan.recommended ? '#00FF99' : '#333333',
                   borderRadius: 1,
                 }}
               >
@@ -99,8 +99,8 @@ function Pricing() {
                       top: -15,
                       right: '50%',
                       transform: 'translateX(50%)',
-                      bgcolor: '#00E676',
-                      color: '#111111',
+                      bgcolor: '#00FF99',
+                      color: '#0A0A0A',
                       px: 3,
                       py: 0.5,
                       borderRadius: 6,
@@ -131,7 +131,7 @@ function Pricing() {
                     {plan.features.map((feature, idx) => (
                       <ListItem key={idx} disablePadding sx={{ mb: 1 }}>
                         <ListItemIcon sx={{ minWidth: 36 }}>
-                          <CheckIcon sx={{ color: '#00E676' }} />
+                          <CheckIcon sx={{ color: '#00FF99' }} />
                         </ListItemIcon>
                         <ListItemText primary={feature} />
                       </ListItem>

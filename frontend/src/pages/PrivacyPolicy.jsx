@@ -10,7 +10,7 @@ const PrivacyPolicy = () => {
         <meta name="description" content="מדיניות הפרטיות של TailorBiz בהתאם לחוק הגנת הפרטיות הישראלי ותיקון 13." />
       </Helmet>
 
-      <Box sx={{ py: 8, bgcolor: '#111111', minHeight: '100vh' }}>
+      <Box sx={{ py: 8, bgcolor: '#0A0A0A', minHeight: '100vh' }}>
         <Container maxWidth="md">
           <Paper elevation={3} sx={{ p: 4, bgcolor: '#1A1A1A', border: '1px solid #333333' }}>
             <Typography variant="h4" component="h1" gutterBottom fontWeight="bold" color="primary">
@@ -87,7 +87,7 @@ const PrivacyPolicy = () => {
                   <ListItemText primary="• הזכות למחיקה: באפשרותך לבקש את מחיקת המידע (בכפוף למגבלות חוקיות)." />
                 </ListItem>
               </List>
-              <Typography variant="body2" sx={{ mt: 1, bgcolor: 'rgba(0, 230, 118, 0.08)', p: 1, borderRadius: 1, border: '1px solid rgba(0, 230, 118, 0.2)' }}>
+              <Typography variant="body2" sx={{ mt: 1, bgcolor: 'rgba(0, 255, 153, 0.08)', p: 1, borderRadius: 1, border: '1px solid rgba(0, 255, 153, 0.2)' }}>
                 למימוש זכויות אלו, ניתן לפנות אלינו במייל: info@tailorbiz.com (או כל מייל אחר שרלוונטי).
               </Typography>
             </Box>

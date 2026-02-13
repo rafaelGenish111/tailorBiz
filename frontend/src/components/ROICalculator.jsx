@@ -36,14 +36,14 @@ const ROICalculator = () => {
           width: 24px;
           height: 24px;
           border-radius: 50%;
-          background: #00E676;
+          background: #00FF99;
           cursor: pointer;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px #00E676;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px #00FF99;
           transition: all 0.2s ease;
         }
         
         .slider::-webkit-slider-thumb:hover {
-          box-shadow: 0 4px 12px rgba(0, 230, 118, 0.3), 0 0 0 2px #00E676;
+          box-shadow: 0 4px 12px rgba(0, 255, 153, 0.3), 0 0 0 2px #00FF99;
           transform: scale(1.1);
         }
         
@@ -51,15 +51,15 @@ const ROICalculator = () => {
           width: 24px;
           height: 24px;
           border-radius: 50%;
-          background: #00E676;
+          background: #00FF99;
           cursor: pointer;
-          border: 2px solid #00E676;
+          border: 2px solid #00FF99;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
           transition: all 0.2s ease;
         }
         
         .slider::-moz-range-thumb:hover {
-          box-shadow: 0 4px 12px rgba(0, 230, 118, 0.3);
+          box-shadow: 0 4px 12px rgba(0, 255, 153, 0.3);
           transform: scale(1.1);
         }
         
@@ -68,11 +68,11 @@ const ROICalculator = () => {
         }
         
         .slider:focus::-webkit-slider-thumb {
-          box-shadow: 0 0 0 4px rgba(0, 230, 118, 0.2), 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px #00E676;
+          box-shadow: 0 0 0 4px rgba(0, 255, 153, 0.2), 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px #00FF99;
         }
         
         .slider:focus::-moz-range-thumb {
-          box-shadow: 0 0 0 4px rgba(0, 230, 118, 0.2), 0 2px 8px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 0 0 4px rgba(0, 255, 153, 0.2), 0 2px 8px rgba(0, 0, 0, 0.3);
         }
       `}</style>
       
@@ -102,7 +102,7 @@ const ROICalculator = () => {
               onChange={(e) => setWeeklyHours(Number(e.target.value))}
               className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer slider"
               style={{
-                background: `linear-gradient(to right, #00E676 0%, #00E676 ${(weeklyHours / 40) * 100}%, #333333 ${(weeklyHours / 40) * 100}%, #333333 100%)`,
+                background: `linear-gradient(to right, #00FF99 0%, #00FF99 ${(weeklyHours / 40) * 100}%, #333333 ${(weeklyHours / 40) * 100}%, #333333 100%)`,
               }}
             />
             <div className="flex justify-between mt-2 text-sm text-text-body">
@@ -127,7 +127,7 @@ const ROICalculator = () => {
               onChange={(e) => setHourlyWage(Number(e.target.value))}
               className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer slider"
               style={{
-                background: `linear-gradient(to right, #00E676 0%, #00E676 ${((hourlyWage - 30) / 270) * 100}%, #333333 ${((hourlyWage - 30) / 270) * 100}%, #333333 100%)`,
+                background: `linear-gradient(to right, #00FF99 0%, #00FF99 ${((hourlyWage - 30) / 270) * 100}%, #333333 ${((hourlyWage - 30) / 270) * 100}%, #333333 100%)`,
               }}
             />
             <div className="flex justify-between mt-2 text-sm text-text-body">
