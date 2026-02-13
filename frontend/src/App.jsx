@@ -147,7 +147,7 @@ function App() {
         />
       </Routes>
 
-      <ToastContainer position="top-left" autoClose={2000} hideProgressBar={true} rtl={true} />
+      <ToastContainer position="top-left" autoClose={2000} hideProgressBar={true} rtl={true} theme="dark" />
     </QueryClientProvider>
   );
 }

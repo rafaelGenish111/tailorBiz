@@ -11,10 +11,10 @@ import InlineBold from '../../components/common/InlineBold';
 const MotionBox = motion.create(Box);
 
 const textSx = {
-  color: '#4B5563',
+  color: '#E0E0E0',
   fontWeight: 400,
   lineHeight: 1.9,
-  fontFamily: "'Assistant', system-ui, sans-serif",
+  fontFamily: "'Heebo', system-ui, sans-serif",
 };
 
 function ProductOverview() {
@@ -38,7 +38,7 @@ function ProductOverview() {
           position: 'relative',
           py: { xs: 8, md: 12 },
           overflow: 'hidden',
-          bgcolor: '#FFFFFF',
+          bgcolor: '#111111',
         }}
       >
         <Box
@@ -73,7 +73,7 @@ function ProductOverview() {
               sx={{
                 mb: product.subTitle ? 0.5 : 2,
                 fontWeight: 800,
-                color: '#1D1D1F',
+                color: '#FFFFFF',
                 fontSize: { xs: '2rem', md: '3rem' },
                 fontFamily: "'Heebo', system-ui, sans-serif",
               }}
@@ -87,7 +87,7 @@ function ProductOverview() {
                   mb: 2,
                   color: product.accentColor,
                   fontWeight: 600,
-                  fontFamily: "'Assistant', system-ui, sans-serif",
+                  fontFamily: "'Heebo', system-ui, sans-serif",
                 }}
               >
                 {product.subTitle}
@@ -100,7 +100,7 @@ function ProductOverview() {
                 </Typography>
                 {rich.saas ? (
                   <>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1D1D1F', mb: 1, fontFamily: "'Heebo', system-ui, sans-serif" }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#FFFFFF', mb: 1, fontFamily: "'Heebo', system-ui, sans-serif" }}>
                       המערכת בנויה כ-SaaS רב־דייר (Multi-Tenant):
                     </Typography>
                     <Box component="ul" sx={{ m: 0, pl: 3, mb: 2, ...textSx }}>
@@ -114,7 +114,7 @@ function ProductOverview() {
                   </>
                 ) : rich.stagesBrief ? (
                   <>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1D1D1F', mb: 1, fontFamily: "'Heebo', system-ui, sans-serif" }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#FFFFFF', mb: 1, fontFamily: "'Heebo', system-ui, sans-serif" }}>
                       תשעת השלבים המרכזיים:
                     </Typography>
                     <Box component="ul" sx={{ m: 0, pl: 3, mb: 2, ...textSx }}>
@@ -125,7 +125,7 @@ function ProductOverview() {
                   </>
                 ) : rich.included ? (
                   <>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1D1D1F', mb: 1, fontFamily: "'Heebo', system-ui, sans-serif" }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#FFFFFF', mb: 1, fontFamily: "'Heebo', system-ui, sans-serif" }}>
                       מה כלול במערכת:
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
@@ -164,14 +164,14 @@ function ProductOverview() {
       </Box>
 
       {/* Features preview */}
-      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: '#FAFAFA' }}>
+      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: '#111111' }}>
         <Container maxWidth="lg">
           <Typography
             variant="h4"
             sx={{
               mb: 4,
               fontWeight: 700,
-              color: '#1D1D1F',
+              color: '#FFFFFF',
               fontFamily: "'Heebo', system-ui, sans-serif",
             }}
           >
@@ -190,9 +190,9 @@ function ProductOverview() {
                     gap: 2,
                     p: 2,
                     borderRadius: 2,
-                    bgcolor: '#FFFFFF',
+                    bgcolor: '#111111',
                     border: '1px solid',
-                    borderColor: 'grey.100',
+                    borderColor: '#333333',
                   }}
                 >
                   <Box
@@ -212,8 +212,8 @@ function ProductOverview() {
                   <Typography
                     sx={{
                       fontWeight: 500,
-                      color: '#1D1D1F',
-                      fontFamily: "'Assistant', system-ui, sans-serif",
+                      color: '#FFFFFF',
+                      fontFamily: "'Heebo', system-ui, sans-serif",
                     }}
                   >
                     {feature}

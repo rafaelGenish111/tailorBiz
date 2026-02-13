@@ -51,7 +51,7 @@ const ArticlePage = () => {
             {article.title}
           </Typography>
           {article.excerpt ? (
-            <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, borderColor: 'grey.100', bgcolor: 'grey.50' }}>
+            <Paper variant="outlined" sx={{ p: 2, borderRadius: 3, borderColor: '#333333', bgcolor: '#1E1E1E' }}>
               <Typography variant="body1" sx={{ fontWeight: 800 }}>
                 {article.excerpt}
               </Typography>
@@ -60,7 +60,7 @@ const ArticlePage = () => {
         </Stack>
 
         {article.coverImage?.url ? (
-          <Box sx={{ borderRadius: 3, overflow: 'hidden', mb: 4, border: '1px solid', borderColor: 'grey.100' }}>
+          <Box sx={{ borderRadius: 3, overflow: 'hidden', mb: 4, border: '1px solid', borderColor: '#333333' }}>
             <Box component="img" src={getImageUrl(article.coverImage)} alt={article.coverImage.alt || article.title} sx={{ width: '100%', display: 'block' }} />
           </Box>
         ) : null}

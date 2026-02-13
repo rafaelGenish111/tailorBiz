@@ -55,9 +55,9 @@ function Footer() {
     <Box
       component="footer"
       sx={{
-        bgcolor: 'white',
+        bgcolor: '#111111',
         borderTop: '1px solid',
-        borderColor: 'grey.200',
+        borderColor: '#333333',
         pt: 8,
         pb: 4,
       }}
@@ -69,7 +69,7 @@ function Footer() {
             <Box
               component="img"
               src={LOGO_SRC}
-              alt="לוגו TailorBiz"
+              alt="לוגו TaylorBiz"
               sx={{
                 height: { xs: 60, md: 80 },
                 width: 'auto',
@@ -77,24 +77,24 @@ function Footer() {
                 objectFit: 'contain',
               }}
             />
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography variant="body2" sx={{ color: '#E0E0E0', mb: 2 }}>
               מערכת ניהול אוטומטית לעסקים קטנים ובינוניים. חוסכת זמן ומחזירה לקוחות.
             </Typography>
           </Grid>
 
           {/* עמודה 2 - קישורים */}
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Typography variant="h6" fontWeight={600} gutterBottom color="primary.main">
+            <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#00E676' }}>
               קישורים מהירים
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Link
                 component={RouterLink}
                 to="/about"
-                color="text.primary"
                 underline="hover"
                 sx={{
-                  '&:hover': { color: 'secondary.main' },
+                  color: '#E0E0E0',
+                  '&:hover': { color: '#00E676' },
                   transition: 'color 0.3s',
                 }}
               >
@@ -104,36 +104,24 @@ function Footer() {
                 <Link
                   component={RouterLink}
                   to="/products"
-                  color="text.primary"
                   underline="hover"
                   sx={{
-                    '&:hover': { color: 'secondary.main' },
+                    color: '#E0E0E0',
+                    '&:hover': { color: '#00E676' },
                     transition: 'color 0.3s',
                   }}
                 >
                   מוצרים
                 </Link>
               )}
-              {/* <Link
-                component={RouterLink}
-                to="/pricing"
-                color="text.primary"
-                underline="hover"
-                sx={{
-                  '&:hover': { color: 'secondary.main' },
-                  transition: 'color 0.3s',
-                }}
-              >
-                תמחור
-              </Link> */}
               {showClientsInNav && (
                 <Link
                   component={RouterLink}
                   to="/clients"
-                  color="text.primary"
                   underline="hover"
                   sx={{
-                    '&:hover': { color: 'secondary.main' },
+                    color: '#E0E0E0',
+                    '&:hover': { color: '#00E676' },
                     transition: 'color 0.3s',
                   }}
                 >
@@ -143,10 +131,10 @@ function Footer() {
               <Link
                 component={RouterLink}
                 to="/contact"
-                color="text.primary"
                 underline="hover"
                 sx={{
-                  '&:hover': { color: 'secondary.main' },
+                  color: '#E0E0E0',
+                  '&:hover': { color: '#00E676' },
                   transition: 'color 0.3s',
                 }}
               >
@@ -155,10 +143,10 @@ function Footer() {
               <Link
                 component={RouterLink}
                 to="/roi-calculator"
-                color="text.primary"
                 underline="hover"
                 sx={{
-                  '&:hover': { color: 'secondary.main' },
+                  color: '#E0E0E0',
+                  '&:hover': { color: '#00E676' },
                   transition: 'color 0.3s',
                 }}
               >
@@ -166,10 +154,10 @@ function Footer() {
               </Link>
               <Link
                 href="#"
-                color="text.primary"
                 underline="hover"
                 sx={{
-                  '&:hover': { color: 'secondary.main' },
+                  color: '#E0E0E0',
+                  '&:hover': { color: '#00E676' },
                   transition: 'color 0.3s',
                 }}
               >
@@ -177,10 +165,10 @@ function Footer() {
               </Link>
               <Link
                 href="/privacy"
-                color="text.primary"
                 underline="hover"
                 sx={{
-                  '&:hover': { color: 'secondary.main' },
+                  color: '#E0E0E0',
+                  '&:hover': { color: '#00E676' },
                   transition: 'color 0.3s',
                 }}
               >
@@ -191,30 +179,28 @@ function Footer() {
 
           {/* עמודה 3 - יצירת קשר */}
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Typography variant="h6" fontWeight={600} gutterBottom color="primary.main">
+            <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#00E676' }}>
               יצירת קשר
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-              {/* Email Button */}
               <MuiButton
                 component="a"
                 href={`mailto:${email}`}
                 startIcon={<EmailIcon />}
                 sx={{
                   justifyContent: 'flex-start',
-                  color: '#1D1D1F',
+                  color: '#FFFFFF',
                   textTransform: 'none',
                   fontWeight: 500,
                   '&:hover': {
-                    backgroundColor: 'rgba(0, 113, 227, 0.08)',
-                    color: '#0071E3',
+                    backgroundColor: 'rgba(0, 230, 118, 0.08)',
+                    color: '#00E676',
                   },
                 }}
               >
                 שלח מייל
               </MuiButton>
 
-              {/* Phone Button */}
               {phone && (
                 <MuiButton
                   component="a"
@@ -222,12 +208,12 @@ function Footer() {
                   startIcon={<PhoneIcon />}
                   sx={{
                     justifyContent: 'flex-start',
-                    color: '#1D1D1F',
+                    color: '#FFFFFF',
                     textTransform: 'none',
                     fontWeight: 500,
                     '&:hover': {
-                      backgroundColor: 'rgba(0, 113, 227, 0.08)',
-                      color: '#0071E3',
+                      backgroundColor: 'rgba(0, 230, 118, 0.08)',
+                      color: '#00E676',
                     },
                   }}
                 >
@@ -235,7 +221,6 @@ function Footer() {
                 </MuiButton>
               )}
 
-              {/* WhatsApp Button */}
               {whatsapp && (
                 <MuiButton
                   component="a"
@@ -245,7 +230,7 @@ function Footer() {
                   startIcon={<WhatsAppIcon />}
                   sx={{
                     justifyContent: 'flex-start',
-                    color: '#1D1D1F',
+                    color: '#FFFFFF',
                     textTransform: 'none',
                     fontWeight: 500,
                     '&:hover': {
@@ -258,7 +243,6 @@ function Footer() {
                 </MuiButton>
               )}
 
-              {/* Location Button - Google Maps */}
               {address && (
                 <MuiButton
                   component="a"
@@ -268,12 +252,12 @@ function Footer() {
                   startIcon={<LocationOnIcon />}
                   sx={{
                     justifyContent: 'flex-start',
-                    color: '#1D1D1F',
+                    color: '#FFFFFF',
                     textTransform: 'none',
                     fontWeight: 500,
                     '&:hover': {
-                      backgroundColor: 'rgba(0, 113, 227, 0.08)',
-                      color: '#0071E3',
+                      backgroundColor: 'rgba(0, 230, 118, 0.08)',
+                      color: '#00E676',
                     },
                   }}
                 >
@@ -285,7 +269,7 @@ function Footer() {
 
           {/* עמודה 4 - רשתות חברתיות */}
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-            <Typography variant="h6" fontWeight={600} gutterBottom color="primary.main">
+            <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: '#00E676' }}>
               עקבו אחרינו
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -294,11 +278,11 @@ function Footer() {
                   href={socials.facebook}
                   target="_blank"
                   sx={{
-                    color: 'text.primary',
-                    bgcolor: 'grey.100',
+                    color: '#FFFFFF',
+                    bgcolor: '#1E1E1E',
                     '&:hover': {
-                      bgcolor: 'secondary.main',
-                      color: 'white',
+                      bgcolor: '#00E676',
+                      color: '#111111',
                     },
                     transition: 'all 0.3s',
                   }}
@@ -312,11 +296,11 @@ function Footer() {
                   href={socials.linkedin}
                   target="_blank"
                   sx={{
-                    color: 'text.primary',
-                    bgcolor: 'grey.100',
+                    color: '#FFFFFF',
+                    bgcolor: '#1E1E1E',
                     '&:hover': {
-                      bgcolor: 'secondary.main',
-                      color: 'white',
+                      bgcolor: '#00E676',
+                      color: '#111111',
                     },
                     transition: 'all 0.3s',
                   }}
@@ -330,11 +314,11 @@ function Footer() {
                   href={socials.instagram}
                   target="_blank"
                   sx={{
-                    color: 'text.primary',
-                    bgcolor: 'grey.100',
+                    color: '#FFFFFF',
+                    bgcolor: '#1E1E1E',
                     '&:hover': {
-                      bgcolor: 'secondary.main',
-                      color: 'white',
+                      bgcolor: '#00E676',
+                      color: '#111111',
                     },
                     transition: 'all 0.3s',
                   }}
@@ -348,11 +332,11 @@ function Footer() {
                   href={socials.twitter}
                   target="_blank"
                   sx={{
-                    color: 'text.primary',
-                    bgcolor: 'grey.100',
+                    color: '#FFFFFF',
+                    bgcolor: '#1E1E1E',
                     '&:hover': {
-                      bgcolor: 'secondary.main',
-                      color: 'white',
+                      bgcolor: '#00E676',
+                      color: '#111111',
                     },
                     transition: 'all 0.3s',
                   }}
@@ -365,14 +349,14 @@ function Footer() {
           </Grid>
         </Grid>
 
-        <Divider sx={{ my: 4, bgcolor: 'grey.200' }} />
+        <Divider sx={{ my: 4, bgcolor: '#333333' }} />
 
         <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
+          <Typography variant="body2" sx={{ color: '#9E9E9E' }} gutterBottom>
             האתר מונגש לפי תקן 5568 ברמה AA.
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            © {currentYear} {companyName}. כל הזכויות שמורות.
+          <Typography variant="body2" sx={{ color: '#9E9E9E' }}>
+            &copy; {currentYear} {companyName}. כל הזכויות שמורות.
           </Typography>
         </Box>
       </Container>

@@ -9,19 +9,21 @@ module.exports = {
       // Apple/Big Tech Typography
       fontFamily: {
         'heading': ['Heebo', 'system-ui', '-apple-system', 'sans-serif'],
-        'body': ['Assistant', 'system-ui', '-apple-system', 'sans-serif'],
+        'body': ['Heebo', 'system-ui', '-apple-system', 'sans-serif'],
       },
-      // Light Mode Color Palette - Premium Apple Aesthetic
+      // Dark Mode Color Palette - Automation/Tech Aesthetic
       colors: {
         'primary': {
-          DEFAULT: '#0071E3', // Royal Blue - Apple's actionable blue
-          light: '#0077ED',
-          dark: '#0066CC',
+          DEFAULT: '#00E676',
+          light: '#00FF99',
+          dark: '#00C853',
         },
-        'midnight': '#050507',
-        'off-white': '#F5F5F7',
-        'text-heading': '#1D1D1F',
-        'text-body': '#86868B',
+        'midnight': '#111111',
+        'off-white': '#1A1A1A',
+        'text-heading': '#FFFFFF',
+        'text-body': '#E0E0E0',
+        'surface': '#1E1E1E',
+        'border': '#424242',
       },
       // Big Tech Spacing
       spacing: {
@@ -30,8 +32,8 @@ module.exports = {
       },
       // Gradient for buttons and accents
       backgroundImage: {
-        'gradient-primary': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        'gradient-primary-alt': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+        'gradient-primary': 'linear-gradient(135deg, #00E676 0%, #00C853 100%)',
+        'gradient-primary-alt': 'linear-gradient(135deg, #00E676 0%, #69F0AE 100%)',
       },
       // Animated Mesh Gradient - Aurora effect
       keyframes: {

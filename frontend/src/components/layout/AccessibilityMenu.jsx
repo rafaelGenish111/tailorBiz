@@ -167,7 +167,7 @@ function AccessibilityMenu() {
             אפס הגדרות
           </Button>
 
-          <Box sx={{ mt: 4, p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
+          <Box sx={{ mt: 4, p: 2, bgcolor: '#1E1E1E', borderRadius: 2 }}>
             <Typography variant="body2" color="text.secondary">
               האתר נבנה בהתאם לתקן הנגישות הישראלי (תקנות שוויון זכויות, התשע"ג-2013).
             </Typography>

@@ -34,8 +34,8 @@ function ProductContact() {
             p: { xs: 4, md: 6 },
             borderRadius: 3,
             border: '1px solid',
-            borderColor: 'grey.200',
-            bgcolor: '#FFFFFF',
+            borderColor: '#333333',
+            bgcolor: '#111111',
           }}
         >
           <Box
@@ -58,7 +58,7 @@ function ProductContact() {
             sx={{
               mb: 2,
               fontWeight: 700,
-              color: '#1D1D1F',
+              color: '#FFFFFF',
               fontFamily: "'Heebo', system-ui, sans-serif",
             }}
           >
@@ -68,9 +68,9 @@ function ProductContact() {
             variant="body1"
             sx={{
               mb: 4,
-              color: '#4B5563',
+              color: '#E0E0E0',
               lineHeight: 1.8,
-              fontFamily: "'Assistant', system-ui, sans-serif",
+              fontFamily: "'Heebo', system-ui, sans-serif",
             }}
           >
             נשמח לשמוע מכם. השאירו פרטים ונחזור בהקדם עם הצעת מחיר מותאמת.

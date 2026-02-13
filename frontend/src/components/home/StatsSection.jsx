@@ -50,12 +50,14 @@ function StatCard({ stat, index }) {
             textAlign: 'center',
             p: 4,
             borderRadius: '24px',
-            bgcolor: '#FFFFFF',
-            boxShadow: '0px 20px 40px -10px rgba(0,0,0,0.05)',
+            bgcolor: '#1E1E1E',
+            border: '1px solid #333333',
+            boxShadow: '0px 20px 40px -10px rgba(0,0,0,0.3)',
             transition: 'all 0.3s ease',
             '&:hover': {
               transform: 'translateY(-4px)',
-              boxShadow: '0px 24px 48px -12px rgba(0,0,0,0.08)',
+              borderColor: '#00E676',
+              boxShadow: '0px 24px 48px -12px rgba(0, 230, 118, 0.1)',
             },
           }}
         >
@@ -63,7 +65,7 @@ function StatCard({ stat, index }) {
             variant="h2"
             sx={{
               fontWeight: 900,
-              color: '#0071E3',
+              color: '#00E676',
               mb: 1,
               fontSize: { xs: '2.5rem', md: '3.5rem' },
             }}
@@ -74,7 +76,7 @@ function StatCard({ stat, index }) {
           <Typography
             variant="body1"
             sx={{
-              color: '#86868B',
+              color: '#E0E0E0',
               fontWeight: 500,
             }}
           >
@@ -158,7 +160,7 @@ function StatsSection() {
     <Box
       sx={{
         py: { xs: 24, md: 32 },
-        bgcolor: '#F5F5F7', // Very light gray/off-white for sections
+        bgcolor: '#1A1A1A',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -171,7 +173,7 @@ function StatsSection() {
             sx={{
               mb: 2,
               fontWeight: 800,
-              color: '#1D1D1F',
+              color: '#FFFFFF',
             }}
           >
             המספרים מדברים בעד עצמם

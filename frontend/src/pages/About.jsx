@@ -103,7 +103,7 @@ function About() {
           sx={{
             position: 'relative',
             py: { xs: 12, md: 16 },
-            bgcolor: '#FFFFFF',
+            bgcolor: '#111111',
             overflow: 'hidden',
           }}
         >
@@ -114,7 +114,7 @@ function About() {
               left: 0,
               right: 0,
               bottom: 0,
-              background: 'linear-gradient(135deg, rgba(0, 113, 227, 0.03) 0%, rgba(0, 188, 212, 0.05) 100%)',
+              background: 'linear-gradient(135deg, rgba(0, 230, 118, 0.03) 0%, rgba(0, 230, 118, 0.05) 100%)',
               zIndex: 0,
             }}
           />
@@ -128,7 +128,7 @@ function About() {
               <Typography
                 variant="overline"
                 sx={{
-                  color: '#0071E3',
+                  color: '#00E676',
                   fontWeight: 700,
                   fontSize: '0.875rem',
                   letterSpacing: '2px',
@@ -143,7 +143,7 @@ function About() {
                 sx={{
                   mb: 3,
                   fontWeight: 800,
-                  color: '#1D1D1F',
+                  color: '#FFFFFF',
                   fontSize: { xs: '2.5rem', md: '4rem' },
                   lineHeight: 1.1,
                 }}
@@ -212,7 +212,7 @@ function About() {
                       sx={{
                         mb: 3,
                         fontWeight: 700,
-                        color: '#1D1D1F',
+                        color: '#FFFFFF',
                       }}
                     >
                       {section.title}
@@ -223,10 +223,10 @@ function About() {
                       variant="body1"
                       sx={{
                         mb: 2,
-                        color: '#86868B',
+                        color: '#E0E0E0',
                         lineHeight: 1.8,
                         fontSize: '1.125rem',
-                        fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+                        fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
                         whiteSpace: 'pre-wrap',
                       }}
                     >
@@ -247,22 +247,22 @@ function About() {
       icon: RocketLaunchIcon,
       title: 'חדשנות',
       description: 'אנחנו תמיד מחפשים דרכים חדשות ויצירתיות לפתור בעיות עסקיות ולהוביל את השוק קדימה',
-      color: '#1a237e',
-      bgColor: 'rgba(26, 35, 126, 0.08)',
+      color: '#00E676',
+      bgColor: 'rgba(0, 230, 118, 0.08)',
     },
     {
       icon: PeopleIcon,
       title: 'לקוחות במרכז',
       description: 'הצלחת הלקוחות שלנו היא הצלחה שלנו - אנחנו כאן בשבילכם בכל שלב בדרך',
-      color: '#00bcd4',
-      bgColor: 'rgba(0, 188, 212, 0.08)',
+      color: '#00E676',
+      bgColor: 'rgba(0, 230, 118, 0.08)',
     },
     {
       icon: TrendingUpIcon,
       title: 'שיפור מתמיד',
       description: 'אנחנו משפרים ומעדכנים את המערכת באופן קבוע על בסיס משובים של הלקוחות שלנו',
-      color: '#1a237e',
-      bgColor: 'rgba(26, 35, 126, 0.08)',
+      color: '#00E676',
+      bgColor: 'rgba(0, 230, 118, 0.08)',
     },
   ];
 
@@ -303,7 +303,7 @@ function About() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'linear-gradient(135deg, rgba(26,35,126,0.03) 0%, rgba(0,188,212,0.05) 100%)',
+            background: 'linear-gradient(135deg, rgba(0,230,118,0.03) 0%, rgba(0,230,118,0.05) 100%)',
             zIndex: 0,
           }}
         />
@@ -317,7 +317,7 @@ function About() {
             width: 300,
             height: 300,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(0,188,212,0.1) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(0,230,118,0.1) 0%, transparent 70%)',
             filter: 'blur(60px)',
             zIndex: 0,
           }}
@@ -333,7 +333,7 @@ function About() {
             <Typography
               variant="overline"
               sx={{
-                color: 'secondary.main',
+                color: '#00E676',
                 fontWeight: 700,
                 fontSize: '0.875rem',
                 letterSpacing: '2px',
@@ -348,7 +348,7 @@ function About() {
               sx={{
                 mb: 3,
                 fontWeight: 800,
-                background: 'linear-gradient(135deg, #1a237e 0%, #00bcd4 100%)',
+                background: 'linear-gradient(135deg, #00E676 0%, #00C853 100%)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
@@ -385,7 +385,7 @@ function About() {
               <Typography
                 variant="overline"
                 sx={{
-                  color: 'secondary.main',
+                  color: '#00E676',
                   fontWeight: 700,
                   fontSize: '0.875rem',
                   letterSpacing: '2px',
@@ -427,7 +427,7 @@ function About() {
                   height: 400,
                   borderRadius: 1,
                   overflow: 'hidden',
-                  background: 'linear-gradient(135deg, #1a237e 0%, #00bcd4 100%)',
+                  background: 'linear-gradient(135deg, #00E676 0%, #00C853 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -521,7 +521,7 @@ function About() {
           <Typography
             variant="overline"
             sx={{
-              color: 'secondary.main',
+              color: '#00E676',
               fontWeight: 700,
               fontSize: '0.875rem',
               letterSpacing: '2px',
@@ -554,7 +554,7 @@ function About() {
                     p: 5,
                     textAlign: 'center',
                     border: '1px solid',
-                    borderColor: 'grey.200',
+                    borderColor: '#333333',
                     borderRadius: 1,
                     height: '100%',
                     display: 'flex',
@@ -562,7 +562,7 @@ function About() {
                     transition: 'all 0.3s ease',
                     '&:hover': {
                       transform: 'translateY(-8px)',
-                      boxShadow: '0 12px 32px rgba(0,0,0,0.08)',
+                      boxShadow: '0 12px 32px rgba(0, 230, 118, 0.1)',
                       borderColor: value.color,
                     },
                   }}
@@ -603,13 +603,13 @@ function About() {
       </Container>
 
       {/* למה לבחור בנו */}
-      <Box sx={{ bgcolor: 'grey.50', py: { xs: 8, md: 12 } }}>
+      <Box sx={{ bgcolor: '#1A1A1A', py: { xs: 8, md: 12 } }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 8 }}>
             <Typography
               variant="overline"
               sx={{
-                color: 'secondary.main',
+                color: '#00E676',
                 fontWeight: 700,
                 fontSize: '0.875rem',
                 letterSpacing: '2px',
@@ -646,7 +646,7 @@ function About() {
                         gap: 2,
                         p: 3,
                         height: '100%',
-                        bgcolor: 'white',
+                        bgcolor: '#111111',
                         borderRadius: 1,
                         transition: 'transform 0.3s ease',
                         '&:hover': {
@@ -659,14 +659,14 @@ function About() {
                           width: 48,
                           height: 48,
                           borderRadius: 1,
-                          bgcolor: 'rgba(0,188,212,0.1)',
+                          bgcolor: 'rgba(0,230,118,0.1)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           flexShrink: 0,
                         }}
                       >
-                        <Icon sx={{ color: 'secondary.main', fontSize: 24 }} />
+                        <Icon sx={{ color: '#00E676', fontSize: 24 }} />
                       </Box>
                       <Typography
                         variant="h6"
@@ -693,7 +693,7 @@ function About() {
                 px: 6,
                 py: 2,
                 fontSize: '1.1rem',
-                boxShadow: '0 8px 24px rgba(0,188,212,0.3)',
+                boxShadow: '0 8px 24px rgba(0,230,118,0.3)',
               }}
             >
               צרו קשר עכשיו

@@ -7,15 +7,15 @@ function FeatureCard({ icon: Icon, title, description, color }) {
       sx={{
         height: '100%',
         border: '1px solid',
-        borderColor: 'grey.200',
+        borderColor: '#333333',
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         '&:hover': {
-          borderColor: color || 'secondary.main',
-          boxShadow: `0px 12px 32px rgba(0,0,0,0.08)`,
+          borderColor: color || '#00E676',
+          boxShadow: `0px 12px 32px rgba(0, 230, 118, 0.1)`,
           transform: 'translateY(-8px)',
           '& .feature-icon': {
             transform: 'scale(1.1) rotate(5deg)',
-            bgcolor: color ? `${color}15` : 'secondary.light',
+            bgcolor: color ? `${color}15` : 'rgba(0, 230, 118, 0.1)',
           },
         },
       }}
@@ -32,11 +32,11 @@ function FeatureCard({ icon: Icon, title, description, color }) {
             justifyContent: 'center',
             mx: 'auto',
             mb: 3,
-            bgcolor: 'grey.50',
+            bgcolor: '#1E1E1E',
             transition: 'all 0.4s ease',
           }}
         >
-          <Icon sx={{ fontSize: 40, color: color || 'secondary.main' }} />
+          <Icon sx={{ fontSize: 40, color: color || '#00E676' }} />
         </Box>
 
         <Typography

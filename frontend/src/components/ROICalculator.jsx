@@ -36,14 +36,14 @@ const ROICalculator = () => {
           width: 24px;
           height: 24px;
           border-radius: 50%;
-          background: white;
+          background: #00E676;
           cursor: pointer;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 2px #0071E3;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px #00E676;
           transition: all 0.2s ease;
         }
         
         .slider::-webkit-slider-thumb:hover {
-          box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3), 0 0 0 2px #0071E3;
+          box-shadow: 0 4px 12px rgba(0, 230, 118, 0.3), 0 0 0 2px #00E676;
           transform: scale(1.1);
         }
         
@@ -51,15 +51,15 @@ const ROICalculator = () => {
           width: 24px;
           height: 24px;
           border-radius: 50%;
-          background: white;
+          background: #00E676;
           cursor: pointer;
-          border: 2px solid #0071E3;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          border: 2px solid #00E676;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
           transition: all 0.2s ease;
         }
         
         .slider::-moz-range-thumb:hover {
-          box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3);
+          box-shadow: 0 4px 12px rgba(0, 230, 118, 0.3);
           transform: scale(1.1);
         }
         
@@ -68,11 +68,11 @@ const ROICalculator = () => {
         }
         
         .slider:focus::-webkit-slider-thumb {
-          box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.2), 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 2px #0071E3;
+          box-shadow: 0 0 0 4px rgba(0, 230, 118, 0.2), 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 2px #00E676;
         }
         
         .slider:focus::-moz-range-thumb {
-          box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.2), 0 2px 8px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 0 0 4px rgba(0, 230, 118, 0.2), 0 2px 8px rgba(0, 0, 0, 0.3);
         }
       `}</style>
       
@@ -80,7 +80,7 @@ const ROICalculator = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-white rounded-3xl shadow-xl p-8 md:p-12 max-w-2xl mx-auto"
+        className="bg-surface rounded-3xl shadow-xl p-8 md:p-12 max-w-2xl mx-auto border border-border"
         dir="rtl"
       >
         {/* Title */}
@@ -100,9 +100,9 @@ const ROICalculator = () => {
               max="40"
               value={weeklyHours}
               onChange={(e) => setWeeklyHours(Number(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+              className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer slider"
               style={{
-                background: `linear-gradient(to right, #0071E3 0%, #0071E3 ${(weeklyHours / 40) * 100}%, #E5E7EB ${(weeklyHours / 40) * 100}%, #E5E7EB 100%)`,
+                background: `linear-gradient(to right, #00E676 0%, #00E676 ${(weeklyHours / 40) * 100}%, #333333 ${(weeklyHours / 40) * 100}%, #333333 100%)`,
               }}
             />
             <div className="flex justify-between mt-2 text-sm text-text-body">
@@ -125,9 +125,9 @@ const ROICalculator = () => {
               max="300"
               value={hourlyWage}
               onChange={(e) => setHourlyWage(Number(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+              className="w-full h-2 bg-border rounded-lg appearance-none cursor-pointer slider"
               style={{
-                background: `linear-gradient(to right, #0071E3 0%, #0071E3 ${((hourlyWage - 30) / 270) * 100}%, #E5E7EB ${((hourlyWage - 30) / 270) * 100}%, #E5E7EB 100%)`,
+                background: `linear-gradient(to right, #00E676 0%, #00E676 ${((hourlyWage - 30) / 270) * 100}%, #333333 ${((hourlyWage - 30) / 270) * 100}%, #333333 100%)`,
               }}
             />
             <div className="flex justify-between mt-2 text-sm text-text-body">
@@ -176,7 +176,7 @@ const ROICalculator = () => {
           >
             <Link
               to="/contact"
-              className="block w-full bg-primary hover:bg-primary-dark text-white font-semibold py-4 px-6 rounded-xl text-center transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 font-heading"
+              className="block w-full bg-primary hover:bg-primary-dark text-midnight font-semibold py-4 px-6 rounded-xl text-center transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 font-heading"
             >
               תחסכו את הכסף הזה - קבעו אפיון
             </Link>

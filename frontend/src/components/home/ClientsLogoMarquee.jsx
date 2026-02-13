@@ -40,29 +40,27 @@ const ClientsLogoMarquee = () => {
   const showClientsOnHome = settings?.showClientsOnHome === true;
   if (!showClientsOnHome || !clients.length) return null;
 
-  // simple marquee: duplicate items for seamless loop
   const items = [...clients, ...clients];
 
   return (
-    <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: '#F5F5F7' }}>
+    <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: '#1A1A1A' }}>
       <Container maxWidth="lg" sx={{ px: { xs: 3, md: 6 } }}>
-        {/* Header */}
         <Box sx={{ textAlign: 'center', mb: 6 }}>
-          <Typography 
-            variant="h3" 
-            sx={{ 
+          <Typography
+            variant="h3"
+            sx={{
               fontWeight: 700,
-              color: '#1D1D1F',
+              color: '#FFFFFF',
               mb: 2,
               fontSize: { xs: '2rem', md: '2.5rem' }
             }}
           >
             לקוחות שבחרו לעבוד איתנו
           </Typography>
-          <Typography 
-            variant="body1" 
-            sx={{ 
-              color: '#86868B',
+          <Typography
+            variant="body1"
+            sx={{
+              color: '#E0E0E0',
               maxWidth: 600,
               mx: 'auto'
             }}
@@ -71,14 +69,13 @@ const ClientsLogoMarquee = () => {
           </Typography>
         </Box>
 
-        {/* Marquee Container - Limited Width */}
         <Box
           sx={{
             overflow: 'hidden',
             borderRadius: '24px',
-            bgcolor: '#FFFFFF',
-            boxShadow: '0px 20px 40px -10px rgba(0,0,0,0.05)',
-            border: 'none',
+            bgcolor: '#1E1E1E',
+            boxShadow: '0px 20px 40px -10px rgba(0,0,0,0.3)',
+            border: '1px solid #333333',
             maxWidth: '900px',
             mx: 'auto',
             position: 'relative',
@@ -89,7 +86,7 @@ const ClientsLogoMarquee = () => {
               top: 0,
               bottom: 0,
               width: '80px',
-              background: 'linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%)',
+              background: 'linear-gradient(to right, rgba(30,30,30,1) 0%, rgba(30,30,30,0) 100%)',
               zIndex: 2,
               pointerEvents: 'none',
             },
@@ -100,7 +97,7 @@ const ClientsLogoMarquee = () => {
               top: 0,
               bottom: 0,
               width: '80px',
-              background: 'linear-gradient(to left, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%)',
+              background: 'linear-gradient(to left, rgba(30,30,30,1) 0%, rgba(30,30,30,0) 100%)',
               zIndex: 2,
               pointerEvents: 'none',
             },
@@ -132,11 +129,11 @@ const ClientsLogoMarquee = () => {
                   maxWidth: { xs: 160, md: 200 },
                   width: 'auto',
                   objectFit: 'contain',
-                  opacity: 0.7,
-                  filter: 'grayscale(1)',
+                  opacity: 0.6,
+                  filter: 'grayscale(1) brightness(1.5)',
                   transition: 'all 0.3s ease',
-                  '&:hover': { 
-                    filter: 'grayscale(0)', 
+                  '&:hover': {
+                    filter: 'grayscale(0) brightness(1)',
                     opacity: 1,
                     transform: 'scale(1.05)'
                   }
@@ -151,4 +148,3 @@ const ClientsLogoMarquee = () => {
 };
 
 export default ClientsLogoMarquee;
-

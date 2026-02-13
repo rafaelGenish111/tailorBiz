@@ -10,15 +10,27 @@
 @tailwind utilities;
 
 :root {
-  /* Apple/Big Tech Typography */
-  font-family: 'Assistant', system-ui, -apple-system, sans-serif;
+  /* Dark Tech Typography - Heebo only */
+  font-family: 'Heebo', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  /* Light Mode - Premium Apple Aesthetic */
-  color-scheme: light;
-  color: #86868B; /* Medium gray for body text */
-  background-color: #FFFFFF; /* Pure white base */
+  /* Dark Mode - Automation/Tech Aesthetic */
+  color-scheme: dark;
+  color: #E0E0E0;
+  background-color: #111111;
+
+  /* CSS Custom Properties */
+  --primary-color: #00E676;
+  --primary-color-hover: #00FF99;
+  --bg-color: #111111;
+  --bg-secondary: #1A1A1A;
+  --bg-card: #1E1E1E;
+  --text-color: #E0E0E0;
+  --text-heading: #FFFFFF;
+  --text-muted: #9E9E9E;
+  --border-color: #424242;
+  --border-color-light: #333333;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -29,14 +41,14 @@
 /* Apply Heebo to all headings */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Heebo', system-ui, -apple-system, sans-serif;
-  color: #1D1D1F; /* Deep charcoal gray for headings */
+  color: #FFFFFF;
   font-weight: 700;
 }
 
-/* Apply Assistant to all paragraphs */
+/* Apply Heebo to all body elements */
 p, body, span, div {
-  font-family: 'Assistant', system-ui, -apple-system, sans-serif;
-  color: #86868B; /* Medium gray for body text */
+  font-family: 'Heebo', system-ui, -apple-system, sans-serif;
+  color: #E0E0E0;
 }
 
 html {
@@ -47,8 +59,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #FFFFFF; /* Pure white base */
-  color: #86868B; /* Medium gray for body text */
+  background-color: #111111;
+  color: #E0E0E0;
 }
 
 #root {
@@ -71,7 +83,7 @@ body.underline-links a {
 
 /* Focus visible for keyboard navigation */
 *:focus-visible {
-  outline: 3px solid #0071E3;
+  outline: 3px solid #00E676;
   outline-offset: 2px;
 }
 
@@ -87,11 +99,10 @@ body.underline-links a {
   z-index: 9999;
 }
 
-/* SalesOnboarding – scrollbar נעים */
+/* Custom scrollbar */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.6) transparent;
-  /* slate-400 */
+  scrollbar-color: rgba(100, 100, 100, 0.6) transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -103,13 +114,13 @@ body.underline-links a {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.45);
+  background: rgba(100, 100, 100, 0.45);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.7);
+  background: rgba(100, 100, 100, 0.7);
   background-clip: content-box;
 }

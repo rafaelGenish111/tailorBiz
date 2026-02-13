@@ -7,7 +7,7 @@ import { getProductById } from '../../utils/productsConfig';
 
 const MotionBox = motion.create(Box);
 
-const textSx = { color: '#4B5563', lineHeight: 1.9, fontFamily: "'Assistant', system-ui, sans-serif" };
+const textSx = { color: '#E0E0E0', lineHeight: 1.9, fontFamily: "'Heebo', system-ui, sans-serif" };
 
 function ProductTechnologies() {
   const { productId } = useParams();
@@ -31,7 +31,7 @@ function ProductTechnologies() {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
         >
-          <Typography variant="h3" sx={{ mb: 4, fontWeight: 800, color: '#1D1D1F', fontSize: { xs: '1.75rem', md: '2.5rem' }, fontFamily: "'Heebo', system-ui, sans-serif" }}>
+          <Typography variant="h3" sx={{ mb: 4, fontWeight: 800, color: '#FFFFFF', fontSize: { xs: '1.75rem', md: '2.5rem' }, fontFamily: "'Heebo', system-ui, sans-serif" }}>
             על המערכת והתשתית
           </Typography>
 

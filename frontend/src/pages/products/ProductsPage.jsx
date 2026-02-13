@@ -29,8 +29,8 @@ function ProductCard({ product, index }) {
           flexDirection: 'column',
           borderRadius: 3,
           border: '1px solid',
-          borderColor: 'grey.100',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+          borderColor: '#333333',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
           transition: 'transform 0.2s, box-shadow 0.2s',
           overflow: 'hidden',
           '&:hover': {
@@ -60,7 +60,7 @@ function ProductCard({ product, index }) {
             fontWeight={700}
             sx={{
               mb: 1.5,
-              color: '#1D1D1F',
+              color: '#FFFFFF',
               fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
               flexShrink: 0,
               display: '-webkit-box',
@@ -77,7 +77,7 @@ function ProductCard({ product, index }) {
             sx={{
               flexGrow: 1,
               lineHeight: 1.7,
-              fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+              fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
               display: '-webkit-box',
               WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
@@ -111,7 +111,7 @@ function ProductsPage() {
   const [heroRef, heroInView] = useInView({ triggerOnce: true, threshold: 0.2 });
 
   return (
-    <Box sx={{ bgcolor: '#FAFAFA', minHeight: '100vh' }}>
+    <Box sx={{ bgcolor: '#111111', minHeight: '100vh' }}>
       <Helmet>
         <title>מוצרים | TailorBiz - פתרונות דיגיטליים בהתאמה אישית</title>
         <meta name="description" content="אפליקציית מטפלים, המפעל החכם, בית ספר של העתיד - פתרונות דיגיטליים מותאמים לעסק שלכם." />
@@ -124,7 +124,7 @@ function ProductsPage() {
           position: 'relative',
           py: { xs: 10, md: 14 },
           overflow: 'hidden',
-          bgcolor: '#FFFFFF',
+          bgcolor: '#111111',
         }}
       >
         <Box
@@ -134,7 +134,7 @@ function ProductsPage() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'linear-gradient(135deg, rgba(0, 113, 227, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%)',
+            background: 'linear-gradient(135deg, rgba(0, 230, 118, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%)',
             zIndex: 0,
           }}
         />
@@ -150,7 +150,7 @@ function ProductsPage() {
               sx={{
                 mb: 2,
                 fontWeight: 800,
-                color: '#1D1D1F',
+                color: '#FFFFFF',
                 fontSize: { xs: '2.25rem', md: '3.5rem' },
                 lineHeight: 1.2,
                 fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
@@ -161,11 +161,11 @@ function ProductsPage() {
             <Typography
               variant="h6"
               sx={{
-                color: '#4B5563',
+                color: '#E0E0E0',
                 fontWeight: 400,
                 lineHeight: 1.7,
                 fontSize: { xs: '1rem', md: '1.25rem' },
-                fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+                fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
               }}
             >
               פתרונות דיגיטליים מותאמים אישית לתעשיות שונות. בחרו את המוצר המתאים לכם וחקרו את האפשרויות.

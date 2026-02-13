@@ -1,10 +1,11 @@
 import React from 'react';
-import { Box, Container, Typography, Stack } from '@mui/material';
+import { Box, Container, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import { publicCMS } from '../../utils/publicApi';
 import Button from '../ui/Button';
+import ConnectedDotsBackground from '../ui/ConnectedDotsBackground';
+
 const LOGO_SRC = '/logo.png';
 
 function HeroSection() {
@@ -23,9 +24,9 @@ function HeroSection() {
     run();
   }, []);
 
-  const title = (cmsHero?.heroTitle || 'מערכת ניהול חכמה בתפירה אישית').trim();
-  const subtitle = (cmsHero?.heroSubtitle || 'מערכות ניהול ואוטומציות בהתאמה אישית').trim();
-  const ctaText = (cmsHero?.heroCtaText || 'לבדיקת היתכנות ואפיון').trim();
+  const title = (cmsHero?.heroTitle || 'מערכות חכמות בתפירה אישית').trim();
+  const subtitle = (cmsHero?.heroSubtitle || 'לעשות סדר, ליצור שליטה, ולפשט ניהול עסקי מורכב באמצעות מערכת אחת חכמה.').trim();
+  const ctaText = (cmsHero?.heroCtaText || 'בואו נעשה סדר').trim();
   const ctaHref = cmsHero?.heroCtaHref || '/contact';
 
   return (
@@ -36,45 +37,19 @@ function HeroSection() {
         display: 'flex',
         alignItems: 'center',
         overflow: 'hidden',
-        bgcolor: '#FFFFFF',
+        bgcolor: '#111111',
       }}
     >
-      {/* Video Background - Layer 1 (Bottom) */}
-      <Box
-        component="video"
-        autoPlay
-        loop
-        muted
-        playsInline
-        aria-label="Animation of an automated business dashboard showing efficiency metrics"
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          zIndex: 0,
-        }}
-      >
-        <source src="/assets/images/background.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
-      </Box>
-
-      {/* Glass Overlay - Layer 2 (Above Video, Below Content) */}
-      <Box
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-          backdropFilter: 'blur(2px)',
-          WebkitBackdropFilter: 'blur(2px)',
-          zIndex: 1,
-          pointerEvents: 'none',
-        }}
+      {/* Connected Dots Animation - Layer 1 */}
+      <ConnectedDotsBackground
+        dotColor="rgba(0, 230, 118, 0.4)"
+        lineColor="rgba(0, 230, 118, 0.12)"
+        dotCount={80}
+        connectionDistance={150}
+        speed={0.3}
       />
 
-      {/* Animated Mesh Gradient Blobs Container - Optional, can be removed if too busy */}
+      {/* Subtle Green Glow Blobs - Layer 2 */}
       <Box
         sx={{
           position: 'absolute',
@@ -82,122 +57,75 @@ function HeroSection() {
           left: '50%',
           transform: 'translate(-50%, -50%)',
           width: '100%',
-          maxWidth: '600px',
+          maxWidth: '800px',
           height: '100%',
-          zIndex: 2,
+          zIndex: 1,
           pointerEvents: 'none',
-          opacity: 0.3, // Reduced opacity to work with video
+          opacity: 0.4,
         }}
       >
-        {/* Blob 1 - The Anchor (Purple/Violet) */}
+        {/* Blob 1 - Primary Green */}
         <motion.div
           animate={{
             x: [0, 15, -10, 0],
             y: [0, -25, 10, 0],
             scale: [1, 1.05, 0.95, 1],
           }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
+          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
           style={{
             position: 'absolute',
-            top: 0,
-            left: '-16px',
-            width: '288px',
-            height: '288px',
+            top: '10%',
+            left: '10%',
+            width: '320px',
+            height: '320px',
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, rgba(196, 181, 253, 0.6) 0%, rgba(167, 139, 250, 0.6) 100%)',
-            mixBlendMode: 'multiply',
-            filter: 'blur(50px)',
-            opacity: 0.6,
+            background: 'radial-gradient(circle, rgba(0, 230, 118, 0.15) 0%, transparent 70%)',
+            filter: 'blur(60px)',
           }}
         />
 
-        {/* Blob 2 - The Flow (Brand Blue) */}
+        {/* Blob 2 - Secondary Green */}
         <motion.div
           animate={{
-            x: [0, 15, -10, 0],
-            y: [0, -25, 10, 0],
-            scale: [1, 1.05, 0.95, 1],
+            x: [0, -15, 10, 0],
+            y: [0, 20, -15, 0],
+            scale: [1, 0.95, 1.05, 1],
           }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: 3,
-          }}
+          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
           style={{
             position: 'absolute',
-            top: 0,
-            right: '-16px',
-            width: '288px',
-            height: '288px',
+            bottom: '15%',
+            right: '5%',
+            width: '350px',
+            height: '350px',
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, rgba(147, 197, 253, 0.6) 0%, rgba(96, 165, 250, 0.6) 100%)',
-            mixBlendMode: 'multiply',
-            filter: 'blur(50px)',
-            opacity: 0.6,
+            background: 'radial-gradient(circle, rgba(0, 230, 118, 0.10) 0%, transparent 70%)',
+            filter: 'blur(60px)',
           }}
         />
 
-        {/* Blob 3 - The Accent (Cyan/Pink) */}
+        {/* Blob 3 - Accent */}
         <motion.div
           animate={{
-            x: [0, 15, -10, 0],
-            y: [0, -25, 10, 0],
-            scale: [1, 1.05, 0.95, 1],
+            x: [0, 10, -15, 0],
+            y: [0, -15, 20, 0],
+            scale: [1, 1.03, 0.97, 1],
           }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: 6,
-          }}
-          style={{
-            position: 'absolute',
-            bottom: '-32px',
-            left: '80px',
-            width: '288px',
-            height: '288px',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, rgba(125, 211, 252, 0.5) 0%, rgba(251, 113, 133, 0.5) 100%)',
-            mixBlendMode: 'multiply',
-            filter: 'blur(50px)',
-            opacity: 0.6,
-          }}
-        />
-
-        {/* Blob 4 - Additional Color (Green/Teal) */}
-        <motion.div
-          animate={{
-            x: [0, 15, -10, 0],
-            y: [0, -25, 10, 0],
-            scale: [1, 1.05, 0.95, 1],
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: 9,
-          }}
+          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 8 }}
           style={{
             position: 'absolute',
             top: '40%',
-            right: '10%',
-            width: '288px',
-            height: '288px',
+            left: '60%',
+            width: '280px',
+            height: '280px',
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, rgba(94, 234, 212, 0.5) 0%, rgba(34, 197, 94, 0.5) 100%)',
-            mixBlendMode: 'multiply',
-            filter: 'blur(50px)',
-            opacity: 0.5,
+            background: 'radial-gradient(circle, rgba(0, 255, 153, 0.08) 0%, transparent 70%)',
+            filter: 'blur(60px)',
           }}
         />
       </Box>
 
-      {/* Content Layer - Layer 3 (Top) */}
+      {/* Content Layer - Layer 3 */}
       <Container
         maxWidth="lg"
         sx={{
@@ -214,15 +142,15 @@ function HeroSection() {
             maxWidth: 800,
             mx: 'auto',
             textAlign: 'center',
-            // Ensure text readability with subtle backdrop
-            backgroundColor: 'rgba(255, 255, 255, 0.6)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
+            backgroundColor: 'rgba(26, 26, 26, 0.6)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
             borderRadius: '24px',
-            padding: { xs: 3, md: 4 },
+            padding: { xs: 3, md: 5 },
           }}
         >
-          {/* Logo גדול */}
+          {/* Logo */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -231,16 +159,16 @@ function HeroSection() {
             <Box
               component="img"
               src={LOGO_SRC}
-              alt="לוגו"
+              alt="TaylorBiz לוגו"
               loading="eager"
               sx={{
-                height: { xs: 140, sm: 180, md: 240 },
+                height: { xs: 100, sm: 140, md: 180 },
                 width: 'auto',
                 mx: 'auto',
                 display: 'block',
                 mb: 4,
                 objectFit: 'contain',
-                filter: 'drop-shadow(0px 10px 30px rgba(11,31,51,0.10))',
+                filter: 'drop-shadow(0px 10px 30px rgba(0,230,118,0.15))',
               }}
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
@@ -248,34 +176,7 @@ function HeroSection() {
             />
           </motion.div>
 
-          {/* USP Badge - בלי דמי מנוי */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            {/* <Box
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 1,
-                px: 4,
-                py: 1.5,
-                mb: 3,
-                borderRadius: 8,
-                bgcolor: 'rgba(211,139,42,0.12)',
-                border: '2px solid',
-                borderColor: 'rgba(211,139,42,0.3)',
-                boxShadow: '0 4px 12px rgba(211,139,42,0.15)',
-              }}
-            >
-              <Typography variant="h6" sx={{ fontWeight: 700, color: 'secondary.main' }}>
-                בלי דמי מנוי חודשיים - הנכס נשאר שלך
-              </Typography>
-            </Box> */}
-          </motion.div>
-
-          {/* כותרת ראשית - Apple/Big Tech Style */}
+          {/* H1 Headline */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -286,9 +187,9 @@ function HeroSection() {
               variant="h1"
               sx={{
                 mb: 3,
-                color: '#1D1D1F',
-                fontWeight: 700,
-                fontSize: { xs: '3rem', md: '5rem' }, // text-5xl md:text-7xl
+                color: '#FFFFFF',
+                fontWeight: 900,
+                fontSize: { xs: '2.5rem', sm: '3.5rem', md: '5rem' },
                 letterSpacing: '-0.02em',
                 lineHeight: 1.1,
               }}
@@ -297,7 +198,7 @@ function HeroSection() {
             </Typography>
           </motion.div>
 
-          {/* תת-כותרת */}
+          {/* Subtitle */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -307,23 +208,24 @@ function HeroSection() {
               variant="h5"
               sx={{
                 mb: 5,
-                color: '#86868B',
+                color: '#E0E0E0',
                 fontWeight: 400,
                 lineHeight: 1.6,
-                fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+                fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
+                fontSize: { xs: '1.1rem', md: '1.35rem' },
               }}
             >
-              <strong>{subtitle}</strong>
+              {subtitle}
             </Typography>
           </motion.div>
 
-          {/* כפתורים */}
+          {/* CTA Button */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
           >
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 6 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
               <Button
                 variant="primary"
                 size="large"
@@ -339,46 +241,6 @@ function HeroSection() {
               </Button>
             </Box>
           </motion.div>
-
-          {/* נתונים מהירים - מוסתר עד שיש נתונים אמיתיים */}
-          {/* <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            <Stack
-              direction="row"
-              spacing={{ xs: 3, sm: 6 }}
-              justifyContent="center"
-              flexWrap="wrap"
-              sx={{ pt: 4 }}
-            >
-              {[
-                { number: '+10', label: 'שעות חיסכון שבועי' },
-                { number: '95%', label: 'שביעות רצון' },
-                { number: '+500', label: 'עסקים מרוצים' },
-              ].map((stat, index) => (
-                <Box key={index} sx={{ textAlign: 'center', minWidth: 120 }}>
-                  <Typography
-                    variant="h3"
-                    sx={{
-                      fontWeight: 800,
-                      background: 'linear-gradient(135deg, #1a237e 0%, #00bcd4 100%)',
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      mb: 0.5,
-                    }}
-                  >
-                    {stat.number}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {stat.label}
-                  </Typography>
-                </Box>
-              ))}
-            </Stack>
-          </motion.div> */}
         </Box>
       </Container>
     </Box>

@@ -65,7 +65,6 @@ function Header() {
     return true;
   });
 
-  // טעינת הגדרות האתר
   useEffect(() => {
     let mounted = true;
     const loadSettings = async () => {
@@ -84,7 +83,6 @@ function Header() {
     };
   }, []);
 
-  // טעינת מאמרים לכל קטגוריה
   useEffect(() => {
     const loadArticlesByCategory = async () => {
       const articlesMap = {};
@@ -133,13 +131,13 @@ function Header() {
       position="sticky"
       elevation={0}
       sx={{
-        bgcolor: trigger ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.95)', // Glassmorphism - Frosted Glass
+        bgcolor: trigger ? 'rgba(17, 17, 17, 0.85)' : 'rgba(17, 17, 17, 0.95)',
         borderBottom: '1px solid',
-        borderColor: trigger ? 'rgba(0, 0, 0, 0.05)' : 'transparent',
-        boxShadow: trigger ? '0 2px 8px rgba(0,0,0,0.04)' : 'none',
+        borderColor: trigger ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
+        boxShadow: trigger ? '0 2px 8px rgba(0,0,0,0.3)' : 'none',
         transition: 'all 0.3s ease',
         py: trigger ? 0.5 : 1.5,
-        backdropFilter: 'blur(20px)', // backdrop-blur-md
+        backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
       }}
     >
@@ -153,13 +151,13 @@ function Header() {
               alignItems: 'center',
               gap: 1.25,
               textDecoration: 'none',
-              color: '#1D1D1F',
+              color: '#FFFFFF',
             }}
           >
             <Box
               component="img"
               src={LOGO_SRC}
-              alt="לוגו"
+              alt="TaylorBiz לוגו"
               loading="eager"
               sx={{
                 height: { xs: 44, sm: 52 },
@@ -172,39 +170,37 @@ function Header() {
 
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {/* אודות */}
               {navItems.filter(item => item.label === 'אודות').map((item) => (
                 <MuiButton
                   key={item.label}
                   component={Link}
                   to={item.path}
                   sx={{
-                    color: '#1D1D1F',
+                    color: '#FFFFFF',
                     fontWeight: 500,
                     px: 2,
-                    fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+                    fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
                     textTransform: 'none',
                     '&:hover': {
                       bgcolor: 'transparent',
-                      color: '#0071E3',
+                      color: '#00E676',
                     },
                   }}
                 >
                   {item.label}
                 </MuiButton>
               ))}
-              {/* מאמרים */}
               <MuiButton
                 onClick={(e) => setArticlesAnchorEl(e.currentTarget)}
                 sx={{
-                  color: '#1D1D1F',
+                  color: '#FFFFFF',
                   fontWeight: 500,
                   px: 2,
-                  fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+                  fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
                   textTransform: 'none',
                   '&:hover': {
                     bgcolor: 'transparent',
-                    color: '#0071E3',
+                    color: '#00E676',
                   },
                 }}
               >
@@ -230,7 +226,6 @@ function Header() {
                       key={category.value}
                       sx={{ position: 'relative' }}
                       onMouseEnter={(e) => {
-                        // Open submenu on hover if there are articles
                         if (hasArticles) {
                           handleCategorySubmenuOpen(category.value, e);
                         }
@@ -270,9 +265,7 @@ function Header() {
                             horizontal: 'left',
                           }}
                           MenuListProps={{ sx: { minWidth: 240, maxHeight: 400 } }}
-                          onMouseEnter={() => {
-                            // Keep submenu open when hovering over it
-                          }}
+                          onMouseEnter={() => {}}
                           onMouseLeave={() => handleCategorySubmenuClose(category.value)}
                         >
                           {articlesByCategory[category.value]?.map((article) => (
@@ -295,21 +288,20 @@ function Header() {
                   );
                 })}
               </Menu>
-              {/* שאר הכפתורים */}
               {navItems.filter(item => item.label !== 'אודות').map((item) => (
                 <MuiButton
                   key={item.label}
                   component={Link}
                   to={item.path}
                   sx={{
-                    color: '#1D1D1F',
+                    color: '#FFFFFF',
                     fontWeight: 500,
                     px: 2,
-                    fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+                    fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
                     textTransform: 'none',
                     '&:hover': {
                       bgcolor: 'transparent',
-                      color: '#0071E3',
+                      color: '#00E676',
                     },
                   }}
                 >
@@ -321,7 +313,7 @@ function Header() {
                 to="/contact"
                 size="medium"
               >
-                לבדיקת היתכנות ואפיון
+                תיאום פגישת אפיון
               </Button>
             </Box>
           )}
@@ -329,7 +321,7 @@ function Header() {
           {isMobile && (
             <IconButton
               onClick={() => setMobileOpen(true)}
-              sx={{ color: '#1D1D1F' }}
+              sx={{ color: '#FFFFFF' }}
               aria-label="תפריט"
             >
               <MenuIcon />
@@ -345,17 +337,16 @@ function Header() {
         PaperProps={{
           sx: {
             height: '100vh',
-            bgcolor: 'background.default',
+            bgcolor: '#111111',
           },
         }}
       >
         <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end' }}>
-          <IconButton onClick={() => setMobileOpen(false)}>
+          <IconButton onClick={() => setMobileOpen(false)} sx={{ color: '#FFFFFF' }}>
             <CloseIcon />
           </IconButton>
         </Box>
         <List sx={{ px: 3 }}>
-          {/* אודות */}
           {navItems.filter(item => item.label === 'אודות').map((item) => (
             <ListItem
               key={item.label}
@@ -366,24 +357,23 @@ function Header() {
                 py: 2,
                 fontSize: '1.25rem',
                 fontWeight: 600,
-                color: '#1D1D1F',
+                color: '#FFFFFF',
                 borderBottom: '1px solid',
-                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderColor: 'rgba(255, 255, 255, 0.08)',
                 textDecoration: 'none',
               }}
             >
               {item.label}
             </ListItem>
           ))}
-          {/* מאמרים */}
           <ListItem
             sx={{
               py: 2,
               fontSize: '1.25rem',
               fontWeight: 600,
-              color: 'text.primary',
+              color: '#FFFFFF',
               borderBottom: '1px solid',
-              borderColor: 'grey.200',
+              borderColor: 'rgba(255, 255, 255, 0.08)',
               flexDirection: 'column',
               alignItems: 'flex-start',
             }}
@@ -415,11 +405,11 @@ function Header() {
                       px: 2,
                       fontSize: '1rem',
                       fontWeight: 500,
-                      color: 'text.secondary',
+                      color: '#E0E0E0',
                       cursor: hasArticles ? 'pointer' : 'default',
                       borderRadius: 1,
                       '&:hover': {
-                        bgcolor: 'action.hover',
+                        bgcolor: 'rgba(0, 230, 118, 0.08)',
                       },
                     }}
                   >
@@ -454,11 +444,11 @@ function Header() {
                               py: 1.5,
                               fontSize: '0.95rem',
                               fontWeight: 400,
-                              color: 'text.secondary',
+                              color: '#E0E0E0',
                               textDecoration: 'none',
                               borderRadius: 1,
                               '&:hover': {
-                                bgcolor: 'action.hover',
+                                bgcolor: 'rgba(0, 230, 118, 0.08)',
                               },
                             }}
                           >
@@ -472,7 +462,6 @@ function Header() {
               );
             })}
           </ListItem>
-          {/* שאר הכפתורים */}
           {navItems.filter(item => item.label !== 'אודות').map((item) => (
             <ListItem
               key={item.label}
@@ -483,9 +472,9 @@ function Header() {
                 py: 2,
                 fontSize: '1.25rem',
                 fontWeight: 600,
-                color: '#1D1D1F',
+                color: '#FFFFFF',
                 borderBottom: '1px solid',
-                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderColor: 'rgba(255, 255, 255, 0.08)',
                 textDecoration: 'none',
               }}
             >
@@ -500,7 +489,7 @@ function Header() {
               onClick={() => setMobileOpen(false)}
               sx={{ width: '100%' }}
             >
-              לבדיקת היתכנות ואפיון
+              תיאום פגישת אפיון
             </Button>
           </ListItem>
         </List>

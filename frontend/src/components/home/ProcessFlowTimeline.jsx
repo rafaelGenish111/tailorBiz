@@ -1,10 +1,9 @@
 import { Box, Container, Typography, Paper } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import ContactPhoneOutlinedIcon from '@mui/icons-material/ContactPhoneOutlined';
-import SettingsSuggestOutlinedIcon from '@mui/icons-material/SettingsSuggestOutlined';
-import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
-import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+import CodeOutlinedIcon from '@mui/icons-material/CodeOutlined';
+import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
 
 const MotionBox = motion.create(Box);
 const MotionPaper = motion.create(Paper);
@@ -12,38 +11,29 @@ const MotionPaper = motion.create(Paper);
 const steps = [
   {
     step: 'שלב 1',
-    title: 'יצירת קשר',
-    description: 'שיחת ייעוץ ראשונית להבנת צרכי העסק שלכם',
-    details: 'כל פרויקט מתחיל באיסוף מידע של התהליכים בעסק בשיווק, במכירות, בפיננסים ובתפעול. בפגישה נראה איזה אוטומציות נשלב בפרויקט ואיך נראה האסטרטגיה של כל חבר צוות.',
-    icon: ContactPhoneOutlinedIcon,
+    title: 'אפיון עמוק',
+    description: 'הבנה מעמיקה של התהליכים, הכאבים והצרכים של העסק.',
+    details: 'כל פרויקט מתחיל באיסוף מידע מקיף של התהליכים בעסק – בשיווק, במכירות, בפיננסים ובתפעול. אנחנו מבינים את האתגרים לעומק לפני שמתחילים לפתח.',
+    icon: SearchOutlinedIcon,
     position: 'right',
-    highlight: false,
-  },
-  {
-    step: 'שלב 2',
-    title: 'מפתחים',
-    description: 'בשלב הזה מפתחים שרותים ומחברים לבנות את המערכת',
-    details: 'פיתוח \'חליפה לפי מידה\' – אנחנו בונים את המערכת בדיוק לפי האפיון, מחברים בין הכלים הקיימים (אינטגרציות) ומקימים דשבורדים לניהול בזמן אמת.',
-    icon: SettingsSuggestOutlinedIcon,
-    position: 'left',
     highlight: true,
   },
   {
-    step: 'שלב 3',
-    title: 'בודקים',
-    description: 'בדיקות מקיפות לפני השקה',
-    details: 'בקרת איכות (QA) – אנחנו מבצעים בדיקות קפדניות כדי לוודא שכל אוטומציה עובדת חלק, גם במקרי קיצון, לפני העלייה לאוויר.',
-    icon: RocketLaunchOutlinedIcon,
-    position: 'right',
+    step: 'שלב 2',
+    title: 'פיתוח מהיר וגמיש',
+    description: 'בניית המערכת בדיוק לפי האפיון, עם אינטגרציות ודשבורדים.',
+    details: 'פיתוח \'חליפה לפי מידה\' – אנחנו בונים את המערכת בדיוק לפי האפיון, מחברים בין הכלים הקיימים ומקימים דשבורדים לניהול בזמן אמת.',
+    icon: CodeOutlinedIcon,
+    position: 'left',
     highlight: false,
   },
   {
-    step: 'שלב 4',
-    title: 'השקה והטמעה',
-    description: 'הדרכה מקיפה והשקת המערכת בעסק',
-    details: 'ליווי שוטף וחיסכון מיידי בזמן ובכסף. אנחנו כאן לכל שאלה ובעיה.',
-    icon: TrendingUpOutlinedIcon,
-    position: 'left',
+    step: 'שלב 3',
+    title: 'הטמעה והדרכה',
+    description: 'הדרכה מקיפה, ליווי שוטף, וחיסכון מיידי בזמן ובכסף.',
+    details: 'ליווי צמוד עד להטמעה מלאה. אנחנו כאן לכל שאלה ובעיה, ומוודאים שהצוות שלכם יודע להשתמש במערכת בצורה מיטבית.',
+    icon: SchoolOutlinedIcon,
+    position: 'right',
     highlight: false,
   },
 ];
@@ -83,21 +73,21 @@ function TimelineStep({ step, index }) {
           position: 'relative',
           width: { xs: '100%', md: '45%' },
           p: 4,
-          bgcolor: step.highlight ? 'rgba(0, 188, 212, 0.05)' : 'rgba(255, 255, 255, 0.03)',
+          bgcolor: step.highlight ? 'rgba(0, 230, 118, 0.05)' : 'rgba(255, 255, 255, 0.03)',
           backdropFilter: 'blur(10px)',
           border: '1px solid',
-          borderColor: step.highlight ? 'secondary.main' : 'rgba(255, 255, 255, 0.1)',
+          borderColor: step.highlight ? '#00E676' : 'rgba(255, 255, 255, 0.1)',
           borderRadius: 1,
           cursor: 'pointer',
           transition: 'all 0.3s ease',
           boxShadow: step.highlight
-            ? '0 8px 32px rgba(0, 188, 212, 0.2)'
+            ? '0 8px 32px rgba(0, 230, 118, 0.2)'
             : '0 4px 16px rgba(0, 0, 0, 0.1)',
           '&:hover': {
-            borderColor: step.highlight ? 'secondary.light' : 'rgba(0, 188, 212, 0.3)',
+            borderColor: step.highlight ? '#00FF99' : 'rgba(0, 230, 118, 0.3)',
             boxShadow: step.highlight
-              ? '0 12px 48px rgba(0, 188, 212, 0.3)'
-              : '0 8px 32px rgba(0, 188, 212, 0.15)',
+              ? '0 12px 48px rgba(0, 230, 118, 0.3)'
+              : '0 8px 32px rgba(0, 230, 118, 0.15)',
           },
           '&::before': {
             content: '""',
@@ -107,10 +97,10 @@ function TimelineStep({ step, index }) {
             transform: 'translateY(-50%)',
             width: 15,
             height: 15,
-            bgcolor: step.highlight ? 'secondary.main' : 'rgba(255, 255, 255, 0.3)',
+            bgcolor: step.highlight ? '#00E676' : 'rgba(255, 255, 255, 0.3)',
             borderRadius: '50%',
             display: { xs: 'none', md: 'block' },
-            boxShadow: step.highlight ? '0 0 20px rgba(0, 188, 212, 0.8)' : 'none',
+            boxShadow: step.highlight ? '0 0 20px rgba(0, 230, 118, 0.8)' : 'none',
           },
         }}
       >
@@ -120,21 +110,21 @@ function TimelineStep({ step, index }) {
             height: 60,
             borderRadius: 1,
             bgcolor: step.highlight
-              ? 'linear-gradient(135deg, rgba(0, 188, 212, 0.2) 0%, rgba(0, 188, 212, 0.1) 100%)'
-              : 'rgba(26, 35, 126, 0.08)',
+              ? 'rgba(0, 230, 118, 0.1)'
+              : 'rgba(255, 255, 255, 0.05)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             mb: 3,
             border: '1px solid',
-            borderColor: step.highlight ? 'rgba(0, 188, 212, 0.3)' : 'rgba(26, 35, 126, 0.1)',
-            boxShadow: step.highlight ? '0 4px 20px rgba(0, 188, 212, 0.3)' : 'none',
+            borderColor: step.highlight ? 'rgba(0, 230, 118, 0.3)' : 'rgba(255, 255, 255, 0.1)',
+            boxShadow: step.highlight ? '0 4px 20px rgba(0, 230, 118, 0.3)' : 'none',
           }}
         >
           <Icon
             sx={{
               fontSize: 30,
-              color: step.highlight ? 'secondary.main' : 'rgba(255, 255, 255, 0.7)',
+              color: step.highlight ? '#00E676' : 'rgba(255, 255, 255, 0.7)',
             }}
           />
         </Box>
@@ -159,7 +149,7 @@ function TimelineStep({ step, index }) {
             fontWeight: 700,
             color: 'white',
             background: step.highlight
-              ? 'linear-gradient(135deg, #00bcd4 0%, #00e5ff 100%)'
+              ? 'linear-gradient(135deg, #00E676 0%, #00FF99 100%)'
               : 'none',
             backgroundClip: step.highlight ? 'text' : 'none',
             WebkitBackgroundClip: step.highlight ? 'text' : 'none',
@@ -203,19 +193,19 @@ function TimelineStep({ step, index }) {
           width: 16,
           height: 16,
           borderRadius: '50%',
-          bgcolor: step.highlight ? 'secondary.main' : 'rgba(255, 255, 255, 0.3)',
+          bgcolor: step.highlight ? '#00E676' : 'rgba(255, 255, 255, 0.3)',
           border: '3px solid',
-          borderColor: step.highlight ? 'rgba(0, 188, 212, 0.3)' : 'rgba(255, 255, 255, 0.1)',
+          borderColor: step.highlight ? 'rgba(0, 230, 118, 0.3)' : 'rgba(255, 255, 255, 0.1)',
           zIndex: 2,
           display: { xs: 'none', md: 'block' },
-          boxShadow: step.highlight ? '0 0 20px rgba(0, 188, 212, 0.8)' : 'none',
+          boxShadow: step.highlight ? '0 0 20px rgba(0, 230, 118, 0.8)' : 'none',
           animation: step.highlight ? 'pulse 2s infinite' : 'none',
           '@keyframes pulse': {
             '0%, 100%': {
-              boxShadow: '0 0 20px rgba(0, 188, 212, 0.8)',
+              boxShadow: '0 0 20px rgba(0, 230, 118, 0.8)',
             },
             '50%': {
-              boxShadow: '0 0 40px rgba(0, 188, 212, 1), 0 0 60px rgba(0, 188, 212, 0.6)',
+              boxShadow: '0 0 40px rgba(0, 230, 118, 1), 0 0 60px rgba(0, 230, 118, 0.6)',
             },
           },
         }}
@@ -235,7 +225,7 @@ function ProcessFlowTimeline() {
       sx={{
         position: 'relative',
         py: { xs: 8, md: 12 },
-        background: 'linear-gradient(135deg, #0a1628 0%, #1a237e 50%, #000051 100%)',
+        background: 'linear-gradient(135deg, #0a0a0a 0%, #111111 50%, #0a0a0a 100%)',
         overflow: 'hidden',
       }}
     >
@@ -248,8 +238,8 @@ function ProcessFlowTimeline() {
           right: 0,
           bottom: 0,
           backgroundImage: `
-            linear-gradient(rgba(0, 188, 212, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 188, 212, 0.03) 1px, transparent 1px)
+            linear-gradient(rgba(0, 230, 118, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 230, 118, 0.03) 1px, transparent 1px)
           `,
           backgroundSize: '50px 50px',
         }}
@@ -264,7 +254,7 @@ function ProcessFlowTimeline() {
           width: 500,
           height: 500,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0,188,212,0.15) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(0, 230, 118, 0.10) 0%, transparent 70%)',
           filter: 'blur(100px)',
           animation: 'float 8s ease-in-out infinite',
           '@keyframes float': {
@@ -281,7 +271,7 @@ function ProcessFlowTimeline() {
           width: 400,
           height: 400,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(26,35,126,0.2) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(0, 230, 118, 0.06) 0%, transparent 70%)',
           filter: 'blur(90px)',
           animation: 'float 10s ease-in-out infinite',
           animationDelay: '2s',
@@ -289,12 +279,12 @@ function ProcessFlowTimeline() {
       />
 
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-        {/* כותרת */}
+        {/* Header */}
         <Box sx={{ textAlign: 'center', mb: 10 }}>
           <Typography
             variant="overline"
             sx={{
-              color: 'secondary.main',
+              color: '#00E676',
               fontWeight: 700,
               fontSize: '0.875rem',
               letterSpacing: '2px',
@@ -309,13 +299,13 @@ function ProcessFlowTimeline() {
             sx={{
               mb: 2,
               fontWeight: 800,
-              background: 'linear-gradient(135deg, #ffffff 0%, #00bcd4 100%)',
+              background: 'linear-gradient(135deg, #ffffff 0%, #00E676 100%)',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}
           >
-            איך זה עובד?
+            איך אנחנו עובדים?
           </Typography>
           <Typography
             variant="h6"
@@ -326,7 +316,7 @@ function ProcessFlowTimeline() {
               mx: 'auto',
             }}
           >
-            4 שלבים פשוטים למהפכה בניהול העסק שלכם
+            3 שלבים פשוטים למהפכה בניהול העסק שלכם
           </Typography>
         </Box>
 
@@ -339,7 +329,7 @@ function ProcessFlowTimeline() {
             mx: 'auto',
           }}
         >
-          {/* קו אנכי מרכזי עם אנימציה */}
+          {/* Vertical timeline line */}
           <MotionBox
             initial={{ scaleY: 0 }}
             animate={containerInView ? { scaleY: 1 } : {}}
@@ -350,18 +340,43 @@ function ProcessFlowTimeline() {
               top: 0,
               bottom: 0,
               width: 2,
-              background: 'linear-gradient(180deg, rgba(0,188,212,0.1) 0%, rgba(0,188,212,0.5) 50%, rgba(0,188,212,0.1) 100%)',
+              background: 'linear-gradient(180deg, rgba(0, 230, 118, 0.1) 0%, rgba(0, 230, 118, 0.5) 50%, rgba(0, 230, 118, 0.1) 100%)',
               transform: 'translateX(-50%)',
               transformOrigin: 'top',
               display: { xs: 'none', md: 'block' },
-              boxShadow: '0 0 20px rgba(0, 188, 212, 0.5)',
+              boxShadow: '0 0 20px rgba(0, 230, 118, 0.5)',
             }}
           />
 
-          {/* שלבים */}
           {steps.map((step, index) => (
             <TimelineStep key={index} step={step} index={index} />
           ))}
+        </Box>
+
+        {/* Quote */}
+        <Box sx={{ textAlign: 'center', mt: 8 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              color: '#E0E0E0',
+              fontStyle: 'italic',
+              fontWeight: 400,
+              maxWidth: 700,
+              mx: 'auto',
+              lineHeight: 1.8,
+              position: 'relative',
+              '&::before': {
+                content: '"\\201D"',
+                fontSize: '3rem',
+                color: '#00E676',
+                position: 'absolute',
+                top: -20,
+                right: -10,
+              },
+            }}
+          >
+            הפתרון נבנה סביב העסק - לא העסק צריך להתאים את עצמו למערכת.
+          </Typography>
         </Box>
       </Container>
     </Box>

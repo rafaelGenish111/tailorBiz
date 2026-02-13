@@ -79,16 +79,16 @@ const Articles = () => {
                   flexDirection: 'column',
                   borderRadius: 3,
                   border: '1px solid',
-                  borderColor: 'grey.100',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 14px 32px rgba(0,0,0,0.10)' }
+                  borderColor: '#333333',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                  transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
+                  '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 14px 32px rgba(0, 230, 118, 0.1)', borderColor: '#00E676' }
                 }}
               >
                 {a.coverImage?.url ? (
                   <CardMedia component="img" height="180" image={getImageUrl(a.coverImage)} alt={a.coverImage.alt || a.title} />
                 ) : (
-                  <Box sx={{ height: 180, bgcolor: 'grey.100' }} />
+                  <Box sx={{ height: 180, bgcolor: '#1E1E1E' }} />
                 )}
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Stack direction="row" spacing={1} sx={{ mb: 1 }} flexWrap="wrap" useFlexGap>

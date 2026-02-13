@@ -16,9 +16,9 @@ const ArticleBlocksRenderer = ({ blocks }) => {
                 sx={{
                   p: { xs: 2.5, md: 4 },
                   borderRadius: 3,
-                  bgcolor: 'grey.50',
+                  bgcolor: '#1E1E1E',
                   border: '1px solid',
-                  borderColor: 'grey.100'
+                  borderColor: '#333333'
                 }}
               >
                 <Typography variant="h4" fontWeight={800} sx={{ mb: 1 }}>
@@ -43,12 +43,12 @@ const ArticleBlocksRenderer = ({ blocks }) => {
             );
           case 'image':
             return (
-              <Box key={idx} sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'grey.100' }}>
+              <Box key={idx} sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: '#333333' }}>
                 {b.data?.url ? (
                   <Box component="img" src={getImageUrl(b.data.url)} alt={b.data.alt || ''} sx={{ width: '100%', display: 'block' }} />
                 ) : null}
                 {b.data?.caption ? (
-                  <Box sx={{ p: 1.5, bgcolor: 'grey.50' }}>
+                  <Box sx={{ p: 1.5, bgcolor: '#1E1E1E' }}>
                     <Typography variant="caption" color="text.secondary">
                       {b.data.caption}
                     </Typography>
@@ -58,7 +58,7 @@ const ArticleBlocksRenderer = ({ blocks }) => {
             );
           case 'quote':
             return (
-              <Box key={idx} sx={{ p: 3, borderRight: '4px solid', borderColor: 'primary.main', bgcolor: 'grey.50', borderRadius: 2 }}>
+              <Box key={idx} sx={{ p: 3, borderRight: '4px solid', borderColor: 'primary.main', bgcolor: '#1E1E1E', borderRadius: 2 }}>
                 <Typography variant="body1" fontWeight={700} sx={{ whiteSpace: 'pre-wrap' }}>
                   {b.data?.text || ''}
                 </Typography>

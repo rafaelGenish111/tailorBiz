@@ -40,8 +40,8 @@ const OurClients = () => {
                 gap: { xs: 3, md: 6 },
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  borderColor: 'primary.main',
-                  boxShadow: '0 10px 40px -12px rgba(0,0,0,0.1)'
+                  borderColor: '#00E676',
+                  boxShadow: '0 10px 40px -12px rgba(0, 230, 118, 0.15)'
                 }
               }}
             >
@@ -54,10 +54,10 @@ const OurClients = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   p: 2,
-                  bgcolor: 'grey.50',
+                  bgcolor: '#1E1E1E',
                   borderRadius: 3,
                   border: '1px solid',
-                  borderColor: 'divider',
+                  borderColor: '#333333',
                   height: 160
                 }}
               >
@@ -69,9 +69,10 @@ const OurClients = () => {
                     maxHeight: '100%',
                     maxWidth: '100%',
                     objectFit: 'contain',
-                    filter: 'grayscale(100%)', // Optional: starts grayscale
-                    transition: 'filter 0.3s',
-                    '&:hover': { filter: 'none' }
+                    filter: 'grayscale(1) brightness(1.5)',
+                    transition: 'all 0.3s',
+                    opacity: 0.7,
+                    '&:hover': { filter: 'grayscale(0) brightness(1)', opacity: 1 }
                   }}
                 />
               </Box>

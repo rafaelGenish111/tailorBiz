@@ -58,7 +58,7 @@ function FeatureSection({ feature, index }) {
         py: { xs: 12, md: 16 },
         position: 'relative',
         overflow: 'hidden',
-        bgcolor: index % 2 === 0 ? '#FAFAFA' : '#FFFFFF',
+        bgcolor: index % 2 === 0 ? '#111111' : '#1A1A1A',
       }}
     >
       {/* Background decorative elements */}
@@ -70,8 +70,8 @@ function FeatureSection({ feature, index }) {
           right: 0,
           bottom: 0,
           background: index % 2 === 0
-            ? 'linear-gradient(135deg, rgba(0, 113, 227, 0.02) 0%, rgba(139, 92, 246, 0.02) 100%)'
-            : 'linear-gradient(135deg, rgba(139, 92, 246, 0.02) 0%, rgba(0, 113, 227, 0.02) 100%)',
+            ? 'linear-gradient(135deg, rgba(0, 230, 118, 0.02) 0%, rgba(139, 92, 246, 0.02) 100%)'
+            : 'linear-gradient(135deg, rgba(139, 92, 246, 0.02) 0%, rgba(0, 230, 118, 0.02) 100%)',
           zIndex: 0,
         }}
       />
@@ -95,7 +95,7 @@ function FeatureSection({ feature, index }) {
                 sx={{
                   mb: 3,
                   fontWeight: 800,
-                  color: '#1D1D1F',
+                  color: '#FFFFFF',
                   fontSize: { xs: '2rem', md: '3rem' },
                   lineHeight: 1.2,
                   fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
@@ -107,10 +107,10 @@ function FeatureSection({ feature, index }) {
                 variant="body1"
                 sx={{
                   mb: 4,
-                  color: '#4B5563',
+                  color: '#E0E0E0',
                   lineHeight: 1.8,
                   fontSize: { xs: '1rem', md: '1.125rem' },
-                  fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+                  fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
                 }}
               >
                 {feature.description}
@@ -133,7 +133,7 @@ function FeatureSection({ feature, index }) {
                         width: 24,
                         height: 24,
                         borderRadius: '50%',
-                        bgcolor: 'rgba(0, 113, 227, 0.1)',
+                        bgcolor: 'rgba(0, 230, 118, 0.1)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -143,16 +143,16 @@ function FeatureSection({ feature, index }) {
                     >
                       <Check
                         size={16}
-                        style={{ color: '#0071E3', strokeWidth: 3 }}
+                        style={{ color: '#00E676', strokeWidth: 3 }}
                       />
                     </Box>
                     <Typography
                       variant="body1"
                       sx={{
-                        color: '#1D1D1F',
+                        color: '#FFFFFF',
                         lineHeight: 1.7,
                         fontSize: { xs: '0.95rem', md: '1.0625rem' },
-                        fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+                        fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
                         fontWeight: 500,
                       }}
                     >
@@ -200,7 +200,7 @@ function FeatureSection({ feature, index }) {
                   sx={{
                     width: '100%',
                     height: { xs: 300, md: 500 },
-                    background: 'linear-gradient(135deg, rgba(0, 113, 227, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%)',
+                    background: 'linear-gradient(135deg, rgba(0, 230, 118, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%)',
                     backdropFilter: 'blur(20px)',
                     WebkitBackdropFilter: 'blur(20px)',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -210,7 +210,7 @@ function FeatureSection({ feature, index }) {
                     justifyContent: 'center',
                     position: 'relative',
                     overflow: 'hidden',
-                    boxShadow: '0px 20px 60px -10px rgba(0, 113, 227, 0.15)',
+                    boxShadow: '0px 20px 60px -10px rgba(0, 230, 118, 0.15)',
                   }}
                 >
                   {/* Animated gradient orbs */}
@@ -231,7 +231,7 @@ function FeatureSection({ feature, index }) {
                       width: '60%',
                       height: '60%',
                       borderRadius: '50%',
-                      background: 'radial-gradient(circle, rgba(0, 113, 227, 0.2) 0%, transparent 70%)',
+                      background: 'radial-gradient(circle, rgba(0, 230, 118, 0.2) 0%, transparent 70%)',
                       filter: 'blur(40px)',
                     }}
                   />
@@ -271,8 +271,8 @@ function FeatureSection({ feature, index }) {
                         height: { xs: 120, md: 180 },
                         mx: 'auto',
                         borderRadius: '24px',
-                        background: 'linear-gradient(135deg, rgba(0, 113, 227, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
-                        border: '2px dashed rgba(0, 113, 227, 0.3)',
+                        background: 'linear-gradient(135deg, rgba(0, 230, 118, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
+                        border: '2px dashed rgba(0, 230, 118, 0.3)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -281,9 +281,9 @@ function FeatureSection({ feature, index }) {
                       <Typography
                         variant="body2"
                         sx={{
-                          color: '#86868B',
+                          color: '#E0E0E0',
                           fontSize: { xs: '0.75rem', md: '0.875rem' },
-                          fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+                          fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
                         }}
                       >
                         תמונת מסך
@@ -307,7 +307,7 @@ function Features() {
   });
 
   return (
-    <Box sx={{ bgcolor: '#FAFAFA', minHeight: '100vh' }}>
+    <Box sx={{ bgcolor: '#111111', minHeight: '100vh' }}>
       {/* Hero Section */}
       <Box
         ref={heroRef}
@@ -315,7 +315,7 @@ function Features() {
           position: 'relative',
           py: { xs: 12, md: 20 },
           overflow: 'hidden',
-          bgcolor: '#FFFFFF',
+          bgcolor: '#111111',
         }}
       >
         {/* Subtle background gradient */}
@@ -326,7 +326,7 @@ function Features() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'linear-gradient(135deg, rgba(0, 113, 227, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%)',
+            background: 'linear-gradient(135deg, rgba(0, 230, 118, 0.03) 0%, rgba(139, 92, 246, 0.03) 100%)',
             zIndex: 0,
           }}
         />
@@ -349,7 +349,7 @@ function Features() {
             width: 400,
             height: 400,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(0, 113, 227, 0.08) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(0, 230, 118, 0.08) 0%, transparent 70%)',
             filter: 'blur(80px)',
             zIndex: 0,
           }}
@@ -390,7 +390,7 @@ function Features() {
               sx={{
                 mb: 3,
                 fontWeight: 800,
-                color: '#1D1D1F',
+                color: '#FFFFFF',
                 fontSize: { xs: '2.5rem', md: '4.5rem' },
                 lineHeight: 1.1,
                 fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
@@ -402,11 +402,11 @@ function Features() {
               variant="h5"
               sx={{
                 mb: 5,
-                color: '#4B5563',
+                color: '#E0E0E0',
                 fontWeight: 400,
                 lineHeight: 1.7,
                 fontSize: { xs: '1.125rem', md: '1.5rem' },
-                fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+                fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
                 maxWidth: 700,
                 mx: 'auto',
               }}
@@ -427,11 +427,11 @@ function Features() {
                   fontSize: { xs: '1rem', md: '1.125rem' },
                   px: { xs: 5, md: 7 },
                   py: { xs: 1.5, md: 2 },
-                  background: 'linear-gradient(135deg, #0071E3 0%, #8B5CF6 100%)',
-                  boxShadow: '0px 8px 24px rgba(0, 113, 227, 0.3)',
+                  background: 'linear-gradient(135deg, #00E676 0%, #8B5CF6 100%)',
+                  boxShadow: '0px 8px 24px rgba(0, 230, 118, 0.3)',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #0066CC 0%, #7C3AED 100%)',
-                    boxShadow: '0px 12px 32px rgba(0, 113, 227, 0.4)',
+                    background: 'linear-gradient(135deg, #00C853 0%, #7C3AED 100%)',
+                    boxShadow: '0px 12px 32px rgba(0, 230, 118, 0.4)',
                     transform: 'translateY(-2px)',
                   },
                   transition: 'all 0.3s ease',
@@ -453,7 +453,7 @@ function Features() {
       <Box
         sx={{
           py: { xs: 12, md: 16 },
-          bgcolor: '#FFFFFF',
+          bgcolor: '#111111',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -465,7 +465,7 @@ function Features() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'linear-gradient(135deg, rgba(0, 113, 227, 0.02) 0%, rgba(139, 92, 246, 0.02) 100%)',
+            background: 'linear-gradient(135deg, rgba(0, 230, 118, 0.02) 0%, rgba(139, 92, 246, 0.02) 100%)',
             zIndex: 0,
           }}
         />
@@ -482,7 +482,7 @@ function Features() {
               sx={{
                 mb: 2,
                 fontWeight: 800,
-                color: '#1D1D1F',
+                color: '#FFFFFF',
                 fontSize: { xs: '2rem', md: '2.75rem' },
                 fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
               }}
@@ -493,10 +493,10 @@ function Features() {
               variant="h6"
               sx={{
                 mb: 5,
-                color: '#4B5563',
+                color: '#E0E0E0',
                 fontWeight: 400,
                 fontSize: { xs: '1rem', md: '1.25rem' },
-                fontFamily: "'Assistant', system-ui, -apple-system, sans-serif",
+                fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
                 lineHeight: 1.7,
               }}
             >
@@ -511,11 +511,11 @@ function Features() {
                 fontSize: { xs: '1rem', md: '1.125rem' },
                 px: { xs: 5, md: 7 },
                 py: { xs: 1.5, md: 2 },
-                background: 'linear-gradient(135deg, #0071E3 0%, #8B5CF6 100%)',
-                boxShadow: '0px 8px 24px rgba(0, 113, 227, 0.3)',
+                background: 'linear-gradient(135deg, #00E676 0%, #8B5CF6 100%)',
+                boxShadow: '0px 8px 24px rgba(0, 230, 118, 0.3)',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #0066CC 0%, #7C3AED 100%)',
-                  boxShadow: '0px 12px 32px rgba(0, 113, 227, 0.4)',
+                  background: 'linear-gradient(135deg, #00C853 0%, #7C3AED 100%)',
+                  boxShadow: '0px 12px 32px rgba(0, 230, 118, 0.4)',
                   transform: 'translateY(-2px)',
                 },
                 transition: 'all 0.3s ease',

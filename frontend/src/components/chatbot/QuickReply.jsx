@@ -24,7 +24,7 @@ function QuickReply({ replies, onSelect }) {
             cursor: 'pointer',
             borderRadius: 1,
             '&:hover': {
-              bgcolor: 'secondary.main',
+              bgcolor: '#00E676',
               color: 'white',
             },
           }}

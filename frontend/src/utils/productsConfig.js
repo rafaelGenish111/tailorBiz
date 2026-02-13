@@ -8,7 +8,7 @@ export const PRODUCTS = [
     subTitle: 'MyClinic',
     shortDescription: 'פלטפורמת SaaS לניהול קליניקות: אפליקציית מובייל למטפל, דף נחיתה אישי ללקוחות וקביעת תור אונליין.',
     path: '/products/therapists-app',
-    accentColor: '#0071E3',
+    accentColor: '#00E676',
     image: '/assets/images/sync-mobile.png',
     technologies: ['React Native', 'React', 'Node.js', 'MongoDB', 'WhatsApp'],
     features: [

@@ -9,7 +9,7 @@ import Button from '../../components/ui/Button';
 
 const MotionBox = motion.create(Box);
 
-const textSx = { color: '#4B5563', lineHeight: 1.9, fontFamily: "'Assistant', system-ui, sans-serif" };
+const textSx = { color: '#E0E0E0', lineHeight: 1.9, fontFamily: "'Heebo', system-ui, sans-serif" };
 
 function ProductDemo() {
   const { productId } = useParams();
@@ -33,7 +33,7 @@ function ProductDemo() {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
         >
-          <Typography variant="h3" sx={{ mb: 2, fontWeight: 800, color: '#1D1D1F', fontSize: { xs: '1.75rem', md: '2.5rem' }, fontFamily: "'Heebo', system-ui, sans-serif" }}>
+          <Typography variant="h3" sx={{ mb: 2, fontWeight: 800, color: '#FFFFFF', fontSize: { xs: '1.75rem', md: '2.5rem' }, fontFamily: "'Heebo', system-ui, sans-serif" }}>
             {demoContent?.title || 'הדגמה — פעילות האפליקציה ו-Workflow'}
           </Typography>
 
@@ -59,7 +59,7 @@ function ProductDemo() {
                   {demoContent.sides?.length > 0 && (
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 4 }}>
                       {demoContent.sides.map((side, i) => (
-                        <Box key={i} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'grey.200', bgcolor: '#FAFAFA' }}>
+                        <Box key={i} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: '#333333', bgcolor: '#111111' }}>
                           <Typography sx={{ fontWeight: 700, color: product.accentColor, mb: 0.5, fontFamily: "'Heebo', system-ui, sans-serif" }}>
                             {side.title}
                           </Typography>
@@ -68,7 +68,7 @@ function ProductDemo() {
                       ))}
                     </Box>
                   )}
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#1D1D1F', mb: 2, fontFamily: "'Heebo', system-ui, sans-serif" }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#FFFFFF', mb: 2, fontFamily: "'Heebo', system-ui, sans-serif" }}>
                     {demoContent.sides?.length > 0 ? 'Workflow טיפוסי של הזמנה' : 'זרימת עבודה'}
                   </Typography>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 4 }}>
@@ -78,7 +78,7 @@ function ProductDemo() {
                           {step.step}
                         </Box>
                         <Box>
-                          <Typography sx={{ fontWeight: 600, color: '#1D1D1F', fontFamily: "'Heebo', system-ui, sans-serif" }}>
+                          <Typography sx={{ fontWeight: 600, color: '#FFFFFF', fontFamily: "'Heebo', system-ui, sans-serif" }}>
                             {step.title}
                           </Typography>
                           <Typography sx={textSx}>{step.text}</Typography>
@@ -88,7 +88,7 @@ function ProductDemo() {
                   </Box>
                   {demoContent.repairs && (
                     <Box sx={{ p: 2, borderRadius: 2, bgcolor: `${product.accentColor}08`, mb: 2 }}>
-                      <Typography sx={{ fontWeight: 600, color: '#1D1D1F', mb: 0.5, fontFamily: "'Heebo', system-ui, sans-serif" }}>
+                      <Typography sx={{ fontWeight: 600, color: '#FFFFFF', mb: 0.5, fontFamily: "'Heebo', system-ui, sans-serif" }}>
                         תיקונים (Repairs)
                       </Typography>
                       <Typography sx={textSx}>{demoContent.repairs}</Typography>
@@ -96,7 +96,7 @@ function ProductDemo() {
                   )}
                   {demoContent.crm && (
                     <Box sx={{ p: 2, borderRadius: 2, bgcolor: `${product.accentColor}08`, mb: 4 }}>
-                      <Typography sx={{ fontWeight: 600, color: '#1D1D1F', mb: 0.5, fontFamily: "'Heebo', system-ui, sans-serif" }}>
+                      <Typography sx={{ fontWeight: 600, color: '#FFFFFF', mb: 0.5, fontFamily: "'Heebo', system-ui, sans-serif" }}>
                         CRM ולקוחות
                       </Typography>
                       <Typography sx={textSx}>{demoContent.crm}</Typography>
@@ -121,8 +121,8 @@ function ProductDemo() {
               borderRadius: 3,
               overflow: 'hidden',
               border: '1px solid',
-              borderColor: 'grey.200',
-              bgcolor: '#FAFAFA',
+              borderColor: '#333333',
+              bgcolor: '#111111',
               aspectRatio: '16/9',
               maxHeight: 500,
               display: 'flex',
@@ -144,7 +144,7 @@ function ProductDemo() {
               }}
             >
               <PlayCircleOutlineIcon sx={{ fontSize: 80, color: '#FFFFFF', opacity: 0.9 }} />
-              <Typography sx={{ color: '#FFFFFF', fontWeight: 600, fontFamily: "'Assistant', system-ui, sans-serif" }}>
+              <Typography sx={{ color: '#FFFFFF', fontWeight: 600, fontFamily: "'Heebo', system-ui, sans-serif" }}>
                 כאן יופיע סרטון ההדגמה
               </Typography>
               <Button variant="primary" to="/contact" sx={{ background: product.accentColor, '&:hover': { background: product.accentColor, opacity: 0.9 } }}>

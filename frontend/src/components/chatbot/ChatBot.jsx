@@ -238,7 +238,7 @@ function ChatBot() {
             right: 24,
             width: 64,
             height: 64,
-            boxShadow: '0px 8px 24px rgba(0,188,212,0.4)',
+            boxShadow: '0px 8px 24px rgba(0, 230, 118, 0.4)',
             zIndex: 1200,
             '&:hover': {
               transform: 'scale(1.1)',
@@ -273,7 +273,7 @@ function ChatBot() {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Avatar sx={{ bgcolor: 'secondary.main' }}>
+              <Avatar sx={{ bgcolor: '#00E676' }}>
                 <SmartToyOutlinedIcon />
               </Avatar>
               <Box>
@@ -306,7 +306,7 @@ function ChatBot() {
               flexGrow: 1,
               overflowY: 'auto',
               p: 2,
-              bgcolor: 'grey.50',
+              bgcolor: '#1E1E1E',
             }}
           >
             {messages.map((message) => (
@@ -361,13 +361,13 @@ function ChatBot() {
                             py: 0.75,
                             bgcolor: 'white',
                             border: '1px solid',
-                            borderColor: 'secondary.main',
+                            borderColor: '#00E676',
                             borderRadius: 1,
                             cursor: 'pointer',
                             fontSize: '0.875rem',
                             transition: 'all 0.2s',
                             '&:hover': {
-                              bgcolor: 'secondary.main',
+                              bgcolor: '#00E676',
                               color: 'white',
                             },
                           }}
@@ -383,7 +383,7 @@ function ChatBot() {
 
             {isTyping && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
+                <Avatar sx={{ width: 32, height: 32, bgcolor: '#00E676' }}>
                   <SmartToyOutlinedIcon sx={{ fontSize: 18 }} />
                 </Avatar>
                 <TypingIndicator />
@@ -430,7 +430,7 @@ function ChatBot() {
                 onClick={() => handleSend()}
                 disabled={!input.trim() || showForm}
                 sx={{
-                  bgcolor: 'secondary.main',
+                  bgcolor: '#00E676',
                   color: 'white',
                   '&:hover': {
                     bgcolor: 'secondary.dark',

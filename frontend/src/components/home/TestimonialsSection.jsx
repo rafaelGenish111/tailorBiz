@@ -37,21 +37,21 @@ function TestimonialCard({ testimonial, isCenter }) {
         p: 4,
         height: '100%',
         minHeight: 320,
-        bgcolor: isCenter ? 'rgba(0, 188, 212, 0.05)' : 'white',
+        bgcolor: isCenter ? 'rgba(0, 230, 118, 0.05)' : '#1E1E1E',
         border: '1px solid',
-        borderColor: isCenter ? 'secondary.main' : 'grey.200',
+        borderColor: isCenter ? '#00E676' : '#333333',
         borderRadius: 1,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
         zIndex,
         boxShadow: isCenter
-          ? '0 20px 60px rgba(0, 188, 212, 0.3)'
-          : '0 4px 16px rgba(0,0,0,0.06)',
+          ? '0 20px 60px rgba(0, 230, 118, 0.2)'
+          : '0 4px 16px rgba(0,0,0,0.3)',
         transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
-      {/* אייקון ציטוט */}
+      {/* Quote icon */}
       <Box
         sx={{
           position: 'absolute',
@@ -60,7 +60,7 @@ function TestimonialCard({ testimonial, isCenter }) {
           width: 50,
           height: 50,
           borderRadius: 1,
-          bgcolor: isCenter ? 'rgba(0, 188, 212, 0.15)' : 'rgba(0, 188, 212, 0.08)',
+          bgcolor: isCenter ? 'rgba(0, 230, 118, 0.15)' : 'rgba(0, 230, 118, 0.08)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -68,7 +68,7 @@ function TestimonialCard({ testimonial, isCenter }) {
       >
         <FormatQuoteIcon
           sx={{
-            color: 'secondary.main',
+            color: '#00E676',
             fontSize: 28,
             transform: 'rotate(180deg)',
           }}
@@ -76,7 +76,7 @@ function TestimonialCard({ testimonial, isCenter }) {
         />
       </Box>
 
-      {/* דירוג כוכבים */}
+      {/* Star rating */}
       <Box sx={{ display: 'flex', gap: 0.5, mb: 2, mt: 2 }}>
         {[...Array(testimonial.rating)].map((_, i) => (
           <StarIcon
@@ -89,12 +89,12 @@ function TestimonialCard({ testimonial, isCenter }) {
         ))}
       </Box>
 
-      {/* טקסט */}
+      {/* Text */}
       <Typography
         variant="body1"
         sx={{
           mb: 3,
-          color: 'text.primary',
+          color: '#FFFFFF',
           lineHeight: 1.8,
           fontStyle: 'italic',
           fontSize: isCenter ? '1.05rem' : '0.95rem',
@@ -104,7 +104,7 @@ function TestimonialCard({ testimonial, isCenter }) {
         "{testimonial.content}"
       </Typography>
 
-      {/* פרטי הלקוח */}
+      {/* Client details */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 'auto' }}>
         <Avatar
           src={imageUrl && !imageError ? imageUrl : undefined}
@@ -114,33 +114,35 @@ function TestimonialCard({ testimonial, isCenter }) {
             width: 56,
             height: 56,
             borderRadius: '12px',
-            bgcolor: '#F5F5F7',
+            bgcolor: '#333333',
             border: isCenter ? '2px solid' : 'none',
-            borderColor: '#0071E3',
+            borderColor: '#00E676',
             fontSize: '1.5rem',
             fontWeight: 700,
-            color: '#0071E3',
+            color: '#00E676',
           }}
         >
-          {imageError || !imageUrl ? (testimonial.clientName?.charAt(0) || '👤') : null}
+          {imageError || !imageUrl ? (testimonial.clientName?.charAt(0) || '') : null}
         </Avatar>
         <Box>
           <Typography
             component="h3"
             variant="h6"
             fontWeight={700}
-            color={isCenter ? 'secondary.main' : 'primary.main'}
-            sx={{ transition: 'color 0.5s' }}
+            sx={{
+              color: isCenter ? '#00E676' : '#FFFFFF',
+              transition: 'color 0.5s',
+            }}
           >
             {testimonial.clientName}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" sx={{ color: '#E0E0E0' }}>
             {testimonial.clientRole}
           </Typography>
           <Typography
             variant="caption"
             sx={{
-              color: 'text.secondary',
+              color: '#9E9E9E',
               fontWeight: 600,
             }}
           >
@@ -173,7 +175,6 @@ function TestimonialsSection() {
         const actualClientsCount = clientsRes.data?.data?.count || 0;
         setClientsCount(actualClientsCount);
 
-        // Load stats from CMS
         const settings = settingsRes.data?.data;
         const cmsStats = settings?.stats || {};
         const defaultStats = {
@@ -183,7 +184,6 @@ function TestimonialsSection() {
           support: { value: 24, suffix: '/7', label: 'תמיכה' }
         };
 
-        // Use first 3 stats for testimonials section
         const statsForTestimonials = [
           { number: `${cmsStats.businesses?.value || defaultStats.businesses.value}${cmsStats.businesses?.suffix || defaultStats.businesses.suffix}`, label: cmsStats.businesses?.label || defaultStats.businesses.label },
           { number: '4.9/5', label: 'דירוג ממוצע' },
@@ -210,7 +210,6 @@ function TestimonialsSection() {
     threshold: 0.1,
   });
 
-  // Auto-rotate every 5 seconds
   useEffect(() => {
     if (!inView || testimonials.length === 0) return;
 
@@ -233,7 +232,6 @@ function TestimonialsSection() {
     if (testimonials.length === 0) return [];
     if (testimonials.length === 1) return [0, 0, 0];
     if (testimonials.length === 2) {
-      // Just duplicate logic for 2 items to fill 3 slots
       const prev = (currentIndex - 1 + testimonials.length) % testimonials.length;
       const next = (currentIndex + 1) % testimonials.length;
       return [prev, currentIndex, next];
@@ -251,15 +249,15 @@ function TestimonialsSection() {
     <Box
       ref={ref}
       sx={{
-        py: { xs: 24, md: 32 },
-        bgcolor: '#FFFFFF',
+        py: { xs: 12, md: 16 },
+        bgcolor: '#111111',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
 
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, mx: 'auto', px: { xs: 3, md: 6 } }}>
-        {/* כותרת */}
+        {/* Header */}
         <MotionBox
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -271,7 +269,7 @@ function TestimonialsSection() {
             sx={{
               mb: 2,
               fontWeight: 800,
-              color: '#1D1D1F',
+              color: '#FFFFFF',
             }}
           >
             מה הלקוחות שלנו אומרים
@@ -291,14 +289,15 @@ function TestimonialsSection() {
               zIndex: 20,
               width: 48,
               height: 48,
-              bgcolor: 'white',
+              bgcolor: '#1E1E1E',
               border: '1px solid',
-              borderColor: 'grey.200',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+              borderColor: '#333333',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
               '&:hover': {
-                bgcolor: 'secondary.main',
-                borderColor: 'secondary.main',
-                color: 'white',
+                bgcolor: '#00E676',
+                borderColor: '#00E676',
+                color: '#111111',
                 transform: 'translateY(-50%) scale(1.1)',
               },
               transition: 'all 0.3s',
@@ -318,14 +317,15 @@ function TestimonialsSection() {
               zIndex: 20,
               width: 48,
               height: 48,
-              bgcolor: 'white',
+              bgcolor: '#1E1E1E',
               border: '1px solid',
-              borderColor: 'grey.200',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+              borderColor: '#333333',
+              color: '#FFFFFF',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
               '&:hover': {
-                bgcolor: 'secondary.main',
-                borderColor: 'secondary.main',
-                color: 'white',
+                bgcolor: '#00E676',
+                borderColor: '#00E676',
+                color: '#111111',
                 transform: 'translateY(-50%) scale(1.1)',
               },
               transition: 'all 0.3s',
@@ -380,18 +380,18 @@ function TestimonialsSection() {
                 width: currentIndex === index ? 32 : 8,
                 height: 8,
                 borderRadius: 1,
-                bgcolor: currentIndex === index ? 'secondary.main' : 'grey.300',
+                bgcolor: currentIndex === index ? '#00E676' : '#424242',
                 cursor: 'pointer',
                 transition: 'all 0.3s',
                 '&:hover': {
-                  bgcolor: currentIndex === index ? 'secondary.dark' : 'grey.400',
+                  bgcolor: currentIndex === index ? '#00FF99' : '#616161',
                 },
               }}
             />
           ))}
         </Box>
 
-        {/* Stats - Only show if 10+ clients */}
+        {/* Stats */}
         {!statsLoading && clientsCount >= 10 && statsData && (
           <Box
             sx={{
@@ -408,13 +408,13 @@ function TestimonialsSection() {
                   variant="h3"
                   sx={{
                     fontWeight: 800,
-                    color: '#0071E3',
+                    color: '#00E676',
                     mb: 0.5,
                   }}
                 >
                   {stat.number}
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#86868B', fontWeight: 600 }}>
+                <Typography variant="body2" sx={{ color: '#E0E0E0', fontWeight: 600 }}>
                   {stat.label}
                 </Typography>
               </Box>

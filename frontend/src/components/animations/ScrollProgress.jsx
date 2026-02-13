@@ -36,7 +36,7 @@ const ScrollProgress = () => {
           height: 4,
           backgroundColor: 'transparent',
           '& .MuiLinearProgress-bar': {
-            backgroundColor: 'secondary.main',
+            backgroundColor: '#00E676',
           },
         }}
       />

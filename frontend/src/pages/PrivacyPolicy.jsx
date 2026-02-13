@@ -2,9 +2,6 @@
 import React from 'react';
 import { Box, Container, Typography, Paper, List, ListItem, ListItemText, Divider } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
-import Header from '../components/layout/Header';
-import Footer from '../components/layout/Footer';
-
 const PrivacyPolicy = () => {
   return (
     <>
@@ -12,12 +9,10 @@ const PrivacyPolicy = () => {
         <title>מדיניות פרטיות | TailorBiz</title>
         <meta name="description" content="מדיניות הפרטיות של TailorBiz בהתאם לחוק הגנת הפרטיות הישראלי ותיקון 13." />
       </Helmet>
-      
-      <Header />
-      
-      <Box sx={{ py: 8, bgcolor: 'background.default', minHeight: '100vh' }}>
+
+      <Box sx={{ py: 8, bgcolor: '#111111', minHeight: '100vh' }}>
         <Container maxWidth="md">
-          <Paper elevation={3} sx={{ p: 4 }}>
+          <Paper elevation={3} sx={{ p: 4, bgcolor: '#1A1A1A', border: '1px solid #333333' }}>
             <Typography variant="h4" component="h1" gutterBottom fontWeight="bold" color="primary">
               מדיניות פרטיות
             </Typography>
@@ -92,7 +87,7 @@ const PrivacyPolicy = () => {
                   <ListItemText primary="• הזכות למחיקה: באפשרותך לבקש את מחיקת המידע (בכפוף למגבלות חוקיות)." />
                 </ListItem>
               </List>
-              <Typography variant="body2" sx={{ mt: 1, bgcolor: '#e3f2fd', p: 1, borderRadius: 1 }}>
+              <Typography variant="body2" sx={{ mt: 1, bgcolor: 'rgba(0, 230, 118, 0.08)', p: 1, borderRadius: 1, border: '1px solid rgba(0, 230, 118, 0.2)' }}>
                 למימוש זכויות אלו, ניתן לפנות אלינו במייל: info@tailorbiz.com (או כל מייל אחר שרלוונטי).
               </Typography>
             </Box>
@@ -117,8 +112,6 @@ const PrivacyPolicy = () => {
           </Paper>
         </Container>
       </Box>
-      
-      <Footer />
     </>
   );
 };

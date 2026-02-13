@@ -56,17 +56,18 @@ function Pricing() {
     <Box>
       <Box
         sx={{
-          bgcolor: 'primary.main',
-          color: 'white',
+          bgcolor: '#111111',
+          color: '#FFFFFF',
           py: 10,
           textAlign: 'center',
+          borderBottom: '1px solid #333333',
         }}
       >
         <Container maxWidth="lg">
-          <Typography variant="h2" fontWeight={800} gutterBottom>
+          <Typography variant="h2" fontWeight={800} gutterBottom sx={{ color: '#FFFFFF' }}>
             תמחור שקוף ופשוט
           </Typography>
-          <Typography variant="h5" sx={{ maxWidth: 700, mx: 'auto', opacity: 0.9 }}>
+          <Typography variant="h5" sx={{ maxWidth: 700, mx: 'auto', color: '#E0E0E0' }}>
             תשלום חד-פעמי ללא מנוי חודשי - שלמו פעם אחת ותהנו לתמיד
           </Typography>
         </Container>
@@ -87,7 +88,7 @@ function Pricing() {
                   flexDirection: 'column',
                   position: 'relative',
                   border: plan.recommended ? '2px solid' : '1px solid',
-                  borderColor: plan.recommended ? 'secondary.main' : 'grey.200',
+                  borderColor: plan.recommended ? '#00E676' : '#333333',
                   borderRadius: 1,
                 }}
               >
@@ -98,8 +99,8 @@ function Pricing() {
                       top: -15,
                       right: '50%',
                       transform: 'translateX(50%)',
-                      bgcolor: 'secondary.main',
-                      color: 'white',
+                      bgcolor: '#00E676',
+                      color: '#111111',
                       px: 3,
                       py: 0.5,
                       borderRadius: 6,
@@ -130,7 +131,7 @@ function Pricing() {
                     {plan.features.map((feature, idx) => (
                       <ListItem key={idx} disablePadding sx={{ mb: 1 }}>
                         <ListItemIcon sx={{ minWidth: 36 }}>
-                          <CheckIcon sx={{ color: 'secondary.main' }} />
+                          <CheckIcon sx={{ color: '#00E676' }} />
                         </ListItemIcon>
                         <ListItemText primary={feature} />
                       </ListItem>
@@ -141,7 +142,7 @@ function Pricing() {
                 <CardActions sx={{ p: 3, pt: 0 }}>
                   <Button
                     variant={plan.recommended ? 'contained' : 'outlined'}
-                    color={plan.recommended ? 'secondary' : 'primary'}
+                    color="primary"
                     fullWidth
                     size="large"
                   >
@@ -160,7 +161,7 @@ function Pricing() {
           <Typography variant="body1" color="text.secondary" paragraph>
             קבעו שיחת ייעוץ חינם ונעזור לכם למצוא את הפתרון המושלם
           </Typography>
-          <Button variant="contained" color="secondary" size="large">
+          <Button variant="contained" color="primary" size="large">
             קבעו שיחת ייעוץ
           </Button>
         </Box>

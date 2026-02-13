@@ -69,7 +69,7 @@ function ProcessStep({ step, index, isLast }) {
                 transform: 'translateX(-50%)',
                 fontSize: '6rem',
                 fontWeight: 900,
-                color: 'rgba(0, 188, 212, 0.06)',
+                color: 'rgba(0, 230, 118, 0.06)',
                 lineHeight: 1,
                 zIndex: 0,
               }}
@@ -85,18 +85,18 @@ function ProcessStep({ step, index, isLast }) {
                 width: 100,
                 height: 100,
                 borderRadius: '50%',
-                bgcolor: 'white',
+                bgcolor: '#1E1E1E',
                 border: '4px solid',
-                borderColor: 'secondary.main',
+                borderColor: '#00E676',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 mx: 'auto',
                 mb: 3,
-                boxShadow: '0px 8px 24px rgba(0, 188, 212, 0.2)',
+                boxShadow: '0px 8px 24px rgba(0, 230, 118, 0.2)',
               }}
             >
-              <Icon sx={{ fontSize: 50, color: 'secondary.main' }} aria-hidden="true" />
+              <Icon sx={{ fontSize: 50, color: '#00E676' }} aria-hidden="true" />
             </Box>
 
             {/* כותרת */}
@@ -146,7 +146,7 @@ function ProcessStep({ step, index, isLast }) {
             <ArrowBackIcon
               sx={{
                 fontSize: 40,
-                color: 'secondary.main',
+                color: '#00E676',
                 opacity: 0.5,
               }}
               aria-hidden="true"
@@ -163,7 +163,7 @@ function ProcessFlow() {
     <Box
       sx={{
         py: { xs: 8, md: 12 },
-        bgcolor: 'grey.50',
+        bgcolor: '#1A1A1A',
       }}
     >
       <Container maxWidth="lg">

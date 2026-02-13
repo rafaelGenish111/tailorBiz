@@ -43,7 +43,7 @@ function ProductHeader({ productId }) {
       position="sticky"
       elevation={0}
       sx={{
-        bgcolor: 'rgba(255, 255, 255, 0.95)',
+        bgcolor: 'rgba(17, 17, 17, 0.95)',
         borderBottom: '1px solid',
         borderColor: 'rgba(0, 0, 0, 0.06)',
         backdropFilter: 'blur(20px)',
@@ -56,7 +56,7 @@ function ProductHeader({ productId }) {
               component={Link}
               to="/products"
               aria-label="חזרה למוצרים"
-              sx={{ color: '#1D1D1F' }}
+              sx={{ color: '#FFFFFF' }}
             >
               <ArrowBackIcon />
             </IconButton>
@@ -65,7 +65,7 @@ function ProductHeader({ productId }) {
               to={basePath}
               sx={{
                 textDecoration: 'none',
-                color: '#1D1D1F',
+                color: '#FFFFFF',
                 fontWeight: 700,
                 fontSize: '1.125rem',
                 fontFamily: "'Heebo', system-ui, sans-serif",
@@ -91,10 +91,10 @@ function ProductHeader({ productId }) {
                   component={Link}
                   to={href}
                   sx={{
-                    color: active ? product.accentColor : '#1D1D1F',
+                    color: active ? product.accentColor : '#FFFFFF',
                     fontWeight: active ? 600 : 500,
                     px: 2,
-                    fontFamily: "'Assistant', system-ui, sans-serif",
+                    fontFamily: "'Heebo', system-ui, sans-serif",
                     textTransform: 'none',
                     borderBottom: active ? `2px solid ${product.accentColor}` : '2px solid transparent',
                     borderRadius: 0,
@@ -111,7 +111,7 @@ function ProductHeader({ productId }) {
           </Box>
 
           <IconButton
-            sx={{ display: { md: 'none' }, color: '#1D1D1F' }}
+            sx={{ display: { md: 'none' }, color: '#FFFFFF' }}
             onClick={() => setMobileOpen(true)}
             aria-label="תפריט"
           >
@@ -147,9 +147,9 @@ function ProductHeader({ productId }) {
                   py: 2,
                   fontSize: '1.25rem',
                   fontWeight: active ? 700 : 500,
-                  color: active ? product.accentColor : '#1D1D1F',
+                  color: active ? product.accentColor : '#FFFFFF',
                   borderBottom: '1px solid',
-                  borderColor: 'grey.200',
+                  borderColor: '#333333',
                   textDecoration: 'none',
                 }}
               >

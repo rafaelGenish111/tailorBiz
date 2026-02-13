@@ -7,17 +7,18 @@ function ROICalculatorPage() {
       {/* Header Section */}
       <Box
         sx={{
-          bgcolor: 'primary.main',
-          color: 'white',
+          bgcolor: '#111111',
+          color: '#FFFFFF',
           py: 10,
           textAlign: 'center',
+          borderBottom: '1px solid #333333',
         }}
       >
         <Container maxWidth="lg">
-          <Typography variant="h2" fontWeight={800} gutterBottom>
+          <Typography variant="h2" fontWeight={800} gutterBottom sx={{ color: '#FFFFFF' }}>
             מחשבון עלות חוסר יעילות
           </Typography>
-          <Typography variant="h5" sx={{ maxWidth: 700, mx: 'auto', opacity: 0.9 }}>
+          <Typography variant="h5" sx={{ maxWidth: 700, mx: 'auto', color: '#E0E0E0' }}>
             גלו כמה כסף אתם מפסידים כל חודש על משימות ידניות שניתן לאוטומט
           </Typography>
         </Container>
