@@ -10,6 +10,7 @@ import RequireModuleAccess from '../components/auth/RequireModuleAccess';
 import AdminPathGuard from '../components/auth/AdminPathGuard';
 import WhatsAppSetupPage from '../../pages/WhatsAppSetupPage';
 import BulkWhatsAppPage from '../../pages/BulkWhatsAppPage';
+import BotConfigPage from './BotConfigPage';
 
 function AdminPanel() {
   return (
@@ -26,6 +27,7 @@ function AdminPanel() {
           <Route path="whatsapp-broadcast" element={<RequireModuleAccess anyOfModules={['leads', 'clients']}><BulkWhatsAppPage /></RequireModuleAccess>} />
           <Route path="settings" element={<RequireModuleAccess requiredModule="settings"><SiteSettingsPage /></RequireModuleAccess>} />
           <Route path="employees" element={<RequireModuleAccess adminOnly><EmployeesPage /></RequireModuleAccess>} />
+          <Route path="bot-config" element={<RequireModuleAccess requiredModule="settings"><BotConfigPage /></RequireModuleAccess>} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>
       </AdminPathGuard>

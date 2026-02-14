@@ -5,7 +5,7 @@ import Header from './Header';
 import Footer from './Footer';
 import AccessibilityMenu from './AccessibilityMenu';
 import CookieConsent from './CookieConsent';
-import ChatBot from '../chatbot/ChatBot';
+import ChatWidget from '../ChatWidget/ChatWidget';
 import { publicCMS } from '../../utils/publicApi';
 
 function Layout({ children }) {
@@ -113,7 +113,7 @@ function Layout({ children }) {
         </Box>
         <Footer />
         <AccessibilityMenu />
-        <ChatBot />
+        <ChatWidget />
         <CookieConsent />
       </Box>
     </>

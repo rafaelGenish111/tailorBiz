@@ -19,6 +19,7 @@ import {
   Circle as CircleIcon,
 } from '@mui/icons-material';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { getCurrentUserFromQueryData, hasAnyModuleAccess, hasModuleAccess, useCurrentUserQuery } from '../../hooks/useCurrentUser';
@@ -37,6 +38,7 @@ const menuItems = [
   { text: 'שליחת WhatsApp מרובה', icon: <WhatsAppIcon />, path: '/admin/whatsapp-broadcast', anyOfModules: ['leads', 'clients'] },
 
   { divider: true, label: 'הגדרות' },
+  { text: 'בוט AI', icon: <SmartToyIcon />, path: '/admin/bot-config', requiredModule: 'settings' },
   { text: 'עובדים', icon: <ClientsIcon />, path: '/admin/employees', adminOnly: true },
   { text: 'הגדרות', icon: <SettingsIcon />, path: '/admin/settings', requiredModule: 'settings' },
 ];

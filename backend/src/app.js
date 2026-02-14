@@ -29,6 +29,7 @@ const publicCmsRoutes = require('./routes/publicCmsRoutes');
 const adminUploadsRoutes = require('./routes/adminUploadsRoutes');
 const adminSiteSettingsRoutes = require('./routes/adminSiteSettingsRoutes');
 const adminUsersRoutes = require('./routes/adminUsersRoutes');
+const adminBotConfigRoutes = require('./routes/adminBotConfigRoutes');
 const timeEntriesRoutes = require('./routes/timeEntries.routes');
 const notificationsRoutes = require('./routes/notifications.routes');
 
@@ -257,6 +258,7 @@ async function createApp() {
   app.use('/api/admin/uploads', adminUploadsRoutes);
   app.use('/api/admin/site-settings', adminSiteSettingsRoutes);
   app.use('/api/admin/users', adminUsersRoutes);
+  app.use('/api/admin/bot-config', adminBotConfigRoutes);
   app.use('/api/time-entries', timeEntriesRoutes);
   app.use('/api/notifications', notificationsRoutes);
 

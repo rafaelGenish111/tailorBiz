@@ -3,6 +3,7 @@ const router = express.Router();
 const cmsPublicController = require('../controllers/cmsPublicController');
 const siteSettingsController = require('../controllers/siteSettingsController');
 const publicLeadController = require('../controllers/publicLeadController');
+const publicChatController = require('../controllers/publicChatController');
 const { body } = require('express-validator');
 
 // Public CMS endpoints (published content only)
@@ -26,6 +27,17 @@ router.post(
     body('leadSource').optional({ checkFalsy: true }).trim().isLength({ max: 100 }).withMessage('מקור ליד ארוך מדי'),
   ],
   publicLeadController.submitWebsiteLead
+);
+
+// Website AI Chat (public)
+router.post('/chat/init', publicChatController.initChat);
+router.post(
+  '/chat/message',
+  [
+    body('sessionId').trim().notEmpty().withMessage('sessionId is required'),
+    body('message').trim().notEmpty().isLength({ max: 2000 }).withMessage('Message is required (max 2000 chars)')
+  ],
+  publicChatController.sendMessage
 );
 
 module.exports = router;

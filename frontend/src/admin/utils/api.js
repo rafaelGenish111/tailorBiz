@@ -266,6 +266,13 @@ export const adminSiteSettingsAPI = {
   update: (data) => api.put('/admin/site-settings', data)
 };
 
+// ========== Bot Config (Admin) ==========
+export const adminBotConfigAPI = {
+  get: () => api.get('/admin/bot-config'),
+  update: (data) => api.put('/admin/bot-config', data),
+  getStats: () => api.get('/admin/bot-config/stats')
+};
+
 // ========== Employees / Users (Admin) ==========
 export const adminUsersAPI = {
   list: () => api.get('/admin/users'),

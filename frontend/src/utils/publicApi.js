@@ -39,5 +39,10 @@ export const publicLeads = {
   submit: (data) => api.post('/public/leads', data),
 };
 
+export const publicChat = {
+  init: () => api.post('/public/chat/init', {}),
+  sendMessage: (sessionId, message) => api.post('/public/chat/message', { sessionId, message }),
+};
+
 export default api;
 

@@ -156,6 +156,74 @@ const aiBotConfigSchema = new mongoose.Schema({
     }
   }],
 
+  // Website chat configuration
+  websiteChat: {
+    // Welcome message when chat opens
+    welcomeMessage: {
+      type: String,
+      default: 'שלום! 👋 אני העוזר הווירטואלי של TailorBiz. איך אוכל לעזור לך?'
+    },
+
+    // Bot display name in chat
+    botName: {
+      type: String,
+      default: 'TailorBiz Assistant'
+    },
+
+    // Enable/disable the chat widget on the website
+    enabled: {
+      type: Boolean,
+      default: true
+    }
+  },
+
+  // Knowledge base - structured info the bot can reference
+  knowledgeBase: [{
+    topic: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    content: {
+      type: String,
+      required: true
+    },
+    enabled: {
+      type: Boolean,
+      default: true
+    }
+  }],
+
+  // FAQ items - pre-defined Q&A pairs
+  faqItems: [{
+    question: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    answer: {
+      type: String,
+      required: true
+    },
+    enabled: {
+      type: Boolean,
+      default: true
+    }
+  }],
+
+  // Topics the bot should NOT discuss
+  restrictedTopics: [{
+    topic: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    responseMessage: {
+      type: String,
+      default: 'לא אוכל לענות על שאלות בנושא זה. אשמח להעביר אותך לנציג.'
+    }
+  }],
+
   // Conversation rules & limits
   rules: {
     // Max messages in a conversation
