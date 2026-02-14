@@ -283,7 +283,7 @@ function TestimonialsSection() {
             onClick={handlePrev}
             sx={{
               position: 'absolute',
-              right: { xs: -10, md: -60 },
+              right: { xs: 4, md: -60 },
               top: '50%',
               transform: 'translateY(-50%)',
               zIndex: 20,
@@ -311,7 +311,7 @@ function TestimonialsSection() {
             onClick={handleNext}
             sx={{
               position: 'absolute',
-              left: { xs: -10, md: -60 },
+              left: { xs: 4, md: -60 },
               top: '50%',
               transform: 'translateY(-50%)',
               zIndex: 20,

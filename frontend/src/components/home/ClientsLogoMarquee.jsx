@@ -43,7 +43,7 @@ const ClientsLogoMarquee = () => {
   const items = [...clients, ...clients];
 
   return (
-    <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: '#141414' }}>
+    <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: '#141414', overflowX: 'hidden' }}>
       <Container maxWidth="lg" sx={{ px: { xs: 3, md: 6 } }}>
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Typography

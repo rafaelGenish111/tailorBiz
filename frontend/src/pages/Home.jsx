@@ -13,7 +13,7 @@ const Divider = () => (
 
 function Home() {
   return (
-    <Box sx={{ bgcolor: '#0A0A0A' }}>
+    <Box sx={{ bgcolor: '#0A0A0A', overflowX: 'hidden' }}>
       <HeroSection />
       <ClientsLogoMarquee />
       <Divider />
