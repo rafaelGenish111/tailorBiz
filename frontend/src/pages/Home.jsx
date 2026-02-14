@@ -4,19 +4,23 @@ import ClientsLogoMarquee from '../components/home/ClientsLogoMarquee';
 import HomeCMSSections from '../components/home/HomeCMSSections';
 import ProcessFlowTimeline from '../components/home/ProcessFlowTimeline';
 import FeaturesSection from '../components/home/FeaturesSection';
-// import StatsSection from '../components/home/StatsSection'; // Commented out until real data is available
 import TestimonialsSection from '../components/home/TestimonialsSection';
+
+/** Full-width 1px architectural divider */
+const Divider = () => (
+  <Box sx={{ width: '100%', height: '1px', bgcolor: '#333333' }} />
+);
 
 function Home() {
   return (
-    <Box>
+    <Box sx={{ bgcolor: '#0A0A0A' }}>
       <HeroSection />
       <ClientsLogoMarquee />
+      <Divider />
       <HomeCMSSections />
+      <Divider />
       <ProcessFlowTimeline />
       <FeaturesSection />
-      {/* StatsSection commented out until real data is available */}
-      {/* <StatsSection /> */}
       <TestimonialsSection />
     </Box>
   );

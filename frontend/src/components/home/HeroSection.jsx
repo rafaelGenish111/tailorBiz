@@ -1,12 +1,10 @@
 import React from 'react';
 import { Box, Container, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
-import RocketLaunchOutlinedIcon from '@mui/icons-material/RocketLaunchOutlined';
 import { publicCMS } from '../../utils/publicApi';
 import Button from '../ui/Button';
-import ConnectedDotsBackground from '../ui/ConnectedDotsBackground';
 
-const LOGO_SRC = '/logo.png';
+const VIDEO_SRC = '/assets/images/new-background.mp4';
 
 function HeroSection() {
   const [cmsHero, setCmsHero] = React.useState(null);
@@ -24,231 +22,199 @@ function HeroSection() {
     run();
   }, []);
 
-  const title = (cmsHero?.heroTitle || 'מערכות חכמות בתפירה אישית').trim();
-  const subtitle = (cmsHero?.heroSubtitle || 'לעשות סדר, ליצור שליטה, ולפשט ניהול עסקי מורכב באמצעות מערכת אחת חכמה.').trim();
+  const headline = (cmsHero?.heroTitle || 'מערכות חכמות.\nתפירה אישית.').trim();
+  const subtitle = (cmsHero?.heroSubtitle || 'מערכת אחת חכמה שמרכזת, מפשטת ומייעלת את הניהול העסקי שלכם.').trim();
   const ctaText = (cmsHero?.heroCtaText || 'בואו נעשה סדר').trim();
   const ctaHref = cmsHero?.heroCtaHref || '/contact';
+
+  const headlineLines = headline.split('\n');
 
   return (
     <Box
       sx={{
         position: 'relative',
-        minHeight: { xs: 'calc(100vh - 80px)', md: '90vh' },
+        minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'center',
         overflow: 'hidden',
-        background: `
-          radial-gradient(ellipse at 20% 50%, rgba(0, 255, 153, 0.07) 0%, transparent 50%),
-          radial-gradient(ellipse at 80% 20%, rgba(0, 255, 153, 0.05) 0%, transparent 50%),
-          radial-gradient(ellipse at 50% 100%, rgba(0, 255, 153, 0.03) 0%, transparent 40%),
-          #0A0A0A
-        `,
+        bgcolor: '#000000',
       }}
     >
-      {/* Connected Dots Animation - Layer 1 */}
-      <ConnectedDotsBackground
-        dotColor="rgba(0, 255, 153, 0.4)"
-        lineColor="rgba(0, 255, 153, 0.12)"
-        dotCount={80}
-        connectionDistance={150}
-        speed={0.3}
-      />
+      {/* Video Background */}
+      <Box
+        component="video"
+        autoPlay
+        muted
+        loop
+        playsInline
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          zIndex: 0,
+        }}
+      >
+        <source src={VIDEO_SRC} type="video/mp4" />
+      </Box>
 
-      {/* Subtle Green Glow Blobs - Layer 2 */}
+      {/* Dark radial vignette — "black hole" effect:
+          Darkest in the center (where text lives), video peeks through at edges */}
       <Box
         sx={{
           position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '100%',
-          maxWidth: '800px',
-          height: '100%',
+          inset: 0,
+          background: `
+            radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.35) 100%)
+          `,
           zIndex: 1,
           pointerEvents: 'none',
-          opacity: 0.4,
         }}
-      >
-        {/* Blob 1 - Primary Green */}
-        <motion.div
-          animate={{
-            x: [0, 15, -10, 0],
-            y: [0, -25, 10, 0],
-            scale: [1, 1.05, 0.95, 1],
-          }}
-          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-          style={{
-            position: 'absolute',
-            top: '10%',
-            left: '10%',
-            width: '320px',
-            height: '320px',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(0, 255, 153, 0.15) 0%, transparent 70%)',
-            filter: 'blur(60px)',
-          }}
-        />
+      />
 
-        {/* Blob 2 - Secondary Green */}
-        <motion.div
-          animate={{
-            x: [0, -15, 10, 0],
-            y: [0, 20, -15, 0],
-            scale: [1, 0.95, 1.05, 1],
-          }}
-          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 4 }}
-          style={{
-            position: 'absolute',
-            bottom: '15%',
-            right: '5%',
-            width: '350px',
-            height: '350px',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(0, 255, 153, 0.10) 0%, transparent 70%)',
-            filter: 'blur(60px)',
-          }}
-        />
-
-        {/* Blob 3 - Accent */}
-        <motion.div
-          animate={{
-            x: [0, 10, -15, 0],
-            y: [0, -15, 20, 0],
-            scale: [1, 1.03, 0.97, 1],
-          }}
-          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 8 }}
-          style={{
-            position: 'absolute',
-            top: '40%',
-            left: '60%',
-            width: '280px',
-            height: '280px',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(0, 255, 153, 0.08) 0%, transparent 70%)',
-            filter: 'blur(60px)',
-          }}
-        />
-      </Box>
-
-      {/* Content Layer - Layer 3 */}
+      {/* Content */}
       <Container
         maxWidth="lg"
         sx={{
           position: 'relative',
-          zIndex: 10,
-          mx: 'auto',
+          zIndex: 2,
+          textAlign: 'center',
+          py: { xs: 16, md: 0 },
           px: { xs: 3, md: 6 },
         }}
       >
-        <Box
-          sx={{
-            position: 'relative',
-            zIndex: 1,
-            maxWidth: 800,
-            mx: 'auto',
-            textAlign: 'center',
-            backgroundColor: 'rgba(26, 26, 26, 0.7)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(51, 51, 51, 0.6)',
-            borderRadius: '24px',
-            padding: { xs: 3, md: 5 },
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-          }}
+        {/* Small label */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
         >
-          {/* Logo */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+          <Typography
+            sx={{
+              color: '#00FF99',
+              fontSize: { xs: '0.8rem', md: '0.9rem' },
+              fontWeight: 500,
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
+              mb: { xs: 3, md: 4 },
+            }}
           >
-            <Box
-              component="img"
-              src={LOGO_SRC}
-              alt="TaylorBiz לוגו"
-              loading="eager"
-              sx={{
-                height: { xs: 100, sm: 140, md: 180 },
-                width: 'auto',
-                mx: 'auto',
-                display: 'block',
-                mb: 4,
-                objectFit: 'contain',
-                filter: 'drop-shadow(0px 10px 30px rgba(0,255,153,0.15))',
-              }}
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          </motion.div>
+            TaylorBiz — פיתוח מערכות
+          </Typography>
+        </motion.div>
 
-          {/* H1 Headline */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-          >
-            <Typography
-              component="h1"
-              variant="h1"
-              sx={{
-                mb: 3,
-                color: '#FFFFFF',
-                fontWeight: 900,
-                fontSize: { xs: '2.5rem', sm: '3.5rem', md: '5rem' },
-                letterSpacing: '-0.02em',
-                lineHeight: 1.1,
+        {/* Massive Headline */}
+        <Box sx={{ mb: { xs: 4, md: 5 } }}>
+          {headlineLines.map((line, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 60 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 1,
+                delay: 0.4 + i * 0.15,
+                ease: [0.25, 0.1, 0.25, 1],
               }}
             >
-              {title}
-            </Typography>
-          </motion.div>
-
-          {/* Subtitle */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <Typography
-              variant="h5"
-              sx={{
-                mb: 5,
-                color: '#B0B0B0',
-                fontWeight: 400,
-                lineHeight: 1.6,
-                fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
-                fontSize: { xs: '1.1rem', md: '1.35rem' },
-              }}
-            >
-              {subtitle}
-            </Typography>
-          </motion.div>
-
-          {/* CTA Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-              <Button
-                variant="primary"
-                size="large"
-                startIcon={<RocketLaunchOutlinedIcon />}
-                to={ctaHref}
+              <Typography
+                component={i === 0 ? 'h1' : 'span'}
                 sx={{
-                  fontSize: { xs: '1rem', md: '1.125rem' },
-                  px: { xs: 4, md: 6 },
-                  py: { xs: 1.5, md: 2 },
+                  display: 'block',
+                  color: '#FFFFFF',
+                  fontWeight: 800,
+                  fontSize: { xs: '3rem', sm: '4.5rem', md: '6rem', lg: '7rem' },
+                  lineHeight: 1.05,
+                  letterSpacing: '-0.03em',
+                  fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
                 }}
               >
-                {ctaText}
-              </Button>
-            </Box>
-          </motion.div>
+                {line}
+              </Typography>
+            </motion.div>
+          ))}
         </Box>
+
+        {/* Subtitle */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+        >
+          <Typography
+            sx={{
+              color: 'rgba(255,255,255,0.7)',
+              fontWeight: 400,
+              fontSize: { xs: '1.05rem', sm: '1.15rem', md: '1.35rem' },
+              lineHeight: 1.7,
+              maxWidth: 600,
+              mx: 'auto',
+              mb: { xs: 5, md: 6 },
+              fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
+            }}
+          >
+            {subtitle}
+          </Typography>
+        </motion.div>
+
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.0 }}
+        >
+          <Button
+            variant="primary"
+            size="large"
+            to={ctaHref}
+            sx={{
+              fontSize: { xs: '1rem', md: '1.125rem' },
+              px: { xs: 5, md: 7 },
+              py: { xs: 1.8, md: 2.2 },
+            }}
+          >
+            {ctaText}
+          </Button>
+        </motion.div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 1.5 }}
+        >
+          <Box
+            sx={{
+              mt: { xs: 8, md: 12 },
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
+            <motion.div
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <Box sx={{ width: 1, height: 40, bgcolor: 'rgba(255,255,255,0.2)' }} />
+            </motion.div>
+          </Box>
+        </motion.div>
       </Container>
+
+      {/* Bottom architectural line */}
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '1px',
+          bgcolor: '#333333',
+          zIndex: 3,
+        }}
+      />
     </Box>
   );
 }
