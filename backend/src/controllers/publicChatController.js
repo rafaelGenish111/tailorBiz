@@ -14,7 +14,7 @@ const sessions = new Map();
 
 // Clean up expired sessions every 5 minutes
 const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
-setInterval(() => {
+const cleanupTimer = setInterval(() => {
   const now = Date.now();
   for (const [id, session] of sessions) {
     if (now - session.lastActivity > SESSION_TTL_MS) {
@@ -22,6 +22,7 @@ setInterval(() => {
     }
   }
 }, 5 * 60 * 1000);
+cleanupTimer.unref(); // Don't keep the process alive just for cleanup
 
 /**
  * OpenAI function definition for collecting lead details
