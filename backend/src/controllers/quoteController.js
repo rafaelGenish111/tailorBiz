@@ -8,6 +8,7 @@ const streamifier = require('streamifier');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const pdfService = require('../services/pdfService');
+const { parseTextToQuoteItems } = require('../services/marketing/aiService');
 
 // Helper function to check if string is valid ObjectId
 const isValidObjectId = (id) => {
@@ -181,6 +182,25 @@ exports.getQuote = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת הצעת מחיר',
+      error: error.message
+    });
+  }
+};
+
+// פירוק טקסט להצעת מחיר באמצעות AI
+exports.parseQuoteText = async (req, res) => {
+  try {
+    const { text } = req.body;
+    const items = await parseTextToQuoteItems(text || '');
+    return res.json({
+      success: true,
+      data: { items }
+    });
+  } catch (error) {
+    console.error('parseQuoteText error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'שגיאה בפרק הטקסט',
       error: error.message
     });
   }

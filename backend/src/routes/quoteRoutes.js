@@ -11,7 +11,8 @@ const {
   updateQuoteStatus,
   duplicateQuote,
   uploadExternalPDF,
-  generateFromProject
+  generateFromProject,
+  parseQuoteText
 } = require('../controllers/quoteController');
 const { protect, requireModule } = require('../middleware/auth.middleware');
 const uploadQuotePdf = require('../middleware/quotePdfUpload.middleware');
@@ -19,6 +20,7 @@ const uploadQuotePdf = require('../middleware/quotePdfUpload.middleware');
 router.use(protect);
 router.use(requireModule('invoices_docs'));
 
+router.post('/parse-text', parseQuoteText);
 router.post('/generate/:projectId', generateFromProject);
 
 router.route('/client/:clientId')

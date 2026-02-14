@@ -200,6 +200,7 @@ export const quotesAPI = {
   delete: (id) => api.delete(`/quotes/${id}`),
   generateFromProject: (projectId, body) =>
     api.post(`/quotes/generate/${projectId}`, body || {}),
+  parseText: (text) => api.post('/quotes/parse-text', { text }),
   generatePDF: (quoteId) => api.post(`/quotes/${quoteId}/generate-pdf`),
   uploadPDF: (quoteId, formData) =>
     api.post(`/quotes/${quoteId}/upload-pdf`, formData, {

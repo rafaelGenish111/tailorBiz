@@ -3,13 +3,15 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Paper, Typography, TextField, Button, IconButton, Grid,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Switch, FormControlLabel, Divider, Card, CardContent, Alert, CircularProgress
+  Switch, FormControlLabel, Divider, Card, CardContent, Alert, CircularProgress,
+  Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import {
   Add as AddIcon, Delete as DeleteIcon, Save as SaveIcon,
-  PictureAsPdf as PdfIcon
+  PictureAsPdf as PdfIcon, ContentPaste as PasteIcon
 } from '@mui/icons-material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
 import api from '../../admin/utils/api';
 
 // ב-Production (Vercel) נשתמש ב-/api, בלוקאל נגדיר VITE_API_URL=http://localhost:5000/api
@@ -102,6 +104,8 @@ const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
 
   const [errors, setErrors] = useState({});
   const [pdfFile, setPdfFile] = useState(null);
+  const [parseDialogOpen, setParseDialogOpen] = useState(false);
+  const [pastedText, setPastedText] = useState('');
 
   useEffect(() => {
     if (existingQuote) {
@@ -185,6 +189,25 @@ const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
       queryClient.invalidateQueries(['clientQuotes', clientId]);
       if (onSave) onSave(data.data);
     }
+  });
+
+  // Parse text to quote items (AI)
+  const parseMutation = useMutation({
+    mutationFn: (text) => api.post('/quotes/parse-text', { text }).then((res) => res.data),
+    onSuccess: (data) => {
+      const items = data?.data?.items;
+      if (Array.isArray(items) && items.length > 0) {
+        setQuote((prev) => ({ ...prev, items }));
+        setParseDialogOpen(false);
+        setPastedText('');
+        toast.success(`נוספו ${items.length} פריטים מהטקסט`);
+      } else {
+        toast.warn('לא זוהו פריטים בטקסט. נסה פורמט אחר.');
+      }
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || 'שגיאה בפרק הטקסט');
+    },
   });
 
   // Generate PDF mutation
@@ -338,11 +361,21 @@ const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
 
       {/* טבלת פריטים */}
       <Paper sx={{ p: 2, mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
           <Typography variant="h6">פריטים</Typography>
-          <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={addItem}>
-            הוסף פריט
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<PasteIcon />}
+              onClick={() => { setPastedText(''); setParseDialogOpen(true); }}
+            >
+              הדבק ופרק
+            </Button>
+            <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={addItem}>
+              הוסף פריט
+            </Button>
+          </Box>
         </Box>
 
         <TableContainer>
@@ -418,12 +451,41 @@ const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
           </Table>
         </TableContainer>
 
-        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 1 }}>
           <Button variant="outlined" startIcon={<AddIcon />} onClick={addItem} sx={{ borderStyle: 'dashed' }}>
             הוסף שורה
           </Button>
         </Box>
       </Paper>
+
+      <Dialog open={parseDialogOpen} onClose={() => setParseDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>הדבק ופרק להצעה</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            הדבק טקסט (מאימייל, מסמך, רשימה) והמערכת תפרק אותו אוטומטית לפריטים בעזרת AI. תזהה סעיפים, תיאורים ומחירים.
+          </Typography>
+          <TextField
+            label="טקסט להמרה"
+            value={pastedText}
+            onChange={(e) => setPastedText(e.target.value)}
+            multiline
+            rows={8}
+            fullWidth
+            placeholder={'לדוגמה:\n1. פיתוח אתר - 5,000 ₪\n2. עיצוב לוגו - 1,200 ₪\n3. תחזוקה חודשית - 500 ₪ לחודש'}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setParseDialogOpen(false)}>ביטול</Button>
+          <Button
+            variant="contained"
+            onClick={() => parseMutation.mutate(pastedText)}
+            disabled={!pastedText.trim() || parseMutation.isPending}
+            startIcon={parseMutation.isPending ? <CircularProgress size={18} /> : <PasteIcon />}
+          >
+            {parseMutation.isPending ? 'מפרק...' : 'פרק לפריטים'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* סיכום */}
       <Grid container spacing={3}>

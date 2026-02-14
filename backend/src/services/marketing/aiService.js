@@ -593,8 +593,77 @@ async function generateProjectPlan(clientData) {
   }
 }
 
+/**
+ * מפרק טקסט להצעת מחיר לפריטים מובנים (מוצר, תיאור, כמות, מחיר)
+ * משתמש ב-AI לזיהוי סעיפים ומחירים
+ */
+async function parseTextToQuoteItems(text) {
+  try {
+    if (!OPENAI_API_KEY) {
+      console.warn('OPENAI_API_KEY not set - cannot parse quote text');
+      return [];
+    }
+    if (!text || typeof text !== 'string' || !text.trim()) return [];
+
+    const prompt = `נתח את הטקסט הבא והפרק אותו לפריטים של הצעת מחיר.
+כל פריט צריך: name (שם המוצר/שירות), description (תיאור קצר), quantity (כמות - ברירת מחדל 1), unitPrice (מחיר ליחידה בשקלים, מספר).
+אם יש מחיר כללי לסעיף - זה unitPrice.
+אם יש "סה"כ" או "סכום" - נסה לחלץ מחיר.
+אם אין מחיר מפורש - שים 0 (המשתמש ימלא ידנית).
+החזר רק JSON מערך:
+[{"name":"שם","description":"תיאור","quantity":1,"unitPrice":0}]
+טקסט להמרה:
+---
+${text.trim()}
+---`;
+
+    const response = await axios.post(
+      OPENAI_API_URL,
+      {
+        model: OPENAI_MODEL,
+        messages: [
+          { role: 'system', content: 'אתה עוזר שמפרק טקסט להצעות מחיר. החזר רק JSON תקני ללא markdown.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.3,
+        max_tokens: 1500
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    const content = response.data.choices[0]?.message?.content || '';
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) return [];
+    const parsed = JSON.parse(jsonMatch[0]);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .filter((t) => t && typeof t.name === 'string')
+      .map((t) => {
+        const quantity = Math.max(1, parseInt(t.quantity, 10) || 1);
+        const unitPrice = parseFloat(t.unitPrice) || 0;
+        return {
+          name: String(t.name).trim(),
+          description: String(t.description || '').trim(),
+          quantity,
+          unitPrice,
+          totalPrice: quantity * unitPrice
+        };
+      });
+  } catch (error) {
+    console.error('parseTextToQuoteItems error:', error.message);
+    return [];
+  }
+}
+
 module.exports = {
   generateCampaignContent,
+  parseTextToQuoteItems,
   optimizeCampaign,
   suggestAudience,
   predictPerformance,
