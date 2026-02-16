@@ -20,7 +20,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
-import Button from '../ui/Button';
 import { publicCMS } from '../../utils/publicApi';
 
 const LOGO_SRC = '/logo.png';
@@ -143,31 +142,7 @@ function Header() {
     >
       <Container maxWidth="lg">
         <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-          <Box
-            component={Link}
-            to="/"
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.25,
-              textDecoration: 'none',
-              color: '#FFFFFF',
-            }}
-          >
-            <Box
-              component="img"
-              src={LOGO_SRC}
-              alt="TaylorBiz לוגו"
-              loading="eager"
-              sx={{
-                height: { xs: 44, sm: 52 },
-                width: 'auto',
-                display: 'block',
-                objectFit: 'contain',
-              }}
-            />
-          </Box>
-
+          {/* Desktop nav - right side in RTL */}
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {navItems.filter(item => item.label === 'אודות').map((item) => (
@@ -308,16 +283,10 @@ function Header() {
                   {item.label}
                 </MuiButton>
               ))}
-              <Button
-                variant="primary"
-                to="/contact"
-                size="medium"
-              >
-                תיאום פגישת אפיון
-              </Button>
             </Box>
           )}
 
+          {/* Mobile hamburger - right side in RTL */}
           {isMobile && (
             <IconButton
               onClick={() => setMobileOpen(true)}
@@ -327,6 +296,32 @@ function Header() {
               <MenuIcon />
             </IconButton>
           )}
+
+          {/* Logo - left side in RTL */}
+          <Box
+            component={Link}
+            to="/"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.25,
+              textDecoration: 'none',
+              color: '#FFFFFF',
+            }}
+          >
+            <Box
+              component="img"
+              src={LOGO_SRC}
+              alt="TaylorBiz לוגו"
+              loading="eager"
+              sx={{
+                height: { xs: 44, sm: 52 },
+                width: 'auto',
+                display: 'block',
+                objectFit: 'contain',
+              }}
+            />
+          </Box>
         </Toolbar>
       </Container>
 
@@ -481,17 +476,6 @@ function Header() {
               {item.label}
             </ListItem>
           ))}
-          <ListItem sx={{ pt: 3 }}>
-            <Button
-              variant="primary"
-              to="/contact"
-              size="large"
-              onClick={() => setMobileOpen(false)}
-              sx={{ width: '100%' }}
-            >
-              תיאום פגישת אפיון
-            </Button>
-          </ListItem>
         </List>
       </Drawer>
     </AppBar>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Container, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { publicCMS } from '../../utils/publicApi';
 import Button from '../ui/Button';
 
@@ -22,7 +23,7 @@ function HeroSection() {
     run();
   }, []);
 
-  const headline = (cmsHero?.heroTitle || 'מערכות חכמות.\nתפירה אישית.').trim();
+  const headline = (cmsHero?.heroTitle || 'מערכת חכמה\nבתפירה אישית').trim();
   const subtitle = (cmsHero?.heroSubtitle || 'מערכת אחת חכמה שמרכזת, מפשטת ומייעלת את הניהול העסקי שלכם.').trim();
   const ctaText = (cmsHero?.heroCtaText || 'בואו נעשה סדר').trim();
   const ctaHref = cmsHero?.heroCtaHref || '/contact';
@@ -173,9 +174,13 @@ function HeroSection() {
               fontSize: { xs: '1rem', md: '1.125rem' },
               px: { xs: 5, md: 7 },
               py: { xs: 1.8, md: 2.2 },
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.5,
             }}
           >
             {ctaText}
+            <KeyboardArrowDownIcon sx={{ fontSize: '1.25rem', strokeWidth: 0.5 }} />
           </Button>
         </motion.div>
 

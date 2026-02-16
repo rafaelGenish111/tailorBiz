@@ -10,7 +10,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       // קבצים סטטיים שייכנסו לבילד
       includeAssets: [
-        'favicon.svg',
+        'assets/images/icon.png',
         'robots.txt',
         'logo.png'
       ],
@@ -22,24 +22,23 @@ export default defineConfig({
         name: 'TailorBiz CRM',
         short_name: 'TailorBiz',
         description: 'Business Management System',
-        theme_color: '#1976d2',
-        background_color: '#ffffff',
+        theme_color: '#00FF99',
+        background_color: '#0A0A0A',
         display: 'standalone',
         orientation: 'portrait',
         // מאיפה האפליקציה תיפתח כשמתקינים אותה
         start_url: '/admin/dashboard',
         icons: [
           {
-            // משתמשים ב-favicon.svg שקיים ונגיש
-            src: 'favicon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
+            src: 'assets/images/icon.png',
+            sizes: '512x512',
+            type: 'image/png',
             purpose: 'any'
           },
           {
-            src: 'favicon.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
+            src: 'assets/images/icon.png',
+            sizes: '512x512',
+            type: 'image/png',
             purpose: 'maskable'
           }
         ]
