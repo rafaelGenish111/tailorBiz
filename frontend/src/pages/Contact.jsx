@@ -98,10 +98,10 @@ function Contact() {
         }}
       >
         <Container maxWidth="lg">
-          <Typography variant="h2" fontWeight={800} gutterBottom>
+          <Typography variant="h2" fontWeight={800} gutterBottom sx={{ color: '#000000' }}>
             צרו קשר
           </Typography>
-          <Typography variant="h5" sx={{ maxWidth: 700, mx: 'auto', opacity: 0.9 }}>
+          <Typography variant="h5" sx={{ maxWidth: 700, mx: 'auto', color: '#000000', opacity: 0.9 }}>
             נשמח לענות על כל שאלה ולעזור לכם להתחיל
           </Typography>
         </Container>
