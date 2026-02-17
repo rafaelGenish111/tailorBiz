@@ -65,8 +65,8 @@ function BentoCard({ feature, index }) {
           flexDirection: 'column',
           justifyContent: 'space-between',
           p: { xs: 4, md: 5 },
-          bgcolor: '#a0a3ae',
-          border: '1px solid #b0b3bc',
+          bgcolor: '#383838',
+          border: '1px solid #4a4a4a',
           borderRadius: '2px',
           transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
           cursor: 'default',
@@ -112,7 +112,7 @@ function BentoCard({ feature, index }) {
             sx={{
               mb: 2,
               fontWeight: 700,
-              color: '#0A0A0A',
+              color: '#FFFFFF',
               fontSize: { xs: '1.5rem', md: '1.75rem' },
               lineHeight: 1.2,
               letterSpacing: '-0.01em',
@@ -124,7 +124,7 @@ function BentoCard({ feature, index }) {
           <Typography
             variant="body1"
             sx={{
-              color: '#2A2A2A',
+              color: '#B0B0B0',
               lineHeight: 1.8,
               fontSize: { xs: '0.95rem', md: '1.05rem' },
             }}
@@ -141,7 +141,7 @@ function BentoCard({ feature, index }) {
             opacity: 0,
             transform: 'translateX(-10px)',
             transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            color: '#0A0A0A',
+            color: '#00FF99',
             fontSize: '1.2rem',
           }}
         >

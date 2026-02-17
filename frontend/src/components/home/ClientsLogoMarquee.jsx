@@ -6,6 +6,7 @@ const clients = [
   { name: 'Leah Genish', logo: '/assets/images/clients/logo_leah_genish.jpeg' },
   { name: 'Sensa', logo: '/assets/images/clients/sensa.png' },
   { name: 'שופרות מהדרין', logo: '/assets/images/clients/shofarot.png' },
+  { name: 'DRVN AI', logo: '/assets/images/clients/logo.png' },
 ];
 
 // Duplicate for seamless infinite scroll
