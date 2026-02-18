@@ -49,7 +49,7 @@ const TaskModal = ({ open, taskId, onClose, initialData }) => {
 
   const handleToggleSubtask = async (index) => {
     if (!task?._id) return;
-    const next = subtasks.map((s, i) => (i === index ? { ...s, done: !Boolean(s?.done) } : s));
+    const next = subtasks.map((s, i) => (i === index ? { ...s, done: !s?.done } : s));
     await updateTask.mutateAsync({ id: task._id, data: { subtasks: next } });
   };
 
@@ -86,7 +86,6 @@ const TaskModal = ({ open, taskId, onClose, initialData }) => {
 
   const handleDelete = async () => {
     if (!task?._id) return;
-    // eslint-disable-next-line no-alert
     if (!window.confirm('האם למחוק את המשימה לצמיתות?')) return;
     await deleteTask.mutateAsync(task._id);
     setIsEditing(false);
@@ -229,8 +228,8 @@ const TaskModal = ({ open, taskId, onClose, initialData }) => {
                         <Typography
                           variant="body2"
                           sx={{
-                            textDecoration: Boolean(s?.done) ? 'line-through' : 'none',
-                            color: Boolean(s?.done) ? 'text.secondary' : 'text.primary'
+                            textDecoration: s?.done ? 'line-through' : 'none',
+                            color: s?.done ? 'text.secondary' : 'text.primary'
                           }}
                         >
                           {s?.title || `תת־משימה ${idx + 1}`}

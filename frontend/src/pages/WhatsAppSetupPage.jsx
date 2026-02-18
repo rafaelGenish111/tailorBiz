@@ -31,7 +31,7 @@ const WhatsAppSetupPage = () => {
       if (data.success) {
         setStatus(data.data);
       }
-    } catch (e) {
+    } catch {
       setError('שגיאה בטעינת סטטוס WhatsApp');
     } finally {
       setLoading(false);
@@ -84,7 +84,7 @@ const WhatsAppSetupPage = () => {
       } else {
         setError(data.message || 'שגיאה באיתחול');
       }
-    } catch (e) {
+    } catch {
       setError('שגיאה באיתחול WhatsApp');
     } finally {
       setRestarting(false);
@@ -105,7 +105,7 @@ const WhatsAppSetupPage = () => {
       } else {
         setError(data.message || 'שגיאה באיפוס');
       }
-    } catch (e) {
+    } catch {
       setError('שגיאה באיפוס חיבור WhatsApp');
     } finally {
       setResetting(false);

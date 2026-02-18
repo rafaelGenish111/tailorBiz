@@ -1,5 +1,6 @@
 import React from 'react';
 import { useInView } from 'react-intersection-observer';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 
 const FadeInWhenVisible = ({ children, delay = 0, duration = 0.6 }) => {

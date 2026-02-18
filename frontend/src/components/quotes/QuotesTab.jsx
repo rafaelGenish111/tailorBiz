@@ -103,6 +103,7 @@ const openPdf = (url) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 const QuotesTab = ({ clientId, clientName, initialEditQuoteId, onClearEditQuote }) => {
   const queryClient = useQueryClient();
   const [editorOpen, setEditorOpen] = useState(false);
@@ -196,11 +197,6 @@ const QuotesTab = ({ clientId, clientName, initialEditQuoteId, onClearEditQuote 
       setPdfFile(null);
     },
   });
-
-  const handleMenuOpen = (event, quote) => {
-    setMenuAnchor(event.currentTarget);
-    setMenuQuote(quote);
-  };
 
   const handleMenuClose = () => {
     setMenuAnchor(null);

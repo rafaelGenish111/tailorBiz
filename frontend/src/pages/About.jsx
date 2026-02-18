@@ -53,7 +53,7 @@ function About() {
       try {
         const res = await publicCMS.getPage('about');
         setCmsAbout(res.data?.data?.content || null);
-      } catch (_) {
+      } catch {
         setCmsAbout(null);
       } finally {
         setCmsLoaded(true);

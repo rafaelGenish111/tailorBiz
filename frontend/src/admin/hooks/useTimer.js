@@ -66,6 +66,7 @@ export const useActiveTimer = () => {
         }
       };
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setElapsedTime(0);
     }
   }, [activeTimer]);

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '@mui/material';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 
 const CTAButton = ({ children, ...props }) => {

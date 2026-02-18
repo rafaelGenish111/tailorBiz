@@ -128,8 +128,6 @@ const QuickAddLead = ({ open, onClose, preSelectedSource = 'whatsapp' }) => {
     }
   };
 
-  const selectedSource = leadSources.find(s => s.value === formData.leadSource);
-
   return (
     <Dialog
       open={open}

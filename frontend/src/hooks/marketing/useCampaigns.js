@@ -25,68 +25,44 @@ export const useCampaigns = (filters = {}) => {
   }, [fetchCampaigns]);
 
   const createCampaign = async (campaignData) => {
-    try {
-      const response = await campaignService.createCampaign(campaignData);
-      setCampaigns(prev => [...prev, response.data]);
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    const response = await campaignService.createCampaign(campaignData);
+    setCampaigns(prev => [...prev, response.data]);
+    return response;
   };
 
   const updateCampaign = async (id, campaignData) => {
-    try {
-      const response = await campaignService.updateCampaign(id, campaignData);
-      setCampaigns(prev => 
-        prev.map(c => c._id === id ? response.data : c)
-      );
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    const response = await campaignService.updateCampaign(id, campaignData);
+    setCampaigns(prev =>
+      prev.map(c => c._id === id ? response.data : c)
+    );
+    return response;
   };
 
   const deleteCampaign = async (id) => {
-    try {
-      await campaignService.deleteCampaign(id);
-      setCampaigns(prev => prev.filter(c => c._id !== id));
-    } catch (err) {
-      throw err;
-    }
+    await campaignService.deleteCampaign(id);
+    setCampaigns(prev => prev.filter(c => c._id !== id));
   };
 
   const activateCampaign = async (id) => {
-    try {
-      const response = await campaignService.activateCampaign(id);
-      setCampaigns(prev => 
-        prev.map(c => c._id === id ? response.data : c)
-      );
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    const response = await campaignService.activateCampaign(id);
+    setCampaigns(prev =>
+      prev.map(c => c._id === id ? response.data : c)
+    );
+    return response;
   };
 
   const pauseCampaign = async (id) => {
-    try {
-      const response = await campaignService.pauseCampaign(id);
-      setCampaigns(prev => 
-        prev.map(c => c._id === id ? response.data : c)
-      );
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    const response = await campaignService.pauseCampaign(id);
+    setCampaigns(prev =>
+      prev.map(c => c._id === id ? response.data : c)
+    );
+    return response;
   };
 
   const duplicateCampaign = async (id) => {
-    try {
-      const response = await campaignService.duplicateCampaign(id);
-      setCampaigns(prev => [...prev, response.data]);
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    const response = await campaignService.duplicateCampaign(id);
+    setCampaigns(prev => [...prev, response.data]);
+    return response;
   };
 
   const refresh = () => {

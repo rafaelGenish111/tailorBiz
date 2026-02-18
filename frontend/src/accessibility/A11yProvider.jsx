@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const A11yContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useA11y = () => {
   const context = useContext(A11yContext);
   if (!context) {

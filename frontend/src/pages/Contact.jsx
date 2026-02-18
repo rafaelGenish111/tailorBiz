@@ -37,7 +37,7 @@ function Contact() {
         const res = await publicCMS.getSiteSettings();
         if (!mounted) return;
         setSettings(res.data?.data || null);
-      } catch (_) {
+      } catch {
         if (!mounted) return;
         setSettings(null);
       }

@@ -18,6 +18,7 @@ const CookieSettings = ({ onClose, onSave }) => {
   useEffect(() => {
     const analyticsCookie = Cookies.get('cookie-analytics');
     const marketingCookie = Cookies.get('cookie-marketing');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAnalytics(analyticsCookie === 'true');
     setMarketing(marketingCookie === 'true');
   }, []);

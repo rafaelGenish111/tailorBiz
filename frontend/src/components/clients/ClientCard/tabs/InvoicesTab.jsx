@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography, Paper, Chip } from '@mui/material';
 
-const InvoicesTab = ({ clientId }) => {
+const InvoicesTab = () => {
   return (
     <Box>
       <Paper sx={{ p: 3 }}>

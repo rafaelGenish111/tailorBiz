@@ -1,5 +1,6 @@
 import { Card, CardContent, Box, Typography } from '@mui/material';
 
+// eslint-disable-next-line no-unused-vars
 function FeatureCard({ icon: Icon, title, description, color }) {
   return (
     <Card

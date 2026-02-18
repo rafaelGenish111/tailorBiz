@@ -304,7 +304,7 @@ const ProjectPage = () => {
       </Box>
 
       <Stepper activeStep={activeStepIndex} alternativeLabel sx={{ mb: 3 }}>
-        {STAGES.map((stage, idx) => (
+        {STAGES.map((stage) => (
           <Step key={stage}>
             <StepLabel>{STAGE_LABELS[stage]}</StepLabel>
           </Step>

@@ -80,6 +80,7 @@ const emptyItem = {
   totalPrice: 0
 };
 
+// eslint-disable-next-line no-unused-vars
 const QuoteEditor = ({ clientId, quote: existingQuote, onSave, onClose }) => {
   const queryClient = useQueryClient();
   const [quote, setQuote] = useState({

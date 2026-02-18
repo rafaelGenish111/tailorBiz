@@ -33,7 +33,7 @@ const BootstrapAdminPage = () => {
         const bn = await authAPI.bootstrapNeeded();
         const needed = Boolean(bn?.data?.data?.needed);
         if (!needed) navigate('/admin/login', { replace: true });
-      } catch (_) {
+      } catch {
         // ignore
       }
     };

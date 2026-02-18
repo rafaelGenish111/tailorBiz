@@ -154,14 +154,6 @@ function ClientDetail({ open, onClose, client }) {
     businessType: 'followup',
   });
 
-  const [proposalForm, setProposalForm] = useState({
-    initialPrice: '',
-    finalPrice: '',
-    currency: 'ILS',
-    paymentTerms: '',
-    contractNotes: '',
-  });
-
   const { data: meData } = useCurrentUserQuery();
   const me = getCurrentUserFromQueryData(meData);
   const canAssignLead = me?.role === 'admin' || me?.role === 'super_admin';
@@ -230,13 +222,6 @@ function ClientDetail({ open, onClose, client }) {
         referrerId: client.referrer?.referrerId || '',
       });
       setTagsInput((client.tags || []).join(', '));
-      setProposalForm({
-        initialPrice: client.proposal?.initialPrice ?? '',
-        finalPrice: client.proposal?.finalPrice ?? '',
-        currency: client.proposal?.currency || 'ILS',
-        paymentTerms: client.proposal?.paymentTerms || '',
-        contractNotes: client.proposal?.contractNotes || '',
-      });
     }
   }, [client]);
 
@@ -271,7 +256,7 @@ function ClientDetail({ open, onClose, client }) {
     .join('')
     .toUpperCase() || '?';
 
-  const status = STATUS_LABELS[client.status] || { label: client.status, color: 'default' };
+  const _status = STATUS_LABELS[client.status] || { label: client.status, color: 'default' };
 
   const handleSavePersonal = async () => {
     const tags =
@@ -318,21 +303,6 @@ function ClientDetail({ open, onClose, client }) {
             ? Number(businessForm.yearsInBusiness)
             : undefined,
           revenueRange: businessForm.revenueRange || undefined,
-        },
-      },
-    });
-  };
-
-  const handleProposalSave = async () => {
-    await updateClient.mutateAsync({
-      id: client._id,
-      data: {
-        proposal: {
-          ...proposalForm,
-          initialPrice: proposalForm.initialPrice
-            ? Number(proposalForm.initialPrice)
-            : undefined,
-          finalPrice: proposalForm.finalPrice ? Number(proposalForm.finalPrice) : undefined,
         },
       },
     });

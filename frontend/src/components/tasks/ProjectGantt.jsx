@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography, Tooltip, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { addDays, differenceInDays, eachDayOfInterval, isSameDay, isSameMonth } from 'date-fns';
+import { addDays, eachDayOfInterval, isSameDay, isSameMonth } from 'date-fns';
 
 const ROW_HEIGHT = 44;
 const DAY_MS = 24 * 60 * 60 * 1000;

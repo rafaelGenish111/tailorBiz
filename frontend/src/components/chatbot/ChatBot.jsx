@@ -47,7 +47,7 @@ function ChatBot() {
   const [isTyping, setIsTyping] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [formFields, setFormFields] = useState([]);
-  const [currentQuickReplies, setCurrentQuickReplies] = useState([
+  const [_currentQuickReplies, setCurrentQuickReplies] = useState([
     { label: 'תכונות המערכת', value: 'features' },
     // { label: 'תמחור', value: 'pricing' },
     { label: 'קבע דמו', value: 'demo' },
@@ -84,6 +84,7 @@ function ChatBot() {
 
   const addMessage = (text, sender, quickReplies = []) => {
     const newMessage = {
+      // eslint-disable-next-line react-hooks/purity
       id: Date.now(),
       text,
       sender,
@@ -118,6 +119,7 @@ function ChatBot() {
       }
 
       setIsTyping(false);
+      // eslint-disable-next-line react-hooks/purity
     }, 1000 + Math.random() * 1000);
   };
 

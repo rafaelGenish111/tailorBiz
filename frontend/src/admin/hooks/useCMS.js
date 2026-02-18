@@ -197,7 +197,7 @@ export const useUploadImage = () =>
             }
           }
         };
-      } catch (e) {
+      } catch {
         // תאימות אחורה: אם עדיין אין endpoint חתימה בשרת, ננסה את ההעלאה הישנה דרך השרת
         return uploadsAPI.uploadImage(formData);
       }

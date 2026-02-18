@@ -16,7 +16,7 @@ import {
   useScrollTrigger,
   Collapse,
 } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
@@ -32,7 +32,6 @@ const articleCategories = [
 ];
 
 function Header() {
-  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [articlesAnchorEl, setArticlesAnchorEl] = useState(null);
   const [categorySubmenuAnchors, setCategorySubmenuAnchors] = useState({});

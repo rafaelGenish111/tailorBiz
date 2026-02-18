@@ -65,10 +65,12 @@ function ClientCardContent({ client, id }) {
 
   useEffect(() => {
     const currentAssigned = client?.metadata?.assignedTo?._id || client?.metadata?.assignedTo || '';
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAssignedTo(currentAssigned ? String(currentAssigned) : '');
   }, [client?._id, client?.metadata?.assignedTo]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (tabFromUrl) setActiveTab(tabFromUrl);
   }, [tabFromUrl]);
 

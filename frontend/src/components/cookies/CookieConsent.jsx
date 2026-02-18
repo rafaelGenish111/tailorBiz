@@ -17,6 +17,7 @@ const CookieConsent = () => {
   useEffect(() => {
     const consent = Cookies.get('cookie-consent');
     if (!consent) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowConsent(true);
     }
   }, []);
