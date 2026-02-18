@@ -1,15 +1,31 @@
 const request = require('supertest');
-const createApp = require('../src/app'); // טוענים את ה-Factory
+const { MongoMemoryServer } = require('mongodb-memory-server');
+const createApp = require('../src/app');
 
 let app;
+let mongod;
 
-// איתחול לפני כל הבדיקות
+jest.setTimeout(60000);
+
 beforeAll(async () => {
+    mongod = await MongoMemoryServer.create();
+    const uri = mongod.getUri();
+
+    process.env.DATABASE_URI = uri;
+    process.env.APP_ID = 'TEST_APP_ID';
+    process.env.MASTER_KEY = 'TEST_MASTER_KEY';
+
     app = await createApp();
 });
 
+afterAll(async () => {
+    if (mongod) {
+        await mongod.stop();
+    }
+});
+
 describe('Server Sanity Check', () => {
-    
+
     it('should return 404 for unknown route', async () => {
         const res = await request(app).get('/route-she-lo-kayam');
         expect(res.statusCode).toEqual(404);
