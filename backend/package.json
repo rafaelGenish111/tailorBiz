@@ -58,6 +58,9 @@
     "puppeteer-core": {
       "tar-fs": "^2.1.4",
       "ws": "^8.17.1"
+    },
+    "multer-storage-cloudinary": {
+      "cloudinary": "$cloudinary"
     }
   }
 }
