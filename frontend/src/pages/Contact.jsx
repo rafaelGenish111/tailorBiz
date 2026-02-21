@@ -90,6 +90,7 @@ function Contact() {
   return (
     <Box>
       <Box
+        id="contact-us"
         sx={{
           bgcolor: 'primary.main',
           color: 'white',
@@ -107,7 +108,7 @@ function Contact() {
         </Container>
       </Box>
 
-      <Container maxWidth="lg" sx={{ py: 10 }}>
+      <Container id="contact-form" maxWidth="lg" sx={{ py: 10 }}>
         <Grid container spacing={6}>
           <Grid size={{ xs: 12, md: 7 }}>
             <Paper elevation={2} sx={{ p: 4, borderRadius: 1 }}>

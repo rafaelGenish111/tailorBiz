@@ -247,6 +247,7 @@ function TestimonialsSection() {
 
   return (
     <Box
+      id="client-testimonials"
       ref={ref}
       sx={{
         py: { xs: 12, md: 16 },

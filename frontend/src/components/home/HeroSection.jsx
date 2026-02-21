@@ -33,6 +33,7 @@ function HeroSection() {
 
   return (
     <Box
+      id="custom-business-systems"
       sx={{
         position: 'relative',
         minHeight: '100vh',

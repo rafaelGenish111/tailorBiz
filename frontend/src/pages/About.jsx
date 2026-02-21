@@ -100,6 +100,7 @@ function About() {
       <Box>
         {/* Hero Section */}
         <Box
+          id="about-us"
           sx={{
             position: 'relative',
             py: { xs: 12, md: 16 },
@@ -286,6 +287,7 @@ function About() {
     <Box>
       {/* Hero Section */}
       <Box
+        id="about-us"
         sx={{
           position: 'relative',
           minHeight: '50vh',
@@ -373,7 +375,7 @@ function About() {
       </Box>
 
       {/* הסיפור שלנו */}
-      <Container maxWidth="lg" sx={{ py: { xs: 8, md: 12 } }}>
+      <Container id="our-story" maxWidth="lg" sx={{ py: { xs: 8, md: 12 } }}>
         <Grid container spacing={6} alignItems="center">
           <Grid item xs={12} md={6}>
             <MotionBox

@@ -18,6 +18,7 @@ const features = [
     ],
     position: 'right', // Text on right, image on left
     image: '/assets/images/hero-control.png',
+    seoId: 'crm-management',
   },
   {
     title: 'אפס חיכוך בתקשורת',
@@ -29,6 +30,7 @@ const features = [
     ],
     position: 'left', // Text on left, image on right
     image: '/assets/images/automation-chat.png',
+    seoId: 'smart-automation',
   },
   {
     title: 'השטח והמשרד - גוף אחד',
@@ -40,6 +42,7 @@ const features = [
     ],
     position: 'right', // Text on right, image on left
     image: '/assets/images/sync-mobile.png',
+    seoId: 'field-management',
   },
 ];
 
