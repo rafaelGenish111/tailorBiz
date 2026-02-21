@@ -53,7 +53,7 @@ exports.uploadImage = async (req, res) => {
     });
   } catch (error) {
     console.error('Error in uploadImage:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בהעלאת תמונה', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בהעלאת תמונה', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -91,7 +91,7 @@ exports.getCloudinarySignature = async (req, res) => {
     });
   } catch (error) {
     console.error('Error in getCloudinarySignature:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה ביצירת חתימה', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה ביצירת חתימה', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 

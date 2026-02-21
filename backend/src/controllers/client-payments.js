@@ -36,7 +36,7 @@ exports.createPaymentPlan = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת תוכנית התשלומים',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -90,7 +90,7 @@ exports.updateInstallment = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון התשלום',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -165,7 +165,7 @@ exports.createInvoice = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת החשבונית',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -197,7 +197,7 @@ exports.getInvoices = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת החשבוניות',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -332,7 +332,7 @@ exports.getOverviewStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת הסטטיסטיקות',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -446,7 +446,7 @@ exports.getPipelineStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת סטטיסטיקות Pipeline',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -498,7 +498,7 @@ exports.getMorningFocus = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת נתוני מיקוד בוקר',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };

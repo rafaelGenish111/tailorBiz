@@ -77,7 +77,7 @@ exports.createQuote = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת הצעת מחיר',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -114,7 +114,7 @@ exports.updateQuote = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון הצעת מחיר',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -152,7 +152,7 @@ exports.getClientQuotes = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת הצעות מחיר',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -182,7 +182,7 @@ exports.getQuote = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת הצעת מחיר',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -201,7 +201,7 @@ exports.parseQuoteText = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'שגיאה בפרק הטקסט',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -314,7 +314,7 @@ exports.generatePDF = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת PDF',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -445,7 +445,7 @@ exports.uploadExternalPDF = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בהעלאת קובץ PDF',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -480,7 +480,7 @@ exports.deleteQuote = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה במחיקת הצעת מחיר',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -513,7 +513,7 @@ exports.updateQuoteStatus = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון סטטוס',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -639,7 +639,7 @@ exports.generateFromProject = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת הצעת מחיר מהפרויקט',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -679,7 +679,7 @@ exports.duplicateQuote = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בשכפול הצעת מחיר',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };

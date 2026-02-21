@@ -101,14 +101,18 @@ exports.handleWebhook = async (req, res) => {
     console.error('Error in handleWebhook:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
 
 // אימות Webhook (נדרש עבור WhatsApp Business API)
 exports.verifyWebhook = (req, res) => {
-  const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || 'bizflow-verify-token';
+  const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
+  if (!VERIFY_TOKEN) {
+    console.error('WHATSAPP_VERIFY_TOKEN is not set');
+    return res.sendStatus(500);
+  }
 
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
@@ -176,7 +180,7 @@ exports.sendMessage = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בשליחת ההודעה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -224,7 +228,7 @@ exports.sendTemplate = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בשליחת התבנית',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -256,7 +260,7 @@ exports.getConversations = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת השיחות',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -298,7 +302,7 @@ exports.getClientConversation = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת השיחה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -318,7 +322,7 @@ exports.getConnectionStatus = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בבדיקת סטטוס החיבור',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -343,7 +347,7 @@ exports.getQrCode = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'שגיאה בקבלת QR',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -370,7 +374,7 @@ exports.getQrSvg = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת QR (SVG)',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -470,7 +474,7 @@ exports.sendBulk = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בשליחה מרובה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -520,7 +524,7 @@ exports.previewBulk = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בבדיקת נמענים',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -539,7 +543,7 @@ exports.restart = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה באיתחול WhatsApp',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };

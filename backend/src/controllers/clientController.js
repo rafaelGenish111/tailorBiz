@@ -224,11 +224,12 @@ exports.getAllClients = async (req, res) => {
     }
 
     if (search) {
+      const escaped = String(search).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [
-        { 'personalInfo.fullName': { $regex: search, $options: 'i' } },
-        { 'businessInfo.businessName': { $regex: search, $options: 'i' } },
-        { 'personalInfo.phone': { $regex: search, $options: 'i' } },
-        { 'personalInfo.email': { $regex: search, $options: 'i' } }
+        { 'personalInfo.fullName': { $regex: escaped, $options: 'i' } },
+        { 'businessInfo.businessName': { $regex: escaped, $options: 'i' } },
+        { 'personalInfo.phone': { $regex: escaped, $options: 'i' } },
+        { 'personalInfo.email': { $regex: escaped, $options: 'i' } }
       ];
     }
 
@@ -268,7 +269,7 @@ exports.getAllClients = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת הלקוחות',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -323,7 +324,7 @@ exports.getClientById = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת הלקוח',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -405,7 +406,7 @@ exports.createClient = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת הלקוח',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -449,9 +450,16 @@ exports.updateClient = async (req, res) => {
       delete req.body.referrer;
     }
 
-    // עדכון שדות
+    // עדכון שדות - allowlist בלבד למניעת mass-assignment
+    const CLIENT_UPDATABLE_FIELDS = [
+      'personalInfo', 'businessInfo', 'assessmentForm', 'status',
+      'lostReason', 'lostReasonNotes', 'leadSource', 'leadScore',
+      'tags', 'interactions', 'orders', 'paymentPlan', 'proposal',
+      'contract', 'invoices', 'tasks', 'generalNotes', 'attachments',
+      'aiPreferences', 'whatsappConversations', 'conversationHistory',
+    ];
     Object.keys(req.body).forEach(key => {
-      if (key !== '_id' && key !== '__v') {
+      if (CLIENT_UPDATABLE_FIELDS.includes(key)) {
         client[key] = req.body[key];
       }
     });
@@ -520,7 +528,7 @@ exports.updateClient = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון הלקוח',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -650,7 +658,7 @@ exports.convertLeadToClient = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בהמרת הליד ללקוח',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -734,7 +742,7 @@ exports.uploadContract = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון החוזה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -762,7 +770,7 @@ exports.getContract = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת החוזה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -793,7 +801,7 @@ exports.deleteClient = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה במחיקת הלקוח',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -857,7 +865,7 @@ exports.fillAssessmentForm = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בשמירת שאלון האפיון',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -891,7 +899,7 @@ exports.getAssessmentForm = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת שאלון האפיון',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -941,7 +949,7 @@ exports.addInteraction = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בהוספת אינטראקציה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -976,7 +984,7 @@ exports.getInteractions = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת האינטראקציות',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -1026,7 +1034,7 @@ exports.updateInteraction = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון האינטראקציה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -1067,7 +1075,7 @@ exports.deleteInteraction = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה במחיקת האינטראקציה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -1126,7 +1134,7 @@ exports.createOrder = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת ההזמנה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -1156,7 +1164,7 @@ exports.getOrders = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת ההזמנות',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -1207,7 +1215,7 @@ exports.updateOrder = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון ההזמנה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -1240,7 +1248,7 @@ exports.createPaymentPlan = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת תוכנית התשלומים',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -1292,7 +1300,7 @@ exports.updateInstallment = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון התשלום',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -1361,7 +1369,7 @@ exports.createInvoice = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת החשבונית',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -1391,7 +1399,7 @@ exports.getInvoices = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת החשבוניות',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -1432,7 +1440,7 @@ exports.createTask = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת המשימה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -1483,7 +1491,7 @@ exports.getTasks = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת המשימות',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -1534,7 +1542,7 @@ exports.updateTask = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון המשימה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -1663,7 +1671,7 @@ exports.getOverviewStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת הסטטיסטיקות',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -1693,37 +1701,81 @@ exports.getPipelineStats = async (req, res) => {
       }
     }
 
-    // חישוב ערך פוטנציאלי + ספירה לכל שלב
-    for (const stage of pipeline) {
-      if (allowedStatuses !== null && !allowedStatuses.includes(stage.stage)) {
-        // Skip DB work for blocked stages
-        continue;
-      }
-      let statusFilter = { status: stage.stage };
-      // RBAC (ownership): leads viewAll=false => employee sees only their own leads in pipeline stats
-      if (req.user?.role !== 'admin' && req.user?.role !== 'super_admin') {
-        const leadsPerm = req.user?.permissions?.leads;
-        const canLeads = Boolean(leadsPerm?.enabled);
-        const canViewAllLeads = Boolean(leadsPerm?.viewAll);
-        if (canLeads && !canViewAllLeads && LEAD_STATUSES.includes(stage.stage)) {
-          statusFilter.$or = [
+    // חישוב ערך פוטנציאלי + ספירה לכל שלב — aggregation יחיד במקום N+1
+    const allowedStageNames = pipeline
+      .filter(s => allowedStatuses === null || allowedStatuses.includes(s.stage))
+      .map(s => s.stage);
+
+    if (allowedStageNames.length > 0) {
+      const matchFilter = { status: { $in: allowedStageNames } };
+
+      // RBAC (ownership): leads viewAll=false => employee sees only their own leads
+      const isPriv = req.user?.role === 'admin' || req.user?.role === 'super_admin';
+      const leadsPerm = req.user?.permissions?.leads;
+      const canLeads = Boolean(leadsPerm?.enabled);
+      const canViewAllLeads = Boolean(leadsPerm?.viewAll);
+      const needsOwnership = !isPriv && canLeads && !canViewAllLeads;
+
+      let ownershipMatch = null;
+      if (needsOwnership) {
+        ownershipMatch = {
+          $or: [
             { 'metadata.createdBy': req.user._id },
             { 'metadata.assignedTo': req.user._id },
-          ];
-        }
+          ],
+        };
       }
 
-      stage.count = await Client.countDocuments(statusFilter);
+      const aggPipeline = [
+        { $match: matchFilter },
+        {
+          $addFields: {
+            _orderTotal: { $sum: '$orders.totalAmount' },
+            _planTotal: { $ifNull: ['$paymentPlan.totalAmount', 0] },
+            _isLead: { $in: ['$status', LEAD_STATUSES] },
+          },
+        },
+      ];
 
-      const clients = await Client.find(statusFilter)
-        .select('paymentPlan.totalAmount orders.totalAmount');
+      // Apply ownership filter for lead stages only
+      if (needsOwnership) {
+        aggPipeline.push({
+          $match: {
+            $or: [
+              { _isLead: false },
+              { ...ownershipMatch },
+            ],
+          },
+        });
+      }
 
-      stage.value = clients.reduce((sum, client) => {
-        const orderValue = client.orders.reduce((orderSum, order) =>
-          orderSum + (order.totalAmount || 0), 0);
-        const planValue = client.paymentPlan?.totalAmount || 0;
-        return sum + Math.max(orderValue, planValue);
-      }, 0);
+      aggPipeline.push(
+        {
+          $addFields: {
+            _stageValue: { $max: ['$_orderTotal', '$_planTotal'] },
+          },
+        },
+        {
+          $group: {
+            _id: '$status',
+            count: { $sum: 1 },
+            value: { $sum: '$_stageValue' },
+          },
+        }
+      );
+
+      const aggResults = await Client.aggregate(aggPipeline);
+      const resultMap = {};
+      for (const r of aggResults) {
+        resultMap[r._id] = { count: r.count, value: r.value };
+      }
+
+      for (const stage of pipeline) {
+        if (resultMap[stage.stage]) {
+          stage.count = resultMap[stage.stage].count;
+          stage.value = resultMap[stage.stage].value;
+        }
+      }
     }
 
     // חישוב conversion rates
@@ -1775,7 +1827,7 @@ exports.getPipelineStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת סטטיסטיקות Pipeline',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -1825,7 +1877,7 @@ exports.getMorningFocus = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת נתוני מיקוד בוקר',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };

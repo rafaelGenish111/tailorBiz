@@ -29,7 +29,7 @@ exports.getPublic = async (req, res) => {
     });
   } catch (error) {
     console.error('Error in getPublic site settings:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בטעינת הגדרות האתר', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בטעינת הגדרות האתר', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -39,7 +39,7 @@ exports.getAdmin = async (req, res) => {
     return res.json({ success: true, data: doc });
   } catch (error) {
     console.error('Error in getAdmin site settings:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בטעינת הגדרות האתר', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בטעינת הגדרות האתר', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -66,6 +66,6 @@ exports.updateAdmin = async (req, res) => {
     return res.json({ success: true, data: updated });
   } catch (error) {
     console.error('Error in updateAdmin site settings:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בשמירת הגדרות האתר', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בשמירת הגדרות האתר', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };

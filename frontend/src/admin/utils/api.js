@@ -28,6 +28,15 @@ const api = axios.create({
   withCredentials: true
 });
 
+// Attach auth token to every request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Handle responses and errors
 api.interceptors.response.use(
   (response) => response,

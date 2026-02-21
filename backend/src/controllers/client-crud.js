@@ -234,11 +234,12 @@ exports.getAllClients = async (req, res) => {
     }
 
     if (search) {
+      const escaped = String(search).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [
-        { 'personalInfo.fullName': { $regex: search, $options: 'i' } },
-        { 'businessInfo.businessName': { $regex: search, $options: 'i' } },
-        { 'personalInfo.phone': { $regex: search, $options: 'i' } },
-        { 'personalInfo.email': { $regex: search, $options: 'i' } }
+        { 'personalInfo.fullName': { $regex: escaped, $options: 'i' } },
+        { 'businessInfo.businessName': { $regex: escaped, $options: 'i' } },
+        { 'personalInfo.phone': { $regex: escaped, $options: 'i' } },
+        { 'personalInfo.email': { $regex: escaped, $options: 'i' } }
       ];
     }
 
@@ -278,7 +279,7 @@ exports.getAllClients = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת הלקוחות',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -335,7 +336,7 @@ exports.getClientById = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת הלקוח',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -419,7 +420,7 @@ exports.createClient = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת הלקוח',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -465,9 +466,16 @@ exports.updateClient = async (req, res) => {
       delete req.body.referrer;
     }
 
-    // עדכון שדות
+    // עדכון שדות - allowlist בלבד למניעת mass-assignment
+    const CLIENT_UPDATABLE_FIELDS = [
+      'personalInfo', 'businessInfo', 'assessmentForm', 'status',
+      'lostReason', 'lostReasonNotes', 'leadSource', 'leadScore',
+      'tags', 'interactions', 'orders', 'paymentPlan', 'proposal',
+      'contract', 'invoices', 'tasks', 'generalNotes', 'attachments',
+      'aiPreferences', 'whatsappConversations', 'conversationHistory',
+    ];
     Object.keys(req.body).forEach(key => {
-      if (key !== '_id' && key !== '__v') {
+      if (CLIENT_UPDATABLE_FIELDS.includes(key)) {
         client[key] = req.body[key];
       }
     });
@@ -536,7 +544,7 @@ exports.updateClient = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון הלקוח',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -668,7 +676,7 @@ exports.convertLeadToClient = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בהמרת הליד ללקוח',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -701,7 +709,7 @@ exports.deleteClient = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה במחיקת הלקוח',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };

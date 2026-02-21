@@ -37,10 +37,11 @@ exports.getAllInvoices = async (req, res) => {
     }
 
     if (search) {
+      const escaped = String(search).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [
-        { invoiceNumber: { $regex: search, $options: 'i' } },
-        { 'clientDetails.name': { $regex: search, $options: 'i' } },
-        { 'clientDetails.businessName': { $regex: search, $options: 'i' } }
+        { invoiceNumber: { $regex: escaped, $options: 'i' } },
+        { 'clientDetails.name': { $regex: escaped, $options: 'i' } },
+        { 'clientDetails.businessName': { $regex: escaped, $options: 'i' } }
       ];
     }
 
@@ -70,7 +71,7 @@ exports.getAllInvoices = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת החשבוניות',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -98,7 +99,7 @@ exports.getInvoiceById = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת החשבונית',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -138,7 +139,7 @@ exports.createInvoice = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת החשבונית',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -155,9 +156,16 @@ exports.updateInvoice = async (req, res) => {
       });
     }
 
-    // עדכון שדות
+    // עדכון שדות - allowlist בלבד למניעת mass-assignment
+    const INVOICE_UPDATABLE_FIELDS = [
+      'clientId', 'projectId', 'orderId', 'issueDate', 'dueDate',
+      'businessDetails', 'clientDetails', 'items', 'subtotal',
+      'discountAmount', 'vatAmount', 'totalAmount', 'currency',
+      'status', 'paymentDetails', 'notes', 'paymentTerms',
+      'footerText', 'pdfUrl',
+    ];
     Object.keys(req.body).forEach(key => {
-      if (key !== '_id' && key !== '__v' && key !== 'invoiceNumber') {
+      if (INVOICE_UPDATABLE_FIELDS.includes(key)) {
         invoice[key] = req.body[key];
       }
     });
@@ -175,7 +183,7 @@ exports.updateInvoice = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון החשבונית',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -211,7 +219,7 @@ exports.deleteInvoice = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה במחיקת החשבונית',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -252,7 +260,7 @@ exports.updateInvoiceStatus = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון סטטוס החשבונית',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -293,7 +301,7 @@ exports.updatePayment = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון פרטי התשלום',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -361,7 +369,7 @@ exports.sendInvoice = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בשליחת החשבונית',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -396,7 +404,7 @@ exports.addReminder = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בהוספת התזכורת',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -437,7 +445,7 @@ exports.generatePDF = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת PDF',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -492,7 +500,7 @@ exports.markAsPaid = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון החשבונית',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -533,7 +541,7 @@ exports.sendReminder = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בשליחת תזכורת',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -592,7 +600,7 @@ exports.getInvoiceStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת סטטיסטיקות החשבוניות',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };

@@ -11,7 +11,7 @@ exports.listReferrers = async (req, res) => {
     if (status) q.status = String(status).trim();
     if (category) q.category = String(category).trim();
     if (search) {
-      const s = String(search).trim();
+      const s = String(search).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       if (s) {
         q.$or = [
           { displayName: { $regex: s, $options: 'i' } },
@@ -28,7 +28,7 @@ exports.listReferrers = async (req, res) => {
     return res.json({ success: true, data: items });
   } catch (error) {
     console.error('Error in listReferrers:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בטעינת רשימת מפנים', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בטעינת רשימת מפנים', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -56,7 +56,7 @@ exports.createReferrer = async (req, res) => {
     return res.status(201).json({ success: true, data: doc });
   } catch (error) {
     console.error('Error in createReferrer:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה ביצירת מפנה', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה ביצירת מפנה', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -74,7 +74,7 @@ exports.getReferrerById = async (req, res) => {
     return res.json({ success: true, data: doc });
   } catch (error) {
     console.error('Error in getReferrerById:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בטעינת מפנה', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בטעינת מפנה', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -110,7 +110,7 @@ exports.updateReferrer = async (req, res) => {
     return res.json({ success: true, data: doc });
   } catch (error) {
     console.error('Error in updateReferrer:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בעדכון מפנה', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בעדכון מפנה', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -148,7 +148,7 @@ exports.closeReferrer = async (req, res) => {
     return res.json({ success: true, data: doc });
   } catch (error) {
     console.error('Error in closeReferrer:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בסגירת מפנה', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בסגירת מפנה', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 

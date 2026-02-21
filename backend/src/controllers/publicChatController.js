@@ -218,7 +218,7 @@ async function saveLead({ name, phone, email, company, notes, sessionId }) {
     return { success: true, clientId: client._id, created: true };
   } catch (error) {
     console.error('❌ Error saving lead from chat:', error);
-    return { success: false, error: error.message };
+    return { success: false, ...(process.env.NODE_ENV !== 'production' && { error: error.message }) };
   }
 }
 

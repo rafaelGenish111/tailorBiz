@@ -4,6 +4,8 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+// Error handling
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Import themes
 import { theme } from './theme/theme';
@@ -11,6 +13,7 @@ import adminTheme from './admin/styles/adminTheme';
 
 // Import pages
 import Layout from './components/layout/Layout';
+import NotFound from './pages/NotFound';
 import Home from './pages/Home';
 import About from './pages/About';
 import Articles from './pages/Articles';
@@ -51,6 +54,7 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
+    <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <Routes>
         {/* Standalone (no Header/Footer) */}
@@ -99,32 +103,7 @@ function App() {
           <Route path="contact" element={<ProductContact />} />
         </Route>
 
-        {/* Public Routes */}
-        <Route
-          path="/*"
-          element={
-            <ThemeProvider theme={theme}>
-              <CssBaseline />
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/articles" element={<Articles />} />
-                  <Route path="/articles/:slug" element={<ArticlePage />} />
-                  <Route path="/products" element={<ProductsPage />} />
-                  <Route path="/features" element={<Features />} />
-                  <Route path="/clients" element={<OurClients />} />
-                  <Route path="/pricing" element={<Pricing />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/privacy" element={<PrivacyPolicy />} />
-                  <Route path="/roi-calculator" element={<ROICalculatorPage />} />
-                </Routes>
-              </Layout>
-            </ThemeProvider>
-          }
-        />
-
-        {/* Admin Routes */}
+        {/* Admin Routes — must be before public catch-all */}
         <Route
           path="/admin/*"
           element={
@@ -145,10 +124,37 @@ function App() {
             </ThemeProvider>
           }
         />
+
+        {/* Public Routes — catch-all must be last */}
+        <Route
+          path="/*"
+          element={
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/articles" element={<Articles />} />
+                  <Route path="/articles/:slug" element={<ArticlePage />} />
+                  <Route path="/products" element={<ProductsPage />} />
+                  <Route path="/features" element={<Features />} />
+                  <Route path="/clients" element={<OurClients />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
+                  <Route path="/roi-calculator" element={<ROICalculatorPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Layout>
+            </ThemeProvider>
+          }
+        />
       </Routes>
 
       <ToastContainer position="top-left" autoClose={2000} hideProgressBar={true} rtl={true} theme="dark" />
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
