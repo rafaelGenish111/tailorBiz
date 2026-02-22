@@ -47,8 +47,7 @@ function Header() {
 
   const baseNavItems = [
     { label: 'אודות', path: '/about' },
-    { label: 'מוצרים', path: '/products' },
-    { label: 'פיצ\'רים', path: '/features' },
+    { label: 'שירותים', path: '/services' },
     { label: 'לקוחות', path: '/clients' },
     { label: 'צור קשר', path: '/contact' },
   ];
@@ -57,7 +56,7 @@ function Header() {
     if (item.path === '/clients') {
       return settings?.showClientsInNav === true;
     }
-    if (item.path === '/products') {
+    if (item.path === '/services') {
       return settings?.showProductsInNav !== false;
     }
     return true;

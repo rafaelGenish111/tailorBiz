@@ -103,7 +103,7 @@ function Footer() {
               {showProductsInNav && (
                 <Link
                   component={RouterLink}
-                  to="/products"
+                  to="/services"
                   underline="hover"
                   sx={{
                     color: '#B0B0B0',
@@ -111,7 +111,7 @@ function Footer() {
                     transition: 'color 0.3s',
                   }}
                 >
-                  מוצרים
+                  שירותים
                 </Link>
               )}
               {showClientsInNav && (

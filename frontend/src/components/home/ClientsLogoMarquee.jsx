@@ -7,6 +7,7 @@ const clients = [
   { name: 'Sensa', logo: '/assets/images/clients/sensa.png' },
   { name: 'שופרות מהדרין', logo: '/assets/images/clients/shofarot.png' },
   { name: 'DRVN AI', logo: '/assets/images/clients/logo.png' },
+  { name: 'YNR', logo: '/assets/images/clients/ynr.webp' },
 ];
 
 // Duplicate for seamless infinite scroll
@@ -94,8 +95,8 @@ const ClientsLogoMarquee = () => {
                 key={`${c.name}_${idx}`}
                 sx={{
                   flexShrink: 0,
-                  width: { xs: 140, md: 200 },
-                  height: { xs: 85, md: 110 },
+                  width: { xs: 170, md: 240 },
+                  height: { xs: 100, md: 130 },
                   borderRadius: '12px',
                   bgcolor: '#1A1A1A',
                   border: '1px solid #262626',

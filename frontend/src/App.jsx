@@ -20,7 +20,9 @@ import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import ROICalculatorPage from './pages/ROICalculatorPage';
-import Features from './pages/Features';
+import ServicesPage from './pages/services/ServicesPage';
+import SaasCreators from './pages/services/SaasCreators';
+import AiInstitutions from './pages/services/AiInstitutions';
 import AdminPanel from './admin/pages/AdminPanel';
 import LoginPage from './admin/pages/LoginPage';
 import BootstrapAdminPage from './admin/pages/BootstrapAdminPage';
@@ -28,7 +30,6 @@ import RequireAdminAuth from './admin/components/auth/RequireAdminAuth';
 import SalesOnboarding from './pages/SalesOnboarding';
 import PartnershipPitch from './pages/PartnershipPitch';
 import LandingPage from './components/LandingPage';
-import ProductsPage from './pages/products/ProductsPage';
 import ProductLayout from './pages/products/ProductLayout';
 import ProductOverview from './pages/products/ProductOverview';
 import ProductTechnologies from './pages/products/ProductTechnologies';
@@ -111,8 +112,9 @@ function App() {
                   <Route path="/about" element={<About />} />
                   <Route path="/articles" element={<Articles />} />
                   <Route path="/articles/:slug" element={<ArticlePage />} />
-                  <Route path="/products" element={<ProductsPage />} />
-                  <Route path="/features" element={<Features />} />
+                  <Route path="/services" element={<ServicesPage />} />
+                  <Route path="/services/saas-creators" element={<SaasCreators />} />
+                  <Route path="/services/ai-institutions" element={<AiInstitutions />} />
                   <Route path="/clients" element={<OurClients />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/contact" element={<Contact />} />
