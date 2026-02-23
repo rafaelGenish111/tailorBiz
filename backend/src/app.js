@@ -110,6 +110,7 @@ async function createApp() {
   const allowedOrigins = [
     'https://tailorbiz-software.com',
     'https://www.tailorbiz-software.com',
+    'https://tailorbiz-frontend-stage.vercel.app',
     'http://localhost:5173',
     'http://localhost:3000',
     'http://localhost:5000'

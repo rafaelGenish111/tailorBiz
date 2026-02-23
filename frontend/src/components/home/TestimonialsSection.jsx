@@ -346,21 +346,27 @@ function TestimonialsSection() {
               px: { xs: 2, md: 0 },
             }}
           >
-            {visibleIndices.map((index, pos) => (
-              <TestimonialCard
-                key={`${testimonials[index]._id}-${pos}`}
-                testimonial={testimonials[index]}
-                isCenter={pos === 1}
-              />
-            ))}
+            {visibleIndices.map((index, pos) => {
+              const t = testimonials[index];
+              if (!t) return null;
+              return (
+                <TestimonialCard
+                  key={`${t._id || index}-${pos}`}
+                  testimonial={t}
+                  isCenter={pos === 1}
+                />
+              );
+            })}
           </Box>
 
           {/* Mobile: Single Card */}
           <Box sx={{ display: { xs: 'block', md: 'none' }, px: 2 }}>
-            <TestimonialCard
-              testimonial={testimonials[currentIndex]}
-              isCenter={true}
-            />
+            {testimonials[currentIndex] && (
+              <TestimonialCard
+                testimonial={testimonials[currentIndex]}
+                isCenter={true}
+              />
+            )}
           </Box>
         </Box>
 
