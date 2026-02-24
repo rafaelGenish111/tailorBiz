@@ -206,81 +206,84 @@ function ProcessFlowTimeline() {
 
         {/* Active Step Content */}
         <AnimatePresence mode="wait">
-          <MotionBox
+          <motion.div
             key={activeStep}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-              gap: { xs: 4, md: 8 },
-              alignItems: 'start',
-            }}
           >
-            {/* Left side — large step number + title */}
-            <Box>
-              <Typography
-                sx={{
-                  color: 'rgba(0, 255, 153, 0.15)',
-                  fontSize: { xs: '6rem', md: '10rem' },
-                  fontWeight: 900,
-                  lineHeight: 0.85,
-                  letterSpacing: '-0.05em',
-                  fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
-                  mb: 2,
-                  userSelect: 'none',
-                }}
-              >
-                {currentStep.number}
-              </Typography>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                gap: { xs: 4, md: 8 },
+                alignItems: 'start',
+              }}
+            >
+              {/* Left side — large step number + title */}
+              <Box>
+                <Typography
+                  sx={{
+                    color: 'rgba(0, 255, 153, 0.15)',
+                    fontSize: { xs: '6rem', md: '10rem' },
+                    fontWeight: 900,
+                    lineHeight: 0.85,
+                    letterSpacing: '-0.05em',
+                    fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
+                    mb: 2,
+                    userSelect: 'none',
+                  }}
+                >
+                  {currentStep.number}
+                </Typography>
 
-              <Typography
-                sx={{
-                  color: '#FFFFFF',
-                  fontWeight: 700,
-                  fontSize: { xs: '1.75rem', md: '2.5rem' },
-                  lineHeight: 1.15,
-                  letterSpacing: '-0.02em',
-                  fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
-                }}
-              >
-                {currentStep.subtitle}
-              </Typography>
-            </Box>
-
-            {/* Right side — description + icon */}
-            <Box sx={{ pt: { xs: 0, md: 4 } }}>
-              <Box
-                sx={{
-                  width: 52,
-                  height: 52,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mb: 3,
-                  border: '1px solid #333333',
-                  borderRadius: '2px',
-                  color: '#00FF99',
-                }}
-              >
-                <Icon sx={{ fontSize: 24 }} />
+                <Typography
+                  sx={{
+                    color: '#FFFFFF',
+                    fontWeight: 700,
+                    fontSize: { xs: '1.75rem', md: '2.5rem' },
+                    lineHeight: 1.15,
+                    letterSpacing: '-0.02em',
+                    fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
+                  }}
+                >
+                  {currentStep.subtitle}
+                </Typography>
               </Box>
 
-              <Typography
-                sx={{
-                  color: '#B0B0B0',
-                  fontSize: { xs: '1rem', md: '1.15rem' },
-                  lineHeight: 1.8,
-                  fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
-                  mb: 4,
-                }}
-              >
-                {currentStep.description}
-              </Typography>
+              {/* Right side — description + icon */}
+              <Box sx={{ pt: { xs: 0, md: 4 } }}>
+                <Box
+                  sx={{
+                    width: 52,
+                    height: 52,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mb: 3,
+                    border: '1px solid #333333',
+                    borderRadius: '2px',
+                    color: '#00FF99',
+                  }}
+                >
+                  <Icon sx={{ fontSize: 24 }} />
+                </Box>
+
+                <Typography
+                  sx={{
+                    color: '#B0B0B0',
+                    fontSize: { xs: '1rem', md: '1.15rem' },
+                    lineHeight: 1.8,
+                    fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
+                    mb: 4,
+                  }}
+                >
+                  {currentStep.description}
+                </Typography>
+              </Box>
             </Box>
-          </MotionBox>
+          </motion.div>
         </AnimatePresence>
 
         {/* Quote */}
