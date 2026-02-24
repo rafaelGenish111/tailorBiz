@@ -47,6 +47,11 @@ const SiteSettingsSchema = new mongoose.Schema(
       support: { value: { type: Number, default: 24 }, suffix: { type: String, default: '/7' }, label: { type: String, default: 'תמיכה' } }
     },
 
+    letterhead: {
+      headerImageUrl: { type: String, trim: true, default: '' },
+      footerImageUrl: { type: String, trim: true, default: '' }
+    },
+
     showClientsInNav: { type: Boolean, default: false },
     showClientsOnHome: { type: Boolean, default: false },
     showProductsInNav: { type: Boolean, default: true }

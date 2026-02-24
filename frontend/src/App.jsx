@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { ToastContainer } from 'react-toastify';
@@ -25,6 +25,7 @@ import AdminPanel from './admin/pages/AdminPanel';
 import LoginPage from './admin/pages/LoginPage';
 import BootstrapAdminPage from './admin/pages/BootstrapAdminPage';
 import RequireAdminAuth from './admin/components/auth/RequireAdminAuth';
+import SignDocumentPage from './pages/SignDocumentPage';
 import SalesOnboarding from './pages/SalesOnboarding';
 import PartnershipPitch from './pages/PartnershipPitch';
 import LandingPage from './components/LandingPage';
@@ -50,6 +51,20 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  const location = useLocation();
+
+  // Digital Signature page - fully standalone, rendered outside main Routes
+  // to avoid React Router v7 splat route ranking issue
+  if (location.pathname.startsWith('/sign/')) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <Routes>
+          <Route path="/sign/:token" element={<SignDocumentPage />} />
+        </Routes>
+      </QueryClientProvider>
+    );
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <Routes>

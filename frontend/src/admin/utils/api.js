@@ -210,6 +210,17 @@ export const quotesAPI = {
   updateStatus: (quoteId, status) => api.put(`/quotes/${quoteId}/status`, { status })
 };
 
+// ========== Signable Documents API ==========
+export const signableDocumentsAPI = {
+  getByClient: (clientId) => api.get(`/signable-documents/client/${clientId}`),
+  getById: (id) => api.get(`/signable-documents/${id}`),
+  create: (clientId, data) => api.post(`/signable-documents/client/${clientId}`, data),
+  update: (id, data) => api.put(`/signable-documents/${id}`, data),
+  delete: (id) => api.delete(`/signable-documents/${id}`),
+  send: (id, data) => api.post(`/signable-documents/${id}/send`, data),
+  generatePreviewPDF: (id) => api.post(`/signable-documents/${id}/preview-pdf`)
+};
+
 // ========== Lead Nurturing API ==========
 export const leadNurturingAPI = {
   getActiveInstances: (params) => api.get('/lead-nurturing/instances', { params })
