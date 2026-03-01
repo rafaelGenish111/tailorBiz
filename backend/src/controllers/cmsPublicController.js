@@ -12,7 +12,7 @@ exports.getPublishedTestimonials = async (req, res) => {
     return res.json({ success: true, data: testimonials });
   } catch (error) {
     console.error('Error in getPublishedTestimonials:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בטעינת המלצות', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בטעינת המלצות', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -34,7 +34,7 @@ exports.getPublishedPageBySlug = async (req, res) => {
     });
   } catch (error) {
     console.error('Error in getPublishedPageBySlug:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בטעינת הדף', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בטעינת הדף', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -44,9 +44,10 @@ exports.getPublishedArticles = async (req, res) => {
     const query = { isPublished: true };
     if (category) query.category = category;
     if (q) {
+      const escaped = String(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [
-        { title: { $regex: q, $options: 'i' } },
-        { excerpt: { $regex: q, $options: 'i' } }
+        { title: { $regex: escaped, $options: 'i' } },
+        { excerpt: { $regex: escaped, $options: 'i' } }
       ];
     }
 
@@ -59,7 +60,7 @@ exports.getPublishedArticles = async (req, res) => {
     return res.json({ success: true, data: items });
   } catch (error) {
     console.error('Error in getPublishedArticles:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בטעינת מאמרים', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בטעינת מאמרים', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -86,7 +87,7 @@ exports.getPublishedArticleBySlug = async (req, res) => {
     });
   } catch (error) {
     console.error('Error in getPublishedArticleBySlug:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בטעינת מאמר', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בטעינת מאמר', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -98,7 +99,7 @@ exports.getPublishedClients = async (req, res) => {
     return res.json({ success: true, data: clients });
   } catch (error) {
     console.error('Error in getPublishedClients:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בטעינת לקוחות', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בטעינת לקוחות', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -109,7 +110,7 @@ exports.getClientsCount = async (req, res) => {
     return res.json({ success: true, data: { count } });
   } catch (error) {
     console.error('Error in getClientsCount:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בספירת לקוחות', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בספירת לקוחות', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 

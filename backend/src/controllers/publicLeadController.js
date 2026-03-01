@@ -182,7 +182,7 @@ exports.submitWebsiteLead = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'שגיאת שרת בשמירת הליד',
-      error: error.message,
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message }),
     });
   }
 };

@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__filesystem__list_allowed_directories",
+      "Bash(xargs cat:*)",
+      "WebFetch(domain:tailorbiz-software.com)",
+      "Bash(curl:*)",
+      "Bash(grep:*)",
+      "Bash(npx eslint:*)",
+      "Bash(git status:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(brew list:*)"
+    ]
+  }
+}

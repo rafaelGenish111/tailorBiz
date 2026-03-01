@@ -37,33 +37,24 @@ const ensureJwtSecret = (res) => {
 
 exports.bootstrapNeeded = async (req, res) => {
   try {
-    console.log('[bootstrapNeeded] Request received');
-    console.log('[bootstrapNeeded] Method:', req.method);
-    console.log('[bootstrapNeeded] Path:', req.path);
-    console.log('[bootstrapNeeded] URL:', req.url);
-    
     // בדיקה שהמודל User נטען כראוי
     if (!User || typeof User.countDocuments !== 'function') {
       console.error('Error: User model is not properly loaded');
-      return res.status(500).json({ 
-        success: false, 
-        message: 'שגיאה בבדיקת מצב התקנה', 
-        error: 'User model not available' 
+      return res.status(500).json({
+        success: false,
+        message: 'שגיאה בבדיקת מצב התקנה'
       });
     }
 
     const adminCount = await User.countDocuments({ role: 'admin' });
-    console.log('[bootstrapNeeded] Admin count:', adminCount);
-    const result = { success: true, data: { needed: adminCount === 0 } };
-    console.log('[bootstrapNeeded] Returning:', result);
-    return res.json(result);
+    return res.json({ success: true, data: { needed: adminCount === 0 } });
   } catch (error) {
     console.error('Error in bootstrapNeeded:', error);
     console.error('Error stack:', error.stack);
-    return res.status(500).json({ 
-      success: false, 
-      message: 'שגיאה בבדיקת מצב התקנה', 
-      error: error.message,
+    return res.status(500).json({
+      success: false,
+      message: 'שגיאה בבדיקת מצב התקנה',
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message }),
       ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
     });
   }
@@ -120,50 +111,39 @@ exports.bootstrap = async (req, res) => {
     return res.status(201).json({ success: true, data: admin.toSafeJSON() });
   } catch (error) {
     console.error('Error in bootstrap:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בהתקנה ראשונית', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בהתקנה ראשונית', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
 exports.login = async (req, res) => {
   try {
-    console.log('[login] Request received');
-    console.log('[login] Method:', req.method);
-    console.log('[login] Path:', req.path);
-    console.log('[login] Body:', req.body);
-    
     if (!ensureJwtSecret(res)) return;
 
     const { username, password } = req.body || {};
     const u = String(username || '').trim().toLowerCase();
     const p = String(password || '');
     if (!u || !p) {
-      console.log('[login] Missing username or password');
       return res.status(400).json({ success: false, message: 'חסרים שם משתמש או סיסמה' });
     }
 
-    console.log('[login] Looking for user:', u);
     const user = await User.findOne({ username: u });
     if (!user) {
-      console.log('[login] User not found');
       return res.status(401).json({ success: false, message: 'פרטי התחברות שגויים' });
     }
     if (!user.isActive) {
-      console.log('[login] User not active');
       return res.status(403).json({ success: false, message: 'המשתמש לא פעיל' });
     }
     const ok = await user.comparePassword(p);
     if (!ok) {
-      console.log('[login] Password incorrect');
       return res.status(401).json({ success: false, message: 'פרטי התחברות שגויים' });
     }
 
-    console.log('[login] Login successful for user:', u);
     const token = signToken(user);
     res.cookie(COOKIE_NAME, token, getCookieOptions());
     return res.json({ success: true, data: user.toSafeJSON() });
   } catch (error) {
     console.error('Error in login:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בהתחברות', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בהתחברות', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -209,7 +189,7 @@ exports.changePassword = async (req, res) => {
     return res.json({ success: true });
   } catch (error) {
     console.error('Error in changePassword:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בשינוי סיסמה', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בשינוי סיסמה', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 

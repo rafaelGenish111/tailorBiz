@@ -58,7 +58,7 @@ exports.uploadDocument = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בהעלאת הקובץ',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -121,7 +121,7 @@ exports.getClientDocuments = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת המסמכים',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -158,7 +158,7 @@ exports.updateDocument = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון המסמך',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -194,7 +194,7 @@ exports.deleteDocument = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה במחיקת המסמך',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -226,7 +226,7 @@ exports.archiveDocument = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בארכוב המסמך',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };

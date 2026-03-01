@@ -66,7 +66,7 @@ exports.fillAssessmentForm = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בשמירת שאלון האפיון',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -102,7 +102,7 @@ exports.getAssessmentForm = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת שאלון האפיון',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -192,7 +192,7 @@ exports.uploadContract = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון החוזה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -222,7 +222,7 @@ exports.getContract = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת החוזה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };

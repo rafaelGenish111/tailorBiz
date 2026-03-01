@@ -21,7 +21,7 @@ exports.list = async (req, res) => {
     return res.json({ success: true, data: users });
   } catch (error) {
     console.error('Error in adminUsers list:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בטעינת משתמשים', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בטעינת משתמשים', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -56,7 +56,7 @@ exports.create = async (req, res) => {
     return res.status(201).json({ success: true, data: user.toSafeJSON() });
   } catch (error) {
     console.error('Error in adminUsers create:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה ביצירת עובד', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה ביצירת עובד', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -98,7 +98,7 @@ exports.update = async (req, res) => {
     return res.json({ success: true, data: user.toSafeJSON() });
   } catch (error) {
     console.error('Error in adminUsers update:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה בעדכון עובד', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה בעדכון עובד', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 
@@ -123,7 +123,7 @@ exports.resetPassword = async (req, res) => {
     return res.json({ success: true });
   } catch (error) {
     console.error('Error in adminUsers resetPassword:', error);
-    return res.status(500).json({ success: false, message: 'שגיאה באיפוס סיסמה', error: error.message });
+    return res.status(500).json({ success: false, message: 'שגיאה באיפוס סיסמה', ...(process.env.NODE_ENV !== 'production' && { error: error.message }) });
   }
 };
 

@@ -56,10 +56,13 @@ async function createApp() {
         const fs = require('fs');
         const cloudCodeExists = fs.existsSync(cloudCodePath);
 
+        if (!process.env.APP_ID || !process.env.MASTER_KEY) {
+          console.warn('[Parse Server] APP_ID or MASTER_KEY not set — skipping Parse Server initialization.');
+        }
         const parseConfig = {
           databaseURI: mongoUri,
-          appId: process.env.APP_ID || 'myAppId',
-          masterKey: process.env.MASTER_KEY || 'myMasterKey', // Keep this key secret!
+          appId: process.env.APP_ID || 'parse-app-' + require('crypto').randomBytes(8).toString('hex'),
+          masterKey: process.env.MASTER_KEY || require('crypto').randomBytes(32).toString('hex'),
           serverURL: process.env.SERVER_URL || 'http://localhost:1337/parse',
           // הגדרות אבטחה נוספות
           allowClientClassCreation: false,

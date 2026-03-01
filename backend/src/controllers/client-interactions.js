@@ -53,7 +53,7 @@ exports.addInteraction = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בהוספת אינטראקציה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -90,7 +90,7 @@ exports.getInteractions = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת האינטראקציות',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -142,7 +142,7 @@ exports.updateInteraction = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון האינטראקציה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -185,7 +185,7 @@ exports.deleteInteraction = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה במחיקת האינטראקציה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -250,7 +250,7 @@ exports.createOrder = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת ההזמנה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -282,7 +282,7 @@ exports.getOrders = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת ההזמנות',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -335,7 +335,7 @@ exports.updateOrder = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון ההזמנה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -382,7 +382,7 @@ exports.createTask = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת המשימה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -435,7 +435,7 @@ exports.getTasks = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת המשימות',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -488,7 +488,7 @@ exports.updateTask = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון המשימה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };

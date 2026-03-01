@@ -24,7 +24,7 @@ exports.getProjects = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת פרויקטים',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -45,7 +45,7 @@ exports.getProjectById = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'שגיאה בטעינת הפרויקט',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -61,7 +61,7 @@ exports.createProject = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'שגיאה ביצירת פרויקט',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -84,7 +84,7 @@ exports.updateProject = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון הפרויקט',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -105,7 +105,7 @@ exports.deleteProject = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'שגיאה במחיקת הפרויקט',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -131,7 +131,7 @@ exports.addRequirement = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'שגיאה בהוספת דרישה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -161,7 +161,7 @@ exports.updateRequirement = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון דרישה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
@@ -184,7 +184,7 @@ exports.deleteRequirement = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'שגיאה במחיקת דרישה',
-      error: error.message
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }
 };
