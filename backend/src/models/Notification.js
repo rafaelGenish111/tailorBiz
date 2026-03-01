@@ -16,7 +16,8 @@ const NotificationSchema = new mongoose.Schema({
       'client_update',     // עדכון לקוח
       'follow_up',         // Follow-up נדרש
       'system',            // התראת מערכת
-      'achievement'        // הישג (gamification)
+      'achievement',       // הישג (gamification)
+      'document_signed'    // מסמך נחתם דיגיטלית
     ],
     required: true
   },

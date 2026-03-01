@@ -43,9 +43,11 @@ import ClientTimer from '../../timer/ClientTimer';
 import TimeEntriesTab from '../../timer/TimeEntriesTab';
 import DocumentsTab from '../../documents/DocumentsTab';
 import QuotesTab from '../../quotes/QuotesTab';
+import SignableDocumentsTab from '../../signable-documents/SignableDocumentsTab';
 import TimerIcon from '@mui/icons-material/Timer';
 import FolderIcon from '@mui/icons-material/Folder';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import DrawIcon from '@mui/icons-material/Draw';
 
 // תוכן ראשי - מופרד כדי לשמור על Rules of Hooks (אין early returns לפני hooks)
 function ClientCardContent({ client, id }) {
@@ -394,6 +396,7 @@ function ClientCardContent({ client, id }) {
           <Tab label="זמנים" value="time" icon={<TimerIcon />} iconPosition="start" />
           <Tab label="מסמכים" value="documents" icon={<FolderIcon />} iconPosition="start" />
           <Tab label="הצעות מחיר" value="quotes" icon={<ReceiptIcon />} iconPosition="start" />
+          <Tab label="חתימה דיגיטלית" value="sign-docs" icon={<DrawIcon />} iconPosition="start" />
         </Tabs>
 
         <Divider />
@@ -418,6 +421,9 @@ function ClientCardContent({ client, id }) {
                 setSearchParams(next, { replace: true });
               }}
             />
+          )}
+          {activeTab === 'sign-docs' && (
+            <SignableDocumentsTab clientId={id} client={client} />
           )}
         </Box>
       </Card>

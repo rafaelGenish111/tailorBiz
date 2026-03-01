@@ -33,6 +33,7 @@ const adminBotConfigRoutes = require('./routes/adminBotConfigRoutes');
 const timeEntriesRoutes = require('./routes/timeEntries.routes');
 const notificationsRoutes = require('./routes/notifications.routes');
 const notionRoutes = require('./routes/notionRoutes');
+const signableDocumentRoutes = require('./routes/signableDocumentRoutes');
 
 // אנו עוטפים את הכל בפונקציה אסינכרונית כדי לאפשר ל-Parse לעלות לפני שהאפליקציה מוכנה
 async function createApp() {
@@ -267,6 +268,7 @@ async function createApp() {
   app.use('/api/time-entries', timeEntriesRoutes);
   app.use('/api/notifications', notificationsRoutes);
   app.use('/api/admin/notion', notionRoutes);
+  app.use('/api/signable-documents', signableDocumentRoutes);
 
   if (process.env.NODE_ENV === 'development') {
     app.use('/api/test', testRoutes);

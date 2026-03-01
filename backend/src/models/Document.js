@@ -51,7 +51,7 @@ const documentSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ['quote', 'contract', 'invoice', 'receipt', 'proposal', 'specification', 'other'],
+    enum: ['quote', 'contract', 'invoice', 'receipt', 'proposal', 'specification', 'signed_document', 'other'],
     default: 'other'
   },
   description: {
@@ -71,6 +71,10 @@ const documentSchema = new mongoose.Schema({
   relatedQuoteId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Quote'
+  },
+  relatedSignableDocumentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SignableDocument'
   }
 }, {
   timestamps: true

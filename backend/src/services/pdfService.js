@@ -232,7 +232,185 @@ async function generateQuotePDF(quoteData) {
   }
 }
 
+/**
+ * Build HTML for Signable Document PDF (RTL, Heebo font, letterhead)
+ * @param {Object} data
+ * @param {Object} data.businessInfo - { name, address, phone, email, taxId, logoUrl, letterheadHeaderUrl, letterheadFooterUrl }
+ * @param {Object} data.clientInfo - { name, email, phone, businessName }
+ * @param {string} data.documentNumber
+ * @param {string} data.title
+ * @param {string} data.content - plain text body
+ * @param {Date} data.createdAt
+ * @param {string} [data.signerName] - signer's name (for signed version)
+ * @param {Date} [data.signedAt] - signing timestamp (for signed version)
+ * @param {string} [data.signatureImageBase64] - data:image/png;base64,... (for signed version)
+ * @param {string} [data.signerIp] - signer IP (for signed version)
+ */
+function buildSignedDocumentHtml(data) {
+  const biz = data.businessInfo || {};
+  const client = data.clientInfo || {};
+  const createdAt = data.createdAt ? new Date(data.createdAt).toLocaleDateString('he-IL') : '';
+  const signedAt = data.signedAt ? new Date(data.signedAt).toLocaleString('he-IL') : '';
+  const hasSig = !!data.signatureImageBase64;
+
+  const headerImgHtml = biz.letterheadHeaderUrl
+    ? `<img src="${escapeHtml(biz.letterheadHeaderUrl)}" class="letterhead-header" onerror="this.style.display='none'" />`
+    : '';
+  const footerImgHtml = biz.letterheadFooterUrl
+    ? `<img src="${escapeHtml(biz.letterheadFooterUrl)}" class="letterhead-footer" onerror="this.style.display='none'" />`
+    : '';
+  const logoHtml = biz.logoUrl
+    ? `<img src="${escapeHtml(biz.logoUrl)}" alt="Logo" class="logo" onerror="this.style.display='none'" />`
+    : '';
+
+  const docTypeLabels = {
+    contract: 'חוזה',
+    agreement: 'הסכם',
+    form: 'טופס',
+    proposal: 'הצעה',
+    other: 'מסמך'
+  };
+  const typeLabel = docTypeLabels[data.documentType] || 'מסמך';
+
+  return `<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Heebo', sans-serif; direction: rtl; margin: 0; padding: 0; font-size: 12px; color: #333; }
+    .page-wrap { padding: 30px 50px; min-height: 100vh; display: flex; flex-direction: column; }
+    .letterhead-header { width: 100%; max-height: 120px; object-fit: contain; display: block; margin-bottom: 20px; }
+    .letterhead-footer { width: 100%; max-height: 80px; object-fit: contain; display: block; margin-top: auto; padding-top: 30px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #2c3e50; }
+    .company { text-align: left; }
+    .company-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .company-details { font-size: 10px; color: #666; line-height: 1.6; }
+    .header-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    .logo { width: 70px; height: 70px; object-fit: contain; }
+    .client-block { text-align: right; }
+    .client-header-title { font-size: 11px; font-weight: 600; margin-bottom: 4px; color: #555; }
+    .client-details { font-size: 10px; color: #444; line-height: 1.6; }
+    .doc-title { font-size: 20px; font-weight: 700; text-align: center; margin: 16px 0 8px; }
+    .doc-meta { display: flex; justify-content: center; gap: 24px; margin-bottom: 24px; font-size: 11px; color: #666; }
+    .doc-content { white-space: pre-wrap; line-height: 1.9; font-size: 12px; margin: 16px 0 30px; flex: 1; }
+    .signature-block { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc; }
+    .signature-title { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+    .signature-row { display: flex; align-items: flex-end; gap: 40px; }
+    .signature-img { max-width: 280px; max-height: 100px; border: 1px solid #eee; background: #fafafa; padding: 4px; }
+    .signature-info { font-size: 10px; color: #555; line-height: 1.8; }
+    .stamp { font-size: 9px; color: #999; margin-top: 12px; text-align: center; }
+    .unsigned-placeholder { margin-top: 50px; text-align: center; color: #999; font-size: 11px; }
+    .unsigned-line { border-bottom: 1px solid #333; width: 250px; margin: 40px auto 8px; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    ${headerImgHtml}
+
+    <div class="header">
+      <div class="company">
+        <div class="company-name">${escapeHtml(biz.name || '')}</div>
+        <div class="company-details">
+          ${biz.address ? escapeHtml(biz.address) + '<br>' : ''}
+          ${biz.phone ? 'טלפון: ' + escapeHtml(biz.phone) + '<br>' : ''}
+          ${biz.email ? 'אימייל: ' + escapeHtml(biz.email) + '<br>' : ''}
+          ${biz.taxId ? 'ח.פ/ע.מ: ' + escapeHtml(biz.taxId) : ''}
+        </div>
+      </div>
+      <div class="header-right">
+        ${logoHtml}
+        <div class="client-block">
+          <div class="client-header-title">פרטי הלקוח</div>
+          <div class="client-details">
+            ${client.name ? escapeHtml(client.name) + '<br>' : ''}
+            ${client.businessName ? escapeHtml(client.businessName) + '<br>' : ''}
+            ${client.phone ? 'טלפון: ' + escapeHtml(client.phone) + '<br>' : ''}
+            ${client.email ? 'אימייל: ' + escapeHtml(client.email) : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-title">${escapeHtml(data.title || typeLabel)}</div>
+    <div class="doc-meta">
+      <span>מספר מסמך: ${escapeHtml(data.documentNumber || '')}</span>
+      <span>סוג: ${escapeHtml(typeLabel)}</span>
+      <span>תאריך: ${escapeHtml(createdAt)}</span>
+    </div>
+
+    <div class="doc-content">${escapeHtml(data.content || '').replace(/\n/g, '<br>')}</div>
+
+    ${hasSig ? `
+    <div class="signature-block">
+      <div class="signature-title">חתימה דיגיטלית</div>
+      <div class="signature-row">
+        <img src="${data.signatureImageBase64}" class="signature-img" />
+        <div class="signature-info">
+          שם החותם: ${escapeHtml(data.signerName || '')}<br>
+          תאריך חתימה: ${escapeHtml(signedAt)}<br>
+          ${data.signerIp ? 'כתובת IP: ' + escapeHtml(data.signerIp) : ''}
+        </div>
+      </div>
+      <div class="stamp">מסמך זה נחתם דיגיטלית באמצעות מערכת BizFlow</div>
+    </div>
+    ` : `
+    <div class="unsigned-placeholder">
+      <div class="unsigned-line"></div>
+      חתימה
+    </div>
+    `}
+
+    ${footerImgHtml}
+  </div>
+</body>
+</html>`;
+}
+
+/**
+ * Generate Signed Document PDF buffer using Puppeteer
+ * @param {Object} docData - Signable document data
+ * @returns {Promise<Buffer>}
+ */
+async function generateSignedDocumentPDF(docData) {
+  const html = buildSignedDocumentHtml(docData);
+  let browser;
+
+  try {
+    browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+      timeout: 60000
+    });
+    const page = await browser.newPage();
+
+    await page.setContent(html, {
+      waitUntil: ['load', 'networkidle0'],
+      timeout: 30000
+    });
+
+    await page.emulateMediaType('print');
+
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      margin: { top: '20px', right: '0', bottom: '20px', left: '0' },
+      printBackground: true,
+      preferCSSPageSize: false
+    });
+
+    return Buffer.from(pdfBuffer);
+  } finally {
+    if (browser) await browser.close();
+  }
+}
+
 module.exports = {
   generateQuotePDF,
-  buildQuoteHtml
+  buildQuoteHtml,
+  generateSignedDocumentPDF,
+  buildSignedDocumentHtml
 };
