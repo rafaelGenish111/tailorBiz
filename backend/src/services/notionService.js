@@ -2,14 +2,12 @@ const { Client } = require('@notionhq/client');
 
 // מיפוי סטטוסים מה-CRM לערכים ב-Notion
 const STAGE_TO_NOTION_STATUS = {
-  lead: 'Kickoff',
-  assessment: 'Kickoff',
-  proposal: 'Kickoff',
-  contract: 'Kickoff',
-  active: 'In Progress',
-  completed: 'QA',
-  maintenance: 'Retainer',
-  archived: 'Ready for Client'
+  lead: 'Lead',
+  won: 'Won',
+  active: 'Won',
+  completed: 'Won',
+  lost: 'Lost',
+  archived: 'Archived'
 };
 
 class NotionService {
@@ -64,11 +62,10 @@ class NotionService {
             type: 'select',
             select: {
               options: [
-                { name: 'Kickoff', color: 'yellow' },
-                { name: 'In Progress', color: 'blue' },
-                { name: 'QA', color: 'orange' },
-                { name: 'Ready for Client', color: 'green' },
-                { name: 'Retainer', color: 'purple' }
+                { name: 'Lead', color: 'yellow' },
+                { name: 'Won', color: 'green' },
+                { name: 'Lost', color: 'red' },
+                { name: 'Archived', color: 'default' }
               ]
             }
           },
@@ -76,8 +73,11 @@ class NotionService {
             type: 'select',
             select: {
               options: [
-                { name: 'מוצר מדף SaaS', color: 'blue' },
-                { name: 'הטמעת AI', color: 'green' }
+                { name: 'מערכת SaaS', color: 'blue' },
+                { name: 'מערכות AI', color: 'green' },
+                { name: 'הטמעת בינה מלאכותית בארגון', color: 'purple' },
+                { name: 'קורסים', color: 'orange' },
+                { name: 'אפליקציה בהתאמה אישית', color: 'pink' }
               ]
             }
           },

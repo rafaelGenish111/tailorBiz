@@ -249,7 +249,6 @@ exports.getAllClients = async (req, res) => {
       .sort(sortBy)
       .skip(skip)
       .limit(parseInt(limit))
-      .populate('invoices')
       .select('-__v');
 
     // For super/admin: show lead ownership in UI (createdBy/assignedTo username)
@@ -289,7 +288,7 @@ exports.getAllClients = async (req, res) => {
  */
 exports.getClientById = async (req, res) => {
   try {
-    let clientQuery = Client.findById(req.params.id).populate('invoices');
+    let clientQuery = Client.findById(req.params.id);
     if (req.user?.role === 'admin' || req.user?.role === 'super_admin') {
       clientQuery = clientQuery
         .populate('metadata.createdBy', 'username')
@@ -468,10 +467,9 @@ exports.updateClient = async (req, res) => {
 
     // עדכון שדות - allowlist בלבד למניעת mass-assignment
     const CLIENT_UPDATABLE_FIELDS = [
-      'personalInfo', 'businessInfo', 'assessmentForm', 'status',
+      'personalInfo', 'businessInfo', 'status',
       'lostReason', 'lostReasonNotes', 'leadSource', 'leadScore',
-      'tags', 'interactions', 'orders', 'paymentPlan', 'proposal',
-      'contract', 'invoices', 'tasks', 'generalNotes', 'attachments',
+      'tags', 'interactions', 'tasks', 'generalNotes', 'attachments',
       'aiPreferences', 'whatsappConversations', 'conversationHistory',
     ];
     Object.keys(req.body).forEach(key => {
@@ -570,9 +568,7 @@ exports.convertLeadToClient = async (req, res) => {
     // עדכון סטטוס ל-won (מעבר ללקוח)
     client.status = 'won';
 
-    // עדכון פרטי הצעה וחוזה
-    if (finalPrice) client.proposal.finalPrice = Number(finalPrice);
-
+    // Build contract data for project
     let contractData = {
       signed: true,
       signedAt: signedAt ? new Date(signedAt) : new Date(),
@@ -584,7 +580,6 @@ exports.convertLeadToClient = async (req, res) => {
       let fileUrlForPreview = undefined;
 
       if (IS_VERCEL && contractFile.buffer) {
-        // ב-Vercel אין מערכת קבצים - נשתמש ב-data URL לצורך תצוגה מקדימה
         try {
           const base64 = contractFile.buffer.toString('base64');
           fileUrlForPreview = `data:${contractFile.mimetype || 'application/pdf'};base64,${base64}`;
@@ -593,25 +588,19 @@ exports.convertLeadToClient = async (req, res) => {
         }
       }
 
-      // בסביבת פיתוח מקומית נשתמש בנתיב הקובץ שנשמר בדיסק
       if (!fileUrlForPreview && contractFile.filename) {
         fileUrlForPreview = `/uploads/contracts/${contractFile.filename}`;
       }
 
       contractData.fileUrl = fileUrlForPreview;
-    } else if (client.contract?.fileUrl) {
-      // אם כבר היה חוזה קודם, נשמור את ה-URL הקיים
-      contractData.fileUrl = client.contract.fileUrl;
     }
-
-    client.contract = contractData;
 
     // הוספת אינטראקציה של סגירה
     const interaction = {
-      type: 'note', // או 'deal_won' אם נוסיף סוג כזה
-      direction: 'inbound', // נחשב כפעולה חיובית מצד הלקוח
-      subject: '🎯 עסקה נסגרה - חוזה נחתם',
-      content: `העסקה נסגרה בהצלחה! סכום סופי: ${finalPrice || client.proposal.finalPrice || 0} ₪.\n${notes ? 'הערות: ' + notes : ''}`,
+      type: 'note',
+      direction: 'inbound',
+      subject: 'עסקה נסגרה - חוזה נחתם',
+      content: `העסקה נסגרה בהצלחה! סכום סופי: ${finalPrice || 0} ₪.\n${notes ? 'הערות: ' + notes : ''}`,
       timestamp: new Date(),
       createdBy: isValidObjectId(req.user?.id) ? req.user.id : null,
       completed: true,
@@ -627,39 +616,49 @@ exports.convertLeadToClient = async (req, res) => {
 
     await client.save();
 
-    // === NEW: Auto-generate project ===
-    console.log(`🔄 convertLeadToClient - Client status changed to: ${client.status}`);
+    // === Auto-generate project with idempotency guard ===
     const userId = req.user?.id || req.user?._id;
-    console.log(`🔄 convertLeadToClient - Calling generateNewClientProject. UserId: ${userId}`);
-    projectGeneratorService.generateNewClientProject(client, userId)
-      .then(project => {
-        if (project) {
-          console.log(`✅ convertLeadToClient - Project created: ${project._id}`);
-        } else {
-          console.warn('⚠️ convertLeadToClient - Project generation returned null/undefined');
-        }
-      })
-      .catch(err => {
-        console.error('❌ convertLeadToClient - Background project generation failed:', err);
-        console.error('Error stack:', err.stack);
+    const existingProject = await Project.findOne({ clientId: client._id });
+
+    if (!existingProject) {
+      projectGeneratorService.generateNewClientProject(client, userId)
+        .then(async (project) => {
+          if (project) {
+            // Save contract data to project
+            project.contract = contractData;
+            if (finalPrice) {
+              project.financials.totalValue = Number(finalPrice);
+              project.financials.balance = Number(finalPrice);
+            }
+            await project.save();
+            console.log(`✅ convertLeadToClient - Project created: ${project._id}`);
+          }
+        })
+        .catch(err => {
+          console.error('❌ convertLeadToClient - Project generation failed:', err.message);
+        });
+    } else {
+      // Update existing project with contract data
+      existingProject.contract = contractData;
+      if (finalPrice) {
+        existingProject.financials.totalValue = Number(finalPrice);
+        existingProject.financials.balance = Number(finalPrice);
+      }
+      existingProject.save().catch(err => {
+        console.error('❌ convertLeadToClient - Project update failed:', err.message);
       });
-    // ==================================
+    }
 
     // בדיקת טריגרים ואוטומציות
     if (process.env.ENABLE_LEAD_NURTURING === 'true') {
-      // 1. עצירת רצפי לידים פעילים (בגלל שהסטטוס השתנה והייתה אינטראקציה inbound)
-      // זה יקרה אוטומטית ב-checkInteractionForActiveNurturing אם נקרא לו, אבל כאן שינינו סטטוס אז ה-Status Change יתפוס
-
       const savedInteraction = client.interactions[client.interactions.length - 1];
 
-      // בדיקת טריגרים לשינוי סטטוס (למשל הפעלת רצף "סגירה מוצלחת")
       if (oldStatus !== client.status) {
         leadNurturingService.checkTriggersForStatusChange(client._id, oldStatus, client.status).catch(err => {
           console.error('Error checking status-change triggers:', err);
         });
       }
 
-      // בדיקת טריגרים לאינטראקציה (למשל אם יש רצף שמבוסס על "עסקה נסגרה")
       leadNurturingService.checkTriggersForInteraction(client._id, savedInteraction).catch(err => {
         console.error('Error checking interaction-based triggers:', err);
       });

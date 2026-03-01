@@ -73,114 +73,6 @@ const ClientSchema = new mongoose.Schema({
     }
   },
 
-  /**
-   * @deprecated Use Project.assessmentSnapshot - kept for backward compatibility during migration
-   * שאלון אפיון מלא
-   */
-  assessmentForm: {
-    filledAt: Date,
-
-    // שאלה 1-2: היכרות בסיסית
-    basicInfo: {
-      businessDescription: String,
-      numberOfEmployees: Number
-    },
-
-    // שאלה 3: המצב הקיים
-    currentSystems: {
-      managementMethod: String, // איך מנהלים היום
-      existingSystem: String, // מערכת קיימת
-      whatWorksWell: String,
-      whatDoesntWork: String
-    },
-
-    // שאלה 4: נקודות כאב
-    painPoints: {
-      timeWasters: [String], // איפה נוצר בזבוז זמן
-      customerLoss: String, // מצבים של איבוד לקוחות
-      processesToAutomate: [String] // תהליכים לאוטומציה
-    },
-
-    // שאלה 5: תהליכים לשיפור
-    processesToImprove: {
-      queueManagement: {
-        needed: Boolean,
-        priority: { type: Number, min: 1, max: 5 },
-        notes: String
-      },
-      customerTracking: {
-        needed: Boolean,
-        priority: { type: Number, min: 1, max: 5 },
-        notes: String
-      },
-      billingPayments: {
-        needed: Boolean,
-        priority: { type: Number, min: 1, max: 5 },
-        notes: String
-      },
-      inventory: {
-        needed: Boolean,
-        priority: { type: Number, min: 1, max: 5 },
-        notes: String
-      },
-      communication: {
-        needed: Boolean,
-        priority: { type: Number, min: 1, max: 5 },
-        notes: String
-      },
-      production: {
-        needed: Boolean,
-        priority: { type: Number, min: 1, max: 5 },
-        notes: String
-      },
-      fieldTeams: {
-        needed: Boolean,
-        priority: { type: Number, min: 1, max: 5 },
-        notes: String
-      },
-      documents: {
-        needed: Boolean,
-        priority: { type: Number, min: 1, max: 5 },
-        notes: String
-      },
-      mostUrgent: String // מה הכי דחוף לפתור
-    },
-
-    // שאלה 6: מטרות ויעדים
-    goalsAndObjectives: {
-      desiredOutcomes: [String], // מה היית רוצה שיקרה
-      successCriteria: [String], // מה ייחשב הצלחה
-      expectedTimeSaving: String
-    },
-
-    // שאלה 7: דרישות מיוחדות
-    specialRequirements: {
-      externalIntegrations: [String], // כלים חיצוניים להתחבר
-      uniqueProcesses: [String] // תהליכים ייחודיים
-    },
-
-    // שאלה 8: תקציב וזמנים
-    budgetAndTimeline: {
-      budgetRange: {
-        type: String,
-        enum: ['עד 10,000', '10,000-20,000', '20,000-40,000', '40,000-60,000', '60,000+', 'לא בטוח']
-      },
-      desiredImplementationDate: Date,
-      urgencyLevel: {
-        type: String,
-        enum: ['low', 'medium', 'high', 'urgent'],
-        default: 'medium'
-      }
-    },
-
-    // שאלה 9: סיכום והמשך
-    nextSteps: {
-      proposalPresentation: Boolean, // נקבע פגישת הצגה?
-      preferredMeetingDate: Date,
-      additionalNotes: String
-    }
-  },
-
   // סטטוס הליד/לקוח
   status: {
     type: String,
@@ -273,126 +165,6 @@ const ClientSchema = new mongoose.Schema({
     nextFollowUp: Date,
     completed: { type: Boolean, default: false },
     completedAt: Date
-  }],
-
-  /**
-   * @deprecated Use Project.orders - kept for backward compatibility during migration
-   * הזמנות/פרויקטים
-   */
-  orders: [{
-    orderNumber: {
-      type: String
-      // הוסר unique כדי למנוע שגיאת duplicate key עם null values
-    },
-    orderDate: {
-      type: Date,
-      default: Date.now
-    },
-    description: String,
-    services: [{
-      serviceName: String,
-      description: String,
-      price: Number,
-      estimatedHours: Number
-    }],
-    totalAmount: Number,
-    status: {
-      type: String,
-      enum: ['pending', 'approved', 'in_progress', 'testing', 'completed', 'cancelled', 'on_hold'],
-      default: 'pending'
-    },
-    priority: {
-      type: String,
-      enum: ['low', 'medium', 'high', 'urgent'],
-      default: 'medium'
-    },
-    startDate: Date,
-    expectedCompletionDate: Date,
-    actualCompletionDate: Date,
-    milestones: [{
-      title: String,
-      description: String,
-      dueDate: Date,
-      completed: Boolean,
-      completedDate: Date,
-      percentComplete: { type: Number, min: 0, max: 100, default: 0 }
-    }],
-    notes: String,
-    attachments: [{
-      filename: String,
-      url: String,
-      fileType: String,
-      uploadedAt: { type: Date, default: Date.now }
-    }]
-  }],
-
-  /**
-   * @deprecated Use Project.paymentPlan - kept for backward compatibility during migration
-   * לוח תשלומים
-   */
-  paymentPlan: {
-    totalAmount: Number,
-    currency: {
-      type: String,
-      default: 'ILS'
-    },
-    paymentStructure: {
-      type: String,
-      enum: ['one_time', 'installments', 'milestone_based', 'monthly_subscription'],
-      default: 'installments'
-    },
-    installments: [{
-      installmentNumber: Number,
-      description: String,
-      amount: Number,
-      dueDate: Date,
-      status: {
-        type: String,
-        enum: ['pending', 'paid', 'overdue', 'cancelled', 'partial'],
-        default: 'pending'
-      },
-      paidAmount: { type: Number, default: 0 },
-      paidDate: Date,
-      paymentMethod: {
-        type: String,
-        enum: ['העברה בנקאית', 'אשראי', 'מזומן', 'צ\'ק', 'PayPal', 'bit', 'אחר']
-      },
-      transactionId: String,
-      invoiceId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Invoice'
-      },
-      notes: String,
-      reminderSent: { type: Boolean, default: false },
-      lastReminderDate: Date
-    }]
-  },
-
-  // הצעת מחיר ופרטי סגירה
-  proposal: {
-    initialPrice: Number, // סכום הצעת המחיר הראשונית
-    finalPrice: Number,   // הסכום שנסגר בפועל
-    currency: {
-      type: String,
-      default: 'ILS'
-    },
-    paymentTerms: String,   // תנאי תשלום
-    contractNotes: String,  // הערות על החוזה / תנאים נוספים
-    signedAt: Date          // תאריך חתימת ההסכם (אם יש)
-  },
-
-  // חוזה
-  contract: {
-    signed: { type: Boolean, default: false },
-    signedAt: Date,
-    fileUrl: String, // URL לקובץ החוזה
-    notes: String
-  },
-
-  // חשבוניות
-  invoices: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Invoice'
   }],
 
   // שיחות WhatsApp (אינטגרציה)
@@ -593,43 +365,8 @@ ClientSchema.methods.calculateLeadScore = function () {
   };
   score += sourceScores[this.leadSource] || 0;
 
-  // רמת תקציב
-  if (this.assessmentForm?.budgetAndTimeline?.budgetRange) {
-    const budgetScores = {
-      '60,000+': 25,
-      '40,000-60,000': 20,
-      '20,000-40,000': 15,
-      '10,000-20,000': 10,
-      'עד 10,000': 5,
-      'לא בטוח': 3
-    };
-    score += budgetScores[this.assessmentForm.budgetAndTimeline.budgetRange] || 0;
-  }
-
-  // דחיפות
-  const urgencyScores = {
-    'urgent': 20,
-    'high': 15,
-    'medium': 10,
-    'low': 5
-  };
-  score += urgencyScores[this.assessmentForm?.budgetAndTimeline?.urgencyLevel] || 0;
-
-  // מספר תהליכים לשיפור
-  if (this.assessmentForm?.processesToImprove) {
-    const processes = this.assessmentForm.processesToImprove;
-    const processCount = Object.values(processes)
-      .filter(p => typeof p === 'object' && p.needed === true).length;
-    score += Math.min(processCount * 4, 20);
-  }
-
-  // שאלון אפיון מולא
-  if (this.assessmentForm?.filledAt) {
-    score += 10;
-  }
-
   // רמת מעורבות (אינטראקציות)
-  const interactionScore = Math.min(this.interactions.length * 2, 15);
+  const interactionScore = Math.min(this.interactions.length * 2, 20);
   score += interactionScore;
 
   // יש אימייל
@@ -642,6 +379,17 @@ ClientSchema.methods.calculateLeadScore = function () {
     score += 3;
   }
 
+  // סטטוס מתקדם
+  const statusScores = {
+    'new_lead': 0,
+    'contacted': 10,
+    'engaged': 20,
+    'meeting_set': 30,
+    'proposal_sent': 40,
+    'won': 50
+  };
+  score += statusScores[this.status] || 0;
+
   this.leadScore = Math.min(score, 100);
   return this.leadScore;
 };
@@ -649,21 +397,6 @@ ClientSchema.methods.calculateLeadScore = function () {
 // עדכון סטטיסטיקות
 ClientSchema.methods.updateStats = function () {
   this.metadata.stats.totalInteractions = this.interactions.length;
-  this.metadata.stats.totalOrders = this.orders.length;
-
-  // חישוב הכנסות
-  const totalRevenue = this.orders
-    .filter(o => o.status !== 'cancelled')
-    .reduce((sum, order) => sum + (order.totalAmount || 0), 0);
-  this.metadata.stats.totalRevenue = totalRevenue;
-
-  // חישוב תשלומים
-  const totalPaid = this.paymentPlan?.installments
-    ?.filter(i => i.status === 'paid')
-    .reduce((sum, inst) => sum + (inst.paidAmount || inst.amount || 0), 0) || 0;
-  this.metadata.stats.totalPaid = totalPaid;
-
-  this.metadata.stats.outstandingBalance = totalRevenue - totalPaid;
 };
 
 // פונקציה לקבלת הפעולה הבאה המומלצת

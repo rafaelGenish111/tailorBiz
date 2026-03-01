@@ -27,12 +27,10 @@ import { toast } from 'react-toastify';
 
 const STAGE_LABELS = {
   lead: 'ליד',
-  assessment: 'אפיון',
-  proposal: 'הצעה',
-  contract: 'חוזה',
+  won: 'נסגר',
+  lost: 'הפסד',
   active: 'פעיל',
   completed: 'הושלם',
-  maintenance: 'תחזוקה',
   archived: 'בארכיון',
 };
 
@@ -87,8 +85,7 @@ const ProjectsTab = ({ clientId }) => {
       clientId,
       name: createForm.name.trim() || `פרויקט חדש ${new Date().toLocaleDateString('he-IL')}`,
       description: createForm.description.trim() || undefined,
-      stage: 'assessment',
-      status: 'assessment',
+      stage: 'lead',
       startDate: createForm.startDate || undefined,
       financials: budgetNum > 0 ? { totalValue: budgetNum, paidAmount: 0, balance: budgetNum } : undefined,
     };

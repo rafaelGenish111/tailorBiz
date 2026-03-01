@@ -386,15 +386,14 @@ exports.getPipelineStats = async (req, res) => {
 
       stage.count = await Client.countDocuments(statusFilter);
 
-      const clients = await Client.find(statusFilter)
-        .select('paymentPlan.totalAmount orders.totalAmount');
-
-      stage.value = clients.reduce((sum, client) => {
-        const orderValue = client.orders.reduce((orderSum, order) =>
-          orderSum + (order.totalAmount || 0), 0);
-        const planValue = client.paymentPlan?.totalAmount || 0;
-        return sum + Math.max(orderValue, planValue);
-      }, 0);
+      // Aggregate value from linked Projects
+      const clientIds = await Client.find(statusFilter).distinct('_id');
+      const Project = require('../models/Project');
+      const projectValues = await Project.aggregate([
+        { $match: { clientId: { $in: clientIds } } },
+        { $group: { _id: null, total: { $sum: '$financials.totalValue' } } }
+      ]);
+      stage.value = projectValues[0]?.total || 0;
     }
 
     // חישוב conversion rates

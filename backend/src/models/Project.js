@@ -178,18 +178,10 @@ const projectSchema = new mongoose.Schema(
       default: null
     },
 
-    // Pipeline stage (replaces old status for deal-based tracking)
+    // Pipeline stage
     stage: {
       type: String,
-      enum: ['lead', 'assessment', 'proposal', 'contract', 'active', 'completed', 'maintenance', 'archived'],
-      default: 'lead',
-      index: true
-    },
-
-    // Legacy status kept for backward compatibility (maps to stage)
-    status: {
-      type: String,
-      enum: ['lead', 'assessment', 'proposal', 'contract', 'active', 'completed', 'maintenance', 'archived'],
+      enum: ['lead', 'won', 'lost', 'active', 'completed', 'archived'],
       default: 'lead',
       index: true
     },
@@ -223,6 +215,60 @@ const projectSchema = new mongoose.Schema(
       currency: { type: String, default: 'ILS' }
     },
 
+    // Contract
+    contract: {
+      signed: { type: Boolean, default: false },
+      signedAt: Date,
+      fileUrl: String,
+      notes: String
+    },
+
+    // Project-level interactions
+    interactions: [{
+      type: {
+        type: String,
+        enum: ['call', 'email', 'meeting', 'whatsapp', 'other'],
+        default: 'other'
+      },
+      direction: { type: String, enum: ['inbound', 'outbound'], default: 'outbound' },
+      subject: String,
+      notes: String,
+      date: { type: Date, default: Date.now },
+      createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      followUpDate: Date,
+      followUpDone: { type: Boolean, default: false }
+    }],
+
+    // Project documents
+    documents: [{
+      filename: String,
+      originalName: String,
+      url: String,
+      fileType: String,
+      uploadedAt: { type: Date, default: Date.now },
+      uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      description: String,
+      category: {
+        type: String,
+        enum: ['contract', 'proposal', 'invoice', 'design', 'spec', 'other'],
+        default: 'other'
+      }
+    }],
+
+    // Progress tracking
+    progress: {
+      percentComplete: { type: Number, min: 0, max: 100, default: 0 },
+      currentPhase: String,
+      notes: String,
+      milestones: [{
+        title: String,
+        description: String,
+        dueDate: Date,
+        completed: { type: Boolean, default: false },
+        completedDate: Date
+      }]
+    },
+
     // Notion sync tracking
     notionPageId: {
       type: String,
@@ -233,7 +279,7 @@ const projectSchema = new mongoose.Schema(
     // Product type for Notion reporting
     productType: {
       type: String,
-      enum: ['מוצר מדף SaaS', 'הטמעת AI', null],
+      enum: ['מערכת SaaS', 'מערכות AI', 'הטמעת בינה מלאכותית בארגון', 'קורסים', 'אפליקציה בהתאמה אישית', null],
       default: null
     },
 
@@ -253,20 +299,12 @@ const projectSchema = new mongoose.Schema(
   }
 );
 
-projectSchema.index({ ownerId: 1, status: 1 });
 projectSchema.index({ ownerId: 1, stage: 1 });
-projectSchema.index({ clientId: 1, status: 1 });
 projectSchema.index({ clientId: 1, stage: 1 });
 projectSchema.index({ createdAt: -1 });
 
 projectSchema.pre('save', function (next) {
   this.metadata.updatedAt = new Date();
-  if (!this.stage && this.status) {
-    this.stage = this.status;
-  }
-  if (!this.status && this.stage) {
-    this.status = this.stage;
-  }
   next();
 });
 

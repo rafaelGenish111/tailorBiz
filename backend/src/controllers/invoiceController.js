@@ -1,5 +1,6 @@
 const Invoice = require('../models/Invoice');
 const Client = require('../models/Client');
+const Project = require('../models/Project');
 const emailService = require('../services/emailService');
 const mongoose = require('mongoose');
 
@@ -121,13 +122,6 @@ exports.createInvoice = async (req, res) => {
     const invoice = new Invoice(invoiceData);
     await invoice.save();
 
-    // עדכון הלקוח - הוספת החשבונית לרשימת החשבוניות
-    if (invoice.clientId) {
-      await Client.findByIdAndUpdate(invoice.clientId, {
-        $push: { invoices: invoice._id }
-      });
-    }
-
     res.status(201).json({
       success: true,
       message: 'חשבונית נוצרה בהצלחה',
@@ -197,13 +191,6 @@ exports.deleteInvoice = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'חשבונית לא נמצאה'
-      });
-    }
-
-    // הסרת החשבונית מהלקוח
-    if (invoice.clientId) {
-      await Client.findByIdAndUpdate(invoice.clientId, {
-        $pull: { invoices: invoice._id }
       });
     }
 
@@ -475,17 +462,23 @@ exports.markAsPaid = async (req, res) => {
 
     await invoice.save();
 
-    // עדכון בלקוח
-    const client = await Client.findById(invoice.clientId);
-    if (client && client.paymentPlan) {
-      const installment = client.paymentPlan.installments.find(
-        inst => inst.invoiceId && inst.invoiceId.toString() === invoice._id.toString()
-      );
-      if (installment) {
-        installment.status = 'paid';
-        installment.paidDate = new Date();
-        installment.paidAmount = paidAmount || invoice.totalAmount;
-        await client.save();
+    // עדכון בפרויקט
+    if (invoice.projectId) {
+      const project = await Project.findById(invoice.projectId);
+      if (project && project.paymentPlan) {
+        const installment = project.paymentPlan.installments.find(
+          inst => inst.invoiceId && inst.invoiceId.toString() === invoice._id.toString()
+        );
+        if (installment) {
+          installment.status = 'paid';
+          installment.paidDate = new Date();
+          installment.paidAmount = paidAmount || invoice.totalAmount;
+          // Update financials
+          const paid = project.paymentPlan.installments.reduce((sum, i) => sum + (i.paidAmount || 0), 0);
+          project.financials.paidAmount = paid;
+          project.financials.balance = (project.financials.totalValue || 0) - paid;
+          await project.save();
+        }
       }
     }
 

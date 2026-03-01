@@ -37,24 +37,12 @@ import PersonalInfoTab from './tabs/PersonalInfoTab';
 import BusinessInfoTab from './tabs/BusinessInfoTab';
 import InteractionsTab from './tabs/InteractionsTab';
 import ProjectsTab from './tabs/ProjectsTab';
-import PaymentsTab from './tabs/PaymentsTab';
-import InvoicesTab from './tabs/InvoicesTab';
-import ClientTimer from '../../timer/ClientTimer';
-import TimeEntriesTab from '../../timer/TimeEntriesTab';
-import DocumentsTab from '../../documents/DocumentsTab';
-import QuotesTab from '../../quotes/QuotesTab';
-import SignableDocumentsTab from '../../signable-documents/SignableDocumentsTab';
-import TimerIcon from '@mui/icons-material/Timer';
-import FolderIcon from '@mui/icons-material/Folder';
-import ReceiptIcon from '@mui/icons-material/Receipt';
-import DrawIcon from '@mui/icons-material/Draw';
 
 // תוכן ראשי - מופרד כדי לשמור על Rules of Hooks (אין early returns לפני hooks)
 function ClientCardContent({ client, id }) {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab');
-  const editQuoteId = searchParams.get('editQuote');
   const [activeTab, setActiveTab] = useState(tabFromUrl || 'personal');
   const { data: meData } = useCurrentUserQuery();
   const me = getCurrentUserFromQueryData(meData);
@@ -371,14 +359,6 @@ function ClientCardContent({ client, id }) {
         </Grid>
       </Card>
 
-      {/* Timer */}
-      <Box sx={{ mb: 3 }}>
-        <ClientTimer
-          clientId={client._id}
-          clientName={client.personalInfo?.fullName || client.businessInfo?.businessName}
-        />
-      </Box>
-
       {/* Tabs */}
       <Card>
         <Tabs
@@ -389,14 +369,8 @@ function ClientCardContent({ client, id }) {
         >
           <Tab label="פרטים אישיים" value="personal" />
           <Tab label="פרטי העסק" value="business" />
-          <Tab label="פרויקטים" value="projects" />
           <Tab label="אינטראקציות" value="interactions" />
-          <Tab label="תשלומים" value="payments" />
-          <Tab label="חשבוניות" value="invoices" />
-          <Tab label="זמנים" value="time" icon={<TimerIcon />} iconPosition="start" />
-          <Tab label="מסמכים" value="documents" icon={<FolderIcon />} iconPosition="start" />
-          <Tab label="הצעות מחיר" value="quotes" icon={<ReceiptIcon />} iconPosition="start" />
-          <Tab label="חתימה דיגיטלית" value="sign-docs" icon={<DrawIcon />} iconPosition="start" />
+          <Tab label="פרויקטים" value="projects" />
         </Tabs>
 
         <Divider />
@@ -404,27 +378,8 @@ function ClientCardContent({ client, id }) {
         <Box sx={{ p: 3 }}>
           {activeTab === 'personal' && <PersonalInfoTab client={client} />}
           {activeTab === 'business' && <BusinessInfoTab client={client} />}
-          {activeTab === 'projects' && <ProjectsTab clientId={id} />}
           {activeTab === 'interactions' && <InteractionsTab clientId={id} />}
-          {activeTab === 'payments' && <PaymentsTab client={client} />}
-          {activeTab === 'invoices' && <InvoicesTab clientId={id} />}
-          {activeTab === 'time' && <TimeEntriesTab clientId={id} />}
-          {activeTab === 'documents' && <DocumentsTab clientId={id} />}
-          {activeTab === 'quotes' && (
-            <QuotesTab
-              clientId={id}
-              clientName={client.personalInfo?.fullName}
-              initialEditQuoteId={editQuoteId}
-              onClearEditQuote={() => {
-                const next = new URLSearchParams(searchParams);
-                next.delete('editQuote');
-                setSearchParams(next, { replace: true });
-              }}
-            />
-          )}
-          {activeTab === 'sign-docs' && (
-            <SignableDocumentsTab clientId={id} client={client} />
-          )}
+          {activeTab === 'projects' && <ProjectsTab clientId={id} />}
         </Box>
       </Card>
     </Box>

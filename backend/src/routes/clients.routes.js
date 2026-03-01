@@ -58,7 +58,7 @@ router.route('/:id/assessment')
   .post(clientAssessment.fillAssessmentForm);
 
 // ============================================================================
-// Interactions, Orders & Tasks Routes - client-interactions.js
+// Interactions & Tasks Routes - client-interactions.js
 // ============================================================================
 router.route('/:id/interactions')
   .get(clientInteractions.getInteractions)
@@ -68,13 +68,6 @@ router.route('/:id/interactions/:interactionId')
   .put(clientInteractions.updateInteraction)
   .delete(clientInteractions.deleteInteraction);
 
-router.route('/:id/orders')
-  .get(clientInteractions.getOrders)
-  .post(clientInteractions.createOrder);
-
-router.route('/:id/orders/:orderId')
-  .put(clientInteractions.updateOrder);
-
 router.route('/:id/tasks')
   .get(clientInteractions.getTasks)
   .post(clientInteractions.createTask);
@@ -82,18 +75,4 @@ router.route('/:id/tasks')
 router.route('/:id/tasks/:taskId')
   .put(clientInteractions.updateTask);
 
-// ============================================================================
-// Payment Plans & Invoices Routes - client-payments.js
-// ============================================================================
-router.route('/:id/payment-plan')
-  .post(clientPayments.createPaymentPlan);
-
-router.route('/:id/payment-plan/installments/:installmentId')
-  .put(clientPayments.updateInstallment);
-
-router.route('/:id/invoices')
-  .get(clientPayments.getInvoices)
-  .post(clientPayments.createInvoice);
-
 module.exports = router;
-

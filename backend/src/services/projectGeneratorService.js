@@ -37,7 +37,7 @@ exports.generateNewClientProject = async (client, userId) => {
             description: `פרויקט שנוצר אוטומטית בעקבות סגירת עסקה.`,
             clientId: client._id,
             ownerId: validUserId,
-            status: 'active',
+            stage: 'won',
             color: '#00bcd4',
             startDate: new Date()
         });

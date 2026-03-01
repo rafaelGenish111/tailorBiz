@@ -1,40 +1,19 @@
 import React, { useState } from 'react';
 import {
-  Box,
-  Typography,
-  Paper,
-  Button,
-  Grid,
-  Chip,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  Box, Typography, Paper, Button, Grid, Chip, IconButton,
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, FormControl, InputLabel, Select, MenuItem,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
 } from '@mui/material';
 import { Add as AddIcon, CheckCircle as CheckCircleIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { he } from 'date-fns/locale';
+import { projectsAPI } from '../../../utils/api';
 import { toast } from 'react-toastify';
-import { clientAPI } from '../../../../admin/utils/api';
 
 const PAYMENT_METHODS = ['העברה בנקאית', 'אשראי', 'מזומן', 'צ\'ק', 'PayPal', 'bit', 'אחר'];
 const STATUS_LABELS = { pending: 'ממתין', paid: 'שולם', overdue: 'באיחור', partial: 'חלקי', cancelled: 'בוטל' };
 
-const PaymentsTab = ({ client }) => {
+const ProjectPaymentsTab = ({ project, projectId }) => {
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [markPaidOpen, setMarkPaidOpen] = useState(false);
@@ -49,20 +28,20 @@ const PaymentsTab = ({ client }) => {
   const [paidForm, setPaidForm] = useState({ paymentMethod: 'העברה בנקאית' });
 
   const createPlanMutation = useMutation({
-    mutationFn: (data) => clientAPI.createPaymentPlan(client._id, data),
+    mutationFn: (data) => projectsAPI.updatePaymentPlan(projectId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['client', client._id]);
-      toast.success('תוכנית תשלומים נוצרה בהצלחה');
+      queryClient.invalidateQueries(['project', projectId]);
+      toast.success('תוכנית תשלומים נוצרה');
       setCreateOpen(false);
-      setPlanForm({ totalAmount: '', currency: 'ILS', paymentStructure: 'installments', numInstallments: 2, firstAmount: '' });
     },
     onError: (e) => toast.error(e.response?.data?.message || 'שגיאה'),
   });
 
   const updateInstallmentMutation = useMutation({
-    mutationFn: ({ installmentId, data }) => clientAPI.updateInstallment(client._id, installmentId, data),
+    mutationFn: ({ installmentId, data }) =>
+      projectsAPI.updateInstallment(projectId, installmentId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['client', client._id]);
+      queryClient.invalidateQueries(['project', projectId]);
       toast.success('התשלום עודכן');
       setMarkPaidOpen(false);
       setSelectedInstallment(null);
@@ -70,10 +49,13 @@ const PaymentsTab = ({ client }) => {
     onError: (e) => toast.error(e.response?.data?.message || 'שגיאה'),
   });
 
-  const plan = client?.paymentPlan;
+  const plan = project?.paymentPlan;
   const installments = plan?.installments || [];
   const totalAmount = plan?.totalAmount || 0;
-  const totalPaid = installments.reduce((sum, i) => sum + (i.paidAmount || (i.status === 'paid' ? i.amount : 0)), 0);
+  const totalPaid = installments.reduce(
+    (sum, i) => sum + (i.paidAmount || (i.status === 'paid' ? i.amount : 0)),
+    0
+  );
   const balance = totalAmount - totalPaid;
 
   const handleCreatePlan = () => {
@@ -82,7 +64,9 @@ const PaymentsTab = ({ client }) => {
       toast.error('נא להזין סכום כולל');
       return;
     }
-    const count = planForm.paymentStructure === 'one_time' ? 1 : Math.max(1, Math.min(24, Number(planForm.numInstallments) || 2));
+    const count = planForm.paymentStructure === 'one_time'
+      ? 1
+      : Math.max(1, Math.min(24, Number(planForm.numInstallments) || 2));
     const first = planForm.firstAmount ? Number(planForm.firstAmount) : null;
     const rest = count > 1 ? (total - (first || 0)) / (count - 1) : total;
 
@@ -121,7 +105,12 @@ const PaymentsTab = ({ client }) => {
     if (!selectedInstallment) return;
     updateInstallmentMutation.mutate({
       installmentId: selectedInstallment._id,
-      data: { status: 'paid', paidAmount: selectedInstallment.amount, paidDate: new Date(), paymentMethod: paidForm.paymentMethod },
+      data: {
+        status: 'paid',
+        paidAmount: selectedInstallment.amount,
+        paidDate: new Date(),
+        paymentMethod: paidForm.paymentMethod,
+      },
     });
   };
 
@@ -147,7 +136,9 @@ const PaymentsTab = ({ client }) => {
               <Grid item xs={12} sm={4}>
                 <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
                   <Typography variant="caption" color="text.secondary">יתרה</Typography>
-                  <Typography variant="h6" color={balance > 0 ? 'warning.main' : 'success.main'}>₪{balance.toLocaleString()}</Typography>
+                  <Typography variant="h6" color={balance > 0 ? 'warning.main' : 'success.main'}>
+                    ₪{balance.toLocaleString()}
+                  </Typography>
                 </Paper>
               </Grid>
             </Grid>
@@ -169,9 +160,16 @@ const PaymentsTab = ({ client }) => {
                       <TableCell>{inst.installmentNumber}</TableCell>
                       <TableCell>{inst.description || '-'}</TableCell>
                       <TableCell>₪{(inst.amount || 0).toLocaleString()}</TableCell>
-                      <TableCell>{inst.dueDate ? new Date(inst.dueDate).toLocaleDateString('he-IL') : '-'}</TableCell>
                       <TableCell>
-                        <Chip label={STATUS_LABELS[inst.status] || inst.status} size="small" color={inst.status === 'paid' ? 'success' : inst.status === 'overdue' ? 'error' : 'default'} variant="outlined" />
+                        {inst.dueDate ? new Date(inst.dueDate).toLocaleDateString('he-IL') : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={STATUS_LABELS[inst.status] || inst.status}
+                          size="small"
+                          color={inst.status === 'paid' ? 'success' : inst.status === 'overdue' ? 'error' : 'default'}
+                          variant="outlined"
+                        />
                       </TableCell>
                       <TableCell>
                         {inst.status !== 'paid' && (
@@ -185,11 +183,6 @@ const PaymentsTab = ({ client }) => {
                 </TableBody>
               </Table>
             </TableContainer>
-            {installments.length === 0 && (
-              <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
-                אין תשלומים בתוכנית. ניתן לעדכן את הלקוח עם תוכנית תשלומים מלאה.
-              </Typography>
-            )}
           </>
         ) : (
           <Box sx={{ py: 3 }}>
@@ -203,32 +196,50 @@ const PaymentsTab = ({ client }) => {
         )}
       </Paper>
 
+      {/* Create Dialog */}
       <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>תוכנית תשלומים חדשה</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField label="סכום כולל (₪)" type="number" fullWidth value={planForm.totalAmount} onChange={(e) => setPlanForm({ ...planForm, totalAmount: e.target.value })} inputProps={{ min: 1 }} />
+            <TextField
+              label="סכום כולל (₪)" type="number" fullWidth
+              value={planForm.totalAmount}
+              onChange={(e) => setPlanForm({ ...planForm, totalAmount: e.target.value })}
+              inputProps={{ min: 1 }}
+            />
             <FormControl fullWidth>
               <InputLabel>מבנה</InputLabel>
-              <Select value={planForm.paymentStructure} label="מבנה" onChange={(e) => setPlanForm({ ...planForm, paymentStructure: e.target.value })}>
+              <Select value={planForm.paymentStructure} label="מבנה"
+                onChange={(e) => setPlanForm({ ...planForm, paymentStructure: e.target.value })}>
                 <MenuItem value="one_time">תשלום אחד</MenuItem>
                 <MenuItem value="installments">תשלומים</MenuItem>
               </Select>
             </FormControl>
             {planForm.paymentStructure === 'installments' && (
               <>
-                <TextField label="מספר תשלומים" type="number" fullWidth value={planForm.numInstallments} onChange={(e) => setPlanForm({ ...planForm, numInstallments: e.target.value })} inputProps={{ min: 1, max: 24 }} />
-                <TextField label="מקדמה (תשלום ראשון, אופציונלי)" type="number" fullWidth value={planForm.firstAmount} onChange={(e) => setPlanForm({ ...planForm, firstAmount: e.target.value })} inputProps={{ min: 0 }} />
+                <TextField
+                  label="מספר תשלומים" type="number" fullWidth
+                  value={planForm.numInstallments}
+                  onChange={(e) => setPlanForm({ ...planForm, numInstallments: e.target.value })}
+                  inputProps={{ min: 1, max: 24 }}
+                />
+                <TextField
+                  label="מקדמה (תשלום ראשון, אופציונלי)" type="number" fullWidth
+                  value={planForm.firstAmount}
+                  onChange={(e) => setPlanForm({ ...planForm, firstAmount: e.target.value })}
+                  inputProps={{ min: 0 }}
+                />
               </>
             )}
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setCreateOpen(false)}>ביטול</Button>
-          <Button variant="contained" onClick={handleCreatePlan} disabled={createPlanMutation.isLoading}>צור</Button>
+          <Button variant="contained" onClick={handleCreatePlan} disabled={createPlanMutation.isPending}>צור</Button>
         </DialogActions>
       </Dialog>
 
+      {/* Mark Paid Dialog */}
       <Dialog open={markPaidOpen} onClose={() => setMarkPaidOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle>סמן תשלום כ־שולם</DialogTitle>
         <DialogContent>
@@ -237,7 +248,8 @@ const PaymentsTab = ({ client }) => {
               <Typography variant="body2">סכום: ₪{(selectedInstallment.amount || 0).toLocaleString()}</Typography>
               <FormControl fullWidth size="small">
                 <InputLabel>אמצעי תשלום</InputLabel>
-                <Select value={paidForm.paymentMethod} label="אמצעי תשלום" onChange={(e) => setPaidForm({ ...paidForm, paymentMethod: e.target.value })}>
+                <Select value={paidForm.paymentMethod} label="אמצעי תשלום"
+                  onChange={(e) => setPaidForm({ ...paidForm, paymentMethod: e.target.value })}>
                   {PAYMENT_METHODS.map((m) => (
                     <MenuItem key={m} value={m}>{m}</MenuItem>
                   ))}
@@ -248,17 +260,11 @@ const PaymentsTab = ({ client }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setMarkPaidOpen(false)}>ביטול</Button>
-          <Button variant="contained" onClick={confirmMarkPaid} disabled={updateInstallmentMutation.isLoading}>אישור</Button>
+          <Button variant="contained" onClick={confirmMarkPaid} disabled={updateInstallmentMutation.isPending}>אישור</Button>
         </DialogActions>
       </Dialog>
     </Box>
   );
 };
 
-const PaymentsTabWithProvider = (props) => (
-  <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={he}>
-    <PaymentsTab {...props} />
-  </LocalizationProvider>
-);
-
-export default PaymentsTabWithProvider;
+export default ProjectPaymentsTab;

@@ -77,67 +77,31 @@ export const testimonialsAPI = {
 
 // ========== Client API ==========
 export const clientAPI = {
-  // קבלת כל הלקוחות
   getAll: (params) => api.get('/clients', { params }),
-
-  // קבלת לקוח בודד
   getById: (id) => api.get(`/clients/${id}`),
-
-  // יצירת לקוח חדש
   create: (data) => api.post('/clients', data),
-
-  // עדכון לקוח
   update: (id, data) => api.put(`/clients/${id}`, data),
-
-  // מחיקת לקוח
   delete: (id) => api.delete(`/clients/${id}`),
-
-  // המרת ליד ללקוח
   convertLeadToClient: (id, data) => api.post(`/clients/${id}/convert`, data, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
-
-  // שאלון אפיון
   fillAssessment: (id, data) => api.post(`/clients/${id}/assessment`, data),
   getAssessment: (id) => api.get(`/clients/${id}/assessment`),
-
-  // אינטראקציות
   addInteraction: (id, data) => api.post(`/clients/${id}/interactions`, data),
   getInteractions: (id) => api.get(`/clients/${id}/interactions`),
   updateInteraction: (id, interactionId, data) =>
     api.put(`/clients/${id}/interactions/${interactionId}`, data),
   deleteInteraction: (id, interactionId) =>
     api.delete(`/clients/${id}/interactions/${interactionId}`),
-
-  // הזמנות
-  createOrder: (id, data) => api.post(`/clients/${id}/orders`, data),
-  getOrders: (id) => api.get(`/clients/${id}/orders`),
-  updateOrder: (id, orderId, data) =>
-    api.put(`/clients/${id}/orders/${orderId}`, data),
-
-  // תשלומים
-  createPaymentPlan: (id, data) => api.post(`/clients/${id}/payment-plan`, data),
-  updateInstallment: (id, installmentId, data) =>
-    api.put(`/clients/${id}/payment-plan/installments/${installmentId}`, data),
-
-  // חשבוניות
-  createInvoice: (id, data) => api.post(`/clients/${id}/invoices`, data),
-  getInvoices: (id) => api.get(`/clients/${id}/invoices`),
-
-  // משימות
   createTask: (id, data) => api.post(`/clients/${id}/tasks`, data),
   getTasks: (id, params) => api.get(`/clients/${id}/tasks`, { params }),
   updateTask: (id, taskId, data) =>
     api.put(`/clients/${id}/tasks/${taskId}`, data),
-
-  // חוזה
   uploadContract: (id, data) =>
     api.post(`/clients/${id}/contract`, data, {
       headers: { 'Content-Type': 'multipart/form-data' }
     }),
   getContract: (id) => api.get(`/clients/${id}/contract`),
-
-  // סטטיסטיקות
   getOverviewStats: () => api.get('/clients/stats/overview'),
   getPipelineStats: () => api.get('/clients/stats/pipeline')
 };
@@ -192,12 +156,36 @@ export const projectsAPI = {
   create: (data) => api.post('/projects', data),
   update: (id, data) => api.put(`/projects/${id}`, data),
   delete: (id) => api.delete(`/projects/${id}`),
+  // Requirements
   addRequirement: (projectId, data) =>
     api.post(`/projects/${projectId}/requirements`, data),
   updateRequirement: (projectId, requirementId, data) =>
     api.put(`/projects/${projectId}/requirements/${requirementId}`, data),
   deleteRequirement: (projectId, requirementId) =>
-    api.delete(`/projects/${projectId}/requirements/${requirementId}`)
+    api.delete(`/projects/${projectId}/requirements/${requirementId}`),
+  // Contract
+  getContract: (id) => api.get(`/projects/${id}/contract`),
+  updateContract: (id, data) => api.put(`/projects/${id}/contract`, data),
+  // Payment Plan
+  updatePaymentPlan: (id, data) => api.put(`/projects/${id}/payment-plan`, data),
+  updateInstallment: (id, installmentId, data) =>
+    api.put(`/projects/${id}/payment-plan/installments/${installmentId}`, data),
+  // Interactions
+  getInteractions: (id) => api.get(`/projects/${id}/interactions`),
+  addInteraction: (id, data) => api.post(`/projects/${id}/interactions`, data),
+  updateInteraction: (id, interactionId, data) =>
+    api.put(`/projects/${id}/interactions/${interactionId}`, data),
+  deleteInteraction: (id, interactionId) =>
+    api.delete(`/projects/${id}/interactions/${interactionId}`),
+  // Documents
+  getDocuments: (id) => api.get(`/projects/${id}/documents`),
+  addDocument: (id, data) => api.post(`/projects/${id}/documents`, data),
+  deleteDocument: (id, documentId) =>
+    api.delete(`/projects/${id}/documents/${documentId}`),
+  // Progress
+  updateProgress: (id, data) => api.put(`/projects/${id}/progress`, data),
+  // Invoices
+  getInvoices: (id) => api.get(`/projects/${id}/invoices`)
 };
 
 // ========== Quotes API ==========

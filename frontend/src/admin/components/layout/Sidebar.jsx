@@ -17,6 +17,7 @@ import {
   ExpandLess,
   ExpandMore,
   Circle as CircleIcon,
+  FolderSpecial as ProjectsIcon,
 } from '@mui/icons-material';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
@@ -32,6 +33,7 @@ const menuItems = [
   { divider: true, label: 'לידים ולקוחות' },
   { text: 'לידים', icon: <ClientsIcon />, path: '/admin/leads', requiredModule: 'leads' },
   { text: 'לקוחות', icon: <ClientsIcon />, path: '/admin/customers', requiredModule: 'clients' },
+  { text: 'פרויקטים', icon: <ProjectsIcon />, path: '/admin/projects', anyOfModules: ['clients', 'invoices_docs'] },
 
   { divider: true, label: 'התקנות' },
   { text: 'התקנת WhatsApp', icon: <WhatsAppIcon />, path: '/admin/whatsapp-setup', anyOfModules: ['leads', 'clients', 'settings'] },
