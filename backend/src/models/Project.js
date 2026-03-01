@@ -223,6 +223,26 @@ const projectSchema = new mongoose.Schema(
       currency: { type: String, default: 'ILS' }
     },
 
+    // Notion sync tracking
+    notionPageId: {
+      type: String,
+      default: null,
+      index: { sparse: true }
+    },
+
+    // Product type for Notion reporting
+    productType: {
+      type: String,
+      enum: ['מוצר מדף SaaS', 'הטמעת AI', null],
+      default: null
+    },
+
+    // Expected monthly recurring revenue
+    expectedMrr: {
+      type: Number,
+      default: 0
+    },
+
     metadata: {
       createdAt: { type: Date, default: Date.now },
       updatedAt: { type: Date, default: Date.now }

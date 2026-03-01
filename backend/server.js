@@ -19,6 +19,7 @@ if (!IS_VERCEL) {
   const automationOrchestrator = require('./src/services/automationOrchestrator');
   const triggerHandler = require('./src/services/triggerHandler');
   const AIBotConfig = require('./src/models/AIBotConfig');
+  const notionSyncService = require('./src/services/notionSyncService');
 
   connectDB().then(async () => {
     const app = await createApp();
@@ -46,6 +47,11 @@ if (!IS_VERCEL) {
           .catch(err => {
             console.error('❌ AI Bot system initialization failed:', err.message);
           });
+      }
+
+      // אתחול Notion Sync
+      if (process.env.ENABLE_NOTION_SYNC === 'true') {
+        notionSyncService.initialize();
       }
 
       // אתחול WhatsApp Service

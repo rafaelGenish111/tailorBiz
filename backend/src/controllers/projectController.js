@@ -1,5 +1,6 @@
 const Project = require('../models/Project');
 const mongoose = require('mongoose');
+const notionSyncService = require('../services/notionSyncService');
 
 const isValidObjectId = (id) => {
   if (!id) return false;
@@ -53,6 +54,7 @@ exports.createProject = async (req, res) => {
   try {
     const data = req.body;
     const project = await Project.create(data);
+    notionSyncService.syncProject(project._id.toString());
     return res.status(201).json({ success: true, data: project });
   } catch (error) {
     console.error('createProject error:', error);
@@ -75,6 +77,7 @@ exports.updateProject = async (req, res) => {
     if (!project) {
       return res.status(404).json({ success: false, message: 'פרויקט לא נמצא' });
     }
+    notionSyncService.syncProject(id);
     return res.json({ success: true, data: project });
   } catch (error) {
     console.error('updateProject error:', error);
