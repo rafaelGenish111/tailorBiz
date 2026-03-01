@@ -39,10 +39,32 @@ router.post('/sync/:projectId', async (req, res) => {
     return res.status(503).json({ success: false, message: 'Notion sync is disabled' });
   }
   try {
-    await notionSyncService._doSync(req.params.projectId);
+    await notionSyncService._pushToNotion(req.params.projectId);
     return res.json({ success: true });
   } catch (err) {
     console.error(`[NotionRoute] sync/${req.params.projectId} error:`, err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /api/admin/notion/sync-errors
+router.get('/sync-errors', (req, res) => {
+  res.json({
+    success: true,
+    data: notionSyncService.syncStats
+  });
+});
+
+// POST /api/admin/notion/pull - Force pull from Notion
+router.post('/pull', async (req, res) => {
+  if (!notionSyncService.enabled) {
+    return res.status(503).json({ success: false, message: 'Notion sync is disabled' });
+  }
+  try {
+    const result = await notionSyncService.forcePull();
+    return res.json({ success: true, data: result });
+  } catch (err) {
+    console.error('[NotionRoute] pull error:', err);
     return res.status(500).json({ success: false, message: err.message });
   }
 });

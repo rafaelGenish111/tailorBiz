@@ -22,23 +22,23 @@ import {
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
   Phone as PhoneIcon,
-  Email as EmailIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
-import { useClients, useDeleteClient } from '../../../hooks/useClients';
+import { useClients, useDeleteClient, useUpdateClient, useConvertLead } from '../../../hooks/useClients';
 import ConfirmDialog from '../../common/ConfirmDialog';
+import ConvertLeadDialog from '../../common/ConvertLeadDialog';
 import ClientForm from './ClientForm';
-import { getCurrentUserFromQueryData, useCurrentUserQuery } from '../../../hooks/useCurrentUser';
 
 const STATUS_LABELS = {
-  new_lead: { label: 'ליד חדש', color: 'info' },
-  contacted: { label: 'יצרנו קשר', color: 'primary' },
-  engaged: { label: 'מעורבות', color: 'warning' },
-  meeting_set: { label: 'פגישה נקבעה', color: 'warning' },
-  proposal_sent: { label: 'הצעה נשלחה', color: 'secondary' },
-  won: { label: 'נסגר', color: 'success' },
-  lost: { label: 'הפסדנו', color: 'error' },
+  new_lead: { label: 'ליד חדש', bg: '#1976d2', text: '#fff' },
+  contacted: { label: 'יצרנו קשר', bg: '#7b1fa2', text: '#fff' },
+  engaged: { label: 'מעורבות', bg: '#e65100', text: '#fff' },
+  meeting_set: { label: 'פגישה נקבעה', bg: '#f57c00', text: '#fff' },
+  proposal_sent: { label: 'הצעה נשלחה', bg: '#512da8', text: '#fff' },
+  won: { label: 'נסגר', bg: '#2e7d32', text: '#fff' },
+  completed: { label: 'הסתיים', bg: '#455a64', text: '#fff' },
+  lost: { label: 'הפסדנו', bg: '#c62828', text: '#fff' },
 };
 
 const LEAD_SOURCE_LABELS = {
@@ -54,15 +54,12 @@ const LEAD_SOURCE_LABELS = {
 };
 
 const LEAD_STATUSES = ['new_lead', 'contacted', 'engaged', 'meeting_set', 'proposal_sent', 'lost'];
-const CLIENT_STATUSES = ['won'];
+const CLIENT_STATUSES = ['won', 'completed'];
 
 function ClientsList({ viewMode }) {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { data: meData } = useCurrentUserQuery();
-  const me = getCurrentUserFromQueryData(meData);
-  const canSeeOwner = (me?.role === 'super_admin' || me?.role === 'admin') && viewMode === 'leads';
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
@@ -71,6 +68,8 @@ function ClientsList({ viewMode }) {
   const [selectedClient, setSelectedClient] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clientToDelete, setClientToDelete] = useState(null);
+  const [convertDialogOpen, setConvertDialogOpen] = useState(false);
+  const [clientToConvert, setClientToConvert] = useState(null);
 
   const effectiveStatusFilter = statusFilter || (viewMode === 'leads' ? LEAD_STATUSES.join(',') : viewMode === 'clients' ? CLIENT_STATUSES.join(',') : '');
 
@@ -84,6 +83,8 @@ function ClientsList({ viewMode }) {
 
   // Mutations
   const deleteMutation = useDeleteClient();
+  const updateClientMutation = useUpdateClient();
+  const convertLeadMutation = useConvertLead();
 
   // Handlers
   const handleAdd = () => {
@@ -116,6 +117,28 @@ function ClientsList({ viewMode }) {
     setClientToDelete(null);
   };
 
+  const handleStatusChange = (client, newStatus) => {
+    if (newStatus === 'won') {
+      setClientToConvert(client);
+      setConvertDialogOpen(true);
+    } else {
+      updateClientMutation.mutate({ id: client._id, data: { status: newStatus } });
+    }
+  };
+
+  const handleConvertConfirm = (formData) => {
+    convertLeadMutation.mutate(
+      { clientId: clientToConvert._id, data: formData },
+      {
+        onSuccess: () => {
+          setConvertDialogOpen(false);
+          navigate(`/admin/clients/${clientToConvert._id}`);
+          setClientToConvert(null);
+        },
+      }
+    );
+  };
+
   const allowedStatuses = viewMode === 'leads' ? LEAD_STATUSES : viewMode === 'clients' ? CLIENT_STATUSES : Object.keys(STATUS_LABELS);
 
   const getPageTitle = () => {
@@ -126,26 +149,10 @@ function ClientsList({ viewMode }) {
 
   // Columns (לטבלה בדסקטופ)
   const columns = [
-    ...(canSeeOwner
-      ? [
-        {
-          field: 'owner',
-          headerName: 'עובד',
-          width: 160,
-          // DataGrid v8 valueGetter signature: (value, row, column, apiRef)
-          valueGetter: (_value, row) => {
-            const assigned = row?.metadata?.assignedTo?.username;
-            const created = row?.metadata?.createdBy?.username;
-            return assigned || created || '—';
-          },
-        },
-      ]
-      : []),
     {
       field: 'personalInfo',
       headerName: 'לקוח',
-      flex: 1,
-      minWidth: 260,
+      width: 250,
       renderCell: (params) => {
         const client = params.row;
         const fullName = client.personalInfo?.fullName || 'ללא שם';
@@ -177,6 +184,18 @@ function ClientsList({ viewMode }) {
       },
     },
     {
+      field: 'leadSource',
+      headerName: 'מקור ליד',
+      width: 150,
+      renderCell: (params) => (
+        <Chip
+          label={LEAD_SOURCE_LABELS[params.value] || params.value}
+          size="small"
+          variant="outlined"
+        />
+      ),
+    },
+    {
       field: 'phone',
       headerName: 'טלפון',
       width: 150,
@@ -191,53 +210,32 @@ function ClientsList({ viewMode }) {
       },
     },
     {
-      field: 'email',
-      headerName: 'אימייל',
-      width: 200,
-      renderCell: (params) => {
-        const email = params.row.personalInfo?.email;
-        return email ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <EmailIcon fontSize="small" color="action" />
-            <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {email}
-            </Typography>
-          </Box>
-        ) : null;
-      },
-    },
-    {
-      field: 'leadSource',
-      headerName: 'מקור ליד',
-      width: 150,
-      renderCell: (params) => (
-        <Chip
-          label={LEAD_SOURCE_LABELS[params.value] || params.value}
-          size="small"
-          variant="outlined"
-        />
-      ),
-    },
-    {
-      field: 'referrer',
-      headerName: 'מפנה',
-      width: 180,
-      renderCell: (params) => {
-        const name = params.row?.referrer?.referrerNameSnapshot;
-        return name ? (
-          <Chip label={name} size="small" variant="outlined" />
-        ) : (
-          <Typography variant="body2" color="text.secondary">—</Typography>
-        );
-      },
-    },
-    {
       field: 'status',
       headerName: 'סטטוס',
       width: 180,
       renderCell: (params) => {
-        const status = STATUS_LABELS[params.value] || { label: params.value, color: 'default' };
-        return <Chip label={status.label} color={status.color} size="small" />;
+        const currentStatus = params.value;
+        return (
+          <TextField
+            select
+            size="small"
+            value={currentStatus}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              e.stopPropagation();
+              handleStatusChange(params.row, e.target.value);
+            }}
+            variant="standard"
+            InputProps={{ disableUnderline: true }}
+            sx={{ minWidth: 130 }}
+          >
+            {Object.entries(STATUS_LABELS).map(([key, val]) => (
+              <MenuItem key={key} value={key}>
+                <Chip label={val.label} size="small" sx={{ cursor: 'pointer', bgcolor: val.bg, color: val.text }} />
+              </MenuItem>
+            ))}
+          </TextField>
+        );
       },
     },
     {
@@ -258,32 +256,23 @@ function ClientsList({ viewMode }) {
       },
     },
     {
-      field: 'createdAt',
-      headerName: 'תאריך יצירה',
-      width: 150,
-      valueFormatter: (params) => {
-        if (!params.value) return '';
-        return new Date(params.value).toLocaleDateString('he-IL');
-      },
-    },
-    {
       field: 'actions',
       headerName: 'פעולות',
-      width: 140,
+      width: 180,
       renderCell: (params) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <Button
             variant="contained"
             size="small"
-            onClick={() => navigate(`/admin/clients/${params.row._id}`)}
+            onClick={(e) => { e.stopPropagation(); navigate(`/admin/clients/${params.row._id}`); }}
             sx={{ minWidth: 70 }}
           >
             פתח
           </Button>
-          <IconButton size="small" color="primary" onClick={() => handleEdit(params.row)} title="ערוך">
+          <IconButton size="small" color="primary" onClick={(e) => { e.stopPropagation(); handleEdit(params.row); }} title="ערוך">
             <EditIcon />
           </IconButton>
-          <IconButton size="small" color="error" onClick={() => handleDeleteClick(params.row)} title="מחק">
+          <IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); handleDeleteClick(params.row); }} title="מחק">
             <DeleteIcon />
           </IconButton>
         </Box>
@@ -380,19 +369,11 @@ function ClientsList({ viewMode }) {
               const fullName = client.personalInfo?.fullName || 'ללא שם';
               const businessName = client.businessInfo?.businessName || 'ללא שם עסק';
               const phone = client.personalInfo?.phone;
-              const email = client.personalInfo?.email;
-              const statusInfo = STATUS_LABELS[client.status] || { label: client.status, color: 'default' };
               const leadSourceLabel = LEAD_SOURCE_LABELS[client.leadSource] || client.leadSource;
-              const referrerName = client?.referrer?.referrerNameSnapshot;
 
               return (
                 <Card key={client._id} variant="outlined">
                   <CardContent sx={{ p: 2 }}>
-                    {canSeeOwner ? (
-                      <Typography variant="caption" color="text.secondary">
-                        עובד: {client?.metadata?.assignedTo?.username || client?.metadata?.createdBy?.username || '—'}
-                      </Typography>
-                    ) : null}
                     <Stack direction="row" spacing={2} alignItems="center">
                       <Avatar sx={{ bgcolor: 'primary.main' }}>
                         {fullName.charAt(0) || '?'}
@@ -413,9 +394,22 @@ function ClientsList({ viewMode }) {
                     </Stack>
 
                     <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: 1 }}>
-                      {statusInfo.label && (
-                        <Chip label={statusInfo.label} color={statusInfo.color} size="small" />
-                      )}
+                      <TextField
+                        select
+                        size="small"
+                        value={client.status}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => handleStatusChange(client, e.target.value)}
+                        variant="standard"
+                        InputProps={{ disableUnderline: true }}
+                        sx={{ minWidth: 120 }}
+                      >
+                        {Object.entries(STATUS_LABELS).map(([key, val]) => (
+                          <MenuItem key={key} value={key}>
+                            <Chip label={val.label} size="small" sx={{ cursor: 'pointer', bgcolor: val.bg, color: val.text }} />
+                          </MenuItem>
+                        ))}
+                      </TextField>
                       {typeof client.leadScore === 'number' && (
                         <Chip
                           label={`ציון: ${client.leadScore}`}
@@ -430,36 +424,14 @@ function ClientsList({ viewMode }) {
                           variant="outlined"
                         />
                       )}
-                      {referrerName && (
-                        <Chip
-                          label={`מפנה: ${referrerName}`}
-                          size="small"
-                          variant="outlined"
-                        />
-                      )}
                     </Stack>
 
-                    {(phone || email) && (
+                    {phone && (
                       <>
                         <Divider sx={{ my: 1.5 }} />
-                        <Stack spacing={0.5}>
-                          {phone && (
-                            <Stack direction="row" spacing={1} alignItems="center">
-                              <PhoneIcon fontSize="small" color="action" />
-                              <Typography variant="body2">{phone}</Typography>
-                            </Stack>
-                          )}
-                          {email && (
-                            <Stack direction="row" spacing={1} alignItems="center">
-                              <EmailIcon fontSize="small" color="action" />
-                              <Typography
-                                variant="body2"
-                                sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
-                              >
-                                {email}
-                              </Typography>
-                            </Stack>
-                          )}
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <PhoneIcon fontSize="small" color="action" />
+                          <Typography variant="body2">{phone}</Typography>
                         </Stack>
                       </>
                     )}
@@ -531,6 +503,15 @@ function ClientsList({ viewMode }) {
         content={`האם אתה בטוח שברצונך למחוק את הלקוח ${clientToDelete?.personalInfo?.fullName}?`}
         confirmText="מחק"
         confirmColor="error"
+      />
+
+      {/* Convert Lead Dialog */}
+      <ConvertLeadDialog
+        open={convertDialogOpen}
+        onClose={() => { setConvertDialogOpen(false); setClientToConvert(null); }}
+        onConfirm={handleConvertConfirm}
+        clientName={clientToConvert?.personalInfo?.fullName}
+        isPending={convertLeadMutation.isPending}
       />
     </Box>
   );

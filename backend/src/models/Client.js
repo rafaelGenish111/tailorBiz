@@ -83,6 +83,7 @@ const ClientSchema = new mongoose.Schema({
       'meeting_set',       // Meeting Booked
       'proposal_sent',     // Proposal Sent
       'won',               // Won
+      'completed',         // Completed
       'lost'               // Lost
     ],
     default: 'new_lead'
@@ -342,7 +343,7 @@ ClientSchema.methods.isLead = function () {
 };
 
 ClientSchema.methods.isActiveClient = function () {
-  const clientStatuses = ['won'];
+  const clientStatuses = ['won', 'completed'];
   return clientStatuses.includes(this.status);
 };
 
@@ -386,7 +387,8 @@ ClientSchema.methods.calculateLeadScore = function () {
     'engaged': 20,
     'meeting_set': 30,
     'proposal_sent': 40,
-    'won': 50
+    'won': 50,
+    'completed': 50
   };
   score += statusScores[this.status] || 0;
 

@@ -1,253 +1,626 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   Box, Typography, Button, Paper, Chip, Alert,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  IconButton, Dialog, DialogTitle, DialogContent,
-  TextField, FormControl, InputLabel, Select, MenuItem,
+  IconButton, TextField, FormControl, InputLabel, Select, MenuItem,
+  FormControlLabel, Switch, Divider, CircularProgress,
 } from '@mui/material';
 import {
-  Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon,
-  AutoAwesome as AutoAwesomeIcon,
+  Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon,
+  PictureAsPdf as PdfIcon, UploadFile as UploadIcon,
+  ArrowBack as BackIcon, Save as SaveIcon,
 } from '@mui/icons-material';
-import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { projectsAPI, quotesAPI } from '../../../utils/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { quotesAPI } from '../../../utils/api';
 import { toast } from 'react-toastify';
 import ConfirmDialog from '../../common/ConfirmDialog';
 
-const STATUS_LABELS = { new: 'חדש', reviewed: 'נבדק', approved: 'אושר', rejected: 'נדחה', implemented: 'מיושם' };
-const PRIORITY_LABELS = { must: 'חובה', nice_to_have: 'רצוי' };
-
-const emptyForm = {
-  title: '', description: '', status: 'new', priority: 'must',
-  estimatedHours: '', notes: '', source: 'form',
+const STATUS_LABELS = {
+  draft: 'טיוטה', sent: 'נשלח', viewed: 'נצפה',
+  accepted: 'אושר', rejected: 'נדחה', expired: 'פג תוקף',
+};
+const STATUS_COLORS = {
+  draft: 'default', sent: 'info', viewed: 'warning',
+  accepted: 'success', rejected: 'error', expired: 'default',
 };
 
+const BILLING_LABELS = { one_time: 'חד פעמי', retainer: 'ריטיינר (חודשי)' };
+
+const emptyItem = { name: '', description: '', quantity: 1, unitPrice: 0 };
+
 const ProjectProposalTab = ({ project, projectId }) => {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const clientId = project?.clientId?._id || project?.clientId;
+  const fileInputRef = useRef(null);
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingReq, setEditingReq] = useState(null);
-  const [form, setForm] = useState(emptyForm);
+  // Views: 'list' | 'editor'
+  const [view, setView] = useState('list');
+  const [editingQuote, setEditingQuote] = useState(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-  const [reqToDelete, setReqToDelete] = useState(null);
+  const [quoteToDelete, setQuoteToDelete] = useState(null);
 
-  const requirements = project?.requirements || [];
-  const approvedReqs = requirements.filter((r) => r.status === 'approved');
-  const canGenerateQuote = approvedReqs.length > 0;
-
-  const { data: quotesRes } = useQuery({
-    queryKey: ['clientQuotes', clientId],
-    queryFn: () => quotesAPI.getByClient(clientId).then((r) => r.data),
-    enabled: !!clientId,
+  // Editor form state
+  const [form, setForm] = useState({
+    title: 'הצעת מחיר',
+    items: [{ ...emptyItem }],
+    billingType: 'one_time',
+    includeVat: true,
+    vatRate: 18,
+    discount: 0,
+    discountType: 'fixed',
+    notes: '',
+    terms: '',
+    validUntil: '',
+    status: 'draft',
   });
 
+  // Fetch quotes for this project
+  const { data: quotesRes, isLoading } = useQuery({
+    queryKey: ['projectQuotes', projectId],
+    queryFn: () => quotesAPI.getByProject(projectId).then((r) => r.data),
+    enabled: !!projectId,
+  });
   const quotes = quotesRes?.data?.quotes || [];
-  const projectQuotes = quotes.filter(
-    (q) => q.projectId === projectId || q.projectId?._id === projectId
-  );
 
-  const addMutation = useMutation({
-    mutationFn: (data) => projectsAPI.addRequirement(projectId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['project', projectId]);
-      setModalOpen(false);
-      setForm(emptyForm);
-      toast.success('הדרישה נוספה');
+  // Mutations
+  const createMutation = useMutation({
+    mutationFn: (data) => quotesAPI.create(clientId, { ...data, projectId }),
+    onSuccess: (resp) => {
+      queryClient.invalidateQueries(['projectQuotes', projectId]);
+      const created = resp?.data?.data;
+      toast.success('הצעת מחיר נוצרה');
+      if (created) {
+        setEditingQuote(created);
+        loadQuoteToForm(created);
+      }
     },
-    onError: (err) => toast.error(err?.response?.data?.message || 'שגיאה'),
+    onError: (err) => toast.error(err?.response?.data?.message || 'שגיאה ביצירה'),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ reqId, data }) => projectsAPI.updateRequirement(projectId, reqId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['project', projectId]);
-      setModalOpen(false);
-      setEditingReq(null);
-      setForm(emptyForm);
-      toast.success('עודכן');
+    mutationFn: ({ id, data }) => quotesAPI.update(id, data),
+    onSuccess: (resp) => {
+      queryClient.invalidateQueries(['projectQuotes', projectId]);
+      const updated = resp?.data?.data;
+      toast.success('הצעת מחיר עודכנה');
+      if (updated) {
+        setEditingQuote(updated);
+      }
     },
-    onError: (err) => toast.error(err?.response?.data?.message || 'שגיאה'),
+    onError: (err) => toast.error(err?.response?.data?.message || 'שגיאה בעדכון'),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (reqId) => projectsAPI.deleteRequirement(projectId, reqId),
+    mutationFn: (id) => quotesAPI.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(['project', projectId]);
+      queryClient.invalidateQueries(['projectQuotes', projectId]);
       setDeleteConfirmOpen(false);
-      setReqToDelete(null);
-      toast.success('נמחק');
+      setQuoteToDelete(null);
+      toast.success('הצעת מחיר נמחקה');
     },
   });
 
-  const generateQuoteMutation = useMutation({
-    mutationFn: () => quotesAPI.generateFromProject(projectId),
+  const generatePdfMutation = useMutation({
+    mutationFn: (quoteId) => quotesAPI.generatePDF(quoteId),
     onSuccess: (resp) => {
-      const quote = resp?.data?.data;
-      queryClient.invalidateQueries(['clientQuotes', clientId]);
-      toast.success('הצעת מחיר נוצרה');
-      if (quote?._id && clientId) {
-        navigate(`/admin/clients/${clientId}?tab=quotes&editQuote=${quote._id}`);
+      queryClient.invalidateQueries(['projectQuotes', projectId]);
+      const pdfUrl = resp?.data?.data?.pdfUrl;
+      if (pdfUrl) {
+        setEditingQuote((prev) => prev ? { ...prev, pdfUrl } : prev);
       }
+      toast.success('PDF נוצר בהצלחה');
     },
-    onError: (err) => toast.error(err?.response?.data?.message || 'שגיאה ביצירת הצעה'),
+    onError: (err) => toast.error(err?.response?.data?.message || 'שגיאה ביצירת PDF'),
   });
 
-  const openAdd = () => { setEditingReq(null); setForm(emptyForm); setModalOpen(true); };
-  const openEdit = (req) => {
-    setEditingReq(req);
+  const uploadFileMutation = useMutation({
+    mutationFn: ({ quoteId, formData }) => quotesAPI.uploadPDF(quoteId, formData),
+    onSuccess: (resp) => {
+      queryClient.invalidateQueries(['projectQuotes', projectId]);
+      const pdfUrl = resp?.data?.data?.pdfUrl;
+      if (pdfUrl) {
+        setEditingQuote((prev) => prev ? { ...prev, pdfUrl } : prev);
+      }
+      toast.success('קובץ הועלה בהצלחה');
+    },
+    onError: (err) => toast.error(err?.response?.data?.message || 'שגיאה בהעלאה'),
+  });
+
+  // Computed
+  const calculated = useMemo(() => {
+    const subtotal = form.items.reduce(
+      (sum, item) => sum + (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0), 0
+    );
+    let discountAmount = 0;
+    if (form.discount > 0) {
+      discountAmount = form.discountType === 'percentage'
+        ? subtotal * (form.discount / 100)
+        : Number(form.discount);
+    }
+    const afterDiscount = subtotal - discountAmount;
+    const vatAmount = form.includeVat ? afterDiscount * (form.vatRate / 100) : 0;
+    const total = afterDiscount + vatAmount;
+    return { subtotal, discountAmount, vatAmount, total };
+  }, [form.items, form.discount, form.discountType, form.includeVat, form.vatRate]);
+
+  // Helpers
+  const loadQuoteToForm = (quote) => {
     setForm({
-      title: req.title || '', description: req.description || '',
-      status: req.status || 'new', priority: req.priority || 'must',
-      estimatedHours: req.estimatedHours ?? '', notes: req.notes || '',
-      source: req.source || 'form',
+      title: quote.title || 'הצעת מחיר',
+      items: (quote.items?.length ? quote.items : [{ ...emptyItem }]).map((i) => ({
+        name: i.name || '', description: i.description || '',
+        quantity: i.quantity ?? 1, unitPrice: i.unitPrice ?? 0,
+      })),
+      billingType: quote.billingType || 'one_time',
+      includeVat: quote.includeVat !== false,
+      vatRate: quote.vatRate ?? 18,
+      discount: quote.discount ?? 0,
+      discountType: quote.discountType || 'fixed',
+      notes: quote.notes || '',
+      terms: quote.terms || '',
+      validUntil: quote.validUntil ? quote.validUntil.slice(0, 10) : '',
+      status: quote.status || 'draft',
     });
-    setModalOpen(true);
+  };
+
+  const openNewQuote = () => {
+    setEditingQuote(null);
+    setForm({
+      title: `הצעת מחיר - ${project?.name || ''}`,
+      items: [{ ...emptyItem }],
+      billingType: 'one_time',
+      includeVat: true, vatRate: 18,
+      discount: 0, discountType: 'fixed',
+      notes: '', terms: '', validUntil: '', status: 'draft',
+    });
+    setView('editor');
+  };
+
+  const openEditQuote = (quote) => {
+    setEditingQuote(quote);
+    loadQuoteToForm(quote);
+    setView('editor');
   };
 
   const handleSave = () => {
-    if (!form.title?.trim()) { toast.error('נא למלא כותרת'); return; }
-    const payload = { ...form, estimatedHours: Number(form.estimatedHours) || 0 };
-    if (editingReq) {
-      updateMutation.mutate({ reqId: editingReq._id, data: payload });
+    if (form.items.every((i) => !i.name?.trim())) {
+      toast.error('נא להוסיף לפחות מוצר אחד');
+      return;
+    }
+    const payload = {
+      title: form.title,
+      items: form.items.filter((i) => i.name?.trim()).map((i) => ({
+        name: i.name,
+        description: i.description,
+        quantity: Number(i.quantity) || 1,
+        unitPrice: Number(i.unitPrice) || 0,
+        totalPrice: (Number(i.quantity) || 1) * (Number(i.unitPrice) || 0),
+      })),
+      billingType: form.billingType,
+      includeVat: form.includeVat,
+      vatRate: Number(form.vatRate) || 18,
+      discount: Number(form.discount) || 0,
+      discountType: form.discountType,
+      notes: form.notes,
+      terms: form.terms,
+      validUntil: form.validUntil || undefined,
+      status: form.status,
+    };
+
+    if (editingQuote?._id) {
+      updateMutation.mutate({ id: editingQuote._id, data: payload });
     } else {
-      addMutation.mutate(payload);
+      createMutation.mutate(payload);
     }
   };
 
-  const totalHours = requirements.reduce((s, r) => s + (r.estimatedHours || 0), 0);
-  const approvedHours = approvedReqs.reduce((s, r) => s + (r.estimatedHours || 0), 0);
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingQuote?._id) return;
+    const fd = new FormData();
+    fd.append('pdf', file);
+    uploadFileMutation.mutate({ quoteId: editingQuote._id, formData: fd });
+    e.target.value = '';
+  };
+
+  // Item helpers
+  const updateItem = (idx, field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      items: prev.items.map((item, i) => i === idx ? { ...item, [field]: value } : item),
+    }));
+  };
+  const addItem = () => {
+    setForm((prev) => ({ ...prev, items: [...prev.items, { ...emptyItem }] }));
+  };
+  const removeItem = (idx) => {
+    setForm((prev) => ({
+      ...prev,
+      items: prev.items.length > 1 ? prev.items.filter((_, i) => i !== idx) : prev.items,
+    }));
+  };
+
+  // =================== LIST VIEW ===================
+  if (view === 'list') {
+    if (isLoading) return <CircularProgress />;
+
+    return (
+      <Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h6">הצעות מחיר</Typography>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={openNewQuote}>
+            צור הצעת מחיר חדשה
+          </Button>
+        </Box>
+
+        {quotes.length === 0 ? (
+          <Paper sx={{ p: 4, textAlign: 'center' }}>
+            <Typography color="text.secondary" sx={{ mb: 2 }}>אין הצעות מחיר לפרויקט זה</Typography>
+            <Button variant="contained" startIcon={<AddIcon />} onClick={openNewQuote}>
+              צור הצעת מחיר ראשונה
+            </Button>
+          </Paper>
+        ) : (
+          <TableContainer component={Paper} variant="outlined">
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>מספר</TableCell>
+                  <TableCell>כותרת</TableCell>
+                  <TableCell align="center">סטטוס</TableCell>
+                  <TableCell align="right">סה"כ</TableCell>
+                  <TableCell>תאריך</TableCell>
+                  <TableCell align="center" width={100}>פעולות</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {quotes.map((q) => (
+                  <TableRow
+                    key={q._id}
+                    hover
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => openEditQuote(q)}
+                  >
+                    <TableCell>{q.quoteNumber || '-'}</TableCell>
+                    <TableCell>{q.title || 'הצעת מחיר'}</TableCell>
+                    <TableCell align="center">
+                      <Chip
+                        label={STATUS_LABELS[q.status] || q.status}
+                        size="small"
+                        color={STATUS_COLORS[q.status] || 'default'}
+                        variant="outlined"
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      ₪{(q.total || 0).toLocaleString()}
+                      {q.billingType === 'retainer' && <Typography variant="caption" color="text.secondary"> /חודש</Typography>}
+                    </TableCell>
+                    <TableCell>
+                      {q.createdAt ? new Date(q.createdAt).toLocaleDateString('he-IL') : '-'}
+                    </TableCell>
+                    <TableCell align="center" onClick={(e) => e.stopPropagation()}>
+                      <IconButton size="small" onClick={() => openEditQuote(q)}>
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        size="small" color="error"
+                        onClick={() => { setQuoteToDelete(q); setDeleteConfirmOpen(true); }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+
+        <ConfirmDialog
+          open={deleteConfirmOpen}
+          title="מחיקת הצעת מחיר"
+          content={`האם למחוק את הצעת מחיר ${quoteToDelete?.quoteNumber || ''}?`}
+          onConfirm={() => quoteToDelete && deleteMutation.mutate(quoteToDelete._id)}
+          onClose={() => { setDeleteConfirmOpen(false); setQuoteToDelete(null); }}
+          confirmColor="error"
+        />
+      </Box>
+    );
+  }
+
+  // =================== EDITOR VIEW ===================
+  const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
     <Box>
-      {/* Summary cards */}
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3 }}>
-        <Paper variant="outlined" sx={{ p: 2, minWidth: 120 }}>
-          <Typography variant="caption" color="text.secondary">דרישות</Typography>
-          <Typography variant="h6">{requirements.length}</Typography>
-        </Paper>
-        <Paper variant="outlined" sx={{ p: 2, minWidth: 120 }}>
-          <Typography variant="caption" color="text.secondary">מאושרות</Typography>
-          <Typography variant="h6" color="success.main">{approvedReqs.length}</Typography>
-        </Paper>
-        <Paper variant="outlined" sx={{ p: 2, minWidth: 120 }}>
-          <Typography variant="caption" color="text.secondary">שעות משוערות</Typography>
-          <Typography variant="h6">{totalHours} ({approvedHours} מאושרות)</Typography>
-        </Paper>
-        <Paper variant="outlined" sx={{ p: 2, minWidth: 120 }}>
-          <Typography variant="caption" color="text.secondary">הצעות מחיר</Typography>
-          <Typography variant="h6">{projectQuotes.length}</Typography>
-        </Paper>
-      </Box>
-
-      {/* Actions */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
-        <Button
-          variant="contained" color="secondary" startIcon={<AutoAwesomeIcon />}
-          onClick={() => generateQuoteMutation.mutate()}
-          disabled={!canGenerateQuote || generateQuoteMutation.isPending}
-        >
-          {generateQuoteMutation.isPending ? 'יוצר...' : 'צור הצעת מחיר מדרישות מאושרות'}
+      {/* Header */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 1 }}>
+        <Button startIcon={<BackIcon />} onClick={() => setView('list')}>
+          חזרה לרשימה
         </Button>
-        <Button variant="outlined" startIcon={<AddIcon />} onClick={openAdd}>
-          הוסף דרישה
-        </Button>
-      </Box>
-
-      {!canGenerateQuote && requirements.length > 0 && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          יש לאשר דרישות (סטטוס "אושר") כדי ליצור הצעת מחיר
-        </Alert>
-      )}
-
-      {/* Requirements table */}
-      {requirements.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Typography color="text.secondary">אין דרישות. הוסף דרישה ראשונה</Typography>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={openAdd} sx={{ mt: 2 }}>
-            הוסף דרישה
+        <Typography variant="h6" sx={{ flex: 1, textAlign: 'center' }}>
+          {editingQuote ? `עריכת ${editingQuote.quoteNumber || 'הצעה'}` : 'הצעת מחיר חדשה'}
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {editingQuote?._id && (
+            <>
+              <Button
+                variant="outlined" startIcon={<PdfIcon />}
+                onClick={() => generatePdfMutation.mutate(editingQuote._id)}
+                disabled={generatePdfMutation.isPending}
+              >
+                {generatePdfMutation.isPending ? 'יוצר...' : 'צור PDF'}
+              </Button>
+              <Button
+                variant="outlined" startIcon={<UploadIcon />}
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadFileMutation.isPending}
+              >
+                העלה מסמך
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                hidden
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={handleFileUpload}
+              />
+            </>
+          )}
+          <Button
+            variant="contained" startIcon={<SaveIcon />}
+            onClick={handleSave} disabled={isSaving}
+          >
+            {isSaving ? 'שומר...' : 'שמור'}
           </Button>
-        </Paper>
-      ) : (
-        <TableContainer component={Paper} variant="outlined">
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>כותרת</TableCell>
-                <TableCell align="center">עדיפות</TableCell>
-                <TableCell align="center">סטטוס</TableCell>
-                <TableCell align="right">שעות</TableCell>
-                <TableCell align="center" width={80} />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {requirements.map((req) => (
-                <TableRow key={req._id}>
-                  <TableCell>{req.title}</TableCell>
-                  <TableCell align="center">{PRIORITY_LABELS[req.priority] || req.priority}</TableCell>
-                  <TableCell align="center">
-                    <Chip
-                      label={STATUS_LABELS[req.status] || req.status}
-                      size="small"
-                      color={req.status === 'approved' ? 'success' : 'default'}
-                      variant="outlined"
-                    />
-                  </TableCell>
-                  <TableCell align="right">{req.estimatedHours || '-'}</TableCell>
-                  <TableCell align="center">
-                    <IconButton size="small" onClick={() => openEdit(req)}><EditIcon fontSize="small" /></IconButton>
-                    <IconButton size="small" color="error" onClick={() => { setReqToDelete(req); setDeleteConfirmOpen(true); }}>
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+        </Box>
+      </Box>
 
-      {/* Requirement Modal */}
-      <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingReq ? 'עריכת דרישה' : 'הוספת דרישה'}</DialogTitle>
-        <Box sx={{ px: 3, pb: 3, display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-          <TextField label="כותרת" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required fullWidth />
-          <TextField label="תיאור" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} multiline rows={2} fullWidth />
-          <FormControl fullWidth>
+      {/* Title & Status */}
+      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <TextField
+            label="כותרת"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            sx={{ flex: 1, minWidth: 200 }}
+          />
+          <FormControl sx={{ minWidth: 140 }}>
+            <InputLabel>סוג חיוב</InputLabel>
+            <Select
+              value={form.billingType}
+              label="סוג חיוב"
+              onChange={(e) => setForm({ ...form, billingType: e.target.value })}
+            >
+              {Object.entries(BILLING_LABELS).map(([k, v]) => (
+                <MenuItem key={k} value={k}>{v}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl sx={{ minWidth: 130 }}>
             <InputLabel>סטטוס</InputLabel>
-            <Select value={form.status} label="סטטוס" onChange={(e) => setForm({ ...form, status: e.target.value })}>
+            <Select
+              value={form.status}
+              label="סטטוס"
+              onChange={(e) => setForm({ ...form, status: e.target.value })}
+            >
               {Object.entries(STATUS_LABELS).map(([k, v]) => (
                 <MenuItem key={k} value={k}>{v}</MenuItem>
               ))}
             </Select>
           </FormControl>
-          <FormControl fullWidth>
-            <InputLabel>עדיפות</InputLabel>
-            <Select value={form.priority} label="עדיפות" onChange={(e) => setForm({ ...form, priority: e.target.value })}>
-              {Object.entries(PRIORITY_LABELS).map(([k, v]) => (
-                <MenuItem key={k} value={k}>{v}</MenuItem>
-              ))}
+          <TextField
+            label="תוקף עד"
+            type="date"
+            value={form.validUntil}
+            onChange={(e) => setForm({ ...form, validUntil: e.target.value })}
+            InputLabelProps={{ shrink: true }}
+            sx={{ minWidth: 160 }}
+          />
+        </Box>
+      </Paper>
+
+      {/* Items Table */}
+      <Paper variant="outlined" sx={{ mb: 2 }}>
+        <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="subtitle1" fontWeight={600}>מוצרים / שירותים</Typography>
+          <Button size="small" startIcon={<AddIcon />} onClick={addItem}>הוסף שורה</Button>
+        </Box>
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ minWidth: 160 }}>שם</TableCell>
+                <TableCell sx={{ minWidth: 140 }}>תיאור</TableCell>
+                <TableCell align="center" sx={{ width: 80 }}>כמות</TableCell>
+                <TableCell align="right" sx={{ width: 120 }}>מחיר ליחידה</TableCell>
+                <TableCell align="right" sx={{ width: 100 }}>סה"כ</TableCell>
+                <TableCell align="center" sx={{ width: 50 }} />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {form.items.map((item, idx) => {
+                const lineTotal = (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0);
+                return (
+                  <TableRow key={idx}>
+                    <TableCell>
+                      <TextField
+                        size="small" fullWidth variant="standard"
+                        placeholder="שם מוצר"
+                        value={item.name}
+                        onChange={(e) => updateItem(idx, 'name', e.target.value)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <TextField
+                        size="small" fullWidth variant="standard"
+                        placeholder="תיאור"
+                        value={item.description}
+                        onChange={(e) => updateItem(idx, 'description', e.target.value)}
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <TextField
+                        size="small" variant="standard" type="number"
+                        value={item.quantity}
+                        onChange={(e) => updateItem(idx, 'quantity', e.target.value)}
+                        inputProps={{ min: 1, style: { textAlign: 'center' } }}
+                        sx={{ width: 60 }}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <TextField
+                        size="small" variant="standard" type="number"
+                        value={item.unitPrice}
+                        onChange={(e) => updateItem(idx, 'unitPrice', e.target.value)}
+                        inputProps={{ min: 0, style: { textAlign: 'right' } }}
+                        sx={{ width: 100 }}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <Typography variant="body2">₪{lineTotal.toLocaleString()}</Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <IconButton size="small" color="error" onClick={() => removeItem(idx)}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+
+      {/* Summary */}
+      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, maxWidth: 420, ml: 'auto' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            <Typography>סכום ביניים:</Typography>
+            <Typography>₪{calculated.subtotal.toLocaleString()}</Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Typography sx={{ minWidth: 50 }}>הנחה:</Typography>
+            <TextField
+              size="small" type="number"
+              value={form.discount}
+              onChange={(e) => setForm({ ...form, discount: e.target.value })}
+              inputProps={{ min: 0 }}
+              sx={{ width: 100 }}
+            />
+            <Select
+              size="small"
+              value={form.discountType}
+              onChange={(e) => setForm({ ...form, discountType: e.target.value })}
+              sx={{ width: 80 }}
+            >
+              <MenuItem value="fixed">₪</MenuItem>
+              <MenuItem value="percentage">%</MenuItem>
             </Select>
-          </FormControl>
-          <TextField label="שעות משוערות" type="number" value={form.estimatedHours} onChange={(e) => setForm({ ...form, estimatedHours: e.target.value })} inputProps={{ min: 0 }} fullWidth />
-          <TextField label="הערות" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} fullWidth />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 1 }}>
-            <Button onClick={() => setModalOpen(false)}>ביטול</Button>
-            <Button variant="contained" onClick={handleSave} disabled={addMutation.isPending || updateMutation.isPending}>שמור</Button>
+            {calculated.discountAmount > 0 && (
+              <Typography color="error.main" variant="body2">
+                -₪{calculated.discountAmount.toLocaleString()}
+              </Typography>
+            )}
+          </Box>
+
+          {calculated.discountAmount > 0 && (
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Typography color="text.secondary">לאחר הנחה:</Typography>
+              <Typography>₪{(calculated.subtotal - calculated.discountAmount).toLocaleString()}</Typography>
+            </Box>
+          )}
+
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={form.includeVat}
+                  onChange={(e) => setForm({ ...form, includeVat: e.target.checked })}
+                  size="small"
+                />
+              }
+              label={`מע"מ`}
+            />
+            <TextField
+              size="small" type="number"
+              value={form.vatRate}
+              onChange={(e) => setForm({ ...form, vatRate: e.target.value })}
+              inputProps={{ min: 0, max: 100, step: 0.5 }}
+              sx={{ width: 70 }}
+              disabled={!form.includeVat}
+            />
+            <Typography variant="body2" color="text.secondary">%</Typography>
+            <Box sx={{ flex: 1 }} />
+            <Typography fontWeight={form.includeVat ? 600 : 400}>
+              ₪{calculated.vatAmount.toLocaleString()}
+            </Typography>
+          </Box>
+
+          <Divider />
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <Typography variant="h6" fontWeight={700}>
+              סה"כ{form.includeVat ? ' (כולל מע"מ)' : ' (ללא מע"מ)'}:
+            </Typography>
+            <Typography variant="h6" fontWeight={700} color="primary.main">
+              ₪{calculated.total.toLocaleString()}
+              {form.billingType === 'retainer' && (
+                <Typography component="span" variant="body2" color="text.secondary"> / חודש</Typography>
+              )}
+            </Typography>
           </Box>
         </Box>
-      </Dialog>
+      </Paper>
 
-      <ConfirmDialog
-        open={deleteConfirmOpen}
-        title="מחיקת דרישה"
-        content="האם למחוק את הדרישה?"
-        onConfirm={() => reqToDelete && deleteMutation.mutate(reqToDelete._id)}
-        onClose={() => { setDeleteConfirmOpen(false); setReqToDelete(null); }}
-        confirmColor="error"
-      />
+      {/* Notes & Terms */}
+      <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <TextField
+            label="הערות"
+            value={form.notes}
+            onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            multiline rows={2} sx={{ flex: 1, minWidth: 200 }}
+          />
+          <TextField
+            label="תנאים"
+            value={form.terms}
+            onChange={(e) => setForm({ ...form, terms: e.target.value })}
+            multiline rows={2} sx={{ flex: 1, minWidth: 200 }}
+          />
+        </Box>
+      </Paper>
+
+      {/* PDF Preview */}
+      {editingQuote?.pdfUrl && (
+        <Paper variant="outlined" sx={{ p: 2 }}>
+          <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1 }}>
+            תצוגת PDF
+          </Typography>
+          {editingQuote.pdfUrl.startsWith('data:') ? (
+            <Box
+              component="iframe"
+              src={editingQuote.pdfUrl}
+              sx={{ width: '100%', height: 500, border: 'none', borderRadius: 1 }}
+            />
+          ) : (
+            <Button
+              variant="outlined"
+              onClick={() => window.open(editingQuote.pdfUrl, '_blank')}
+            >
+              פתח PDF
+            </Button>
+          )}
+        </Paper>
+      )}
+
+      {!editingQuote?._id && (
+        <Alert severity="info" sx={{ mt: 2 }}>
+          שמור את ההצעה כדי לאפשר יצירת PDF והעלאת מסמכים
+        </Alert>
+      )}
     </Box>
   );
 };

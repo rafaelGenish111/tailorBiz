@@ -191,6 +191,7 @@ export const projectsAPI = {
 // ========== Quotes API ==========
 export const quotesAPI = {
   getByClient: (clientId) => api.get(`/quotes/client/${clientId}`),
+  getByProject: (projectId) => api.get(`/quotes/project/${projectId}`),
   getById: (id) => api.get(`/quotes/${id}`),
   create: (clientId, data) => api.post(`/quotes/client/${clientId}`, data),
   update: (id, data) => api.put(`/quotes/${id}`, data),

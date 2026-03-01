@@ -42,8 +42,11 @@ exports.createQuote = async (req, res) => {
       });
     }
 
+    const { projectId } = req.body;
+
     const quote = new Quote({
       clientId,
+      projectId: isValidObjectId(projectId) ? projectId : null,
       createdBy: isValidObjectId(userId) ? userId : null,
       businessInfo: businessInfo || getBusinessDefaults(),
       clientInfo: {
@@ -114,6 +117,27 @@ exports.updateQuote = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'שגיאה בעדכון הצעת מחיר',
+      ...(process.env.NODE_ENV !== 'production' && { error: error.message })
+    });
+  }
+};
+
+// קבלת הצעות מחיר של פרויקט
+exports.getProjectQuotes = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    const quotes = await Quote.find({ projectId })
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: { quotes }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'שגיאה בטעינת הצעות מחיר של פרויקט',
       ...(process.env.NODE_ENV !== 'production' && { error: error.message })
     });
   }

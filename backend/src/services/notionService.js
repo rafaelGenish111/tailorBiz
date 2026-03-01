@@ -1,13 +1,37 @@
 const { Client } = require('@notionhq/client');
 
-// מיפוי סטטוסים מה-CRM לערכים ב-Notion
-const STAGE_TO_NOTION_STATUS = {
-  lead: 'Lead',
-  won: 'Won',
-  active: 'Won',
-  completed: 'Won',
-  lost: 'Lost',
-  archived: 'Archived'
+// === CRM → Notion mappings ===
+const STAGE_TO_NOTION = {
+  lead: 'Kickoff',
+  assessment: 'Kickoff',
+  won: 'ריטיינר פעיל',
+  active: 'בפיתוח',
+  completed: 'מוכן ללקוח',
+  lost: 'Kickoff',
+  archived: 'מוכן ללקוח'
+};
+
+const PRODUCT_TO_DIVISION = {
+  'מערכת SaaS': 'SaaS הדרכות',
+  'מערכות AI': 'AI לארגונים',
+  'הטמעת בינה מלאכותית בארגון': 'AI לארגונים',
+  'קורסים': 'SaaS הדרכות',
+  'אפליקציה בהתאמה אישית': 'פרויקט פנימי'
+};
+
+// === Notion → CRM mappings (reverse) ===
+const NOTION_TO_STAGE = {
+  'Kickoff': 'lead',
+  'בפיתוח': 'active',
+  'QA': 'active',
+  'מוכן ללקוח': 'completed',
+  'ריטיינר פעיל': 'won'
+};
+
+const DIVISION_TO_PRODUCT = {
+  'SaaS הדרכות': 'מערכת SaaS',
+  'AI לארגונים': 'מערכות AI',
+  'פרויקט פנימי': 'אפליקציה בהתאמה אישית'
 };
 
 class NotionService {
@@ -27,150 +51,134 @@ class NotionService {
     this.client = new Client({ auth: token });
     this.databaseId = process.env.NOTION_DATABASE_ID || null;
     this.isConfigured = true;
-    console.log('[NotionService] Initialized');
+    console.log('[NotionService] Initialized', this.databaseId ? `(DB: ${this.databaseId})` : '(no DB ID)');
   }
 
   isReady() {
-    return this.isConfigured && this.client !== null;
+    return this.isConfigured && this.client !== null && this.databaseId !== null;
   }
 
-  /**
-   * יצירת Database ב-Notion בהפעלה ראשונה (אם NOTION_DATABASE_ID ריק).
-   * דורש NOTION_PARENT_PAGE_ID כדי לדעת איפה ליצור.
-   */
-  async ensureDatabase() {
-    if (this.databaseId) return this.databaseId;
-
-    const parentPageId = process.env.NOTION_PARENT_PAGE_ID;
-    if (!parentPageId) {
-      throw new Error(
-        'NOTION_DATABASE_ID is not set and NOTION_PARENT_PAGE_ID is not set. ' +
-        'Cannot auto-create Notion database. Set one of these in backend/.env'
-      );
-    }
-
-    console.log('[NotionService] Creating Notion database for first time...');
-
-    const db = await this.client.databases.create({
-      parent: { type: 'page_id', page_id: parentPageId },
-      title: [{ type: 'text', text: { content: 'פרויקטי BizFlow CRM' } }],
-      initial_data_source: {
-        properties: {
-          'שם הפרויקט': { type: 'title', title: {} },
-          'לקוח': { type: 'rich_text', rich_text: {} },
-          'סטטוס פרויקט': {
-            type: 'select',
-            select: {
-              options: [
-                { name: 'Lead', color: 'yellow' },
-                { name: 'Won', color: 'green' },
-                { name: 'Lost', color: 'red' },
-                { name: 'Archived', color: 'default' }
-              ]
-            }
-          },
-          'סוג המוצר': {
-            type: 'select',
-            select: {
-              options: [
-                { name: 'מערכת SaaS', color: 'blue' },
-                { name: 'מערכות AI', color: 'green' },
-                { name: 'הטמעת בינה מלאכותית בארגון', color: 'purple' },
-                { name: 'קורסים', color: 'orange' },
-                { name: 'אפליקציה בהתאמה אישית', color: 'pink' }
-              ]
-            }
-          },
-          'שווי העסקה': { type: 'number', number: { format: 'number' } },
-          'MRR צפוי': { type: 'number', number: { format: 'number' } },
-          'תאריכי עבודה': { type: 'date', date: {} }
-        }
-      }
-    });
-
-    this.databaseId = db.id;
-    console.log('[NotionService] Database created:', db.id);
-    console.log('');
-    console.log('========================================');
-    console.log('ACTION REQUIRED: Add to backend/.env:');
-    console.log(`NOTION_DATABASE_ID=${db.id}`);
-    console.log('========================================');
-    console.log('');
-
-    return this.databaseId;
-  }
-
-  /**
-   * בניית אובייקט properties עבור Notion API מנתוני פרויקט ולקוח.
-   */
+  // =====================================================
+  //  CRM → Notion: Build properties for push
+  // =====================================================
   buildProperties(project, client) {
-    const projectName = project.name ||
-      client?.businessInfo?.businessName ||
-      'פרויקט ללא שם';
+    const clientName = client?.personalInfo?.fullName || 'ללא לקוח';
+    const projectName = project.name || client?.businessInfo?.businessName || 'פרויקט ללא שם';
 
-    const clientName = client?.personalInfo?.fullName || '';
-
-    const notionStatus = STAGE_TO_NOTION_STATUS[project.stage] ||
-      STAGE_TO_NOTION_STATUS[project.status] ||
-      'Kickoff';
+    const notionStatus = STAGE_TO_NOTION[project.stage] || 'Kickoff';
 
     const properties = {
-      'שם הפרויקט': {
-        title: [{ text: { content: projectName } }]
+      'שם לקוח': {
+        title: [{ text: { content: clientName } }]
       },
-      'לקוח': {
-        rich_text: [{ text: { content: clientName } }]
+      'שם פרויקט': {
+        rich_text: [{ text: { content: projectName } }]
       },
       'סטטוס פרויקט': {
         select: { name: notionStatus }
       },
-      'שווי העסקה': {
+      'הכנסת הקמה': {
         number: project.financials?.totalValue || 0
       },
-      'MRR צפוי': {
+      'ריטיינר חודשי': {
         number: project.expectedMrr || 0
       }
     };
 
-    if (project.productType) {
-      properties['סוג המוצר'] = { select: { name: project.productType } };
+    // Division mapping
+    const division = PRODUCT_TO_DIVISION[project.productType];
+    if (division) {
+      properties['חטיבה עסקית'] = { select: { name: division } };
     }
 
+    // Deadline
     if (project.endDate) {
-      properties['תאריכי עבודה'] = {
-        date: {
-          start: new Date(project.startDate || project.endDate).toISOString().split('T')[0],
-          end: new Date(project.endDate).toISOString().split('T')[0]
-        }
-      };
-    } else if (project.startDate) {
-      properties['תאריכי עבודה'] = {
-        date: { start: new Date(project.startDate).toISOString().split('T')[0] }
+      properties['תאריך יעד למסירה'] = {
+        date: { start: new Date(project.endDate).toISOString().split('T')[0] }
       };
     }
 
     return properties;
   }
 
-  /**
-   * יצירת דף חדש (שורה) ב-Notion Database.
-   * @returns {string} Notion page ID
-   */
+  // =====================================================
+  //  Notion → CRM: Parse properties from pull
+  // =====================================================
+  parseNotionProperties(notionPage) {
+    const props = notionPage.properties;
+    const updates = {};
+
+    // שם לקוח (Title) → _parsedClientName (transient, not persisted)
+    const clientNameProp = props['שם לקוח'];
+    let parsedClientName = null;
+    if (clientNameProp?.title?.[0]?.plain_text) {
+      parsedClientName = clientNameProp.title[0].plain_text.trim();
+    }
+
+    // שם פרויקט (Rich Text) → name
+    const projectNameProp = props['שם פרויקט'];
+    if (projectNameProp?.rich_text?.[0]?.plain_text) {
+      updates.name = projectNameProp.rich_text[0].plain_text.trim();
+    }
+
+    // Backward compatibility: if שם פרויקט is empty but title contains " – ", split it
+    if (!updates.name && parsedClientName && parsedClientName.includes(' – ')) {
+      const [clientPart, ...projectParts] = parsedClientName.split(' – ');
+      parsedClientName = clientPart.trim();
+      updates.name = projectParts.join(' – ').trim();
+    }
+
+    updates._parsedClientName = parsedClientName;
+
+    // Status → stage
+    const statusProp = props['סטטוס פרויקט'];
+    if (statusProp?.select?.name) {
+      const stage = NOTION_TO_STAGE[statusProp.select.name];
+      if (stage) updates.stage = stage;
+    }
+
+    // הכנסת הקמה → financials.totalValue
+    const setupProp = props['הכנסת הקמה'];
+    if (setupProp?.number !== undefined && setupProp.number !== null) {
+      updates['financials.totalValue'] = setupProp.number;
+    }
+
+    // ריטיינר חודשי → expectedMrr
+    const mrrProp = props['ריטיינר חודשי'];
+    if (mrrProp?.number !== undefined && mrrProp.number !== null) {
+      updates.expectedMrr = mrrProp.number;
+    }
+
+    // חטיבה עסקית → productType
+    const divisionProp = props['חטיבה עסקית'];
+    if (divisionProp?.select?.name) {
+      const productType = DIVISION_TO_PRODUCT[divisionProp.select.name];
+      if (productType) updates.productType = productType;
+    }
+
+    // תאריך יעד למסירה → endDate
+    const dateProp = props['תאריך יעד למסירה'];
+    if (dateProp?.date?.start) {
+      updates.endDate = new Date(dateProp.date.start);
+    }
+
+    return updates;
+  }
+
+  // =====================================================
+  //  CRUD operations
+  // =====================================================
   async createPage(project, client) {
-    const dbId = await this.ensureDatabase();
     const properties = this.buildProperties(project, client);
 
     const page = await this.client.pages.create({
-      parent: { type: 'database_id', database_id: dbId },
+      parent: { type: 'database_id', database_id: this.databaseId },
       properties
     });
 
     return page.id;
   }
 
-  /**
-   * עדכון דף קיים ב-Notion.
-   */
   async updatePage(notionPageId, project, client) {
     const properties = this.buildProperties(project, client);
 
@@ -178,6 +186,40 @@ class NotionService {
       page_id: notionPageId,
       properties
     });
+  }
+
+  /**
+   * Query database for recently edited pages using search API.
+   * @param {string} sinceISO - ISO timestamp to filter pages edited after
+   * @returns {Array} Notion pages with properties
+   */
+  async queryRecentlyEdited(sinceISO) {
+    // Use search API to find pages in our database, then filter by edit time
+    const response = await this.client.search({
+      filter: { property: 'object', value: 'page' },
+      sort: { direction: 'descending', timestamp: 'last_edited_time' }
+    });
+
+    const sinceTime = new Date(sinceISO).getTime();
+
+    // Filter: only pages from our database, edited after sinceISO
+    const filtered = response.results.filter(page => {
+      if (page.parent?.database_id?.replace(/-/g, '') !== this.databaseId.replace(/-/g, '')) return false;
+      return new Date(page.last_edited_time).getTime() > sinceTime;
+    });
+
+    // Search API doesn't return full properties, so fetch each page
+    const fullPages = [];
+    for (const page of filtered) {
+      try {
+        const fullPage = await this.client.pages.retrieve({ page_id: page.id });
+        fullPages.push(fullPage);
+      } catch (err) {
+        console.warn(`[NotionService] Failed to retrieve page ${page.id}:`, err.message);
+      }
+    }
+
+    return fullPages;
   }
 }
 

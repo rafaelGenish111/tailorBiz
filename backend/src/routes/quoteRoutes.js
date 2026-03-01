@@ -5,6 +5,7 @@ const {
   createQuote,
   updateQuote,
   getClientQuotes,
+  getProjectQuotes,
   getQuote,
   generatePDF,
   deleteQuote,
@@ -22,6 +23,7 @@ router.use(requireModule('invoices_docs'));
 
 router.post('/parse-text', parseQuoteText);
 router.post('/generate/:projectId', generateFromProject);
+router.get('/project/:projectId', getProjectQuotes);
 
 router.route('/client/:clientId')
   .get(getClientQuotes)

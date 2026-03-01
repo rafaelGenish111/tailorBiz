@@ -88,7 +88,7 @@ const quoteSchema = new mongoose.Schema({
   },
   vatRate: {
     type: Number,
-    default: 17
+    default: 18
   },
   vatAmount: {
     type: Number,
@@ -106,6 +106,11 @@ const quoteSchema = new mongoose.Schema({
     type: String,
     enum: ['percentage', 'fixed'],
     default: 'fixed'
+  },
+  billingType: {
+    type: String,
+    enum: ['one_time', 'retainer'],
+    default: 'one_time'
   },
   total: {
     type: Number,

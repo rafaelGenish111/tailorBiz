@@ -275,6 +275,10 @@ const projectSchema = new mongoose.Schema(
       default: null,
       index: { sparse: true }
     },
+    notionLastEditedAt: {
+      type: Date,
+      default: null
+    },
 
     // Product type for Notion reporting
     productType: {

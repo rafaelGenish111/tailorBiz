@@ -29,9 +29,10 @@ import {
   TrendingUp as TrendingUpIcon
 } from '@mui/icons-material';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { useClient, useUpdateClient } from '../../../admin/hooks/useClients';
+import { useClient, useUpdateClient, useConvertLead } from '../../../admin/hooks/useClients';
 import { getCurrentUserFromQueryData, useCurrentUserQuery } from '../../../admin/hooks/useCurrentUser';
 import { useAdminUsers } from '../../../admin/hooks/useAdminUsers';
+import ConvertLeadDialog from '../../../admin/components/common/ConvertLeadDialog';
 
 import PersonalInfoTab from './tabs/PersonalInfoTab';
 import BusinessInfoTab from './tabs/BusinessInfoTab';
@@ -51,7 +52,9 @@ function ClientCardContent({ client, id }) {
   const users = usersRes?.data || [];
   const employeeUsers = users.filter((u) => u?.role === 'employee');
   const updateClientMutation = useUpdateClient();
+  const convertLeadMutation = useConvertLead();
   const [assignedTo, setAssignedTo] = useState('');
+  const [convertDialogOpen, setConvertDialogOpen] = useState(false);
 
   useEffect(() => {
     const currentAssigned = client?.metadata?.assignedTo?._id || client?.metadata?.assignedTo || '';
@@ -64,32 +67,53 @@ function ClientCardContent({ client, id }) {
     if (tabFromUrl) setActiveTab(tabFromUrl);
   }, [tabFromUrl]);
 
-  const isLead = client.status && client.status !== 'won';
+  const isLead = client.status && client.status !== 'won' && client.status !== 'completed';
 
-  const getStatusColor = (status) => {
-    const colors = {
-      new_lead: 'info',
-      contacted: 'primary',
-      engaged: 'warning',
-      meeting_set: 'warning',
-      proposal_sent: 'secondary',
-      won: 'success',
-      lost: 'error',
-    };
-    return colors[status] || 'default';
+  const ALL_STATUSES = {
+    new_lead: 'ליד חדש',
+    contacted: 'יצרנו קשר',
+    engaged: 'מעורבות',
+    meeting_set: 'פגישה נקבעה',
+    proposal_sent: 'הצעה נשלחה',
+    won: 'נסגר',
+    completed: 'הסתיים',
+    lost: 'הפסדנו',
   };
 
+  const handleStatusChange = (newStatus) => {
+    if (newStatus === 'won') {
+      setConvertDialogOpen(true);
+    } else {
+      updateClientMutation.mutate({ id, data: { status: newStatus } });
+    }
+  };
+
+  const handleConvertConfirm = (formData) => {
+    convertLeadMutation.mutate(
+      { clientId: id, data: formData },
+      {
+        onSuccess: () => {
+          setConvertDialogOpen(false);
+        },
+      }
+    );
+  };
+
+  const STATUS_STYLES = {
+    new_lead: { bg: '#1976d2', text: '#fff' },
+    contacted: { bg: '#7b1fa2', text: '#fff' },
+    engaged: { bg: '#e65100', text: '#fff' },
+    meeting_set: { bg: '#f57c00', text: '#fff' },
+    proposal_sent: { bg: '#512da8', text: '#fff' },
+    won: { bg: '#2e7d32', text: '#fff' },
+    completed: { bg: '#455a64', text: '#fff' },
+    lost: { bg: '#c62828', text: '#fff' },
+  };
+
+  const getStatusStyle = (status) => STATUS_STYLES[status] || { bg: '#9e9e9e', text: '#fff' };
+
   const getStatusLabel = (status) => {
-    const labels = {
-      new_lead: 'ליד חדש',
-      contacted: 'יצרנו קשר',
-      engaged: 'מעורבות',
-      meeting_set: 'פגישה נקבעה',
-      proposal_sent: 'הצעה נשלחה',
-      won: 'נסגר',
-      lost: 'הפסדנו',
-    };
-    return labels[status] || status;
+    return ALL_STATUSES[status] || status;
   };
 
   const extractWebsiteMessageFromInteraction = (content) => {
@@ -267,14 +291,35 @@ function ClientCardContent({ client, id }) {
                     gap: 1,
                     mt: 2,
                     flexWrap: 'wrap',
+                    alignItems: 'center',
                     justifyContent: { xs: 'center', sm: 'flex-start' },
                   }}
                 >
-                  <Chip
-                    label={getStatusLabel(client.status)}
-                    color={getStatusColor(client.status)}
-                    size="small"
-                  />
+                  <FormControl size="small" sx={{ minWidth: 140 }}>
+                    <Select
+                      value={client.status || 'new_lead'}
+                      onChange={(e) => handleStatusChange(e.target.value)}
+                      variant="standard"
+                      disableUnderline
+                      renderValue={(val) => (
+                        <Chip
+                          label={getStatusLabel(val)}
+                          size="small"
+                          sx={{ cursor: 'pointer', bgcolor: getStatusStyle(val).bg, color: getStatusStyle(val).text }}
+                        />
+                      )}
+                    >
+                      {Object.entries(ALL_STATUSES).map(([key, label]) => (
+                        <MenuItem key={key} value={key}>
+                          <Chip
+                            label={label}
+                            size="small"
+                            sx={{ cursor: 'pointer', bgcolor: getStatusStyle(key).bg, color: getStatusStyle(key).text }}
+                          />
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                   <Chip
                     label={`מקור: ${client.leadSource || '-'}`}
                     size="small"
@@ -382,6 +427,14 @@ function ClientCardContent({ client, id }) {
           {activeTab === 'projects' && <ProjectsTab clientId={id} />}
         </Box>
       </Card>
+
+      <ConvertLeadDialog
+        open={convertDialogOpen}
+        onClose={() => setConvertDialogOpen(false)}
+        onConfirm={handleConvertConfirm}
+        clientName={client.personalInfo?.fullName}
+        isPending={convertLeadMutation.isPending}
+      />
     </Box>
   );
 }

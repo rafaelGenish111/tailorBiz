@@ -27,15 +27,16 @@ if (IS_VERCEL) {
   });
 }
 
-// File filter - allow only PDF
-const fileFilter = (req, file, cb) => {
-  const isPdfExt = path.extname(file.originalname).toLowerCase() === '.pdf';
-  const isPdfMime = file.mimetype === 'application/pdf';
+// File filter - allow PDF and images
+const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png'];
+const ALLOWED_MIMES = ['application/pdf', 'image/jpeg', 'image/png'];
 
-  if (isPdfExt || isPdfMime) {
+const fileFilter = (req, file, cb) => {
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (ALLOWED_EXTENSIONS.includes(ext) || ALLOWED_MIMES.includes(file.mimetype)) {
     return cb(null, true);
   } else {
-    cb(new Error('רק קבצי PDF מותרים להצעות מחיר'));
+    cb(new Error('רק קבצי PDF ותמונות (JPG, PNG) מותרים'));
   }
 };
 
