@@ -14,7 +14,7 @@ const ArticleBlockSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ['hero', 'heading', 'paragraph', 'image', 'quote', 'cta', 'divider', 'list']
+      enum: ['hero', 'heading', 'header', 'paragraph', 'image', 'quote', 'cta', 'divider', 'delimiter', 'list']
     },
     data: { type: mongoose.Schema.Types.Mixed, default: {} }
   },
