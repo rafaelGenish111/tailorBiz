@@ -13,6 +13,33 @@ function generateSlug(title) {
   return slug;
 }
 
+function htmlToBlocks(html) {
+  const blocks = [];
+  const regex = /<(h[1-6])\b[^>]*>([\s\S]*?)<\/\1>|<p\b[^>]*>([\s\S]*?)<\/p>|<hr\s*\/?>|<ul\b[^>]*>([\s\S]*?)<\/ul>|<ol\b[^>]*>([\s\S]*?)<\/ol>/gi;
+  let match;
+  while ((match = regex.exec(html)) !== null) {
+    const [full, hTag, hContent, pContent, ulContent, olContent] = match;
+    if (hTag) {
+      const text = hContent.replace(/<[^>]+>/g, '').trim();
+      if (text) blocks.push({ type: 'header', data: { text, level: parseInt(hTag[1]) } });
+    } else if (pContent !== undefined) {
+      const text = pContent.trim();
+      if (text) blocks.push({ type: 'paragraph', data: { text } });
+    } else if (full.toLowerCase().startsWith('<hr')) {
+      blocks.push({ type: 'delimiter', data: {} });
+    } else if (ulContent !== undefined) {
+      const items = [...ulContent.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
+        .map(m => m[1].replace(/<[^>]+>/g, '').trim()).filter(Boolean);
+      if (items.length) blocks.push({ type: 'list', data: { style: 'unordered', items } });
+    } else if (olContent !== undefined) {
+      const items = [...olContent.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
+        .map(m => m[1].replace(/<[^>]+>/g, '').trim()).filter(Boolean);
+      if (items.length) blocks.push({ type: 'list', data: { style: 'ordered', items } });
+    }
+  }
+  return blocks.length ? blocks : [{ type: 'paragraph', data: { text: html } }];
+}
+
 router.post('/article', async (req, res) => {
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
@@ -25,7 +52,7 @@ router.post('/article', async (req, res) => {
     let slug = generateSlug(title.trim());
     const existing = await Article.findOne({ slug }).lean();
     if (existing) slug = `${slug}-${Date.now().toString(36)}`;
-    const blocks = content?.trim() ? [{ type: 'paragraph', data: { text: content.trim() } }] : [];
+    const blocks = content?.trim() ? htmlToBlocks(content) : [];
     const isPublished = status === 'published';
     const article = await Article.create({
       slug, title: title.trim(), excerpt: '', category: 'general', tags: [],
