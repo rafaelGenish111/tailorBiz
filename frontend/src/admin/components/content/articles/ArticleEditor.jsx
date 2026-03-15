@@ -32,7 +32,15 @@ function ArticleEditor({ open, onClose, article, onSave, saving }) {
   // Initialize from article prop. The parent uses key={article?._id || 'new'}
   // which forces a full remount when article changes, so initial state is safe.
   const initBlocks = article?.draft?.blocks || article?.published?.blocks || [];
-  const initContent = initBlocks.map((b) => b.data?.text || '').join('');
+  const initContent = initBlocks.map((b) => {
+    if (b.type === 'header') return `<h${b.data?.level || 2}>${b.data?.text || ''}</h${b.data?.level || 2}>`;
+    if (b.type === 'delimiter') return '<hr>';
+    if (b.type === 'list') {
+      const tag = b.data?.style === 'ordered' ? 'ol' : 'ul';
+      return `<${tag}>${(b.data?.items || []).map(i => `<li>${i}</li>`).join('')}</${tag}>`;
+    }
+    return b.data?.text || '';
+  }).join('');
 
   const [title, setTitle] = useState(article?.title || '');
   const [excerpt, setExcerpt] = useState(article?.excerpt || '');

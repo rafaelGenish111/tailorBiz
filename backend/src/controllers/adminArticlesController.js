@@ -18,6 +18,33 @@ function generateSlug(title) {
   return slug;
 }
 
+function htmlToBlocks(html) {
+  const blocks = [];
+  const regex = /<(h[1-6])\b[^>]*>([\s\S]*?)<\/\1>|<p\b[^>]*>([\s\S]*?)<\/p>|<hr\s*\/?>|<ul\b[^>]*>([\s\S]*?)<\/ul>|<ol\b[^>]*>([\s\S]*?)<\/ol>/gi;
+  let match;
+  while ((match = regex.exec(html)) !== null) {
+    const [full, hTag, hContent, pContent, ulContent, olContent] = match;
+    if (hTag) {
+      const text = hContent.replace(/<[^>]+>/g, '').trim();
+      if (text) blocks.push({ type: 'header', data: { text, level: parseInt(hTag[1]) } });
+    } else if (pContent !== undefined) {
+      const text = pContent.trim();
+      if (text) blocks.push({ type: 'paragraph', data: { text } });
+    } else if (full.toLowerCase().startsWith('<hr')) {
+      blocks.push({ type: 'delimiter', data: {} });
+    } else if (ulContent !== undefined) {
+      const items = [...ulContent.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
+        .map(m => m[1].replace(/<[^>]+>/g, '').trim()).filter(Boolean);
+      if (items.length) blocks.push({ type: 'list', data: { style: 'unordered', items } });
+    } else if (olContent !== undefined) {
+      const items = [...olContent.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
+        .map(m => m[1].replace(/<[^>]+>/g, '').trim()).filter(Boolean);
+      if (items.length) blocks.push({ type: 'list', data: { style: 'ordered', items } });
+    }
+  }
+  return blocks.length ? blocks : [{ type: 'paragraph', data: { text: html } }];
+}
+
 // GET /admin/articles
 exports.list = async (req, res) => {
   try {
@@ -90,11 +117,8 @@ exports.create = async (req, res) => {
       slug = `${slug}-${Date.now().toString(36)}`;
     }
 
-    // Build blocks from content (HTML from rich text editor)
-    const blocks = [];
-    if (content && content.trim()) {
-      blocks.push({ type: 'paragraph', data: { text: content.trim() } });
-    }
+    // Parse HTML from rich text editor into structured blocks
+    const blocks = content?.trim() ? htmlToBlocks(content) : [];
 
     const article = await Article.create({
       slug,
@@ -145,10 +169,7 @@ exports.update = async (req, res) => {
 
     // Update draft blocks from HTML content
     if (content !== undefined) {
-      const blocks = [];
-      if (content && content.trim()) {
-        blocks.push({ type: 'paragraph', data: { text: content.trim() } });
-      }
+      const blocks = content?.trim() ? htmlToBlocks(content) : [];
       article.draft = { blocks };
     }
 
