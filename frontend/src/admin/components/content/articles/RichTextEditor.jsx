@@ -26,22 +26,9 @@ import {
   HorizontalRule,
 } from '@mui/icons-material';
 
-function MenuBar({ editor }) {
-  if (!editor) return null;
-
-  const addLink = () => {
-    const url = window.prompt('הכנס כתובת URL:');
-    if (!url) return;
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-  };
-
-  const addImage = () => {
-    const url = window.prompt('הכנס כתובת תמונה (URL):');
-    if (!url) return;
-    editor.chain().focus().setImage({ src: url }).run();
-  };
-
-  const ToolbarButton = ({ onClick, active, title, children }) => (
+// Extracted outside of render to avoid "Cannot create components during render"
+function ToolbarButton({ onClick, active, title, children }) {
+  return (
     <Tooltip title={title} arrow placement="top">
       <IconButton
         size="small"
@@ -57,6 +44,22 @@ function MenuBar({ editor }) {
       </IconButton>
     </Tooltip>
   );
+}
+
+function MenuBar({ editor }) {
+  if (!editor) return null;
+
+  const addLink = () => {
+    const url = window.prompt('הכנס כתובת URL:');
+    if (!url) return;
+    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+  };
+
+  const addImage = () => {
+    const url = window.prompt('הכנס כתובת תמונה (URL):');
+    if (!url) return;
+    editor.chain().focus().setImage({ src: url }).run();
+  };
 
   return (
     <Box

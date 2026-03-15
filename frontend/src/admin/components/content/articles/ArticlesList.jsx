@@ -96,9 +96,6 @@ function ArticlesList() {
     setArticleToDelete(null);
   };
 
-  // Count drafts and published
-  const allData = data?.data || [];
-
   // DataGrid columns
   const columns = [
     {

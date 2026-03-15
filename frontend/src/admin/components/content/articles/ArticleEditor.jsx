@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -29,39 +29,19 @@ function ArticleEditor({ open, onClose, article, onSave, saving }) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
-  const [title, setTitle] = useState('');
-  const [excerpt, setExcerpt] = useState('');
-  const [category, setCategory] = useState('general');
-  const [content, setContent] = useState('');
-  const [tagsInput, setTagsInput] = useState('');
-  const [tags, setTags] = useState([]);
-  const [seoTitle, setSeoTitle] = useState('');
-  const [seoDescription, setSeoDescription] = useState('');
+  // Initialize from article prop. The parent uses key={article?._id || 'new'}
+  // which forces a full remount when article changes, so initial state is safe.
+  const initBlocks = article?.draft?.blocks || article?.published?.blocks || [];
+  const initContent = initBlocks.map((b) => b.data?.text || '').join('');
 
-  // Load article data when editing
-  useEffect(() => {
-    if (article) {
-      setTitle(article.title || '');
-      setExcerpt(article.excerpt || '');
-      setCategory(article.category || 'general');
-      setTags(article.tags || []);
-      setSeoTitle(article.seo?.title || '');
-      setSeoDescription(article.seo?.description || '');
-      // Extract content from draft blocks
-      const blocks = article.draft?.blocks || article.published?.blocks || [];
-      const htmlContent = blocks.map((b) => b.data?.text || '').join('');
-      setContent(htmlContent);
-    } else {
-      setTitle('');
-      setExcerpt('');
-      setCategory('general');
-      setContent('');
-      setTags([]);
-      setTagsInput('');
-      setSeoTitle('');
-      setSeoDescription('');
-    }
-  }, [article]);
+  const [title, setTitle] = useState(article?.title || '');
+  const [excerpt, setExcerpt] = useState(article?.excerpt || '');
+  const [category, setCategory] = useState(article?.category || 'general');
+  const [content, setContent] = useState(initContent);
+  const [tagsInput, setTagsInput] = useState('');
+  const [tags, setTags] = useState(article?.tags || []);
+  const [seoTitle, setSeoTitle] = useState(article?.seo?.title || '');
+  const [seoDescription, setSeoDescription] = useState(article?.seo?.description || '');
 
   const handleAddTag = () => {
     const tag = tagsInput.trim();
