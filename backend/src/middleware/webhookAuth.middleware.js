@@ -1,12 +1,12 @@
 /**
  * Webhook authentication middleware.
  * Validates a static Bearer token from the Authorization header
- * against the CLAUDE_WEBHOOK_SECRET environment variable.
+ * against WEBHOOK_SECRET (or CLAUDE_WEBHOOK_SECRET) environment variable.
  */
 const verifyWebhookToken = (req, res, next) => {
-  const secret = process.env.CLAUDE_WEBHOOK_SECRET;
+  const secret = process.env.WEBHOOK_SECRET || process.env.CLAUDE_WEBHOOK_SECRET;
   if (!secret) {
-    console.error('[Webhook] CLAUDE_WEBHOOK_SECRET is not configured');
+    console.error('[Webhook] WEBHOOK_SECRET is not configured');
     return res.status(500).json({ success: false, message: 'Webhook secret not configured on server' });
   }
 

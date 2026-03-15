@@ -28,7 +28,8 @@
       "Bash(xargs ls:*)",
       "Bash(ls -1 /Users/bestflow/Documents/projects/active/bizflow-website/backend/src/routes/*.js)",
       "Bash(xargs basename:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(node -e \":*)"
     ]
   }
 }
