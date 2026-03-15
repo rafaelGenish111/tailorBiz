@@ -30,7 +30,7 @@ const TYPE_LABELS = {
 
 const emptyForm = { type: 'call', direction: 'outbound', subject: '', notes: '' };
 
-const ProjectInteractionsTab = ({ project, projectId }) => {
+const ProjectInteractionsTab = ({ projectId }) => {
   const queryClient = useQueryClient();
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);

@@ -22,7 +22,7 @@ const resolveFileUrl = (url) => {
 const ProjectContractTab = ({ project, projectId }) => {
   const queryClient = useQueryClient();
   const contract = project?.contract;
-  const [file, setFile] = useState(null);
+  const [_file, setFile] = useState(null);
   const [notes, setNotes] = useState(contract?.notes || '');
 
   const updateMutation = useMutation({

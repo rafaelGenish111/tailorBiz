@@ -21,7 +21,7 @@ const CATEGORY_LABELS = {
   other: 'אחר',
 };
 
-const ProjectDocumentsTab = ({ project, projectId }) => {
+const ProjectDocumentsTab = ({ projectId }) => {
   const queryClient = useQueryClient();
   const [uploadOpen, setUploadOpen] = useState(false);
   const [form, setForm] = useState({ description: '', category: 'other' });

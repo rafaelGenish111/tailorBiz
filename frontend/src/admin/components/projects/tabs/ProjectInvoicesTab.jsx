@@ -22,7 +22,7 @@ const STATUS_COLORS = {
   cancelled: 'default',
 };
 
-const ProjectInvoicesTab = ({ project, projectId }) => {
+const ProjectInvoicesTab = ({ projectId }) => {
   const { data: res, isLoading } = useQuery({
     queryKey: ['projectInvoices', projectId],
     queryFn: () => projectsAPI.getInvoices(projectId).then((r) => r.data),
