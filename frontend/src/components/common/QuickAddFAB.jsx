@@ -57,11 +57,12 @@ const QuickAddFAB = () => {
         ariaLabel="הוספת ליד מהירה"
         sx={{
           position: 'fixed',
-          bottom: 24,
-          left: 24,
+          // Above bottom nav on mobile (60px nav + safe area + spacing)
+          bottom: { xs: 76, md: 24 },
+          left: { xs: 16, md: 24 },
           '& .MuiFab-primary': {
-            width: 64,
-            height: 64
+            width: { xs: 52, md: 64 },
+            height: { xs: 52, md: 64 },
           }
         }}
         icon={<SpeedDialIcon icon={<PersonAddIcon />} />}

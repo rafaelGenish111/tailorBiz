@@ -9,26 +9,51 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      // קבצים סטטיים שייכנסו לבילד
       includeAssets: [
         'assets/images/icon.png',
+        'assets/images/icon-192.png',
+        'assets/images/icon-maskable.png',
         'robots.txt',
         'logo.png'
       ],
-      // FIX: Increase the file size limit for caching (set to 4MB)
       workbox: {
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        // Cache only admin routes and assets - not the public site
+        navigateFallbackAllowlist: [/^\/admin/],
+        runtimeCaching: [
+          {
+            // Cache API calls for offline support
+            urlPattern: /^.*\/api\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: { maxEntries: 50, maxAgeSeconds: 300 },
+              networkTimeoutSeconds: 5,
+            },
+          },
+          {
+            // Cache fonts
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+        ],
       },
       manifest: {
         name: 'TailorBiz CRM',
         short_name: 'TailorBiz',
-        description: 'Business Management System',
-        theme_color: '#00FF99',
-        background_color: '#0A0A0A',
+        description: 'ניהול העסק שלך מכל מקום',
+        theme_color: '#232f3e',
+        background_color: '#232f3e',
         display: 'standalone',
         orientation: 'portrait',
-        // מאיפה האפליקציה תיפתח כשמתקינים אותה
-        start_url: '/admin/dashboard',
+        scope: '/admin',
+        start_url: '/admin',
+        id: '/admin',
+        categories: ['business', 'productivity'],
         icons: [
           {
             src: 'assets/images/icon.png',
@@ -37,7 +62,13 @@ export default defineConfig({
             purpose: 'any'
           },
           {
-            src: 'assets/images/icon.png',
+            src: 'assets/images/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: 'assets/images/icon-maskable.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
