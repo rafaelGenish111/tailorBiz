@@ -27,7 +27,7 @@ const ArticlePage = () => {
     return (
       <Box sx={{ py: 8 }}>
         <Container maxWidth="md">
-          <Typography color="text.secondary">טוען מאמר…</Typography>
+          <Typography color="text.secondary">טוען פוסט…</Typography>
         </Container>
       </Box>
     );
@@ -37,7 +37,7 @@ const ArticlePage = () => {
     return (
       <Box sx={{ py: 8 }}>
         <Container maxWidth="md">
-          <Typography variant="h5" fontWeight={700}>מאמר לא נמצא</Typography>
+          <Typography variant="h5" fontWeight={700}>הפוסט לא נמצא</Typography>
         </Container>
       </Box>
     );

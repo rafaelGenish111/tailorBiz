@@ -21,6 +21,7 @@ import {
 } from '@mui/icons-material';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
+import ArticleIcon from '@mui/icons-material/Article';
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { getCurrentUserFromQueryData, hasAnyModuleAccess, hasModuleAccess, useCurrentUserQuery } from '../../hooks/useCurrentUser';
@@ -34,6 +35,9 @@ const menuItems = [
   { text: 'לידים', icon: <ClientsIcon />, path: '/admin/leads', requiredModule: 'leads' },
   { text: 'לקוחות', icon: <ClientsIcon />, path: '/admin/customers', requiredModule: 'clients' },
   { text: 'פרויקטים', icon: <ProjectsIcon />, path: '/admin/projects', anyOfModules: ['clients', 'invoices_docs'] },
+
+  { divider: true, label: 'תוכן' },
+  { text: 'מאמרים', icon: <ArticleIcon />, path: '/admin/articles', anyOfModules: ['cms', 'settings'] },
 
   { divider: true, label: 'התקנות' },
   { text: 'התקנת WhatsApp', icon: <WhatsAppIcon />, path: '/admin/whatsapp-setup', anyOfModules: ['leads', 'clients', 'settings'] },

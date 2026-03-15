@@ -42,6 +42,7 @@ function getRulesForPath(pathname) {
   // CMS
   if (
     p.startsWith('/admin/testimonials') ||
+    p.startsWith('/admin/articles') ||
     p.startsWith('/admin/cms') ||
     p.startsWith('/admin/blog') ||
     p.startsWith('/admin/portfolio') ||

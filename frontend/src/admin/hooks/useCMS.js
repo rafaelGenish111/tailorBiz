@@ -99,6 +99,19 @@ export const usePublishAdminArticle = () => {
   });
 };
 
+export const useUnpublishAdminArticle = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => adminArticlesAPI.unpublish(id),
+    onSuccess: (_, id) => {
+      qc.invalidateQueries(['admin-articles']);
+      qc.invalidateQueries(['admin-article', id]);
+      toast.success('מאמר הוסר מפרסום');
+    },
+    onError: (e) => toast.error(e.response?.data?.message || 'שגיאה בהסרת פרסום')
+  });
+};
+
 export const useDeleteAdminArticle = () => {
   const qc = useQueryClient();
   return useMutation({

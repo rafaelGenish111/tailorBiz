@@ -12,6 +12,7 @@ import AdminPathGuard from '../components/auth/AdminPathGuard';
 import WhatsAppSetupPage from '../../pages/WhatsAppSetupPage';
 import BulkWhatsAppPage from '../../pages/BulkWhatsAppPage';
 import BotConfigPage from './BotConfigPage';
+import ArticlesList from '../components/content/articles/ArticlesList';
 
 function AdminPanel() {
   return (
@@ -30,6 +31,7 @@ function AdminPanel() {
           <Route path="settings" element={<RequireModuleAccess requiredModule="settings"><SiteSettingsPage /></RequireModuleAccess>} />
           <Route path="employees" element={<RequireModuleAccess adminOnly><EmployeesPage /></RequireModuleAccess>} />
           <Route path="bot-config" element={<RequireModuleAccess requiredModule="settings"><BotConfigPage /></RequireModuleAccess>} />
+          <Route path="articles" element={<RequireModuleAccess anyOfModules={['cms', 'settings']}><ArticlesList /></RequireModuleAccess>} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>
       </AdminPathGuard>

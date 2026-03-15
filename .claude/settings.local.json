@@ -23,7 +23,12 @@
       "Bash(sips -z 192 192 public/assets/images/icon.png --out public/assets/images/icon-192.png)",
       "Bash(open /Users/bestflow/Documents/projects/active/bizflow-website/landing-pages/tailorbiz/index.html)",
       "Bash(npx vite:*)",
-      "Bash(python3 -m json.tool)"
+      "Bash(python3 -m json.tool)",
+      "Bash(find /Users/bestflow/Documents/projects/active/bizflow-website/frontend/src/admin -type f -name *article* -o -name *cms*)",
+      "Bash(xargs ls:*)",
+      "Bash(ls -1 /Users/bestflow/Documents/projects/active/bizflow-website/backend/src/routes/*.js)",
+      "Bash(xargs basename:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

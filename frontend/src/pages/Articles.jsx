@@ -38,7 +38,7 @@ const Articles = () => {
       <Container maxWidth="lg">
         <Stack spacing={2} sx={{ mb: 5, textAlign: 'center' }}>
           <Typography variant="h3" fontWeight={700}>
-            מאמרים
+            בלוג
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 720, mx: 'auto' }}>
             תכנים מובנים על תהליכים, אוטומציות וניהול עסק — בצורה נקייה ומעשית.
@@ -71,7 +71,7 @@ const Articles = () => {
             <Grid item xs={12} sm={6} md={4} key={a.slug}>
               <Card
                 component={Link}
-                to={`/articles/${a.slug}`}
+                to={`/blog/${a.slug}`}
                 sx={{
                   textDecoration: 'none',
                   height: '100%',
@@ -108,7 +108,7 @@ const Articles = () => {
 
         {!loading && (!items || items.length === 0) ? (
           <Box sx={{ textAlign: 'center', py: 6 }}>
-            <Typography color="text.secondary">אין מאמרים להצגה כרגע.</Typography>
+            <Typography color="text.secondary">אין פוסטים להצגה כרגע.</Typography>
           </Box>
         ) : null}
       </Container>

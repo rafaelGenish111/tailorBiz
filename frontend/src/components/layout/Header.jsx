@@ -25,10 +25,10 @@ import { publicCMS } from '../../utils/publicApi';
 const LOGO_SRC = '/logo.png';
 
 const articleCategories = [
-  { label: 'אוטומציות', value: 'automation', path: '/articles?category=automation' },
-  { label: 'תהליכים', value: 'process', path: '/articles?category=process' },
-  { label: 'CRM', value: 'crm', path: '/articles?category=crm' },
-  { label: 'כללי', value: 'general', path: '/articles?category=general' },
+  { label: 'אוטומציות', value: 'automation', path: '/blog?category=automation' },
+  { label: 'תהליכים', value: 'process', path: '/blog?category=process' },
+  { label: 'CRM', value: 'crm', path: '/blog?category=crm' },
+  { label: 'כללי', value: 'general', path: '/blog?category=general' },
 ];
 
 function Header() {
@@ -177,7 +177,7 @@ function Header() {
                   },
                 }}
               >
-                מאמרים
+                בלוג
               </MuiButton>
               <Menu
                 anchorEl={articlesAnchorEl}
@@ -187,10 +187,10 @@ function Header() {
               >
                 <MenuItem
                   component={Link}
-                  to="/articles"
+                  to="/blog"
                   onClick={() => setArticlesAnchorEl(null)}
                 >
-                  כל המאמרים
+                  כל הפוסטים
                 </MenuItem>
                 {articleCategories.map((category) => {
                   const hasArticles = articlesByCategory[category.value]?.length > 0;
@@ -206,7 +206,7 @@ function Header() {
                     >
                       <MenuItem
                         component={Link}
-                        to={`/articles?category=${category.value}`}
+                        to={`/blog?category=${category.value}`}
                         onClick={() => {
                           setArticlesAnchorEl(null);
                           handleCategorySubmenuClose(category.value);
@@ -245,7 +245,7 @@ function Header() {
                             <MenuItem
                               key={article.slug}
                               component={Link}
-                              to={`/articles/${article.slug}`}
+                              to={`/blog/${article.slug}`}
                               onClick={() => {
                                 setArticlesAnchorEl(null);
                                 handleCategorySubmenuClose(category.value);
@@ -373,7 +373,7 @@ function Header() {
           >
             <Box
               component={Link}
-              to="/articles"
+              to="/blog"
               onClick={() => setMobileOpen(false)}
               sx={{
                 textDecoration: 'none',
@@ -382,7 +382,7 @@ function Header() {
                 mb: 1,
               }}
             >
-              מאמרים
+              בלוג
             </Box>
             {articleCategories.map((category) => {
               const hasArticles = articlesByCategory[category.value]?.length > 0;
@@ -408,7 +408,7 @@ function Header() {
                   >
                     <Box
                       component={Link}
-                      to={`/articles?category=${category.value}`}
+                      to={`/blog?category=${category.value}`}
                       onClick={() => setMobileOpen(false)}
                       sx={{ flex: 1, textDecoration: 'none', color: 'inherit' }}
                     >
@@ -431,7 +431,7 @@ function Header() {
                           <ListItem
                             key={article.slug}
                             component={Link}
-                            to={`/articles/${article.slug}`}
+                            to={`/blog/${article.slug}`}
                             onClick={() => setMobileOpen(false)}
                             sx={{
                               py: 1.5,

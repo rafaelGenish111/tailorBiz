@@ -151,8 +151,8 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/about" element={<About />} />
-                  <Route path="/articles" element={<Articles />} />
-                  <Route path="/articles/:slug" element={<ArticlePage />} />
+                  <Route path="/blog" element={<Articles />} />
+                  <Route path="/blog/:slug" element={<ArticlePage />} />
                   <Route path="/services" element={<ServicesPage />} />
                   <Route path="/services/saas-creators" element={<SaasCreators />} />
                   <Route path="/services/ai-institutions" element={<AiInstitutions />} />

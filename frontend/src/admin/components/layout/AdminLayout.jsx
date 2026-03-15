@@ -24,6 +24,7 @@ const pageTitles = {
   '/admin/whatsapp-setup': 'WhatsApp',
   '/admin/whatsapp-broadcast': 'WhatsApp שליחה',
   '/admin/bot-config': 'בוט AI',
+  '/admin/articles': 'מאמרים',
 };
 
 function getPageTitle(pathname) {
