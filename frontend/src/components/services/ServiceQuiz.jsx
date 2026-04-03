@@ -48,7 +48,7 @@ const questions = [
   {
     id: 'businessType',
     question: 'מה הכי מתאר את העסק שלך?',
-    subtitle: 'נתחיל מההתחלה — סוג העסק קובע את סוג הפתרון',
+    subtitle: 'נתחיל מההתחלה - סוג העסק קובע את סוג הפתרון',
     options: [
       {
         value: 'coach',
@@ -90,7 +90,7 @@ const questions = [
   {
     id: 'mainPain',
     question: 'מה הכאב הכי גדול שלך היום?',
-    subtitle: 'בחר/י את מה ששורף הכי הרבה — מכאן נתחיל',
+    subtitle: 'בחר/י את מה ששורף הכי הרבה - מכאן נתחיל',
     options: [
       {
         value: 'lead_loss',
@@ -121,7 +121,7 @@ const questions = [
   {
     id: 'currentTools',
     question: 'איך את/ה מנהל/ת את הלקוחות והלידים היום?',
-    subtitle: 'אין תשובה נכונה או לא — רק רוצים לדעת מאיפה מתחילים',
+    subtitle: 'אין תשובה נכונה או לא - רק רוצים לדעת מאיפה מתחילים',
     options: [
       {
         value: 'manual',
@@ -152,29 +152,29 @@ const questions = [
   {
     id: 'priority',
     question: 'מה הדבר הכי חשוב לך במערכת חדשה?',
-    subtitle: 'אם היית יכול/ה לפתור דבר אחד מחר — מה זה היה?',
+    subtitle: 'אם היית יכול/ה לפתור דבר אחד מחר - מה זה היה?',
     options: [
       {
         value: 'automation',
-        label: 'אוטומציה — שהמערכת תעבוד בשבילי',
-        description: 'תזכורות, פולו-אפ, עדכונים — הכל אוטומטי',
+        label: 'אוטומציה - שהמערכת תעבוד בשבילי',
+        description: 'תזכורות, פולו-אפ, עדכונים - הכל אוטומטי',
         icon: Zap,
       },
       {
         value: 'crm_order',
-        label: 'סדר — לראות הכל במקום אחד',
+        label: 'סדר - לראות הכל במקום אחד',
         description: 'CRM נקי עם תמונת מצב ברורה',
         icon: LayoutDashboard,
       },
       {
         value: 'billing',
-        label: 'גבייה — חיוב אוטומטי בלי לרדוף',
+        label: 'גבייה - חיוב אוטומטי בלי לרדוף',
         description: 'סליקה, הוראות קבע, חשבוניות',
         icon: CreditCard,
       },
       {
         value: 'ai_response',
-        label: 'מענה מיידי — בוט שעונה במקומי',
+        label: 'מענה מיידי - בוט שעונה במקומי',
         description: 'סוכן AI שמטפל בפניות 24/7',
         icon: Bot,
       },
@@ -185,7 +185,7 @@ const questions = [
     question: 'מתי את/ה רוצה להתחיל?',
     subtitle: 'עוזר לנו להבין את רמת הדחיפות',
     options: [
-      { value: 'asap', label: 'בהקדם — שורף!', description: 'אני מוכן/ה מחר בבוקר', icon: Flame },
+      { value: 'asap', label: 'בהקדם - שורף!', description: 'אני מוכן/ה מחר בבוקר', icon: Flame },
       { value: 'month', label: 'תוך חודש-חודשיים', description: 'יש זמן לתכנן נכון', icon: Calendar },
       { value: 'exploring', label: 'רק בודק/ת אפשרויות', description: 'משווה ולומד/ת', icon: Search },
       { value: 'next_launch', label: 'לקראת השקה הבאה', description: 'מתכנן/ת השקה ורוצה להיות מוכן/ה', icon: Target },
@@ -194,7 +194,7 @@ const questions = [
   {
     id: 'budget',
     question: 'מה טווח ההשקעה שנוח לך?',
-    subtitle: 'אין לחץ — זה עוזר לנו להתאים את החבילה הנכונה',
+    subtitle: 'אין לחץ - זה עוזר לנו להתאים את החבילה הנכונה',
     options: [
       {
         value: 'starter',
@@ -234,7 +234,7 @@ const recommendations = {
     title: 'חבילת "השקה חכמה"',
     subtitle: 'SaaS למאמנים ויוצרי תוכן',
     description:
-      'דשבורד CRM, קליטת לידים, אינטגרציית סליקה ו-2 תרחישי אוטומציה — הבסיס לעסק מסודר.',
+      'דשבורד CRM, קליטת לידים, אינטגרציית סליקה ו-2 תרחישי אוטומציה - הבסיס לעסק מסודר.',
     features: [
       'דשבורד CRM מלא',
       'קליטת לידים מדף נחיתה',
@@ -284,7 +284,7 @@ const recommendations = {
     title: 'סוכן מומחה סילבוס (RAG)',
     subtitle: 'AI למרכזי הכשרה ומוסדות',
     description:
-      'בוט שעבר אימון על מסמכי המוסד שלכם — עונה על סילבוסים, דרישות קדם ותנאי קבלה.',
+      'בוט שעבר אימון על מסמכי המוסד שלכם - עונה על סילבוסים, דרישות קדם ותנאי קבלה.',
     features: [
       'הכל מחבילת Basic',
       'אימון RAG על מסמכי המוסד',
@@ -298,7 +298,7 @@ const recommendations = {
   ai_premium: {
     id: 'ai_premium',
     track: 'ai',
-    title: 'סוכן פרימיום — סגירת מעגל',
+    title: 'סוכן פרימיום - סגירת מעגל',
     subtitle: 'AI למרכזי הכשרה ומוסדות',
     description:
       'סוכן מומחה + אינטגרציה ליומני יועצים, קביעת פגישות ושליחת לינק מקדמה אוטומטי.',
@@ -365,7 +365,7 @@ function ServiceQuiz() {
     if (currentStep < totalSteps - 1) {
       setTimeout(() => setCurrentStep((prev) => prev + 1), 300);
     } else {
-      // Last question — compute recommendation
+      // Last question - compute recommendation
       setTimeout(() => {
         setRecommendation(getRecommendation(newAnswers));
         setCurrentStep(totalSteps); // result screen
@@ -450,7 +450,7 @@ function ServiceQuiz() {
               fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
             }}
           >
-            ענו על 7 שאלות קצרות — והבוט החכם שלנו ימליץ על הפתרון המושלם בשבילכם.
+            ענו על 7 שאלות קצרות - והבוט החכם שלנו ימליץ על הפתרון המושלם בשבילכם.
           </Typography>
         </MotionBox>
 

@@ -360,7 +360,7 @@ const BulkWhatsAppPage = () => {
                     </List>
                     {filteredCandidates.length > 100 && (
                       <Typography variant="caption" color="text.secondary" sx={{ px: 2, py: 1, display: 'block' }}>
-                        מוצגים 100 ראשונים מתוך {filteredCandidates.length} — השתמש בחיפוש לצמצום
+                        מוצגים 100 ראשונים מתוך {filteredCandidates.length} - השתמש בחיפוש לצמצום
                       </Typography>
                     )}
                   </Box>

@@ -41,7 +41,7 @@ const Articles = () => {
             בלוג
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 720, mx: 'auto' }}>
-            תכנים מובנים על תהליכים, אוטומציות וניהול עסק — בצורה נקייה ומעשית.
+            תכנים מובנים על תהליכים, אוטומציות וניהול עסק - בצורה נקייה ומעשית.
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <TextField

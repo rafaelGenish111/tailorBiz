@@ -522,7 +522,7 @@ function ClientForm({ open, onClose, client }) {
                           : (client?.leadSource === 'referral' ? 'מומלץ לבחור מפנה כשמקור הליד הוא המלצה' : '')
                       }
                     >
-                      <MenuItem value="">— ללא —</MenuItem>
+                      <MenuItem value="">- ללא -</MenuItem>
                       {referrers.map((r) => (
                         <MenuItem key={r._id} value={r._id}>
                           {r.displayName}

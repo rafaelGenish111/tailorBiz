@@ -1,9 +1,9 @@
 # תוכנית: סנכרון דו-כיווני Notion ↔ CRM
 
 ## מצב קיים
-- `notionService.js` — שירות חד-כיווני CRM→Notion (יוצר/מעדכן דפים ב-Notion)
-- `notionSyncService.js` — fire-and-forget עם retry, נקרא אחרי כל create/update של פרויקט
-- `notionRoutes.js` — admin endpoints: status, sync-all, sync/:projectId
+- `notionService.js` - שירות חד-כיווני CRM→Notion (יוצר/מעדכן דפים ב-Notion)
+- `notionSyncService.js` - fire-and-forget עם retry, נקרא אחרי כל create/update של פרויקט
+- `notionRoutes.js` - admin endpoints: status, sync-all, sync/:projectId
 - Project model כבר מכיל `notionPageId` לקישור עם Notion
 - **אין כרגע סנכרון הפוך** (Notion→CRM)
 - ה-database הישן ב-Notion (`NOTION_DATABASE_ID`) שונה מהחדש שיצרנו (דשבורד מנכ"ל)
@@ -24,30 +24,30 @@
   - `project.endDate` → "תאריך יעד למסירה"
 - עדכון `NOTION_DATABASE_ID` ב-.env ל-database החדש
 
-### כיוון 2: Notion → CRM (חדש — polling)
+### כיוון 2: Notion → CRM (חדש - polling)
 Notion לא תומך ב-webhooks, לכן נשתמש ב-**cron polling**:
 
-- **Cron job חדש** כל 2 דקות — שואל את Notion API על שינויים
+- **Cron job חדש** כל 2 דקות - שואל את Notion API על שינויים
 - שימוש ב-`notion.databases.query()` עם `filter_properties` ו-`sorts` by `last_edited_time`
 - שמירת `lastSyncedAt` timestamp בזיכרון (או ב-DB) להשוואת שינויים
 - **מיפוי הפוך**: קריאת properties מ-Notion ועדכון MongoDB
 - **מניעת לולאה**: כשה-cron מעדכן MongoDB, הוא מסמן flag `_notionTriggered: true` כדי שה-CRM→Notion sync לא ישלח חזרה את אותו שינוי
 
 ### פתרון התנגשויות (Conflict Resolution)
-- **Last write wins** — מי שעדכן אחרון מנצח
+- **Last write wins** - מי שעדכן אחרון מנצח
 - הוספת שדה `notionLastEditedAt` ב-Project model כדי לזהות שינויים חדשים
 
 ## קבצים לשנות/ליצור
 
 ### שינויים
-1. **`backend/src/services/notionService.js`** — עדכון `buildProperties()` ו-`buildPropertiesReverse()` למיפוי החדש
-2. **`backend/src/services/notionSyncService.js`** — הוספת `pullFromNotion()` method + cron job
-3. **`backend/src/models/Project.js`** — הוספת `notionLastEditedAt` field
-4. **`backend/.env`** — עדכון `NOTION_DATABASE_ID` ל-database החדש
+1. **`backend/src/services/notionService.js`** - עדכון `buildProperties()` ו-`buildPropertiesReverse()` למיפוי החדש
+2. **`backend/src/services/notionSyncService.js`** - הוספת `pullFromNotion()` method + cron job
+3. **`backend/src/models/Project.js`** - הוספת `notionLastEditedAt` field
+4. **`backend/.env`** - עדכון `NOTION_DATABASE_ID` ל-database החדש
 
 ### ללא שינוי
 - Routes נשארים כמו שהם (כבר יש sync-all ו-sync/:id)
-- Frontend לא צריך שינוי — הנתונים מתעדכנים ב-MongoDB והתצוגה נשארת
+- Frontend לא צריך שינוי - הנתונים מתעדכנים ב-MongoDB והתצוגה נשארת
 
 ## מיפוי שדות מפורט
 
@@ -71,9 +71,9 @@ Notion לא תומך ב-webhooks, לכן נשתמש ב-**cron polling**:
 | תאריך יעד למסירה | `project.endDate` | Date |
 
 ## סדר ביצוע
-1. עדכון Project model — הוספת `notionLastEditedAt`
-2. שכתוב `notionService.js` — מיפוי חדש + reverse mapping
-3. שכתוב `notionSyncService.js` — הוספת polling cron + pull logic
-4. עדכון `.env` — NOTION_DATABASE_ID חדש
+1. עדכון Project model - הוספת `notionLastEditedAt`
+2. שכתוב `notionService.js` - מיפוי חדש + reverse mapping
+3. שכתוב `notionSyncService.js` - הוספת polling cron + pull logic
+4. עדכון `.env` - NOTION_DATABASE_ID חדש
 5. בדיקה: sync-all לסנכרון ראשוני CRM→Notion
 6. בדיקה: שינוי ידני ב-Notion ווידוא שהוא מגיע ל-MongoDB

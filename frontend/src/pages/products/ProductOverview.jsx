@@ -131,7 +131,7 @@ function ProductOverview() {
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
                       {rich.included.map((item, i) => (
                         <Box key={i}>
-                          <Typography component="span" sx={{ ...textSx, fontWeight: 600 }}>{item.title} — </Typography>
+                          <Typography component="span" sx={{ ...textSx, fontWeight: 600 }}>{item.title} - </Typography>
                           <Typography component="span" sx={textSx}>{item.desc}</Typography>
                         </Box>
                       ))}

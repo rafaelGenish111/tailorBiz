@@ -64,7 +64,7 @@ function HeroSection() {
         <source src={VIDEO_SRC} type="video/mp4" />
       </Box>
 
-      {/* Dark radial vignette — "black hole" effect:
+      {/* Dark radial vignette - "black hole" effect:
           Darkest in the center (where text lives), video peeks through at edges */}
       <Box
         sx={{
@@ -105,7 +105,7 @@ function HeroSection() {
               mb: { xs: 3, md: 4 },
             }}
           >
-            TaylorBiz — פיתוח מערכות
+            TaylorBiz - פיתוח מערכות
           </Typography>
         </motion.div>
 

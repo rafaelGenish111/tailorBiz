@@ -60,7 +60,7 @@ async function createApp() {
         const cloudCodeExists = fs.existsSync(cloudCodePath);
 
         if (!process.env.APP_ID || !process.env.MASTER_KEY) {
-          console.warn('[Parse Server] APP_ID or MASTER_KEY not set — skipping Parse Server initialization.');
+          console.warn('[Parse Server] APP_ID or MASTER_KEY not set - skipping Parse Server initialization.');
         }
         const parseConfig = {
           databaseURI: mongoUri,

@@ -34,7 +34,7 @@ function ProductDemo() {
           transition={{ duration: 0.6 }}
         >
           <Typography variant="h3" sx={{ mb: 2, fontWeight: 800, color: '#FFFFFF', fontSize: { xs: '1.75rem', md: '2.5rem' }, fontFamily: "'Heebo', system-ui, sans-serif" }}>
-            {demoContent?.title || 'הדגמה — פעילות האפליקציה ו-Workflow'}
+            {demoContent?.title || 'הדגמה - פעילות האפליקציה ו-Workflow'}
           </Typography>
 
           {demoContent ? (

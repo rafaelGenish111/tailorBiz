@@ -284,7 +284,7 @@ function TestimonialsList() {
                           {t.clientName}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" noWrap>
-                          {t.companyName || '—'} {t.clientRole ? `• ${t.clientRole}` : ''}
+                          {t.companyName || '-'} {t.clientRole ? `• ${t.clientRole}` : ''}
                         </Typography>
                       </Box>
 

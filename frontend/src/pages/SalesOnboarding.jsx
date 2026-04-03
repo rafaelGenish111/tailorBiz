@@ -510,7 +510,7 @@ const PlaybookSection = () => {
         { speaker: 'אתה', text: 'אמרת שאתה משתמש בפריוריטי לניהול מלאי ובמאנדיי למשימות. כשלקוח מבצע הזמנה, איך המידע עובר ביניהן?' },
         { speaker: 'לקוח', text: 'המזכירה מעתיקה ידנית...' },
         { speaker: 'אתה', text: 'וכמה זמן זה לוקח לה ביום? קרה פעם שהייתה טעות בהעתקה?' },
-        { speaker: 'אתה', text: 'אם היית יכול ללחוץ על כפתור וזה היה קורה לבד — מה היית עושה עם הזמן שהתפנה?' }
+        { speaker: 'אתה', text: 'אם היית יכול ללחוץ על כפתור וזה היה קורה לבד - מה היית עושה עם הזמן שהתפנה?' }
       ]
     },
     {
@@ -519,7 +519,7 @@ const PlaybookSection = () => {
       goal: 'הסטת הדיון מעלות להשקעה (ROI).',
       content: [
         { speaker: 'לקוח', text: 'שמע, פיתוח מאפס זה יקר. מערכת מדף עולה לי 50$ בחודש.' },
-        { speaker: 'אתה', text: 'אני מסכים איתך, מערכת מדף זולה יותר בחשבונית. אבל בוא נחשוב רגע — כמה עולה לך שעת עובד שמבזבז זמן על עבודה ידנית? כמה עולה ליד שהולך לאיבוד?' },
+        { speaker: 'אתה', text: 'אני מסכים איתך, מערכת מדף זולה יותר בחשבונית. אבל בוא נחשוב רגע - כמה עולה לך שעת עובד שמבזבז זמן על עבודה ידנית? כמה עולה ליד שהולך לאיבוד?' },
         { speaker: 'אתה', text: 'אנחנו לא בונים לך “הוצאה”, אנחנו בונים לך מכונה שחוסכת כסף. הלקוחות שלנו מחזירים את ההשקעה תוך 3–6 חודשים. רוצה שנבדוק אם זה אפשרי גם אצלך?' }
       ]
     }
@@ -792,14 +792,14 @@ export default function SalesOnboarding({ variant = 'standalone' }) {
       </List>
 
       {!isEmbedded ? (
-      <Box sx={{ mt: 'auto', p: 2.5, borderTop: '1px solid', borderColor: 'grey.200' }}>
-        <Stack spacing={1}>
-          <Button variant="outlined" color="primary" onClick={() => navigate('/')}>חזרה לאתר</Button>
-          <Typography variant="caption" color="text.secondary">
-            עמוד פנימי (ללא Header/Footer)
-          </Typography>
-        </Stack>
-      </Box>
+        <Box sx={{ mt: 'auto', p: 2.5, borderTop: '1px solid', borderColor: 'grey.200' }}>
+          <Stack spacing={1}>
+            <Button variant="outlined" color="primary" onClick={() => navigate('/')}>חזרה לאתר</Button>
+            <Typography variant="caption" color="text.secondary">
+              עמוד פנימי (ללא Header/Footer)
+            </Typography>
+          </Stack>
+        </Box>
       ) : null}
     </Box>
   );

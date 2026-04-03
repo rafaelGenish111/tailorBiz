@@ -14,7 +14,7 @@ const timerApi = {
 };
 
 // unwrap אחיד ל-response מהשרת עבור טיימר פעיל:
-// כשהשרת מחזיר { success: true, data: null } אין טיימר פעיל — חייבים להחזיר null (לא את כל האובייקט)
+// כשהשרת מחזיר { success: true, data: null } אין טיימר פעיל - חייבים להחזיר null (לא את כל האובייקט)
 const unwrapActiveTimerResponse = (response) => {
   if (!response) return null;
   if (typeof response === 'object' && response !== null && 'data' in response) {

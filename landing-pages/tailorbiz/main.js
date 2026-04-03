@@ -1,4 +1,4 @@
-/* TaylorBiz Landing Page — main.js */
+/* TaylorBiz Landing Page - main.js */
 
 (function () {
   'use strict';
@@ -13,16 +13,16 @@
     btn.textContent = 'שולח...';
     btn.disabled = true;
 
-    // Simulate API call — replace with real endpoint
+    // Simulate API call - replace with real endpoint
     setTimeout(function () {
       form.innerHTML =
         '<div class="success-state">' +
-          '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#1AE879" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
-            '<circle cx="20" cy="20" r="18"/>' +
-            '<path d="M12 20l6 6 10-12"/>' +
-          '</svg>' +
-          '<h3>מעולה! נחזור אליך תוך שעה.</h3>' +
-          '<p>בינתיים, אפשר לכתוב לנו ב-WhatsApp.</p>' +
+        '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="#1AE879" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+        '<circle cx="20" cy="20" r="18"/>' +
+        '<path d="M12 20l6 6 10-12"/>' +
+        '</svg>' +
+        '<h3>מעולה! נחזור אליך תוך שעה.</h3>' +
+        '<p>בינתיים, אפשר לכתוב לנו ב-WhatsApp.</p>' +
         '</div>';
     }, 1200);
   }

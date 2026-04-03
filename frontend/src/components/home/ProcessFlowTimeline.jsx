@@ -15,14 +15,14 @@ const steps = [
     number: '01',
     title: 'אפיון עמוק',
     subtitle: 'הבנה מעמיקה של התהליכים, הכאבים והצרכים של העסק.',
-    description: 'כל פרויקט מתחיל באיסוף מידע מקיף של התהליכים בעסק — בשיווק, במכירות, בפיננסים ובתפעול. אנחנו מבינים את האתגרים לעומק לפני שמתחילים לפתח.',
+    description: 'כל פרויקט מתחיל באיסוף מידע מקיף של התהליכים בעסק - בשיווק, במכירות, בפיננסים ובתפעול. אנחנו מבינים את האתגרים לעומק לפני שמתחילים לפתח.',
     icon: SearchOutlinedIcon,
   },
   {
     number: '02',
     title: 'פיתוח מהיר וגמיש',
     subtitle: 'בניית המערכת בדיוק לפי האפיון, עם אינטגרציות ודשבורדים.',
-    description: 'פיתוח \'חליפה לפי מידה\' — אנחנו בונים את המערכת בדיוק לפי האפיון, מחברים בין הכלים הקיימים ומקימים דשבורדים לניהול בזמן אמת.',
+    description: 'פיתוח \'חליפה לפי מידה\' - אנחנו בונים את המערכת בדיוק לפי האפיון, מחברים בין הכלים הקיימים ומקימים דשבורדים לניהול בזמן אמת.',
     icon: CodeOutlinedIcon,
   },
   {
@@ -130,7 +130,7 @@ function ProcessFlowTimeline() {
           </Typography>
         </MotionBox>
 
-        {/* Step Indicators — horizontal row with progress bars */}
+        {/* Step Indicators - horizontal row with progress bars */}
         <MotionBox
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -221,7 +221,7 @@ function ProcessFlowTimeline() {
                 alignItems: 'start',
               }}
             >
-              {/* Left side — large step number + title */}
+              {/* Left side - large step number + title */}
               <Box>
                 <Typography
                   sx={{
@@ -252,7 +252,7 @@ function ProcessFlowTimeline() {
                 </Typography>
               </Box>
 
-              {/* Right side — description + icon */}
+              {/* Right side - description + icon */}
               <Box sx={{ pt: { xs: 0, md: 4 } }}>
                 <Box
                   sx={{
@@ -310,7 +310,7 @@ function ProcessFlowTimeline() {
               fontFamily: "'Heebo', system-ui, -apple-system, sans-serif",
             }}
           >
-            ״הפתרון נבנה סביב העסק — לא העסק צריך להתאים את עצמו למערכת.״
+            ״הפתרון נבנה סביב העסק - לא העסק צריך להתאים את עצמו למערכת.״
           </Typography>
         </MotionBox>
       </Container>

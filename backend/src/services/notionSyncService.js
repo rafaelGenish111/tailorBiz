@@ -169,7 +169,7 @@ class NotionSyncService {
     const project = await Project.findOne({ notionPageId }).lean();
 
     if (!project) {
-      // No linked CRM project — try to create one from Notion
+      // No linked CRM project - try to create one from Notion
       await this._createProjectFromNotion(notionPage, updates, clientName);
       return;
     }
@@ -177,7 +177,7 @@ class NotionSyncService {
     // Check if this edit was made by our push (prevent loop)
     const notionEditedAt = new Date(notionPage.last_edited_time);
     if (project.notionLastEditedAt &&
-        notionEditedAt.getTime() <= new Date(project.notionLastEditedAt).getTime()) {
+      notionEditedAt.getTime() <= new Date(project.notionLastEditedAt).getTime()) {
       return; // Already processed
     }
 

@@ -71,106 +71,106 @@ function App() {
 
   return (
     <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <Routes>
-        {/* Standalone (no Header/Footer) */}
-        <Route
-          path="/sales-training"
-          element={
-            <ThemeProvider theme={theme}>
-              <CssBaseline />
-              <SalesOnboarding />
-            </ThemeProvider>
-          }
-        />
-        <Route
-          path="/partnership-pitch"
-          element={
-            <ThemeProvider theme={theme}>
-              <CssBaseline />
-              <PartnershipPitch />
-            </ThemeProvider>
-          }
-        />
-        <Route
-          path="/audit-offer"
-          element={
-            <ThemeProvider theme={theme}>
-              <CssBaseline />
-              <LandingPage />
-            </ThemeProvider>
-          }
-        />
+      <QueryClientProvider client={queryClient}>
+        <Routes>
+          {/* Standalone (no Header/Footer) */}
+          <Route
+            path="/sales-training"
+            element={
+              <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <SalesOnboarding />
+              </ThemeProvider>
+            }
+          />
+          <Route
+            path="/partnership-pitch"
+            element={
+              <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <PartnershipPitch />
+              </ThemeProvider>
+            }
+          />
+          <Route
+            path="/audit-offer"
+            element={
+              <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <LandingPage />
+              </ThemeProvider>
+            }
+          />
 
-        {/* Product mini-sites (standalone, no main Layout) */}
-        <Route
-          path="/products/:productId"
-          element={
-            <ThemeProvider theme={theme}>
-              <CssBaseline />
-              <ProductLayout />
-            </ThemeProvider>
-          }
-        >
-          <Route index element={<ProductOverview />} />
-          <Route path="technologies" element={<ProductTechnologies />} />
-          <Route path="demo" element={<ProductDemo />} />
-          <Route path="features" element={<ProductFeatures />} />
-          <Route path="contact" element={<ProductContact />} />
-        </Route>
+          {/* Product mini-sites (standalone, no main Layout) */}
+          <Route
+            path="/products/:productId"
+            element={
+              <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <ProductLayout />
+              </ThemeProvider>
+            }
+          >
+            <Route index element={<ProductOverview />} />
+            <Route path="technologies" element={<ProductTechnologies />} />
+            <Route path="demo" element={<ProductDemo />} />
+            <Route path="features" element={<ProductFeatures />} />
+            <Route path="contact" element={<ProductContact />} />
+          </Route>
 
-        {/* Admin Routes — must be before public catch-all */}
-        <Route
-          path="/admin/*"
-          element={
-            <ThemeProvider theme={adminTheme}>
-              <CssBaseline />
-              <Routes>
-                <Route path="login" element={<LoginPage />} />
-                <Route path="setup" element={<BootstrapAdminPage />} />
-                <Route
-                  path="*"
-                  element={
-                    <RequireAdminAuth>
-                      <AdminPanel />
-                    </RequireAdminAuth>
-                  }
-                />
-              </Routes>
-            </ThemeProvider>
-          }
-        />
-
-        {/* Public Routes — catch-all must be last */}
-        <Route
-          path="/*"
-          element={
-            <ThemeProvider theme={theme}>
-              <CssBaseline />
-              <Layout>
+          {/* Admin Routes - must be before public catch-all */}
+          <Route
+            path="/admin/*"
+            element={
+              <ThemeProvider theme={adminTheme}>
+                <CssBaseline />
                 <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/blog" element={<Articles />} />
-                  <Route path="/blog/:slug" element={<ArticlePage />} />
-                  <Route path="/services" element={<ServicesPage />} />
-                  <Route path="/services/saas-creators" element={<SaasCreators />} />
-                  <Route path="/services/ai-institutions" element={<AiInstitutions />} />
-                  <Route path="/clients" element={<OurClients />} />
-                  <Route path="/pricing" element={<Pricing />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/privacy" element={<PrivacyPolicy />} />
-                  <Route path="/roi-calculator" element={<ROICalculatorPage />} />
-                  <Route path="*" element={<NotFound />} />
+                  <Route path="login" element={<LoginPage />} />
+                  <Route path="setup" element={<BootstrapAdminPage />} />
+                  <Route
+                    path="*"
+                    element={
+                      <RequireAdminAuth>
+                        <AdminPanel />
+                      </RequireAdminAuth>
+                    }
+                  />
                 </Routes>
-              </Layout>
-            </ThemeProvider>
-          }
-        />
-      </Routes>
+              </ThemeProvider>
+            }
+          />
 
-      <ToastContainer position="top-left" autoClose={2000} hideProgressBar={true} rtl={true} theme="dark" />
-    </QueryClientProvider>
+          {/* Public Routes - catch-all must be last */}
+          <Route
+            path="/*"
+            element={
+              <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <Layout>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/blog" element={<Articles />} />
+                    <Route path="/blog/:slug" element={<ArticlePage />} />
+                    <Route path="/services" element={<ServicesPage />} />
+                    <Route path="/services/saas-creators" element={<SaasCreators />} />
+                    <Route path="/services/ai-institutions" element={<AiInstitutions />} />
+                    <Route path="/clients" element={<OurClients />} />
+                    <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/privacy" element={<PrivacyPolicy />} />
+                    <Route path="/roi-calculator" element={<ROICalculatorPage />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Layout>
+              </ThemeProvider>
+            }
+          />
+        </Routes>
+
+        <ToastContainer position="top-left" autoClose={2000} hideProgressBar={true} rtl={true} theme="dark" />
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }

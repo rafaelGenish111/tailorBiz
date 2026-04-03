@@ -209,7 +209,7 @@ function ClientCardContent({ client, id }) {
 
                 {me?.role === 'super_admin' ? (
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                    עובד: {client?.metadata?.assignedTo?.username || client?.metadata?.createdBy?.username || '—'}
+                    עובד: {client?.metadata?.assignedTo?.username || client?.metadata?.createdBy?.username || '-'}
                   </Typography>
                 ) : null}
 

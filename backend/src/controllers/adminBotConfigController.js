@@ -7,7 +7,7 @@ const AIBotConfig = require('../models/AIBotConfig');
 
 /**
  * GET /api/admin/bot-config
- * Get the active bot configuration (singleton-ish — returns the first active)
+ * Get the active bot configuration (singleton-ish - returns the first active)
  */
 exports.getConfig = async (req, res) => {
   try {
