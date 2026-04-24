@@ -105,7 +105,7 @@ function HeroSection() {
               mb: { xs: 3, md: 4 },
             }}
           >
-            TaylorBiz - פיתוח מערכות
+            TailorBiz - פיתוח מערכות
           </Typography>
         </motion.div>
 
