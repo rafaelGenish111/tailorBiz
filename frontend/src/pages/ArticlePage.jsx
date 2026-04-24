@@ -4,6 +4,7 @@ import { Box, Container, Typography, Stack, Paper } from '@mui/material';
 import { publicCMS } from '../utils/publicApi';
 import ArticleBlocksRenderer from '../components/articles/ArticleBlocksRenderer';
 import { getImageUrl } from '../utils/imageUtils';
+import PageSEO from '../components/seo/PageSEO';
 
 const ArticlePage = () => {
   const { slug } = useParams();
@@ -43,8 +44,18 @@ const ArticlePage = () => {
     );
   }
 
+  const seoTitle = article.seo?.title || `${article.title} | בלוג TailorBiz`;
+  const seoDescription = article.seo?.description || article.excerpt || `${article.title} - בלוג TailorBiz`;
+  const seoImage = article.coverImage?.url ? getImageUrl(article.coverImage) : undefined;
+
   return (
     <Box sx={{ py: { xs: 5, md: 8 }, bgcolor: 'background.default' }}>
+      <PageSEO
+        title={seoTitle}
+        description={seoDescription}
+        image={seoImage}
+        type="article"
+      />
       <Container maxWidth="md">
         <Stack spacing={2} sx={{ mb: 4 }}>
           <Typography variant="h3" fontWeight={800}>

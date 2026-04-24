@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Container, Typography, Grid, Paper, Link as MuiLink, Stack } from '@mui/material';
 import { publicCMS } from '../utils/publicApi';
 import { getImageUrl } from '../utils/imageUtils';
+import PageSEO from '../components/seo/PageSEO';
 
 const OurClients = () => {
   const [clients, setClients] = React.useState([]);
@@ -16,6 +17,10 @@ const OurClients = () => {
 
   return (
     <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: 'background.default' }}>
+      <PageSEO
+        title="הלקוחות שלנו | TailorBiz"
+        description="הכירו את הלקוחות שבחרו ב-TailorBiz להתייעלות ואוטומציה בעסק. סטארטאפים, מאמנים, מרכזי הכשרה ועסקים קטנים - כל אחד עם פתרון מותאם אישית."
+      />
       <Container maxWidth="lg">
         <Box sx={{ textAlign: 'center', mb: 5 }}>
           <Typography variant="h3" fontWeight={800} sx={{ mb: 1 }}>

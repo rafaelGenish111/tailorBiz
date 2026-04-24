@@ -1,14 +1,14 @@
 // frontend/src/pages/PrivacyPolicy.jsx
 import React from 'react';
 import { Box, Container, Typography, Paper, List, ListItem, ListItemText, Divider } from '@mui/material';
-import { Helmet } from 'react-helmet-async';
+import PageSEO from '../components/seo/PageSEO';
 const PrivacyPolicy = () => {
   return (
     <>
-      <Helmet>
-        <title>מדיניות פרטיות | TailorBiz</title>
-        <meta name="description" content="מדיניות הפרטיות של TailorBiz בהתאם לחוק הגנת הפרטיות הישראלי ותיקון 13." />
-      </Helmet>
+      <PageSEO
+        title="מדיניות פרטיות | TailorBiz"
+        description="מדיניות הפרטיות של TailorBiz בהתאם לחוק הגנת הפרטיות הישראלי ותיקון 13."
+      />
 
       <Box sx={{ py: 8, bgcolor: '#0A0A0A', minHeight: '100vh' }}>
         <Container maxWidth="md">

@@ -7,6 +7,7 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import StorageIcon from '@mui/icons-material/Storage';
 import HandshakeIcon from '@mui/icons-material/Handshake';
 import Button from '../components/ui/Button';
+import PageSEO from '../components/seo/PageSEO';
 
 const MotionBox = motion.create(Box);
 
@@ -49,6 +50,10 @@ const philosophyItems = [
 function About() {
   return (
     <Box sx={{ bgcolor: '#0A0A0A' }}>
+      <PageSEO
+        title="אודות TailorBiz | הסיפור שלנו ומה מניע אותנו"
+        description="סטארטאפ בוטיק המתמחה בטרנספורמציה דיגיטלית - הסיפור, הצוות והחזון שמאחורי TailorBiz. מערכות ניהול ואוטומציות בהתאמה אישית לעסקים ישראליים."
+      />
       {/* Hero Section */}
       <Box
         id="about-us"

@@ -2,6 +2,7 @@ import { Box, Container, Typography, Grid, Card, CardContent, CardActions, Butto
 import { motion } from 'framer-motion';
 import CheckIcon from '@mui/icons-material/Check';
 import StarIcon from '@mui/icons-material/Star';
+import PageSEO from '../components/seo/PageSEO';
 
 const MotionCard = motion.create(Card);
 
@@ -54,6 +55,10 @@ function Pricing() {
 
   return (
     <Box>
+      <PageSEO
+        title="תמחור | TailorBiz - פתרון מותאם אישית"
+        description="מסלולי תמחור שקופים למערכות ניהול ואוטומציה עסקית של TailorBiz. Basic, Professional ו-Enterprise - בחרו את המסלול המתאים לעסק שלכם."
+      />
       <Box
         sx={{
           bgcolor: '#0A0A0A',

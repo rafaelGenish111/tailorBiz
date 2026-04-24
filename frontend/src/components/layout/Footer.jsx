@@ -69,7 +69,7 @@ function Footer() {
             <Box
               component="img"
               src={LOGO_SRC}
-              alt="לוגו TaylorBiz"
+              alt="לוגו TailorBiz"
               sx={{
                 height: { xs: 60, md: 80 },
                 width: 'auto',

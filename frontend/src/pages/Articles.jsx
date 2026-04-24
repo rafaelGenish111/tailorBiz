@@ -3,6 +3,7 @@ import { Box, Container, Typography, Grid, Card, CardContent, CardMedia, Chip, S
 import { Link, useSearchParams } from 'react-router-dom';
 import { publicCMS } from '../utils/publicApi';
 import { getImageUrl } from '../utils/imageUtils';
+import PageSEO from '../components/seo/PageSEO';
 
 const CATEGORY_OPTIONS = [
   { value: '', label: 'כל הקטגוריות' },
@@ -35,6 +36,10 @@ const Articles = () => {
 
   return (
     <Box sx={{ py: { xs: 6, md: 10 }, bgcolor: 'background.default' }}>
+      <PageSEO
+        title="בלוג | TailorBiz - טיפים לאוטומציה עסקית"
+        description="תכנים על תהליכים עסקיים, אוטומציות, מערכות CRM וניהול עסק - בצורה נקייה ומעשית מהצוות של TailorBiz."
+      />
       <Container maxWidth="lg">
         <Stack spacing={2} sx={{ mb: 5, textAlign: 'center' }}>
           <Typography variant="h3" fontWeight={700}>

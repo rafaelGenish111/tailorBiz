@@ -1,6 +1,7 @@
 import { Box } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import AccessibilityMenu from './AccessibilityMenu';
@@ -8,8 +9,12 @@ import CookieConsent from './CookieConsent';
 import ChatWidget from '../ChatWidget/ChatWidget';
 import { publicCMS } from '../../utils/publicApi';
 
+const SITE_URL = 'https://tailorbiz-software.com';
+
 function Layout({ children }) {
   const [settings, setSettings] = React.useState(null);
+  const { pathname } = useLocation();
+  const canonicalUrl = `${SITE_URL}${pathname === '/' ? '' : pathname}`;
 
   React.useEffect(() => {
     let mounted = true;
@@ -63,7 +68,6 @@ function Layout({ children }) {
       'addressLocality': 'Petah Tikva',
       'addressCountry': 'IL'
     },
-    'priceRange': '$$$',
     'description': 'סטארטאפ בוטיק המתמחה בטרנספורמציה דיגיטלית, בניית מערכות CRM ואוטומציות לעסקים.',
     'openingHoursSpecification': {
       '@type': 'OpeningHoursSpecification',
@@ -82,24 +86,27 @@ function Layout({ children }) {
   return (
     <>
       <Helmet>
-        {/* Default SEO - Can be overridden by page-specific Helmet */}
+        {/* Default SEO - Can be overridden by page-specific Helmet via PageSEO */}
         <title>TailorBiz | מערכות ניהול ואוטומציה בהתאמה אישית</title>
         <meta name="description" content="הפכו את העסק לאוטונומי ויעיל. TailorBiz מתמחה בבניית מערכות CRM/ERP, אוטומציות עסקיות וחיסכון בשעות עבודה. פתרון Tailor-Made ללא דמי מנוי." />
         <meta name="keywords" content="אוטומציה עסקית, פיתוח CRM, מערכות ניהול, התייעלות עסקית, בניית דשבורדים, TailorBiz, Make אינטגרציות" />
-        
+
+        {/* Canonical */}
+        <link rel="canonical" href={canonicalUrl} />
+
         {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:title" content="עוצרים את הכאוס בעסק? בואו נדבר." />
         <meta property="og:description" content="בניית מערכות ניהול חכמות ואוטומציות שחוסכות זמן וכסף." />
-        <meta property="og:image" content="/assets/images/og-banner.jpg" />
-        <meta property="og:url" content="https://tailorbiz-software.com" />
+        <meta property="og:image" content={`${SITE_URL}/assets/images/og-banner.jpg`} />
+        <meta property="og:url" content={canonicalUrl} />
         <meta property="og:locale" content="he_IL" />
-        
+
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="עוצרים את הכאוס בעסק? בואו נדבר." />
         <meta name="twitter:description" content="בניית מערכות ניהול חכמות ואוטומציות שחוסכות זמן וכסף." />
-        <meta name="twitter:image" content="/assets/images/og-banner.jpg" />
+        <meta name="twitter:image" content={`${SITE_URL}/assets/images/og-banner.jpg`} />
 
         {/* JSON-LD Schema */}
         <script type="application/ld+json">

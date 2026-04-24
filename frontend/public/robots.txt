@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://yourdomain.com/sitemap.xml
+Disallow: /admin
+Disallow: /sign/
+Disallow: /api/
+
+Sitemap: https://tailorbiz-software.com/sitemap.xml

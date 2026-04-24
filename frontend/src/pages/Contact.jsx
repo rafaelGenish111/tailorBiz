@@ -16,6 +16,7 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { COMPANY_INFO } from '../utils/constants';
 import { publicCMS, publicLeads } from '../utils/publicApi';
 import Button from '../components/ui/Button';
+import PageSEO from '../components/seo/PageSEO';
 
 function Contact() {
   const [formData, setFormData] = useState({
@@ -89,6 +90,10 @@ function Contact() {
 
   return (
     <Box>
+      <PageSEO
+        title="צור קשר | TailorBiz"
+        description="מעוניינים לדבר על מערכת ניהול או אוטומציה לעסק שלכם? השאירו פרטים או התקשרו - נחזור אליכם בהקדם."
+      />
       <Box
         id="contact-us"
         sx={{

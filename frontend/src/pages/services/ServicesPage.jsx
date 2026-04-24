@@ -2,7 +2,7 @@ import { Box, Container, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
+import PageSEO from '../../components/seo/PageSEO';
 import { Sparkles, GraduationCap, ArrowLeft } from 'lucide-react';
 import ServiceQuiz from '../../components/services/ServiceQuiz';
 
@@ -171,13 +171,10 @@ function ServicesPage() {
 
   return (
     <Box sx={{ bgcolor: '#222325', minHeight: '100vh' }}>
-      <Helmet>
-        <title>שירותים | TailorBiz - פתרונות טכנולוגיים חכמים</title>
-        <meta
-          name="description"
-          content="פתרונות SaaS למאמנים ויוצרי תוכן וסוכן AI למרכזי הכשרה ומוסדות חינוך. בחרו את המסלול המתאים לכם."
-        />
-      </Helmet>
+      <PageSEO
+        title="שירותים | TailorBiz - פתרונות טכנולוגיים חכמים"
+        description="פתרונות SaaS למאמנים ויוצרי תוכן וסוכן AI למרכזי הכשרה ומוסדות חינוך. בחרו את המסלול המתאים לכם."
+      />
 
       {/* Hero Section */}
       <Box
