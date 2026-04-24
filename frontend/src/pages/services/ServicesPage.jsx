@@ -173,7 +173,7 @@ function ServicesPage() {
     <Box sx={{ bgcolor: '#222325', minHeight: '100vh' }}>
       <PageSEO
         title="שירותים | TailorBiz - פתרונות טכנולוגיים חכמים"
-        description="פתרונות SaaS למאמנים ויוצרי תוכן וסוכן AI למרכזי הכשרה ומוסדות חינוך. בחרו את המסלול המתאים לכם."
+        description="מערכות CRM, סוכני AI ואוטומציות עסקיות - בחרו את הפתרון המתאים לעסק שלכם ותנו לנו לעשות את השאר."
       />
 
       {/* Hero Section */}
