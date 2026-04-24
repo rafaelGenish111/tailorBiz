@@ -310,7 +310,7 @@ function Header() {
             <Box
               component="img"
               src={LOGO_SRC}
-              alt="TaylorBiz לוגו"
+              alt="TailorBiz לוגו"
               loading="eager"
               sx={{
                 height: { xs: 44, sm: 52 },

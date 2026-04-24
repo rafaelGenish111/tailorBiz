@@ -7,6 +7,7 @@
     "dev": "vite",
     "prebuild": "node scripts/generate-articles-sitemap.mjs",
     "build": "vite build",
+    "postbuild": "node scripts/prerender-meta.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
